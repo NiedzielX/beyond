@@ -31,11 +31,6 @@ def canonical_horizon(hours_to_kickoff: float) -> str:
     for label, target, tolerance in windows:
         if target <= hours_to_kickoff <= target + tolerance:
             return label
-    # A six-hour scheduler can first execute the exact T-7 shadow model shortly
-    # after the canonical instant. Keep its lineage explicit rather than calling
-    # it a generic continuous forecast.
-    if 162.0 <= hours_to_kickoff < 168.0:
-        return "T-7"
     return "continuous"
 
 
@@ -62,6 +57,11 @@ def engine_forecast_to_shadow_observation(forecast: EngineForecast) -> dict[str,
         "league_team_count",
         "t7_state_cutoff_local_date",
         "t7_visible_league_results",
+        # Operational lineage. These do not enter the point model; they prove
+        # that a delayed job represented the canonical information cutoff.
+        "effective_forecast_at",
+        "shadow_executed_at",
+        "source_snapshot_asof_cutoff",
     )
     historical_state = {
         key: request.static_features[key]
