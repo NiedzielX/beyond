@@ -1,0 +1,85 @@
+{
+  "model": "v1.7",
+  "status": "historical champion / frozen benchmark",
+  "source": "Beyond Historical Model Tournament v1.3 strict as-of evaluation",
+  "T30": {
+    "dev": {
+      "n": 34,
+      "v17_mae": 4571.3,
+      "challenger_mae": 4429.0,
+      "delta_mae": 142.3,
+      "improvement_pct": 3.11,
+      "v17_rmse": 6325.4,
+      "challenger_rmse": 6073.3,
+      "v17_bias": -164.0,
+      "challenger_bias": -651.2
+    },
+    "holdout": {
+      "n": 34,
+      "v17_mae": 4876.4,
+      "challenger_mae": 4846.1,
+      "delta_mae": 30.2,
+      "improvement_pct": 0.62,
+      "v17_rmse": 5997.7,
+      "challenger_rmse": 5848.3,
+      "v17_bias": 1151.8,
+      "challenger_bias": 443.2
+    },
+    "all": {
+      "n": 68,
+      "v17_mae": 4723.8,
+      "challenger_mae": 4637.6,
+      "delta_mae": 86.3,
+      "improvement_pct": 1.83,
+      "v17_rmse": 6163.7,
+      "challenger_rmse": 5961.9,
+      "v17_bias": 493.9,
+      "challenger_bias": -104.0
+    }
+  },
+  "T7": {
+    "dev": {
+      "n": 34,
+      "v17_mae": 4507.3,
+      "challenger_mae": 4451.3,
+      "delta_mae": 56.0,
+      "improvement_pct": 1.24,
+      "v17_rmse": 6062.2,
+      "challenger_rmse": 6141.0,
+      "v17_bias": -1206.1,
+      "challenger_bias": -1374.2
+    },
+    "holdout": {
+      "n": 34,
+      "v17_mae": 3794.9,
+      "challenger_mae": 3787.7,
+      "delta_mae": 7.1,
+      "improvement_pct": 0.19,
+      "v17_rmse": 4610.3,
+      "challenger_rmse": 4620.3,
+      "v17_bias": -368.6,
+      "challenger_bias": -347.2
+    },
+    "all": {
+      "n": 68,
+      "v17_mae": 4151.1,
+      "challenger_mae": 4119.5,
+      "delta_mae": 31.6,
+      "improvement_pct": 0.76,
+      "v17_rmse": 5385.4,
+      "challenger_rmse": 5434.1,
+      "v17_bias": -787.4,
+      "challenger_bias": -860.7
+    }
+  },
+  "leakage_policy": {
+    "forecast_cutoff": "target kickoff minus horizon",
+    "training_outcomes": "only matches completed before forecast cutoff",
+    "sporting_features": "reconstructed only from league results completed before cutoff",
+    "future_weather": "excluded",
+    "closing_odds": "excluded",
+    "future_ticket_trajectory": "excluded",
+    "post-checkpoint residuals": "excluded"
+  },
+  "production_model_changed": false
+}
