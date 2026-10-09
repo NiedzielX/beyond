@@ -1,0 +1,25 @@
+name: Demand Engine Smoke
+
+on:
+  push:
+    paths:
+      - 'ml/demand_engine/**'
+      - '.github/workflows/demand-engine-smoke.yml'
+  pull_request:
+    paths:
+      - 'ml/demand_engine/**'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Run Demand Engine contract tests
+        run: python -m unittest ml.demand_engine.test_engine -v
