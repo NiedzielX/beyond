@@ -32,7 +32,7 @@ jobs:
       - name: Install test dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install numpy==2.3.5 pandas==2.2.3 scikit-learn==1.8.0
+          pip install numpy==2.3.5 pandas==2.2.3 scikit-learn==1.8.0 joblib
 
       - name: Run Demand Engine contract tests
         run: python -m unittest ml.demand_engine.test_engine -v
@@ -40,10 +40,11 @@ jobs:
       - name: Verify recovered v1.7 strict benchmark evidence
         run: python ml/recovered/v17/verify_recovered_bundle.py
 
-      - name: Compile benchmark entry points
+      - name: Compile benchmark and forensic entry points
         run: |
           python -m py_compile ml/demand_engine/benchmark_residual_v1.py
           python -m py_compile ml/demand_engine/benchmark_calibration_v1.py
+          python -m py_compile ml/recovered/v17/reconstruct_t30_v17.py
           python -m py_compile ml/live_benchmark_v02.py
           python -m py_compile ml/live_benchmark_v03.py
           python -m py_compile ml/export_v13_predictions.py
