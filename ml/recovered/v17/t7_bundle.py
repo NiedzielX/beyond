@@ -24,6 +24,10 @@ EXPECTED_FILES = {
 
 def _read_archive(bundle_path: Path = DEFAULT_BUNDLE) -> dict[str, bytes]:
     encoded = "".join(bundle_path.read_text().split())
+    # Text transports may omit terminal '=' characters. Restoring canonical
+    # Base64 padding is lossless; tar/gzip parsing below still validates payload
+    # integrity and will fail if any non-padding byte is missing/corrupted.
+    encoded += "=" * (-len(encoded) % 4)
     payload = base64.b64decode(encoded, validate=True)
     result: dict[str, bytes] = {}
     with tarfile.open(fileobj=io.BytesIO(payload), mode="r:gz") as archive:
