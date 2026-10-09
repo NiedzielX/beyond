@@ -1,0 +1,83 @@
+{
+  "manifest_version": "event-5-t7-v1",
+  "status": "pre_checkpoint_scaffold_not_runnable_evidence",
+  "ticket_event_id": 5,
+  "season": "2026/2027",
+  "home_team": "Lech Poznań",
+  "away_team": "Korona Kielce",
+  "competition": "Ekstraklasa",
+  "target_round_no": 11,
+  "total_rounds": 34,
+  "target_kickoff_at": "2026-10-18T17:30:00+02:00",
+  "canonical_t7_at": "2026-10-11T17:30:00+02:00",
+  "strict_table_cutoff_local_date": "2026-10-11",
+  "home_team_key": "lech",
+  "opponent_key": "korona",
+  "stadium_capacity": 43269,
+  "league_team_keys": [
+    "gornik_zabrze",
+    "legia",
+    "lech",
+    "wisla_krakow",
+    "pogon",
+    "korona",
+    "zaglebie_lubin",
+    "piast",
+    "gks_katowice",
+    "jagiellonia",
+    "wisla_plock",
+    "widzew",
+    "wieczysta",
+    "cracovia",
+    "radomiak",
+    "slask",
+    "motor",
+    "rakow"
+  ],
+  "known_lech_home_league_attendance_before_t7": [
+    {
+      "match_date": "2026-07-25T20:15:00+02:00",
+      "opponent_key": "cracovia",
+      "attendance": 31310,
+      "evidence": "Original preserved v1.7 fresh 2026/27 validation; independently re-check before final evidence commit."
+    },
+    {
+      "match_date": "2026-08-09T17:30:00+02:00",
+      "opponent_key": "piast",
+      "attendance": 25329,
+      "evidence": "Original preserved v1.7 fresh 2026/27 validation; independently re-check before final evidence commit."
+    },
+    {
+      "match_date": "2026-09-03T20:30:00+02:00",
+      "opponent_key": "jagiellonia",
+      "attendance": 24201,
+      "evidence": "Existing verified Beyond outcome; independently re-check against source before final evidence commit."
+    },
+    {
+      "match_date": "2026-09-06T17:30:00+02:00",
+      "opponent_key": "rakow",
+      "attendance": 33615,
+      "evidence": "Existing verified Beyond outcome; independently re-check against source before final evidence commit."
+    },
+    {
+      "match_date": "2026-09-20T20:15:00+02:00",
+      "opponent_key": "radomiak",
+      "attendance": 19478,
+      "evidence": "Official Lech match-day page and existing verified Beyond outcome."
+    }
+  ],
+  "source_seeds": {
+    "official_round_11_schedule": "https://ekstraklasa.org/en/schedule/2026-2027/round-11/",
+    "official_current_standings": "https://ekstraklasa.org/en/standings/2026-2027/",
+    "official_lech_schedule": "https://www.lechpoznan.pl/pierwsza-druzyna,61.html",
+    "official_lech_radomiak_match_day": "https://www.lechpoznan.pl/pl/dzien-meczowy,113,lpo-rad,334.html",
+    "preserved_v17_fresh_validation": "https://github.com/NiedzielX/beyond/blob/main/ml/recovered/v17/original_fresh_2026_27_validation_v17.csv"
+  },
+  "pending_at_2026_10_11_preflight": [
+    "Fetch and verify every 2026/27 Ekstraklasa result whose Europe/Warsaw calendar date is strictly before 2026-10-11, including all matches completed on 2026-10-10.",
+    "Independently establish expected_visible_league_results from the complete official schedule/results set.",
+    "Re-check all five Lech home league attendance values and source URLs; exclude UEFA/cup matches.",
+    "Build runnable event_5_t7_2026-10-11.json with source audit block and verified_at.",
+    "Run dry-run preflight and exact recovered v1.7 T-7 model; do not persist before canonical T-7."
+  ]
+}
