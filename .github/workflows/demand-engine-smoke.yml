@@ -40,12 +40,17 @@ jobs:
       - name: Verify recovered v1.7 strict benchmark evidence
         run: python ml/recovered/v17/verify_recovered_bundle.py
 
+      - name: Verify exact v1.7 T-7 runtime from repo-only evidence
+        run: python ml/recovered/v17/verify_t7_runtime.py
+
       - name: Compile benchmark and forensic entry points
         run: |
           python -m py_compile ml/demand_engine/benchmark_residual_v1.py
           python -m py_compile ml/demand_engine/benchmark_calibration_v1.py
           python -m py_compile ml/recovered/v17/reconstruct_t30_v17.py
           python -m py_compile ml/recovered/v17/reconstruct_t7_v17.py
+          python -m py_compile ml/recovered/v17/t7_bundle.py
+          python -m py_compile ml/recovered/v17/verify_t7_runtime.py
           python -m py_compile ml/live_benchmark_v02.py
           python -m py_compile ml/live_benchmark_v03.py
           python -m py_compile ml/export_v13_predictions.py
