@@ -1,8 +1,10 @@
 from datetime import datetime, timezone
 import unittest
 
+from ml.demand_engine.calibration import CalibrationBand, conformal_radius
 from ml.demand_engine.contracts import ForecastRequest, LiveFeatures, QuantileForecast
 from ml.demand_engine.engine import DemandEngine
+from ml.demand_engine.intervals import ConformalIntervalCalibrator
 from ml.demand_engine.live_features import RowLiveFeatureProvider
 from ml.demand_engine.storage import to_forecast_observation
 
@@ -16,6 +18,7 @@ class HistoricalStub:
             model_name="historical-stub",
             model_version="test-v1",
             feature_set_version="features-test-v1",
+            interval_method="legacy-test-interval",
         )
 
 
@@ -70,6 +73,40 @@ class DemandEngineTest(unittest.TestCase):
             "demand_proxy_not_confirmed_sales",
         )
         self.assertEqual(row["payload"]["engine"]["live_feature_version"], "live-test-v1")
+        self.assertEqual(row["payload"]["engine"]["historical_interval_method"], "legacy-test-interval")
+
+    def test_conformal_calibrator_replaces_bounds_without_moving_p50(self) -> None:
+        band = CalibrationBand(
+            calibration_version="cal-test-v1",
+            coverage_target=0.80,
+            global_radius=2000,
+            horizon_radius={"T-7": 1500},
+            min_horizon_rows=20,
+            calibration_rows=50,
+        )
+        result = DemandEngine(
+            HistoricalStub(),
+            LiveStub(),
+            interval_calibrator=ConformalIntervalCalibrator(band),
+        ).forecast(request_fixture())
+
+        self.assertEqual(result.historical.p50, 30000)
+        self.assertEqual(result.historical.p10, 28500)
+        self.assertEqual(result.historical.p90, 31500)
+        self.assertEqual(result.final_p10, 28500)
+        self.assertEqual(result.final_p90, 31500)
+        self.assertEqual(result.historical.calibration_version, "cal-test-v1")
+        self.assertEqual(
+            result.historical.interval_method,
+            "split_conformal_absolute_residual_80:horizon:T-7",
+        )
+
+        row = to_forecast_observation(result)
+        self.assertEqual(row["payload"]["engine"]["historical_calibration_version"], "cal-test-v1")
+
+    def test_conformal_radius_uses_finite_sample_conservative_rank(self) -> None:
+        # n=4, 80% => ceil(5 * .8)=4, therefore the largest residual.
+        self.assertEqual(conformal_radius([1, 2, 3, 4], 0.80), 4)
 
     def test_live_feature_row_adapter_defaults_to_partial_not_ready(self) -> None:
         provider = RowLiveFeatureProvider(
