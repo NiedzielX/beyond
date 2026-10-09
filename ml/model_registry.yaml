@@ -1,4 +1,4 @@
-registry_version: 5
+registry_version: 6
 updated_at: 2026-10-09
 
 historical_models:
@@ -15,7 +15,7 @@ historical_models:
   - id: lech-v17-horizon-specific
     role: frozen_historical_champion
     implementation: ridge_horizon_specific
-    status: original_benchmark_archive_recovered_inference_implementation_missing
+    status: original_benchmark_archive_recovered_runtime_reconstruction_in_progress
     scope: lech
     horizons:
       - T-30
@@ -41,7 +41,6 @@ historical_models:
     evidence_path: ml/recovered/v17
     original_archive_name: lech_early_model_v17.zip
     original_archive_sha256: 187e2af23f9f56e824b566fed8f61f06b0dae305610f40695571dc81eacd0347
-    recovered_bundle_name: beyond_historical_v17_recovered.zip
     leakage_policy:
       forecast_cutoff: target_kickoff_minus_horizon
       training_outcomes: completed_before_forecast_cutoff_only
@@ -52,22 +51,25 @@ historical_models:
       post_checkpoint_residuals: excluded
     reconstruction:
       t30_asof_feature_pipeline: recovered
-      t30_v161_control_mean_abs_prediction_diff: 0.99
-      t30_v161_control_max_abs_prediction_diff: 6.1
+      t30_training_fold: prior_seasons_only
+      t30_recency_half_life_years: 3
+      t30_recency_reference: latest_training_match_weight_1
+      t30_v161_control_mean_abs_prediction_diff: 0.9866
+      t30_v161_control_max_abs_prediction_diff: 6.1042
       t30_online_correction: recovered_exactly
+      t30_online_correction_mean_abs_prediction_diff: 0.000000000001284
       t30_raw_v17_residual_model: not_yet_exact
-      t30_candidate_mean_abs_prediction_diff: 652.2
-      t30_candidate_max_abs_prediction_diff: 4466.3
+      t30_candidate_mean_abs_prediction_diff: 652.1987
+      t30_candidate_max_abs_prediction_diff: 4466.3459
       t7_runtime_reconstruction: pending_after_t30
     notes: >-
-      The ORIGINAL v1.7 archive has now been recovered, not only the later
-      strict-tournament bundle. It confirms the champion metrics, design and
-      T-30 online-correction semantics. The original ZIP contains no v1.7
-      training source and no v1.7 joblib/model binary, so benchmark provenance
-      is strong but new-fixture inference is still not runtime-reproducible.
-      The predecessor v1.6.1 joblibs and contracts survive; its T-30 direct model
-      can be reconstructed to ~1-person mean prediction difference, isolating
-      the remaining recovery gap to the v1.7 raw residual-model specification.
+      The original v1.7 benchmark and design evidence survive. The T-30 as-of
+      feature state, season-block walk-forward protocol, frequency gate and
+      recency weighting are now independently controlled by near-exact v1.6.1
+      reproduction, and the v1.7 online correction is recovered exactly. The
+      remaining runtime gap is isolated to the raw residual Ridge target/training
+      specification. Do not use a reconstructed v1.7 for new fixtures until its
+      preserved raw OOS predictions reproduce to numerical tolerance.
 
   - id: catboost-v01
     role: rejected_challenger
@@ -81,6 +83,24 @@ historical_models:
       historical models materially below the frozen v1.7 champion.
 
 historical_research_challengers:
+  - id: v18-t30-prior-season-opponent-popularity
+    horizon: T-30
+    status: research_only_not_promoted
+    candidate: T30_pop_ratio_missing_a0.3
+    baseline: lech-v17-horizon-specific
+    overall_mae: 4568.2
+    baseline_overall_mae: 4723.8
+    development_mae: 4578.5
+    baseline_development_mae: 4571.3
+    paired_bootstrap_ci95:
+      - -332.9
+      - -2.7
+    probability_candidate_better: 0.978
+    decision_reason: >-
+      Overall performance improved, but development was marginally worse, most
+      gain was concentrated in 2025/26 and the fresh 2026/27 two-match sanity
+      check was mixed. Keep as explicit challenger for genuinely future evidence.
+
   - id: v17-t30-blend-ridge-wide-hist-a1000
     horizon: T-30
     status: research_only_not_promoted
@@ -216,6 +236,7 @@ promotion_policy:
     - within_5_pct
     - within_10_pct
     - paired_holdout_evidence
+    - genuinely_future_evidence
   interval_candidate_requirements:
     calibration_source: same_point_model_and_protocol
     target_coverage_pct: 80
