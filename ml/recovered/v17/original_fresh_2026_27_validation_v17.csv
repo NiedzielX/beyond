@@ -1,0 +1,5 @@
+horizon,opponent,actual,prediction,absolute_error
+T30,Cracovia,31310,29141.6,2168.4
+T30,Piast,25329,19121.6,6207.4
+T7,Cracovia,31310,27250.8,4059.2
+T7,Piast,25329,24825.3,503.7
