@@ -1,0 +1,71 @@
+{
+  "version": "Lech Early Demand Model v1.7",
+  "capacity_constraint": 43269,
+  "T30": {
+    "development_mae": 4571.3,
+    "development_bias": -164.0,
+    "holdout_mae": 4876.4,
+    "holdout_bias": 1151.8,
+    "overall_mae": 4723.8,
+    "overall_bias": 493.9,
+    "design": "Ridge residual model around current season average + frequency-gated opponent categories + online same-season bias correction + hard stadium capacity cap.",
+    "online_correction": "Uses only residuals from already completed Lech home matches in the same season. Shrinkage k=3."
+  },
+  "T7": {
+    "development_mae": 4507.3,
+    "development_bias": -1206.1,
+    "holdout_mae": 3794.9,
+    "holdout_bias": -368.6,
+    "overall_mae": 4151.1,
+    "overall_bias": -787.4,
+    "design": "Ridge residual model around current season average + frequency-gated opponent categories + gated table context + hard stadium capacity cap.",
+    "decision": "No online correction promoted: the apparent gain was too small and bootstrap uncertainty crossed zero."
+  },
+  "comparison_to_v1_6_1": [
+    {
+      "horizon": "T30",
+      "v1_6_1_mae": 5228.6,
+      "v1_7_mae": 4723.8,
+      "delta_mae": -504.8,
+      "improvement_pct": 9.7
+    },
+    {
+      "horizon": "T7",
+      "v1_6_1_mae": 4232.4,
+      "v1_7_mae": 4151.1,
+      "delta_mae": -81.3,
+      "improvement_pct": 1.9
+    }
+  ],
+  "fresh_2026_27": [
+    {
+      "horizon": "T30",
+      "opponent": "Cracovia",
+      "actual": 31310,
+      "prediction": 29141.6,
+      "absolute_error": 2168.4
+    },
+    {
+      "horizon": "T30",
+      "opponent": "Piast",
+      "actual": 25329,
+      "prediction": 19121.6,
+      "absolute_error": 6207.4
+    },
+    {
+      "horizon": "T7",
+      "opponent": "Cracovia",
+      "actual": 31310,
+      "prediction": 27250.8,
+      "absolute_error": 4059.2
+    },
+    {
+      "horizon": "T7",
+      "opponent": "Piast",
+      "actual": 25329,
+      "prediction": 24825.3,
+      "absolute_error": 503.7
+    }
+  ],
+  "decision": "Freeze v1.7 as the historical/context baseline while testing league-wide feature transfer and collecting live ticket inventory trajectories."
+}
