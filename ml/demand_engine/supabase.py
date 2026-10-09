@@ -69,9 +69,22 @@ class _SupabaseServerClient:
 
 
 class SupabaseEventContextProvider(_SupabaseServerClient):
-    """Resolve one event plus the latest inventory snapshot for a backend run."""
+    """Resolve one event plus a point-in-time inventory snapshot.
 
-    def get(self, ticket_event_id: int) -> EventRuntimeContext:
+    Without `snapshot_as_of`, behaviour remains the original latest-snapshot
+    lookup. Strict canonical-horizon jobs must pass the information cutoff so a
+    job executed minutes later cannot accidentally attach post-checkpoint data.
+    """
+
+    def get(
+        self,
+        ticket_event_id: int,
+        *,
+        snapshot_as_of: datetime | None = None,
+    ) -> EventRuntimeContext:
+        if snapshot_as_of is not None and snapshot_as_of.tzinfo is None:
+            raise ValueError("snapshot_as_of must be timezone-aware")
+
         events = self._get(
             "ticket_events",
             {
@@ -86,18 +99,24 @@ class SupabaseEventContextProvider(_SupabaseServerClient):
         if not event.get("kickoff_at"):
             raise SupabaseRpcError(f"ticket_event_id {ticket_event_id} has no kickoff_at")
 
-        snapshots = self._get(
-            "snapshots",
-            {
-                "select": "id,ticket_event_id,captured_at",
-                "ticket_event_id": f"eq.{ticket_event_id}",
-                "order": "captured_at.desc,id.desc",
-                "limit": "1",
-            },
-        )
+        snapshot_params = {
+            "select": "id,ticket_event_id,captured_at",
+            "ticket_event_id": f"eq.{ticket_event_id}",
+            "order": "captured_at.desc,id.desc",
+            "limit": "1",
+        }
+        if snapshot_as_of is not None:
+            snapshot_params["captured_at"] = f"lte.{snapshot_as_of.isoformat()}"
+
+        snapshots = self._get("snapshots", snapshot_params)
         if not snapshots:
+            suffix = (
+                f" at or before {snapshot_as_of.isoformat()}"
+                if snapshot_as_of is not None
+                else ""
+            )
             raise SupabaseRpcError(
-                f"ticket_event_id {ticket_event_id} has no inventory snapshot"
+                f"ticket_event_id {ticket_event_id} has no inventory snapshot{suffix}"
             )
         snapshot = snapshots[0]
 
@@ -130,25 +149,42 @@ class SupabaseLiveFeatureProvider(_SupabaseServerClient):
         return self._mapper.features(request)
 
     def _fetch_latest(self, ticket_event_id: int):
-        endpoint = f"{self.supabase_url}/rest/v1/rpc/get_live_features_v1"
-        payload = json.dumps({"p_ticket_event_id": ticket_event_id}).encode("utf-8")
+        return self._post_rpc(
+            "get_live_features_v1",
+            {"p_ticket_event_id": ticket_event_id},
+        )
+
+    def _post_rpc(self, rpc_name: str, payload: dict[str, object]):
+        endpoint = f"{self.supabase_url}/rest/v1/rpc/{rpc_name}"
+        body = json.dumps(payload).encode("utf-8")
         headers = self._headers()
         headers["Content-Type"] = "application/json"
-        request = Request(
-            endpoint,
-            data=payload,
-            method="POST",
-            headers=headers,
-        )
+        request = Request(endpoint, data=body, method="POST", headers=headers)
         try:
             with urlopen(request, timeout=30) as response:
                 rows = json.loads(response.read().decode("utf-8"))
         except HTTPError as exc:
-            body = exc.read().decode("utf-8", errors="replace")
+            response_body = exc.read().decode("utf-8", errors="replace")
             raise SupabaseRpcError(
-                f"get_live_features_v1 failed with HTTP {exc.code}: {body}"
+                f"{rpc_name} failed with HTTP {exc.code}: {response_body}"
             ) from exc
-
         if not rows:
             return None
         return rows[0]
+
+
+class SupabaseAsOfLiveFeatureProvider(SupabaseLiveFeatureProvider):
+    """Evaluate live_features_v1 using only data known by forecast_generated_at."""
+
+    def features(self, request: ForecastRequest) -> LiveFeatures:
+        if request.forecast_generated_at.tzinfo is None:
+            raise ValueError("forecast_generated_at must be timezone-aware")
+        row = self._post_rpc(
+            "get_live_features_v1_asof",
+            {
+                "p_ticket_event_id": request.ticket_event_id,
+                "p_as_of": request.forecast_generated_at.isoformat(),
+            },
+        )
+        mapper = RowLiveFeatureProvider(lambda _: row)
+        return mapper.features(request)
