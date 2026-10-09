@@ -1,4 +1,4 @@
-registry_version: 6
+registry_version: 7
 updated_at: 2026-10-09
 
 historical_models:
@@ -15,7 +15,7 @@ historical_models:
   - id: lech-v17-horizon-specific
     role: frozen_historical_champion
     implementation: ridge_horizon_specific
-    status: original_benchmark_archive_recovered_runtime_reconstruction_in_progress
+    status: t7_runtime_recovered_exactly_t30_reconstruction_in_progress
     scope: lech
     horizons:
       - T-30
@@ -43,8 +43,8 @@ historical_models:
     original_archive_sha256: 187e2af23f9f56e824b566fed8f61f06b0dae305610f40695571dc81eacd0347
     leakage_policy:
       forecast_cutoff: target_kickoff_minus_horizon
-      training_outcomes: completed_before_forecast_cutoff_only
-      sporting_features: reconstructed_before_cutoff_only
+      training_outcomes: completed_prior_seasons_for_season_block_oos
+      sporting_features: reconstructed_before_checkpoint_only
       future_weather: excluded
       closing_odds: excluded
       future_ticket_trajectory: excluded
@@ -61,15 +61,27 @@ historical_models:
       t30_raw_v17_residual_model: not_yet_exact
       t30_candidate_mean_abs_prediction_diff: 652.1987
       t30_candidate_max_abs_prediction_diff: 4466.3459
-      t7_runtime_reconstruction: pending_after_t30
+      t7_runtime_reconstruction: recovered_exactly
+      t7_attendance_state: exact_timestamp_target_minus_7_days
+      t7_table_state: completed_league_matches_strictly_before_local_calendar_t7_date
+      t7_table_position_transform: league_midpoint_minus_raw_position
+      t7_table_gate_matches_both_clubs: 10
+      t7_training_fold: prior_seasons_only
+      t7_recency_weighting: false
+      t7_ridge_alpha: 0.3
+      t7_target: attendance_minus_season_avg_so_far
+      t7_v161_control_mean_abs_prediction_diff: 0.0000000000135354
+      t7_v161_control_max_abs_prediction_diff: 0.0000000000691216
+      t7_v17_raw_mean_abs_prediction_diff: 0.00000000000997769
+      t7_v17_final_mean_abs_prediction_diff: 0.00000000000987069
+      t7_shadow_activation_allowed: true
     notes: >-
-      The original v1.7 benchmark and design evidence survive. The T-30 as-of
-      feature state, season-block walk-forward protocol, frequency gate and
-      recency weighting are now independently controlled by near-exact v1.6.1
-      reproduction, and the v1.7 online correction is recovered exactly. The
-      remaining runtime gap is isolated to the raw residual Ridge target/training
-      specification. Do not use a reconstructed v1.7 for new fixtures until its
-      preserved raw OOS predictions reproduce to numerical tolerance.
+      The original v1.7 benchmark and design evidence survive. T-7 executable
+      semantics are now reproduced to floating-point tolerance on all 68 OOS
+      predictions and may be wired as a shadow historical forecaster. T-30
+      feature/control/correction layers are recovered, but its raw residual Ridge
+      specification is not yet exact. Do not promote the full two-horizon v1.7
+      runtime until T-30 also reproduces to numerical tolerance.
 
   - id: catboost-v01
     role: rejected_challenger
@@ -179,7 +191,7 @@ interval_calibrators:
   - id: v17-split-conformal-80-v1
     role: frozen_champion_calibration_candidate
     implementation: absolute_residual_split_conformal
-    status: benchmarked_not_active
+    status: t7_runtime_eligible_t30_runtime_blocked
     point_model: lech-v17-horizon-specific
     calibration_seasons:
       - 2022/2023
@@ -193,15 +205,17 @@ interval_calibrators:
       holdout_coverage_pct: 82.35
       holdout_mean_width: 16272.79
       holdout_interval_score_80: 20616.48
+      runtime_status: blocked_by_missing_exact_t30_point_inference
     T-7:
       radius: 8336.593429081528
       holdout_coverage_pct: 91.18
       holdout_mean_width: 16673.19
       holdout_interval_score_80: 17879.64
+      runtime_status: eligible_for_shadow_with_recovered_t7_point_model
     notes: >-
-      Calibration is correctly tied to original/recovered v1.7 OOS predictions
-      and is valid benchmark evidence. It remains inactive until executable v1.7
-      inference is reconstructed and runtime lineage can prove the same model.
+      Calibration is tied to original v1.7 OOS predictions. T-7 point inference
+      is now exactly recovered, so this interval can be wired in shadow with the
+      same model lineage. T-30 remains blocked until its point inference is exact.
 
 engine:
   id: beyond-demand-engine-v1
@@ -215,10 +229,11 @@ engine:
   interval_calibrator: noop_preserve_stored_interval
   historical_runtime_source: current_stored_v13_reference
   historical_target_champion: lech-v17-horizon-specific
+  next_historical_shadow_adapter: lech-v17-t7-recovered
 
 probabilistic_forecast:
   current_interval_method: stored_legacy_interval_unverified
-  status: v17_calibration_benchmarked_runtime_activation_blocked_by_missing_exact_residual_inference
+  status: t7_calibration_runtime_eligible_t30_blocked
   target: calibrated_80pct_interval_with_p50
   terminology_note: >-
     P10/P90 database columns may hold calibrated 80% conformal interval bounds;
