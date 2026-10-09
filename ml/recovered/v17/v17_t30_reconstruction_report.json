@@ -1,0 +1,41 @@
+{
+  "reconstruction_version": "v17-t30-forensic-v1",
+  "as_of": "2026-10-09",
+  "status": "raw_residual_spec_not_exact",
+  "protocol": {
+    "horizon_days": 30,
+    "training_fold": "prior_seasons_only",
+    "target_features": "as_of_target_kickoff_minus_30_days",
+    "opponent_frequency_gate": 3,
+    "recency_half_life_years": 3.0,
+    "recency_reference": "latest_training_match_weight_1",
+    "ridge_alpha": 0.3,
+    "candidate_target": "attendance_minus_t30_season_avg_so_far",
+    "online_correction": "mean(previous raw residuals actual-pred) * n/(n+3)",
+    "capacity_cap": 43269
+  },
+  "v161_control": {
+    "mean_absolute_prediction_difference": 0.986618,
+    "max_absolute_prediction_difference": 6.104177,
+    "interpretation": "The T-30 as-of feature builder, season-block fold, frequency gate and recency weighting are recovered to near numerical tolerance."
+  },
+  "v17_online_correction_control": {
+    "mean_absolute_prediction_difference": 0.000000000001284,
+    "max_absolute_prediction_difference": 0.000000000007276,
+    "interpretation": "The online same-season correction formula is recovered exactly when applied to the preserved original raw v1.7 predictions."
+  },
+  "v17_raw_candidate_vs_original": {
+    "mean_absolute_prediction_difference": 652.198690,
+    "max_absolute_prediction_difference": 4466.345892,
+    "candidate_raw_mae": 5221.644,
+    "original_raw_mae": 5147.019
+  },
+  "v17_final_candidate_vs_original": {
+    "mean_absolute_prediction_difference": 631.864623,
+    "max_absolute_prediction_difference": 4119.166904,
+    "candidate_final_mae": 4936.785,
+    "original_final_mae": 4723.819
+  },
+  "conclusion": "The remaining reconstruction gap is isolated to the raw v1.7 residual Ridge specification. Do not promote the reconstructed runtime until preserved raw OOS predictions are reproduced to numerical tolerance.",
+  "promotion_allowed": false
+}
