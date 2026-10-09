@@ -1,0 +1,40 @@
+{
+  "version": "Lech League-wide Feature Factory Research v1.8",
+  "baseline": {
+    "T30_v17_mae": 4723.8,
+    "T7_v17_mae": 4151.1
+  },
+  "experiments": {
+    "league_elo": {
+      "decision": "REJECT",
+      "best_t30_overall_mae": 5087.5,
+      "best_t7_overall_mae": 4364.6,
+      "reason": "League-wide sporting strength did not improve the Lech-specific v1.7 baseline."
+    },
+    "prior_season_opponent_home_attendance": {
+      "decision": "RESEARCH_ONLY_NOT_PROMOTED",
+      "candidate": "T30_pop_ratio_missing_a0.3",
+      "t30_overall_mae": 4568.2,
+      "delta_vs_v17": -155.6,
+      "paired_bootstrap_ci95": [-332.9, -2.7],
+      "prob_candidate_better": 0.978,
+      "development_mae": 4578.5,
+      "v17_development_mae": 4571.3,
+      "reason": [
+        "Overall and later-season results improve, but development is marginally worse.",
+        "Most of the gain is concentrated in 2025/26.",
+        "Fresh 2026/27 two-match sanity check is mixed.",
+        "Do not replace the frozen baseline until more genuinely future matches confirm it."
+      ]
+    },
+    "t7_population_signal": {
+      "decision": "REJECT",
+      "reason": "Only ~21 MAE overall improvement and bootstrap interval crosses zero."
+    },
+    "t7_model_blend_or_stage_switch": {
+      "decision": "REJECT",
+      "reason": "Best stage switch improved overall MAE by only ~6; not worth production complexity."
+    }
+  },
+  "conclusion": "Historical/context feature engineering is now near diminishing returns. Freeze v1.7 and shift primary effort to kickoff-anchored live ticket inventory trajectories."
+}
