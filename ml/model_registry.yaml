@@ -1,4 +1,4 @@
-registry_version: 1
+registry_version: 2
 updated_at: 2026-10-09
 
 historical_models:
@@ -36,20 +36,45 @@ historical_models:
 live_corrections:
   - id: live-correction-noop-v1
     role: champion_safe_default
-    status: active_for_engine_scaffold
+    implementation: deterministic_zero_adjustment
+    status: active_shadow
     adjustment: 0
     notes: >-
       Records live features in shadow mode but cannot change the historical
-      forecast. Non-zero correction requires benchmark promotion.
+      forecast. This is the only active Demand Engine v1 correction.
+
+  - id: ridge-residual-v1
+    role: challenger
+    implementation: sklearn_ridge
+    status: awaiting_minimum_sample
+    minimum_independent_matches: 20
+    split_protocol: group_by_ticket_event_id
+
+  - id: gradient-boosting-residual-v1
+    role: challenger
+    implementation: sklearn_gradient_boosting
+    status: awaiting_minimum_sample
+    minimum_independent_matches: 20
+    split_protocol: group_by_ticket_event_id
 
 engine:
   id: beyond-demand-engine-v1
-  status: scaffolded
+  active_model_version: beyond-demand-engine-v1-shadow
+  status: shadow_active
   storage_contract: forecast_observations
+  sampling_schedule: '10 */6 * * *'
+  production_dashboard_visibility: excluded_by_default
+  live_feature_version: live-features-v1
+  live_correction: live-correction-noop-v1
+
+probabilistic_forecast:
+  current_interval_method: stored_legacy_interval_unverified
+  status: requires_calibration
+  target: calibrated_p10_p50_p90
 
 promotion_policy:
   automatic_promotion: false
-  required_metrics:
+  historical_candidate_requirements:
     - MAE
     - MAPE
     - WAPE
@@ -60,6 +85,23 @@ promotion_policy:
     - pinball_p50
     - pinball_p90
     - p10_p90_coverage
+  live_correction_requirements:
+    minimum_independent_matches: 20
+    split_protocol: group_by_ticket_event_id
+    compare_against: live-correction-noop-v1
+    required_metrics:
+      - MAE
+      - MAPE
+      - WAPE
+      - Bias
+      - within_5_pct
+      - within_10_pct
+      - live_uplift_absolute_error
+      - live_uplift_ape_pp
+    constraints:
+      - no_material_segment_regression
+      - no_material_bias_deterioration
+      - no_random_snapshot_split
   required_horizons:
     - T-30
     - T-14
