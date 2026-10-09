@@ -1,0 +1,74 @@
+{
+  "benchmark_version": "historical-v17-strict-v1",
+  "as_of": "2026-10-09",
+  "source": "preserved original v1.7 OOS predictions",
+  "protocol": "strict horizon-specific OOS; development 2022/23-2023/24; untouched holdout 2024/25-2025/26",
+  "T-30": {
+    "development": {
+      "n": 34,
+      "mae": 4571.28,
+      "mape_pct": 22.38,
+      "wape_pct": 20.05,
+      "bias": -163.96,
+      "within_5_pct": 26.47,
+      "within_10_pct": 35.29,
+      "within_20_pct": 64.71
+    },
+    "holdout": {
+      "n": 34,
+      "mae": 4876.35,
+      "mape_pct": 19.29,
+      "wape_pct": 16.25,
+      "bias": 1151.82,
+      "within_5_pct": 20.59,
+      "within_10_pct": 41.18,
+      "within_20_pct": 64.71
+    },
+    "all": {
+      "n": 68,
+      "mae": 4723.82,
+      "mape_pct": 20.84,
+      "wape_pct": 17.89,
+      "bias": 493.93,
+      "within_5_pct": 23.53,
+      "within_10_pct": 38.24,
+      "within_20_pct": 64.71
+    }
+  },
+  "T-7": {
+    "development": {
+      "n": 34,
+      "mae": 4507.29,
+      "mape_pct": 21.82,
+      "wape_pct": 19.77,
+      "bias": -1206.10,
+      "within_5_pct": 32.35,
+      "within_10_pct": 38.24,
+      "within_20_pct": 52.94
+    },
+    "holdout": {
+      "n": 34,
+      "mae": 3794.87,
+      "mape_pct": 14.08,
+      "wape_pct": 12.65,
+      "bias": -368.60,
+      "within_5_pct": 23.53,
+      "within_10_pct": 44.12,
+      "within_20_pct": 73.53
+    },
+    "all": {
+      "n": 68,
+      "mae": 4151.08,
+      "mape_pct": 17.95,
+      "wape_pct": 15.72,
+      "bias": -787.35,
+      "within_5_pct": 27.94,
+      "within_10_pct": 41.18,
+      "within_20_pct": 63.24
+    }
+  },
+  "notes": [
+    "These metrics are computed from preserved OOS predictions, not from a reconstructed runtime model.",
+    "v1.8 popularity research does not preserve per-match challenger predictions in the surviving package, so full MAPE/WAPE/threshold metrics for that challenger cannot be reconstructed from the available v1.8 summary alone."
+  ]
+}
