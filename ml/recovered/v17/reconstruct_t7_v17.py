@@ -4,10 +4,13 @@
 Recovered semantics are independently controlled against the preserved v1.6.1
 T-7 OOS predictions before v1.7 is evaluated.
 
-Important recovered detail: attendance-history features use the exact T-7
-forecast timestamp, while sporting/table state is the state at the *calendar
-forecast date* (all completed league matches strictly before that local date).
-The gated position features are centered around league mid-table, not raw ranks.
+Important recovered details:
+- attendance-history features use the exact T-7 forecast timestamp;
+- sporting/table state is the state at the calendar forecast date, i.e. league
+  matches completed strictly before the local T-7 date;
+- gated position features are centered around league mid-table, not raw ranks;
+- the original v1.6.1 joblib is NOT required: the exact sklearn pipeline is
+  reconstructed from the preserved feature contract.
 """
 from __future__ import annotations
 
@@ -15,10 +18,14 @@ import argparse
 import json
 from pathlib import Path
 
-import joblib
 import numpy as np
 import pandas as pd
 from sklearn.base import clone
+from sklearn.compose import ColumnTransformer
+from sklearn.impute import SimpleImputer
+from sklearn.linear_model import Ridge
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import OneHotEncoder, RobustScaler
 
 CAPACITY = 43_269
 HORIZON_DAYS = 7
@@ -43,6 +50,30 @@ CHECKPOINT_COLUMNS = [
 ]
 
 
+def build_template_model() -> Pipeline:
+    return Pipeline([
+        (
+            "pre",
+            ColumnTransformer([
+                (
+                    "cat",
+                    OneHotEncoder(handle_unknown="ignore", sparse_output=False),
+                    ["opponent_group"],
+                ),
+                (
+                    "num",
+                    Pipeline([
+                        ("imp", SimpleImputer(strategy="median")),
+                        ("sc", RobustScaler()),
+                    ]),
+                    NUMERIC_FEATURES,
+                ),
+            ]),
+        ),
+        ("reg", Ridge(alpha=RIDGE_ALPHA)),
+    ])
+
+
 def normalize_local_match_time(values: pd.Series) -> pd.Series:
     return (
         values.astype(str)
@@ -53,8 +84,11 @@ def normalize_local_match_time(values: pd.Series) -> pd.Series:
 
 def evidence_key(frame: pd.DataFrame) -> pd.Series:
     return (
-        frame["season"].astype(str) + "|" + normalize_local_match_time(frame["match_date"])
-        + "|" + frame["opponent_key"].astype(str)
+        frame["season"].astype(str)
+        + "|"
+        + normalize_local_match_time(frame["match_date"])
+        + "|"
+        + frame["opponent_key"].astype(str)
     )
 
 
@@ -84,20 +118,34 @@ def prepare_dataset(dataset_path: Path, checkpoint_path: Path):
     for _, row in df.iterrows():
         state = checkpoint.loc[row["evidence_key"]]
 
+        # Attendance information: exact target kickoff minus seven days.
         cutoff = row["dt"] - pd.Timedelta(days=HORIZON_DAYS)
         hist = df[(df["dt"] < cutoff) & valid_target].sort_values("dt")
         attendance = hist["attendance"].astype(float)
         global_mean = float(attendance.mean()) if len(attendance) else np.nan
         same_season = hist[hist["season"] == row["season"]]
-        season_avg = float(same_season["attendance"].mean()) if len(same_season) else global_mean
+        season_avg = (
+            float(same_season["attendance"].mean())
+            if len(same_season)
+            else global_mean
+        )
         opponent = hist[hist["opponent_key"] == row["opponent_key"]]
-        opponent_mean = float(opponent["attendance"].mean()) if len(opponent) else global_mean
-        opponent_recent = float(opponent.tail(3)["attendance"].mean()) if len(opponent) else opponent_mean
+        opponent_mean = (
+            float(opponent["attendance"].mean()) if len(opponent) else global_mean
+        )
+        opponent_recent = (
+            float(opponent.tail(3)["attendance"].mean())
+            if len(opponent)
+            else opponent_mean
+        )
 
         def rolling(n: int) -> float:
             return float(attendance.tail(n).mean()) if len(attendance) else np.nan
 
         r3, r5, r10 = rolling(3), rolling(5), rolling(10)
+
+        # Sporting state: completed league matches strictly before the local
+        # calendar forecast date. Same-day league matches are not visible yet.
         gate = int(
             float(state["lech_matches_played_at_cutoff"]) >= TABLE_GATE_MATCHES
             and float(state["opponent_matches_played_at_cutoff"]) >= TABLE_GATE_MATCHES
@@ -111,31 +159,53 @@ def prepare_dataset(dataset_path: Path, checkpoint_path: Path):
 
         rows.append({
             "opponent_key": row["opponent_key"],
-            "month": row["month"], "weekday": row["weekday"],
-            "kickoff_minutes": row["kickoff_minutes"], "is_weekend": int(row["weekday"] >= 5),
-            "month_sin": row["month_sin"], "month_cos": row["month_cos"],
-            "doy_sin": row["doy_sin"], "doy_cos": row["doy_cos"],
-            "kickoff_sin": row["kickoff_sin"], "kickoff_cos": row["kickoff_cos"],
-            "is_winter_month": row["is_winter_month"], "is_summer_month": row["is_summer_month"],
-            "target_round_no": row["round_no"], "target_season_progress": row["season_progress"],
+            "month": row["month"],
+            "weekday": row["weekday"],
+            "kickoff_minutes": row["kickoff_minutes"],
+            "is_weekend": int(row["weekday"] >= 5),
+            "month_sin": row["month_sin"],
+            "month_cos": row["month_cos"],
+            "doy_sin": row["doy_sin"],
+            "doy_cos": row["doy_cos"],
+            "kickoff_sin": row["kickoff_sin"],
+            "kickoff_cos": row["kickoff_cos"],
+            "is_winter_month": row["is_winter_month"],
+            "is_summer_month": row["is_summer_month"],
+            "target_round_no": row["round_no"],
+            "target_season_progress": row["season_progress"],
             "target_matches_remaining": row["matches_remaining_after"],
-            "rolling_3": r3, "rolling_5": r5, "rolling_10": r10,
+            "rolling_3": r3,
+            "rolling_5": r5,
+            "rolling_10": r10,
             "season_avg_so_far": season_avg,
-            "recent_attendance_trend": r3 / r10 if r10 and np.isfinite(r10) else np.nan,
-            "opponent_draw_ratio": float(np.clip(opponent_mean / global_mean, 0.5, 1.8))
-                if global_mean and np.isfinite(global_mean) else np.nan,
-            "opponent_recent_draw_ratio": float(np.clip(opponent_recent / global_mean, 0.5, 1.8))
-                if global_mean and np.isfinite(global_mean) else np.nan,
-            "history_n": len(hist), "season_home_matches_known": len(same_season),
-            "lech_pos_gate_10": lech_pos, "opp_pos_gate_10": opp_pos,
-            "pos_gap_gate_10": pos_gap, "pos_gate_active_10": gate,
+            "recent_attendance_trend": (
+                r3 / r10 if r10 and np.isfinite(r10) else np.nan
+            ),
+            "opponent_draw_ratio": (
+                float(np.clip(opponent_mean / global_mean, 0.5, 1.8))
+                if global_mean and np.isfinite(global_mean)
+                else np.nan
+            ),
+            "opponent_recent_draw_ratio": (
+                float(np.clip(opponent_recent / global_mean, 0.5, 1.8))
+                if global_mean and np.isfinite(global_mean)
+                else np.nan
+            ),
+            "history_n": len(hist),
+            "season_home_matches_known": len(same_season),
+            "lech_pos_gate_10": lech_pos,
+            "opp_pos_gate_10": opp_pos,
+            "pos_gap_gate_10": pos_gap,
+            "pos_gate_active_10": gate,
         })
 
     return df, pd.DataFrame(rows, index=df.index), valid_target
 
 
 def train_indices(df, valid_target, target_row):
-    return df.index[(df["dt"] < season_start(str(target_row["season"]))) & valid_target]
+    return df.index[
+        (df["dt"] < season_start(str(target_row["season"]))) & valid_target
+    ]
 
 
 def design_matrix(df, features, train_index, target_index):
@@ -144,20 +214,27 @@ def design_matrix(df, features, train_index, target_index):
     columns = ["opponent_key"] + NUMERIC_FEATURES
     train = features.loc[train_index, columns].copy()
     target = features.loc[[target_index], columns].copy()
-    train["opponent_group"] = train["opponent_key"].where(train["opponent_key"].isin(kept), "other")
-    target["opponent_group"] = target["opponent_key"].where(target["opponent_key"].isin(kept), "other")
+    train["opponent_group"] = train["opponent_key"].where(
+        train["opponent_key"].isin(kept), "other"
+    )
+    target["opponent_group"] = target["opponent_key"].where(
+        target["opponent_key"].isin(kept), "other"
+    )
     return train, target
 
 
-def reconstruct(*, df, features, valid_target, template_model, evidence, residual):
+def reconstruct(*, df, features, valid_target, evidence, residual):
     key_to_index = {key: int(i) for i, key in enumerate(df["evidence_key"])}
     predictions = []
+    template_model = build_template_model()
+
     for row in evidence.itertuples(index=False):
         target_index = key_to_index[row.evidence_key]
         train_index = train_indices(df, valid_target, df.loc[target_index])
-        train_x, target_x = design_matrix(df, features, train_index, target_index)
+        train_x, target_x = design_matrix(
+            df, features, train_index, target_index
+        )
         model = clone(template_model)
-        model.named_steps["reg"].set_params(alpha=RIDGE_ALPHA)
         y = df.loc[train_index, "attendance"].astype(float)
         if residual:
             baseline = features.loc[train_index, "season_avg_so_far"].astype(float)
@@ -166,11 +243,13 @@ def reconstruct(*, df, features, valid_target, template_model, evidence, residua
         else:
             usable = y.notna()
             y_fit = y.loc[usable].to_numpy()
+
         model.fit(train_x.loc[usable], y_fit)
         prediction = float(model.predict(target_x)[0])
         if residual:
             prediction += float(features.loc[target_index, "season_avg_so_far"])
         predictions.append(prediction)
+
     return np.asarray(predictions)
 
 
@@ -187,26 +266,38 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--dataset", required=True, type=Path)
     parser.add_argument("--checkpoint-state", required=True, type=Path)
-    parser.add_argument("--v161-model", required=True, type=Path)
     parser.add_argument("--v161-oos", required=True, type=Path)
     parser.add_argument("--v17-oos", required=True, type=Path)
     parser.add_argument("--output", required=True, type=Path)
     parser.add_argument("--tolerance", type=float, default=1e-6)
     args = parser.parse_args()
 
-    df, features, valid_target = prepare_dataset(args.dataset, args.checkpoint_state)
-    template = joblib.load(args.v161_model)
-    v161 = pd.read_csv(args.v161_oos); v161["evidence_key"] = evidence_key(v161)
-    v17 = pd.read_csv(args.v17_oos); v17["evidence_key"] = evidence_key(v17)
+    df, features, valid_target = prepare_dataset(
+        args.dataset, args.checkpoint_state
+    )
+    v161 = pd.read_csv(args.v161_oos)
+    v161["evidence_key"] = evidence_key(v161)
+    v17 = pd.read_csv(args.v17_oos)
+    v17["evidence_key"] = evidence_key(v17)
 
-    control = reconstruct(df=df, features=features, valid_target=valid_target,
-                          template_model=template, evidence=v161, residual=False)
+    control = reconstruct(
+        df=df,
+        features=features,
+        valid_target=valid_target,
+        evidence=v161,
+        residual=False,
+    )
     control_diff = compare(v161["pred"].astype(float).to_numpy(), control)
     if control_diff["max_absolute_prediction_difference"] > args.tolerance:
         raise RuntimeError(f"v1.6.1 T-7 control failed: {control_diff}")
 
-    raw = reconstruct(df=df, features=features, valid_target=valid_target,
-                      template_model=template, evidence=v17, residual=True)
+    raw = reconstruct(
+        df=df,
+        features=features,
+        valid_target=valid_target,
+        evidence=v17,
+        residual=True,
+    )
     final = np.clip(raw, 0.0, float(CAPACITY))
     raw_diff = compare(v17["pred"].astype(float).to_numpy(), raw)
     final_diff = compare(v17["pred_final"].astype(float).to_numpy(), final)
@@ -220,13 +311,17 @@ def main():
         "reconstruction_version": "v17-t7-exact-v2",
         "status": "runtime_reconstructed_exactly",
         "protocol": {
-            "horizon_days": 7,
+            "horizon_days": HORIZON_DAYS,
             "attendance_state": "exact_timestamp_target_minus_7_days",
-            "table_state": "completed_league_matches_strictly_before_local_calendar_T7_date",
-            "table_position_transform": "((league_team_count + 1) / 2) - raw_position",
-            "table_gate_matches_both_clubs": 10,
+            "table_state": (
+                "completed_league_matches_strictly_before_local_calendar_T7_date"
+            ),
+            "table_position_transform": (
+                "((league_team_count + 1) / 2) - raw_position"
+            ),
+            "table_gate_matches_both_clubs": TABLE_GATE_MATCHES,
             "training_fold": "prior_seasons_only",
-            "opponent_frequency_gate": 3,
+            "opponent_frequency_gate": OPPONENT_MIN_HISTORY,
             "recency_weighting": False,
             "ridge_alpha": RIDGE_ALPHA,
             "v17_target": "attendance_minus_t7_season_avg_so_far",
