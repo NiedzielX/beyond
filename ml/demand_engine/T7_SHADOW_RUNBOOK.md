@@ -40,17 +40,46 @@ For target kickoff `K`:
 8. Live inventory is a demand proxy, not confirmed sales.
 9. Live correction remains exactly zero until separately promoted.
 
+## Fail-closed persistence preflight
+
+`run_v17_t7_shadow.py` now calls `validate_t7_evidence()` before any model run.
+A persisted shadow forecast is rejected unless all of the following hold:
+
+- event id, home team, away team, competition and optional target kickoff match
+  the live Supabase event;
+- `league_team_keys` is a unique complete league list and contains both teams;
+- every supplied league result belongs to that league and is unique;
+- **no supplied league result is on or after the local T-7 calendar date**;
+- every supplied Lech home-attendance row belongs to the target season, has a
+  positive attendance and occurs strictly before the exact T-7 timestamp;
+- duplicate Lech home-attendance rows are rejected;
+- `expected_visible_league_results` equals the independently verified number of
+  league results visible at the checkpoint;
+- `expected_visible_home_attendance_rows` equals the independently verified
+  number of eligible Lech home league attendance rows;
+- an audit block records source URLs for schedule, league results and home
+  attendance plus a timezone-aware `verified_at` timestamp.
+
+Dry runs may omit the independent expected counts/source block to aid debugging,
+but **persistence may not**. The persisted path therefore fails closed on
+incomplete evidence rather than silently treating missing rows as real zero
+history.
+
 ## Evidence JSON
 
-The end-to-end runner expects:
+Structural example:
 
 ```json
 {
   "ticket_event_id": 5,
   "season": "2026/2027",
+  "home_team": "Lech Poznań",
+  "away_team": "Korona Kielce",
+  "competition": "Ekstraklasa",
+  "target_kickoff_at": "2026-10-18T17:30:00+02:00",
   "home_team_key": "lech",
   "opponent_key": "korona",
-  "target_round_no": 0,
+  "target_round_no": 11,
   "total_rounds": 34,
   "league_team_keys": ["..."],
   "completed_results": [
@@ -66,18 +95,27 @@ The end-to-end runner expects:
     {
       "season": "2026/2027",
       "match_date": "2026-09-20T20:15:00+02:00",
-      "opponent_key": "...",
-      "attendance": 0,
+      "opponent_key": "radomiak",
+      "attendance": 19478,
       "capacity_constrained_for_model": false
     }
   ],
-  "stadium_capacity": 43269
+  "expected_visible_league_results": 0,
+  "expected_visible_home_attendance_rows": 0,
+  "stadium_capacity": 43269,
+  "sources": {
+    "schedule": ["https://..."],
+    "league_results": ["https://..."],
+    "home_attendance": ["https://..."],
+    "verified_at": "2026-10-11T17:31:00+02:00"
+  }
 }
 ```
 
-Values above are structural examples only. Do not copy example opponent/result/
-attendance values into a real run. Every real evidence row must be verified from
-a point-in-time source.
+The zero counts and score/attendance values above are structural placeholders,
+not values for a real run. Do not copy them into production evidence. Every real
+evidence row and every expected count must be independently verified at the
+checkpoint.
 
 ## Run
 
@@ -123,9 +161,19 @@ Current planned first real shadow target:
 
 - `ticket_event_id = 5`
 - Lech Poznań vs Korona Kielce
+- competition: Ekstraklasa
+- round: 11
 - kickoff: 2026-10-18 17:30 Europe/Warsaw
 - canonical T-7: 2026-10-11 17:30 Europe/Warsaw
 
-The run should occur only after point-in-time evidence is verified. If the
-complete league results or complete Lech home league attendance history cannot
-be verified, do not persist the forecast.
+Operational plan:
+
+1. **2026-10-11 10:00 Europe/Warsaw** — evidence preflight task gathers and
+   verifies all results/attendance/source counts after the 10 October fixtures,
+   commits the auditable event evidence and performs dry-run only.
+2. **2026-10-11 17:35 Europe/Warsaw** — canonical T-7 task re-verifies evidence,
+   runs the exact model and persists the shadow observation only if all guards
+   pass.
+
+If the complete league results or complete Lech home league attendance history
+cannot be verified, do not persist the forecast.
