@@ -1,5 +1,6 @@
 from .contracts import EngineForecast, ForecastRequest, LiveCorrection, LiveFeatures, QuantileForecast
 from .engine import DemandEngine, NoOpLiveCorrector
+from .historical import SupabaseStoredHistoricalForecaster
 from .live_features import RowLiveFeatureProvider
 from .storage import to_forecast_observation
 
@@ -12,5 +13,6 @@ __all__ = [
     "NoOpLiveCorrector",
     "QuantileForecast",
     "RowLiveFeatureProvider",
+    "SupabaseStoredHistoricalForecaster",
     "to_forecast_observation",
 ]
