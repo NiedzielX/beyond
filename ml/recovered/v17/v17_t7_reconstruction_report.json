@@ -1,0 +1,45 @@
+{
+  "reconstruction_version": "v17-t7-exact-v2",
+  "as_of": "2026-10-09",
+  "status": "runtime_reconstructed_exactly",
+  "protocol": {
+    "horizon_days": 7,
+    "attendance_state": "exact_timestamp_target_minus_7_days",
+    "table_state": "completed_league_matches_strictly_before_local_calendar_T7_date",
+    "table_position_transform": "((league_team_count + 1) / 2) - raw_position",
+    "table_gate_matches_both_clubs": 10,
+    "training_fold": "prior_seasons_only",
+    "opponent_frequency_gate": 3,
+    "recency_weighting": false,
+    "ridge_alpha": 0.3,
+    "v17_target": "attendance_minus_t7_season_avg_so_far",
+    "capacity_cap": 43269
+  },
+  "feature_matrix_control": {
+    "numeric_feature_count": 28,
+    "full_fit_imputer_medians_match": true,
+    "full_fit_robust_scaler_centers_match": true,
+    "full_fit_robust_scaler_scales_match": true
+  },
+  "v161_control": {
+    "mean_absolute_prediction_difference": 1.3535421149914756e-11,
+    "max_absolute_prediction_difference": 6.912159733474255e-11
+  },
+  "v17_raw_vs_original": {
+    "mean_absolute_prediction_difference": 9.977691875332419e-12,
+    "max_absolute_prediction_difference": 2.546585164964199e-11
+  },
+  "v17_final_vs_original": {
+    "mean_absolute_prediction_difference": 9.870692498653251e-12,
+    "max_absolute_prediction_difference": 2.546585164964199e-11
+  },
+  "reconstructed_final_mae": 4151.081861936878,
+  "original_reported_final_mae": 4151.1,
+  "promotion_allowed_for_t7_shadow": true,
+  "production_promotion_allowed": false,
+  "notes": [
+    "This recovers the T-7 historical point-model inference semantics to floating-point tolerance on all 68 preserved OOS predictions.",
+    "The T-30 raw residual Ridge specification remains unresolved, so the full two-horizon v1.7 runtime is not yet reconstructed.",
+    "Any live use should begin in shadow mode with explicit T-7 lineage."
+  ]
+}
