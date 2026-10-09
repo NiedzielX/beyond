@@ -1,0 +1,53 @@
+{
+  "benchmark_version": "calibration-v1",
+  "status": "evidence_only_not_active",
+  "as_of": "2026-10-09",
+  "source_artifact": "t30_best_direct_ridge_predictions.csv",
+  "source_file_id": "file_000000007bcc81f4a56ad3f389b18d46",
+  "model_scope": "Lech Poznan T-30 best direct Ridge artifact",
+  "warning": "This result is not calibrated for the current v1.3/v0.3 incumbent and must not be promoted into production intervals.",
+  "method": "split_conformal_absolute_residual_80",
+  "calibration_seasons": [
+    "2022/2023",
+    "2023/2024"
+  ],
+  "holdout_seasons": [
+    "2024/2025",
+    "2025/2026"
+  ],
+  "calibration_rows": 34,
+  "holdout_rows": 34,
+  "target_coverage_pct": 80.0,
+  "conformal_radius": 9823.836858085351,
+  "holdout": {
+    "coverage_pct": 91.176,
+    "mean_width": 19647.673716170702,
+    "median_width": 19647.673716170702,
+    "pinball_p10": 1178.5,
+    "pinball_p50": 2655.71,
+    "pinball_p90": 1021.68,
+    "interval_score_80": 22001.78
+  },
+  "by_season": {
+    "2024/2025": {
+      "coverage_pct": 88.235,
+      "interval_score_80": 21254.13
+    },
+    "2025/2026": {
+      "coverage_pct": 94.118,
+      "interval_score_80": 22749.42
+    }
+  },
+  "legacy_fixed_width_comparison": {
+    "description": "Approximate current legacy interval: P50 +/- 11756, with upper bound capped at 43269.",
+    "coverage_pct": 94.118,
+    "mean_width": 22931.49,
+    "interval_score_80": 23975.56
+  },
+  "interpretation": {
+    "coverage": "The conformal interval over-covers the 80% target on this small holdout, so it is conservative rather than under-calibrated.",
+    "sharpness": "The conformal interval is materially narrower than the legacy fixed-width heuristic.",
+    "score": "The conformal interval has a lower interval score than the legacy heuristic on the untouched holdout.",
+    "promotion": "No promotion: the evidence belongs to the T-30 Ridge artifact, not to the active v1.3/v0.3 historical model."
+  }
+}
