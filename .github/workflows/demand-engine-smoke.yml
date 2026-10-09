@@ -35,7 +35,9 @@ jobs:
           pip install numpy==2.3.5 pandas==2.2.3 scikit-learn==1.8.0 joblib
 
       - name: Run Demand Engine contract tests
-        run: python -m unittest ml.demand_engine.test_engine -v
+        run: |
+          python -m unittest ml.demand_engine.test_engine -v
+          python -m unittest ml.demand_engine.test_v17_t7 -v
 
       - name: Verify recovered v1.7 strict benchmark evidence
         run: python ml/recovered/v17/verify_recovered_bundle.py
@@ -47,6 +49,7 @@ jobs:
         run: |
           python -m py_compile ml/demand_engine/benchmark_residual_v1.py
           python -m py_compile ml/demand_engine/benchmark_calibration_v1.py
+          python -m py_compile ml/demand_engine/v17_t7.py
           python -m py_compile ml/recovered/v17/reconstruct_t30_v17.py
           python -m py_compile ml/recovered/v17/reconstruct_t7_v17.py
           python -m py_compile ml/recovered/v17/t7_bundle.py
