@@ -1,0 +1,34 @@
+{
+  "reconstruction_version": "v17-t7-exact-v2",
+  "status": "runtime_reconstructed_exactly",
+  "protocol": {
+    "horizon_days": 7,
+    "attendance_state": "exact_timestamp_target_minus_7_days",
+    "table_state": "completed_league_matches_strictly_before_local_calendar_T7_date",
+    "table_position_transform": "((league_team_count + 1) / 2) - raw_position",
+    "table_gate_matches_both_clubs": 10,
+    "training_fold": "prior_seasons_only",
+    "opponent_frequency_gate": 3,
+    "recency_weighting": false,
+    "ridge_alpha": 0.3,
+    "v17_target": "attendance_minus_t7_season_avg_so_far",
+    "capacity_cap": 43269
+  },
+  "v161_control": {
+    "mean_absolute_prediction_difference": 1.6584903385271044e-12,
+    "max_absolute_prediction_difference": 7.275957614183426e-12,
+    "mean_prediction_difference": -2.1399875335833605e-13
+  },
+  "v17_raw_vs_original": {
+    "mean_absolute_prediction_difference": 1.3909918968291843e-12,
+    "max_absolute_prediction_difference": 7.275957614183426e-12,
+    "mean_prediction_difference": -7.489956367541762e-13
+  },
+  "v17_final_vs_original": {
+    "mean_absolute_prediction_difference": 1.3909918968291843e-12,
+    "max_absolute_prediction_difference": 7.275957614183426e-12,
+    "mean_prediction_difference": -7.489956367541762e-13
+  },
+  "reconstructed_final_mae": 4151.0818619368765,
+  "promotion_allowed_for_t7_shadow": true
+}
