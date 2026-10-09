@@ -1,0 +1,40 @@
+{
+  "reconstruction_version": "v17-t7-exact-v2",
+  "status": "runtime_reconstructed_exactly",
+  "as_of": "2026-10-09",
+  "protocol": {
+    "horizon_days": 7,
+    "attendance_state": "exact_timestamp_target_minus_7_days",
+    "table_state": "completed_league_matches_strictly_before_local_calendar_T7_date",
+    "table_position_transform": "((league_team_count + 1) / 2) - raw_position",
+    "table_gate_matches_both_clubs": 10,
+    "training_fold": "prior_seasons_only",
+    "opponent_frequency_gate": 3,
+    "recency_weighting": false,
+    "ridge_alpha": 0.3,
+    "v17_target": "attendance_minus_t7_season_avg_so_far",
+    "capacity_cap": 43269
+  },
+  "v161_control": {
+    "mean_absolute_prediction_difference": 1.3535421149914756e-11,
+    "max_absolute_prediction_difference": 6.912159733474255e-11,
+    "mean_prediction_difference": -1.6049906501875205e-13
+  },
+  "v17_raw_vs_original": {
+    "mean_absolute_prediction_difference": 9.977691875332419e-12,
+    "max_absolute_prediction_difference": 2.546585164964199e-11,
+    "mean_prediction_difference": 2.6749844169792007e-14
+  },
+  "v17_final_vs_original": {
+    "mean_absolute_prediction_difference": 9.870692498653251e-12,
+    "max_absolute_prediction_difference": 2.546585164964199e-11,
+    "mean_prediction_difference": 1.3374922084896004e-13
+  },
+  "reconstructed_final_mae": 4151.081861936878,
+  "promotion_allowed_for_t7_shadow": true,
+  "notes": [
+    "The reconstruction no longer depends on the original v1.6.1 joblib; the sklearn pipeline is rebuilt from the preserved feature contract.",
+    "Exact verification still requires the preserved enriched history, exact T-7 checkpoint-state CSV and preserved v1.6.1/v1.7 OOS prediction files.",
+    "This closes executable recovery of the T-7 historical champion horizon; live activation remains a separate integration decision."
+  ]
+}
