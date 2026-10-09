@@ -1,0 +1,68 @@
+registry_version: 1
+updated_at: 2026-10-09
+
+historical_models:
+  - id: lech-v13-early-seasonality
+    role: incumbent_reference
+    implementation: sklearn_gradient_boosting
+    status: reproducible
+    scope: lech
+    notes: >-
+      Historical incumbent used by current live v0.3 records. Reproduced in the
+      benchmark harness; not considered a long-term moat.
+
+  - id: lech-v17-horizon-specific
+    role: shadow_candidate
+    implementation: ridge_horizon_specific
+    status: source_recovery_required
+    scope: lech
+    horizons:
+      - T-30
+      - T-7
+    notes: >-
+      Later historical R&D artifacts exist for T30/T7, but the exact final
+      selection/production source has not yet been recovered. Do not reimplement
+      by inference and do not promote until reproducible.
+
+  - id: catboost-v01
+    role: rejected_challenger
+    implementation: catboost
+    status: benchmarked_not_promoted
+    scope: lech
+    notes: >-
+      Improved the share within ±10% on the untouched holdout but worsened
+      holdout MAE/WAPE and materially increased negative bias versus GB v1.3.
+
+live_corrections:
+  - id: live-correction-noop-v1
+    role: champion_safe_default
+    status: active_for_engine_scaffold
+    adjustment: 0
+    notes: >-
+      Records live features in shadow mode but cannot change the historical
+      forecast. Non-zero correction requires benchmark promotion.
+
+engine:
+  id: beyond-demand-engine-v1
+  status: scaffolded
+  storage_contract: forecast_observations
+
+promotion_policy:
+  automatic_promotion: false
+  required_metrics:
+    - MAE
+    - MAPE
+    - WAPE
+    - Bias
+    - within_5_pct
+    - within_10_pct
+    - pinball_p10
+    - pinball_p50
+    - pinball_p90
+    - p10_p90_coverage
+  required_horizons:
+    - T-30
+    - T-14
+    - T-7
+    - T-3
+    - T-24h
