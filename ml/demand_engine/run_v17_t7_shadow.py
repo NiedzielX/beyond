@@ -4,10 +4,11 @@
 Input is a point-in-time JSON evidence file containing completed league results
 and Lech home attendance known by the canonical T-7 checkpoint. The runner:
 1. resolves the event and latest inventory snapshot from Supabase;
-2. reconstructs strict T-7 sporting state without leakage;
-3. runs exact recovered v1.7 T-7 + its matching conformal interval;
-4. attaches live-features-v1 with a no-op live correction;
-5. persists a separate shadow observation through the protected RPC.
+2. preflights evidence completeness and source auditability;
+3. reconstructs strict T-7 sporting state without leakage;
+4. runs exact recovered v1.7 T-7 + its matching conformal interval;
+5. attaches live-features-v1 with a no-op live correction;
+6. persists a separate shadow observation through the protected RPC.
 
 It never replaces or updates production v0.3 rows.
 """
@@ -23,6 +24,7 @@ from .contracts import ForecastRequest
 from .engine import DemandEngine
 from .storage import SupabaseForecastStore, engine_forecast_to_shadow_observation
 from .supabase import SupabaseEventContextProvider, SupabaseLiveFeatureProvider
+from .t7_preflight import validate_t7_evidence
 from .t7_state import LeagueResult, build_t7_static_features
 from .v17_t7 import RecoveredV17T7Forecaster
 
@@ -96,6 +98,16 @@ def run(
             f"Evidence is for event {expected_event}, requested event is {ticket_event_id}"
         )
 
+    preflight = validate_t7_evidence(
+        evidence=evidence,
+        ticket_event_id=ticket_event_id,
+        home_team=context.home_team,
+        away_team=context.away_team,
+        competition=context.competition,
+        kickoff_at=context.kickoff_at,
+        persist=not dry_run,
+    )
+
     static_features = build_t7_static_features(
         season=str(evidence["season"]),
         target_kickoff_at=context.kickoff_at,
@@ -133,12 +145,14 @@ def run(
     if dry_run:
         return {
             "dry_run": True,
+            "preflight": preflight,
             "observation": observation,
         }
 
     persisted = SupabaseForecastStore().insert(forecast)
     return {
         "dry_run": False,
+        "preflight": preflight,
         "persisted": persisted,
         "observation": observation,
     }
