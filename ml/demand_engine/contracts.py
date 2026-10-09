@@ -45,6 +45,8 @@ class QuantileForecast:
     model_name: str
     model_version: str
     feature_set_version: str
+    interval_method: str = "unknown"
+    calibration_version: str | None = None
 
     def validate(self) -> None:
         if not self.p10 <= self.p50 <= self.p90:
