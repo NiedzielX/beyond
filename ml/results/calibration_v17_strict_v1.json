@@ -1,0 +1,46 @@
+{
+  "benchmark_version": "v17-conformal-80-v1",
+  "status": "benchmark_evidence_not_active",
+  "as_of": "2026-10-09",
+  "point_model": "lech-v17-horizon-specific",
+  "calibration_seasons": [
+    "2022/2023",
+    "2023/2024"
+  ],
+  "holdout_seasons": [
+    "2024/2025",
+    "2025/2026"
+  ],
+  "target_coverage_pct": 80.0,
+  "horizons": {
+    "T-30": {
+      "dev_n": 34,
+      "holdout_n": 34,
+      "radius": 8136.394841982961,
+      "coverage_pct": 82.35294117647058,
+      "mean_width": 16272.789683965924,
+      "median_width": 16272.789683965922,
+      "pinball_p10": 1132.8266583251152,
+      "pinball_p50": 2438.1773311062916,
+      "pinball_p90": 928.8214179447884,
+      "interval_score_80": 20616.480762699037,
+      "holdout_mae": 4876.354662212583,
+      "holdout_bias": 1151.8193374649231
+    },
+    "T-7": {
+      "dev_n": 34,
+      "holdout_n": 34,
+      "radius": 8336.593429081528,
+      "coverage_pct": 91.17647058823529,
+      "mean_width": 16673.18685816306,
+      "median_width": 16673.186858163055,
+      "pinball_p10": 937.8204258968979,
+      "pinball_p50": 1897.4347888772281,
+      "pinball_p90": 850.1436374027262,
+      "interval_score_80": 17879.640632996245,
+      "holdout_mae": 3794.8695777544563,
+      "holdout_bias": -368.6018149730691
+    }
+  },
+  "promotion": "not_active_until_v17_inference_is_reconstructed_and_same-model_runtime_lineage_is_available"
+}
