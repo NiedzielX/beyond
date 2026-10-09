@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import json
 import os
+from typing import Protocol
 from urllib.parse import urlencode
 from urllib.request import Request, urlopen
 from urllib.error import HTTPError
@@ -14,13 +15,42 @@ class HistoricalForecastError(RuntimeError):
     pass
 
 
+class ConditionalHistoricalForecaster(Protocol):
+    @staticmethod
+    def supports(request: ForecastRequest) -> bool: ...
+
+    def forecast(self, request: ForecastRequest) -> QuantileForecast: ...
+
+
+class HistoricalShadowRouter:
+    """Route only eligible requests to a recovered/challenger historical model.
+
+    The fallback remains the current stored incumbent. This makes shadow
+    migration explicit: adding a candidate cannot silently replace forecasts
+    outside the candidate's validated scope.
+    """
+
+    def __init__(
+        self,
+        candidate: ConditionalHistoricalForecaster,
+        fallback,
+    ) -> None:
+        self.candidate = candidate
+        self.fallback = fallback
+
+    def forecast(self, request: ForecastRequest) -> QuantileForecast:
+        if self.candidate.supports(request):
+            return self.candidate.forecast(request)
+        return self.fallback.forecast(request)
+
+
 class SupabaseStoredHistoricalForecaster:
     """Bridge the current live pipeline into Demand Engine v1.
 
     This adapter does not retrain or reinterpret the incumbent model. It reads the
     latest already-persisted historical P10/P50/P90 for the event before the new
-    engine run. It is therefore suitable for shadow migration while the exact
-    v1.7 implementation is being recovered.
+    engine run. It remains the safe fallback while exact recovered or future
+    challengers are introduced only in explicitly validated shadow scopes.
     """
 
     def __init__(
