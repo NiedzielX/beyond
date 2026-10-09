@@ -1,0 +1,108 @@
+{
+  "benchmark_version": "0.2",
+  "as_of": "2026-10-09",
+  "headline_method": "latest_forecast_per_event_and_model_version",
+  "horizon_windows_hours": {
+    "T-30": {"target": 720, "tolerance": 240},
+    "T-14": {"target": 336, "tolerance": 96},
+    "T-7": {"target": 168, "tolerance": 48},
+    "T-3": {"target": 72, "tolerance": 24},
+    "T-24h": {"target": 24, "tolerance": 12}
+  },
+  "models": {
+    "beyond-forecast-v0.1": {
+      "forecast_events": 3,
+      "forecast_observations": 9,
+      "headline": {
+        "n": 3,
+        "status": "evaluated",
+        "mae": 12532.0,
+        "mape_pct": 55.79,
+        "wape_pct": 48.64,
+        "bias": 12532.0,
+        "within_5_pct": 0.0,
+        "within_10_pct": 0.0,
+        "interval_coverage_pct": 33.33,
+        "pinball_p10": 2741.4,
+        "pinball_p50": 6266.0,
+        "pinball_p90": 1750.43,
+        "pinball_mean": 3585.94
+      },
+      "horizons": {
+        "T-30": {"n": 0, "status": "awaiting_outcomes"},
+        "T-14": {
+          "n": 2,
+          "status": "evaluated",
+          "mae": 9605.5,
+          "mape_pct": 36.22,
+          "wape_pct": 33.23,
+          "bias": 9605.5,
+          "within_5_pct": 0.0,
+          "within_10_pct": 0.0,
+          "interval_coverage_pct": 50.0,
+          "pinball_mean": 2395.28
+        },
+        "T-7": {
+          "n": 1,
+          "status": "evaluated",
+          "mae": 13405.0,
+          "mape_pct": 55.39,
+          "wape_pct": 55.39,
+          "bias": 13405.0,
+          "within_5_pct": 0.0,
+          "within_10_pct": 0.0,
+          "interval_coverage_pct": 0.0,
+          "pinball_mean": 3364.47
+        },
+        "T-3": {
+          "n": 4,
+          "status": "evaluated",
+          "mae": 14021.5,
+          "mape_pct": 65.57,
+          "wape_pct": 57.96,
+          "bias": 14021.5,
+          "within_5_pct": 0.0,
+          "within_10_pct": 0.0,
+          "interval_coverage_pct": 25.0,
+          "pinball_mean": 4163.18
+        },
+        "T-24h": {
+          "n": 2,
+          "status": "evaluated",
+          "mae": 12058.5,
+          "mape_pct": 55.83,
+          "wape_pct": 45.42,
+          "bias": 12058.5,
+          "within_5_pct": 0.0,
+          "within_10_pct": 0.0,
+          "interval_coverage_pct": 50.0,
+          "pinball_mean": 3679.42
+        }
+      }
+    },
+    "beyond-forecast-v0.2": {
+      "forecast_events": 2,
+      "forecast_observations": 12,
+      "headline": {"n": 0, "status": "awaiting_outcomes"},
+      "horizons": {
+        "T-30": {"n": 0, "status": "awaiting_outcomes"},
+        "T-14": {"n": 0, "status": "awaiting_outcomes"},
+        "T-7": {"n": 0, "status": "awaiting_outcomes"},
+        "T-3": {"n": 0, "status": "awaiting_outcomes"},
+        "T-24h": {"n": 0, "status": "awaiting_outcomes"}
+      }
+    },
+    "beyond-forecast-v0.3": {
+      "forecast_events": 2,
+      "forecast_observations": 30,
+      "headline": {"n": 0, "status": "awaiting_outcomes"},
+      "horizons": {
+        "T-30": {"n": 0, "status": "awaiting_outcomes"},
+        "T-14": {"n": 0, "status": "awaiting_outcomes"},
+        "T-7": {"n": 0, "status": "awaiting_outcomes"},
+        "T-3": {"n": 0, "status": "awaiting_outcomes"},
+        "T-24h": {"n": 0, "status": "awaiting_outcomes"}
+      }
+    }
+  }
+}
