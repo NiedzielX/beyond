@@ -1,4 +1,4 @@
-registry_version: 2
+registry_version: 3
 updated_at: 2026-10-09
 
 historical_models:
@@ -57,6 +57,48 @@ live_corrections:
     minimum_independent_matches: 20
     split_protocol: group_by_ticket_event_id
 
+interval_calibrators:
+  - id: legacy-fixed-width-unverified
+    role: incumbent_reference
+    status: active_via_stored_forecasts
+    method: fixed_width_heuristic
+    notes: >-
+      Current stored v0.2/v0.3 P10/P90 behave approximately like P50 +/- 11756,
+      with the upper bound capped by stadium capacity. Treat as unverified legacy
+      interval semantics, not a calibrated probability statement.
+
+  - id: split-conformal-80-v1
+    role: candidate_framework
+    implementation: absolute_residual_split_conformal
+    status: code_ready_not_promoted
+    target_coverage_pct: 80
+    notes: >-
+      Engine integration and benchmark harness are implemented. Activation is
+      model-specific and requires calibration errors from the same point model
+      and forecasting protocol.
+
+  - id: t30-ridge-split-conformal-80-v1
+    role: evidence_only
+    implementation: absolute_residual_split_conformal
+    status: benchmarked_not_active
+    point_model: t30_best_direct_ridge_artifact
+    calibration_seasons:
+      - 2022/2023
+      - 2023/2024
+    holdout_seasons:
+      - 2024/2025
+      - 2025/2026
+    calibration_rows: 34
+    holdout_rows: 34
+    radius: 9823.836858085351
+    holdout_coverage_pct: 91.176
+    holdout_mean_width: 19647.67
+    holdout_interval_score_80: 22001.78
+    notes: >-
+      Better sharpness and interval score than the approximate legacy fixed-width
+      heuristic on this T-30 Ridge holdout. It MUST NOT be applied to v1.3/v0.3,
+      because calibration must belong to the same point model/protocol.
+
 engine:
   id: beyond-demand-engine-v1
   active_model_version: beyond-demand-engine-v1-shadow
@@ -66,11 +108,16 @@ engine:
   production_dashboard_visibility: excluded_by_default
   live_feature_version: live-features-v1
   live_correction: live-correction-noop-v1
+  interval_calibrator: noop_preserve_stored_interval
 
 probabilistic_forecast:
   current_interval_method: stored_legacy_interval_unverified
-  status: requires_calibration
-  target: calibrated_p10_p50_p90
+  status: conformal_framework_ready_incumbent_calibration_missing
+  target: calibrated_80pct_interval_with_p50
+  terminology_note: >-
+    P10/P90 database columns may hold calibrated 80% conformal interval bounds;
+    lineage must state the interval method because those bounds are not
+    necessarily independently trained 0.10/0.90 quantile models.
 
 promotion_policy:
   automatic_promotion: false
@@ -85,6 +132,18 @@ promotion_policy:
     - pinball_p50
     - pinball_p90
     - p10_p90_coverage
+  interval_candidate_requirements:
+    calibration_source: same_point_model_and_protocol
+    target_coverage_pct: 80
+    evaluate_on_untouched_holdout: true
+    required_metrics:
+      - empirical_coverage
+      - coverage_gap
+      - mean_interval_width
+      - pinball_p10
+      - pinball_p50
+      - pinball_p90
+      - interval_score_80
   live_correction_requirements:
     minimum_independent_matches: 20
     split_protocol: group_by_ticket_event_id
