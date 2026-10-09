@@ -1,0 +1,99 @@
+{
+  "benchmark_version": "0.3",
+  "as_of": "2026-10-09",
+  "headline_method": "latest_forecast_per_event_and_model_version",
+  "horizon_method": "one_closest_pre_target_forecast_per_event_model_horizon",
+  "no_post_target_fallback": true,
+  "note": "This snapshot corrects v0.2 horizon weighting. Each completed match contributes at most one forecast to each canonical horizon, and forecasts generated after the target horizon are not used.",
+  "models": {
+    "beyond-forecast-v0.1": {
+      "headline": {
+        "n": 3,
+        "mae": 12532.0,
+        "mape_pct": 55.79,
+        "bias": 12532.0,
+        "within_5_pct": 0.0,
+        "within_10_pct": 0.0
+      },
+      "horizons": {
+        "T-30": {
+          "n": 0,
+          "status": "no_eligible_pre_target_forecast"
+        },
+        "T-14": {
+          "n": 2,
+          "independent_matches": 2,
+          "mae": 9605.5,
+          "mape_pct": 36.22,
+          "wape_pct": 33.23,
+          "bias": 9605.5,
+          "within_5_pct": 0.0,
+          "within_10_pct": 0.0,
+          "interval_coverage_pct": 50.0,
+          "pinball_p10": 947.0,
+          "pinball_p50": 4802.75,
+          "pinball_p90": 1436.1,
+          "pinball_mean": 2395.28,
+          "mean_hours_before_target": 0.84
+        },
+        "T-7": {
+          "n": 1,
+          "independent_matches": 1,
+          "mae": 13405.0,
+          "mape_pct": 55.39,
+          "wape_pct": 55.39,
+          "bias": 13405.0,
+          "within_5_pct": 0.0,
+          "within_10_pct": 0.0,
+          "interval_coverage_pct": 0.0,
+          "pinball_p10": 1484.1,
+          "pinball_p50": 6702.5,
+          "pinball_p90": 1906.8,
+          "pinball_mean": 3364.47,
+          "mean_hours_before_target": 2.3
+        },
+        "T-3": {
+          "n": 1,
+          "independent_matches": 1,
+          "mae": 18490.0,
+          "mape_pct": 94.93,
+          "wape_pct": 94.93,
+          "bias": 18490.0,
+          "within_5_pct": 0.0,
+          "within_10_pct": 0.0,
+          "interval_coverage_pct": 0.0,
+          "pinball_p10": 6060.6,
+          "pinball_p50": 9245.0,
+          "pinball_p90": 2379.1,
+          "pinball_mean": 5894.9,
+          "mean_hours_before_target": 0.66
+        },
+        "T-24h": {
+          "n": 2,
+          "independent_matches": 2,
+          "mae": 12058.5,
+          "mape_pct": 55.83,
+          "wape_pct": 45.42,
+          "bias": 12058.5,
+          "within_5_pct": 0.0,
+          "within_10_pct": 0.0,
+          "interval_coverage_pct": 50.0,
+          "pinball_p10": 3336.75,
+          "pinball_p50": 6029.25,
+          "pinball_p90": 1672.25,
+          "pinball_mean": 3679.42,
+          "mean_hours_before_target": 0.65
+        }
+      }
+    },
+    "beyond-forecast-v0.2": {
+      "status": "awaiting_outcomes"
+    },
+    "beyond-forecast-v0.3": {
+      "status": "awaiting_outcomes"
+    },
+    "beyond-demand-engine-v1-shadow": {
+      "status": "awaiting_outcomes"
+    }
+  }
+}
