@@ -6,7 +6,6 @@ reference implementation is a no-op / shadow correction.
 """
 from __future__ import annotations
 
-from dataclasses import replace
 from typing import Protocol
 
 from .contracts import (
