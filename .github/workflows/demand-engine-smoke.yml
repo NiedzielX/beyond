@@ -23,3 +23,8 @@ jobs:
 
       - name: Run Demand Engine contract tests
         run: python -m unittest ml.demand_engine.test_engine -v
+
+      - name: Compile benchmark entry points
+        run: |
+          python -m py_compile ml/demand_engine/benchmark_residual_v1.py
+          python -m py_compile ml/live_benchmark_v02.py
