@@ -4,12 +4,18 @@ on:
   push:
     paths:
       - 'ml/demand_engine/**'
+      - 'ml/recovered/v17/**'
       - 'ml/live_benchmark_v02.py'
+      - 'ml/live_benchmark_v03.py'
+      - 'ml/export_v13_predictions.py'
       - '.github/workflows/demand-engine-smoke.yml'
   pull_request:
     paths:
       - 'ml/demand_engine/**'
+      - 'ml/recovered/v17/**'
       - 'ml/live_benchmark_v02.py'
+      - 'ml/live_benchmark_v03.py'
+      - 'ml/export_v13_predictions.py'
 
 jobs:
   test:
@@ -31,8 +37,13 @@ jobs:
       - name: Run Demand Engine contract tests
         run: python -m unittest ml.demand_engine.test_engine -v
 
+      - name: Verify recovered v1.7 strict benchmark evidence
+        run: python ml/recovered/v17/verify_recovered_bundle.py
+
       - name: Compile benchmark entry points
         run: |
           python -m py_compile ml/demand_engine/benchmark_residual_v1.py
           python -m py_compile ml/demand_engine/benchmark_calibration_v1.py
           python -m py_compile ml/live_benchmark_v02.py
+          python -m py_compile ml/live_benchmark_v03.py
+          python -m py_compile ml/export_v13_predictions.py
