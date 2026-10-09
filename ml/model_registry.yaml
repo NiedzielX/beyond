@@ -1,28 +1,60 @@
-registry_version: 3
+registry_version: 4
 updated_at: 2026-10-09
 
 historical_models:
   - id: lech-v13-early-seasonality
-    role: incumbent_reference
+    role: current_live_incumbent_reference
     implementation: sklearn_gradient_boosting
     status: reproducible
     scope: lech
     notes: >-
-      Historical incumbent used by current live v0.3 records. Reproduced in the
-      benchmark harness; not considered a long-term moat.
+      Historical model referenced by current stored live v0.3 records. Reproduced
+      in the generic pre-match benchmark harness, but it is not the final frozen
+      champion of the later horizon-specific strict tournament.
 
   - id: lech-v17-horizon-specific
-    role: shadow_candidate
+    role: frozen_historical_champion
     implementation: ridge_horizon_specific
-    status: source_recovery_required
+    status: benchmark_recovered_inference_source_missing
     scope: lech
     horizons:
       - T-30
       - T-7
+    strict_oos:
+      rows_per_horizon: 68
+      development_seasons:
+        - 2022/2023
+        - 2023/2024
+      holdout_seasons:
+        - 2024/2025
+        - 2025/2026
+      T-30:
+        all_mae: 4723.8
+        holdout_mae: 4876.4
+        all_rmse: 6163.7
+        all_bias: 493.9
+      T-7:
+        all_mae: 4151.1
+        holdout_mae: 3794.9
+        all_rmse: 5385.4
+        all_bias: -787.4
+    evidence_path: ml/recovered/v17
+    original_archive_name: lech_early_model_v17.zip
+    recovered_bundle_name: beyond_historical_v17_recovered.zip
+    leakage_policy:
+      forecast_cutoff: target_kickoff_minus_horizon
+      training_outcomes: completed_before_forecast_cutoff_only
+      sporting_features: reconstructed_before_cutoff_only
+      future_weather: excluded
+      closing_odds: excluded
+      future_ticket_trajectory: excluded
+      post_checkpoint_residuals: excluded
     notes: >-
-      Later historical R&D artifacts exist for T30/T7, but the exact final
-      selection/production source has not yet been recovered. Do not reimplement
-      by inference and do not promote until reproducible.
+      The strict Beyond Historical Model Tournament v1.3 confirms v1.7 remains
+      champion. The recovered bundle contains exact OOS predictions, metrics and
+      decision evidence. It does NOT contain the missing original executable
+      training/inference source, so v1.7 can be audited and replayed historically
+      but must not be presented as runtime-reproducible for new fixtures yet.
 
   - id: catboost-v01
     role: rejected_challenger
@@ -30,8 +62,24 @@ historical_models:
     status: benchmarked_not_promoted
     scope: lech
     notes: >-
-      Improved the share within ±10% on the untouched holdout but worsened
-      holdout MAE/WAPE and materially increased negative bias versus GB v1.3.
+      In the generic v1.3-aligned benchmark it improved the share within ±10%
+      but worsened holdout MAE/WAPE and materially increased negative bias.
+      The later strict tournament additionally found more complex nonlinear
+      historical models materially below the frozen v1.7 champion.
+
+historical_research_challengers:
+  - id: v17-t30-blend-ridge-wide-hist-a1000
+    horizon: T-30
+    status: research_only_not_promoted
+    selection: 87.5pct_v17_plus_12.5pct_ridge
+    holdout_improvement_pct: 0.62
+    decision_reason: holdout_gain_too_small_and_paired_ci_crosses_zero
+
+  - id: v17-t7-early-stage-residual-correction
+    horizon: T-7
+    status: research_only_not_promoted
+    holdout_improvement_pct: 0.19
+    decision_reason: improvement_below_1pct_and_compatible_with_noise
 
 live_corrections:
   - id: live-correction-noop-v1
@@ -59,7 +107,7 @@ live_corrections:
 
 interval_calibrators:
   - id: legacy-fixed-width-unverified
-    role: incumbent_reference
+    role: current_live_incumbent_reference
     status: active_via_stored_forecasts
     method: fixed_width_heuristic
     notes: >-
@@ -77,11 +125,11 @@ interval_calibrators:
       model-specific and requires calibration errors from the same point model
       and forecasting protocol.
 
-  - id: t30-ridge-split-conformal-80-v1
-    role: evidence_only
+  - id: t30-direct-ridge-split-conformal-80-v1
+    role: research_evidence
     implementation: absolute_residual_split_conformal
     status: benchmarked_not_active
-    point_model: t30_best_direct_ridge_artifact
+    point_model: t30_direct_ridge_challenger
     calibration_seasons:
       - 2022/2023
       - 2023/2024
@@ -91,13 +139,36 @@ interval_calibrators:
     calibration_rows: 34
     holdout_rows: 34
     radius: 9823.836858085351
-    holdout_coverage_pct: 91.176
-    holdout_mean_width: 19647.67
-    holdout_interval_score_80: 22001.78
     notes: >-
-      Better sharpness and interval score than the approximate legacy fixed-width
-      heuristic on this T-30 Ridge holdout. It MUST NOT be applied to v1.3/v0.3,
-      because calibration must belong to the same point model/protocol.
+      Earlier calibration evidence belongs to the direct Ridge challenger column,
+      not to v1.7. It must not be applied to v1.7 or current live v0.3.
+
+  - id: v17-split-conformal-80-v1
+    role: frozen_champion_calibration_candidate
+    implementation: absolute_residual_split_conformal
+    status: benchmarked_not_active
+    point_model: lech-v17-horizon-specific
+    calibration_seasons:
+      - 2022/2023
+      - 2023/2024
+    holdout_seasons:
+      - 2024/2025
+      - 2025/2026
+    target_coverage_pct: 80
+    T-30:
+      radius: 8136.394841982961
+      holdout_coverage_pct: 82.35
+      holdout_mean_width: 16272.79
+      holdout_interval_score_80: 20616.48
+    T-7:
+      radius: 8336.593429081528
+      holdout_coverage_pct: 91.18
+      holdout_mean_width: 16673.19
+      holdout_interval_score_80: 17879.64
+    notes: >-
+      Calibration is correctly tied to recovered v1.7 OOS predictions and is
+      valid benchmark evidence. It remains inactive until executable v1.7
+      inference is reconstructed and runtime lineage can prove the same model.
 
 engine:
   id: beyond-demand-engine-v1
@@ -109,10 +180,12 @@ engine:
   live_feature_version: live-features-v1
   live_correction: live-correction-noop-v1
   interval_calibrator: noop_preserve_stored_interval
+  historical_runtime_source: current_stored_v13_reference
+  historical_target_champion: lech-v17-horizon-specific
 
 probabilistic_forecast:
   current_interval_method: stored_legacy_interval_unverified
-  status: conformal_framework_ready_incumbent_calibration_missing
+  status: v17_calibration_benchmarked_runtime_activation_blocked_by_missing_inference
   target: calibrated_80pct_interval_with_p50
   terminology_note: >-
     P10/P90 database columns may hold calibrated 80% conformal interval bounds;
@@ -122,16 +195,14 @@ probabilistic_forecast:
 promotion_policy:
   automatic_promotion: false
   historical_candidate_requirements:
+    - strict_as_of_protocol
     - MAE
     - MAPE
     - WAPE
     - Bias
     - within_5_pct
     - within_10_pct
-    - pinball_p10
-    - pinball_p50
-    - pinball_p90
-    - p10_p90_coverage
+    - paired_holdout_evidence
   interval_candidate_requirements:
     calibration_source: same_point_model_and_protocol
     target_coverage_pct: 80
