@@ -62,6 +62,8 @@ def to_forecast_observation(forecast: EngineForecast) -> dict[str, Any]:
                 "historical_model_name": forecast.historical.model_name,
                 "historical_model_version": forecast.historical.model_version,
                 "historical_feature_set_version": forecast.historical.feature_set_version,
+                "historical_interval_method": forecast.historical.interval_method,
+                "historical_calibration_version": forecast.historical.calibration_version,
                 "live_feature_version": live.feature_version,
                 "correction_version": correction.correction_version,
                 "correction_reason": correction.reason,
