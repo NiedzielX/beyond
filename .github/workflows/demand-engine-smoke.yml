@@ -43,12 +43,15 @@ jobs:
       - name: Verify exact v1.7 T-7 runtime from repo-only evidence
         run: python -m ml.recovered.v17.verify_t7_runtime
 
-      - name: Compile benchmark and forensic entry points
+      - name: Compile benchmark, runtime and forensic entry points
         run: |
           python -m py_compile ml/demand_engine/benchmark_residual_v1.py
           python -m py_compile ml/demand_engine/benchmark_calibration_v1.py
           python -m py_compile ml/demand_engine/v17_t7.py
           python -m py_compile ml/demand_engine/t7_state.py
+          python -m py_compile ml/demand_engine/storage.py
+          python -m py_compile ml/demand_engine/supabase.py
+          python -m py_compile ml/demand_engine/run_v17_t7_shadow.py
           python -m py_compile ml/recovered/v17/reconstruct_t30_v17.py
           python -m py_compile ml/recovered/v17/reconstruct_t7_v17.py
           python -m py_compile ml/recovered/v17/t7_bundle.py
