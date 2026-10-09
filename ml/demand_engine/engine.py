@@ -1,8 +1,8 @@
 """Composable Beyond Demand Engine v1.
 
-No unvalidated live correction is embedded here. Production promotion requires a
-correction implementation to pass the benchmark gate; until then the safe
-reference implementation is a no-op / shadow correction.
+No unvalidated live correction or interval calibration is embedded here.
+Production promotion requires each component to pass the benchmark gate; until
+then the safe reference implementations preserve the incumbent forecast.
 """
 from __future__ import annotations
 
@@ -15,6 +15,7 @@ from .contracts import (
     LiveFeatures,
     QuantileForecast,
 )
+from .intervals import IntervalCalibrator, NoOpIntervalCalibrator
 
 ENGINE_VERSION = "beyond-demand-engine-v1"
 
@@ -62,22 +63,31 @@ class DemandEngine:
         historical_forecaster: HistoricalForecaster,
         live_feature_provider: LiveFeatureProvider,
         live_corrector: LiveCorrector | None = None,
+        interval_calibrator: IntervalCalibrator | None = None,
         engine_version: str = ENGINE_VERSION,
     ) -> None:
         self.historical_forecaster = historical_forecaster
         self.live_feature_provider = live_feature_provider
         self.live_corrector = live_corrector or NoOpLiveCorrector()
+        self.interval_calibrator = interval_calibrator or NoOpIntervalCalibrator()
         self.engine_version = engine_version
 
     def forecast(self, request: ForecastRequest) -> EngineForecast:
-        historical = self.historical_forecaster.forecast(request)
+        historical_raw = self.historical_forecaster.forecast(request)
+        historical_raw.validate()
+
+        # Calibration is a separate, versioned layer. The default calibrator is
+        # a no-op, so existing production/shadow behaviour cannot change merely
+        # because the engine gained calibration support.
+        historical = self.interval_calibrator.calibrate(request, historical_raw)
         historical.validate()
+
         live_features = self.live_feature_provider.features(request)
         correction = self.live_corrector.correct(request, historical, live_features)
 
-        # v1 applies a point shift consistently to all quantiles. A future
-        # probabilistic corrector may return quantile-specific deltas, but that
-        # change must be benchmarked and versioned explicitly.
+        # v1 applies a point shift consistently to all interval bounds. A future
+        # probabilistic corrector may return asymmetric/quantile-specific deltas,
+        # but that change must be benchmarked and versioned explicitly.
         capacity = request.stadium_capacity
         final = [
             historical.p10 + correction.adjustment,
