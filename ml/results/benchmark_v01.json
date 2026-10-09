@@ -1,0 +1,76 @@
+{
+  "benchmark_version": "0.1",
+  "protocol": {
+    "selection_seasons": ["2022/2023", "2023/2024"],
+    "untouched_holdout_seasons": ["2024/2025", "2025/2026"],
+    "capacity_constrained_rows_excluded": true,
+    "feature_timing": "pre-match only",
+    "challenger_selection": "lowest development MAE; holdout never used for selection"
+  },
+  "selected_catboost_config": {
+    "features": "early",
+    "target": "direct",
+    "loss": "MAE",
+    "depth": 3,
+    "iterations": 500,
+    "learning_rate": 0.03,
+    "l2_leaf_reg": 10.0
+  },
+  "holdout": {
+    "rolling_5": {
+      "n": 32,
+      "mae": 7287.43,
+      "mape_pct": 26.83,
+      "wape_pct": 24.00,
+      "bias": -1223.03,
+      "within_10_pct": 25.00
+    },
+    "opponent_mean": {
+      "n": 32,
+      "mae": 9716.00,
+      "mape_pct": 29.30,
+      "wape_pct": 32.00,
+      "bias": -9320.90,
+      "within_10_pct": 12.50
+    },
+    "incumbent_gb_v13": {
+      "n": 32,
+      "mae": 5318.48,
+      "mape_pct": 18.04,
+      "wape_pct": 17.52,
+      "bias": -2337.63,
+      "within_10_pct": 31.25
+    },
+    "catboost_challenger": {
+      "n": 32,
+      "mae": 5918.23,
+      "mape_pct": 18.33,
+      "wape_pct": 19.49,
+      "bias": -4867.37,
+      "within_10_pct": 37.50
+    }
+  },
+  "overall": {
+    "incumbent_gb_v13": {
+      "n": 65,
+      "mae": 6178.34,
+      "mape_pct": 24.26,
+      "wape_pct": 23.16,
+      "bias": -2886.88,
+      "within_10_pct": 23.08
+    },
+    "catboost_challenger": {
+      "n": 65,
+      "mae": 6083.97,
+      "mape_pct": 21.33,
+      "wape_pct": 22.81,
+      "bias": -4769.60,
+      "within_10_pct": 27.69
+    }
+  },
+  "decision": {
+    "promote_catboost": false,
+    "reason": "The challenger improves some tolerance metrics but worsens holdout MAE/WAPE and materially increases negative bias. It does not justify replacing the incumbent historical model.",
+    "next_focus": "Promote the already researched v1.7 horizon-specific historical baseline into the live pipeline, then measure incremental uplift from live ticket-inventory features."
+  }
+}
