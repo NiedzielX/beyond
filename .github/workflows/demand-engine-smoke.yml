@@ -43,7 +43,7 @@ jobs:
         run: python ml/recovered/v17/verify_recovered_bundle.py
 
       - name: Verify exact v1.7 T-7 runtime from repo-only evidence
-        run: python ml/recovered/v17/verify_t7_runtime.py
+        run: python -m ml.recovered.v17.verify_t7_runtime
 
       - name: Compile benchmark and forensic entry points
         run: |
