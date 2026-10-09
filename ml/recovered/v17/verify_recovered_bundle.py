@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 """Verify the recovered Beyond Historical v1.7 benchmark evidence.
 
-This script intentionally verifies benchmark outputs only. It does not claim to
-reconstruct the missing original v1.7 training/inference implementation.
+This script verifies both the original recovered benchmark report and the
+normalized Beyond benchmark metrics derived from the preserved OOS predictions.
+It does not claim to reconstruct the missing original v1.7 runtime model.
 """
 from __future__ import annotations
 
@@ -13,6 +14,7 @@ import numpy as np
 import pandas as pd
 
 BASE = Path(__file__).resolve().parent
+NORMALIZED_METRICS = BASE.parents[1] / "results" / "historical_v17_strict_metrics.json"
 DEV_SEASONS = {"2022/2023", "2023/2024"}
 HOLDOUT_SEASONS = {"2024/2025", "2025/2026"}
 
@@ -21,11 +23,18 @@ def metrics(frame: pd.DataFrame) -> dict[str, float | int]:
     actual = frame["actual"].astype(float).to_numpy()
     pred = frame["v17"].astype(float).to_numpy()
     error = pred - actual
+    absolute = np.abs(error)
+    ape = absolute / actual * 100.0
     return {
         "n": int(len(frame)),
-        "mae": float(np.mean(np.abs(error))),
+        "mae": float(np.mean(absolute)),
         "rmse": float(np.sqrt(np.mean(error**2))),
+        "mape_pct": float(np.mean(ape)),
+        "wape_pct": float(np.sum(absolute) / np.sum(actual) * 100.0),
         "bias": float(np.mean(error)),
+        "within_5_pct": float(np.mean(ape <= 5.0) * 100.0),
+        "within_10_pct": float(np.mean(ape <= 10.0) * 100.0),
+        "within_20_pct": float(np.mean(ape <= 20.0) * 100.0),
     }
 
 
@@ -79,6 +88,43 @@ def validate_horizon(label: str, filename: str, report: dict) -> dict:
     return output
 
 
+def validate_normalized_metrics(observed: dict[str, dict]) -> None:
+    expected = json.loads(NORMALIZED_METRICS.read_text())
+    mapping = {
+        "T30": "T-30",
+        "T7": "T-7",
+    }
+    slice_mapping = {
+        "dev": "development",
+        "holdout": "holdout",
+        "all": "all",
+    }
+    fields = [
+        "mae",
+        "mape_pct",
+        "wape_pct",
+        "bias",
+        "within_5_pct",
+        "within_10_pct",
+        "within_20_pct",
+    ]
+
+    for source_horizon, normalized_horizon in mapping.items():
+        for source_slice, normalized_slice in slice_mapping.items():
+            got = observed[source_horizon][source_slice]
+            want = expected[normalized_horizon][normalized_slice]
+            if got["n"] != want["n"]:
+                raise AssertionError(
+                    f"{normalized_horizon}/{normalized_slice}: normalized n mismatch"
+                )
+            for field in fields:
+                if not rounded_equal(float(got[field]), float(want[field]), 2):
+                    raise AssertionError(
+                        f"{normalized_horizon}/{normalized_slice}: {field} "
+                        f"{got[field]:.6f} != {want[field]}"
+                    )
+
+
 def main() -> None:
     report = json.loads((BASE / "v17_metrics_strict.json").read_text())
     if report.get("model") != "v1.7":
@@ -88,10 +134,15 @@ def main() -> None:
 
     t30 = validate_horizon("T30", "v17_t30_oos_predictions.csv", report)
     t7 = validate_horizon("T7", "v17_t7_oos_predictions.csv", report)
+    observed = {"T30": t30, "T7": t7}
+    validate_normalized_metrics(observed)
 
     print("Recovered v1.7 benchmark evidence verified.")
     print(f"T-30 all OOS MAE: {t30['all']['mae']:.1f}")
+    print(f"T-30 all OOS MAPE: {t30['all']['mape_pct']:.2f}%")
     print(f"T-7 all OOS MAE: {t7['all']['mae']:.1f}")
+    print(f"T-7 all OOS MAPE: {t7['all']['mape_pct']:.2f}%")
+    print("Normalized MAE/MAPE/WAPE/Bias/threshold metrics also match.")
     print("This verifies evidence integrity, not executable inference reproducibility.")
 
 
