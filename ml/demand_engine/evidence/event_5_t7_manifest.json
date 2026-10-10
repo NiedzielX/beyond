@@ -1,6 +1,7 @@
 {
-  "manifest_version": "event-5-t7-v1",
-  "status": "pre_checkpoint_scaffold_not_runnable_evidence",
+  "manifest_version": "event-5-t7-v2",
+  "status": "checkpoint_preparation_in_progress",
+  "prepared_at": "2026-10-10T11:23:00+02:00",
   "ticket_event_id": 5,
   "season": "2026/2027",
   "home_team": "Lech Poznań",
@@ -66,18 +67,75 @@
       "evidence": "Official Lech match-day page and existing verified Beyond outcome."
     }
   ],
+  "round_10_checkpoint": {
+    "rule": "Include every Ekstraklasa result whose Europe/Warsaw local calendar date is strictly before 2026-10-11. Therefore all 9-10 October results are visible and all 11 October results are excluded.",
+    "official_round_10_url": "https://ekstraklasa.org/en/schedule/2026-2027/kolejka-10/",
+    "already_completed_and_verified_on_2026-10-10_morning": [
+      {
+        "local_date": "2026-10-09",
+        "home_team_key": "wieczysta",
+        "away_team_key": "wisla_plock",
+        "home_goals": 3,
+        "away_goals": 0
+      },
+      {
+        "local_date": "2026-10-09",
+        "home_team_key": "rakow",
+        "away_team_key": "gks_katowice",
+        "home_goals": 1,
+        "away_goals": 4
+      }
+    ],
+    "must_be_added_after_completion_on_2026-10-10": [
+      {
+        "local_kickoff": "2026-10-10T14:45:00+02:00",
+        "home_team_key": "cracovia",
+        "away_team_key": "zaglebie_lubin"
+      },
+      {
+        "local_kickoff": "2026-10-10T17:30:00+02:00",
+        "home_team_key": "slask",
+        "away_team_key": "lech"
+      },
+      {
+        "local_kickoff": "2026-10-10T20:15:00+02:00",
+        "home_team_key": "jagiellonia",
+        "away_team_key": "gornik_zabrze"
+      }
+    ],
+    "must_be_excluded_even_if_completed_before_execution_on_2026-10-11": [
+      "piast_vs_widzew",
+      "pogon_vs_korona",
+      "legia_vs_wisla_krakow"
+    ]
+  },
+  "live_checkpoint_health": {
+    "observed_at": "2026-10-10T11:14:09+02:00",
+    "latest_snapshot_id": 10384,
+    "raw_snapshot_count": 490,
+    "available_total": 2157,
+    "available_index": 0.262345,
+    "velocity_6h": 11.596,
+    "velocity_24h": 15.855,
+    "acceleration_6h_vs_24h": -4.259,
+    "inventory_interpretation": "demand_proxy_not_confirmed_sales",
+    "note": "Health check only. These values are not the canonical T-7 input. The real shadow run must use the latest snapshot and live features at or before 2026-10-11T17:30:00+02:00."
+  },
   "source_seeds": {
+    "official_round_10_schedule": "https://ekstraklasa.org/en/schedule/2026-2027/kolejka-10/",
     "official_round_11_schedule": "https://ekstraklasa.org/en/schedule/2026-2027/round-11/",
+    "official_round_11_announcement": "https://ekstraklasa.org/aktualnosci/terminarz-11-kolejki-202627/",
     "official_current_standings": "https://ekstraklasa.org/en/standings/2026-2027/",
     "official_lech_schedule": "https://www.lechpoznan.pl/pierwsza-druzyna,61.html",
     "official_lech_radomiak_match_day": "https://www.lechpoznan.pl/pl/dzien-meczowy,113,lpo-rad,334.html",
     "preserved_v17_fresh_validation": "https://github.com/NiedzielX/beyond/blob/main/ml/recovered/v17/original_fresh_2026_27_validation_v17.csv"
   },
   "pending_at_2026_10_11_preflight": [
-    "Fetch and verify every 2026/27 Ekstraklasa result whose Europe/Warsaw calendar date is strictly before 2026-10-11, including all matches completed on 2026-10-10.",
-    "Independently establish expected_visible_league_results from the complete official schedule/results set.",
+    "Add and verify the three 2026-10-10 Round 10 results after those matches finish.",
+    "Fetch and verify the complete 2026/27 Ekstraklasa result set visible under the strict local-date cutoff and independently establish expected_visible_league_results.",
     "Re-check all five Lech home league attendance values and source URLs; exclude UEFA/cup matches.",
-    "Build runnable event_5_t7_2026-10-11.json with source audit block and verified_at.",
-    "Run dry-run preflight and exact recovered v1.7 T-7 model; do not persist before canonical T-7."
+    "Build runnable event_5_t7_2026-10-11.json with expected counts, complete result rows, source audit block and verified_at.",
+    "Run strict preflight plus exact v1.7 T-7 dry run. Do not persist before canonical T-7.",
+    "At 17:35 execute the pre-registered shadow run using effective forecast time 17:30 and get_live_features_v1_asof; never use a post-checkpoint snapshot."
   ]
 }
