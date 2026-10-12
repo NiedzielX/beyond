@@ -8,6 +8,7 @@ on:
   push:
     paths:
       - "ml/context/gdelt_ngram_sample_v01.py"
+      - "ml/context/test_gdelt_ngram_sample_v01.py"
       - ".github/workflows/media-attention-collector.yml"
 
 permissions:
@@ -26,6 +27,11 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+
+      - name: Verify matcher
+        run: |
+          python -m py_compile ml/context/gdelt_ngram_sample_v01.py
+          python -m unittest ml.context.test_gdelt_ngram_sample_v01
 
       - name: Request GitHub OIDC token
         shell: bash
