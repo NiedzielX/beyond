@@ -1,0 +1,27 @@
+name: GDELT Egress Probe
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - ".github/workflows/gdelt-egress-probe.yml"
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Probe GDELT once
+        shell: bash
+        run: |
+          set -euo pipefail
+          url='https://api.gdeltproject.org/api/v2/doc/doc?query=near20%3A%22Lech%20Leverkusen%22&mode=TimelineVolRaw&format=json&timespan=7d&TIMELINESMOOTH=0'
+          status=$(curl --retry 0 --max-time 40 -sS -A 'BeyondTicketingResearch/0.1' -o /tmp/gdelt.json -w '%{http_code}' "$url")
+          echo "GDELT_HTTP_STATUS=$status"
+          head -c 1200 /tmp/gdelt.json || true
+          echo
+          if [ "$status" = "429" ]; then
+            echo 'GDELT_RATE_LIMITED=true'
+            exit 0
+          fi
+          test "$status" = "200"
