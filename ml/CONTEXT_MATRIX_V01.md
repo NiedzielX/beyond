@@ -30,11 +30,11 @@ Active-prior weights sum to 100%. This does **not** mean the forecast is calcula
 | ticketing.velocity_6h | 7% | available | research/live feature | not promoted by this matrix |
 | ticketing.acceleration | 5% | available | research/live feature | not promoted by this matrix |
 | ticketing.scarcity | 5% | available | research/live feature | not promoted by this matrix |
-| sport.match_stakes | 12% | collecting | heuristic v0.1 available | **shadow/research** |
-| sport.rivalry_opponent | 7% | collecting | raw verified flags/evidence | **shadow/research** |
-| sport.form5 | 6% | collecting | raw values | **shadow/research** |
-| sport.absence_impact | 5% | collecting | demand-shock scoring refuses unsupported salience | **shadow/research** |
-| hype.search_interest | 4% | not automated | none | **shadow/research** |
+| sport.match_stakes | 12% | **automated shadow + verified reference** | heuristic v0.1 + source comparison | **shadow/research** |
+| sport.rivalry_opponent | 7% | collecting manually | raw verified flags/evidence | **shadow/research** |
+| sport.form5 | 6% | collecting manually | last five relevant matches across competitions | **shadow/research** |
+| sport.absence_impact | 5% | collecting manually | demand-shock scoring refuses unsupported salience | **shadow/research** |
+| hype.search_interest | 4% | blocked on official API access | none | **shadow/research** |
 | hype.social_volume | 3% | not automated | none | **shadow/research** |
 | hype.mention_acceleration | 3% | derived from sampled media windows when enough history exists | comparison ratio | **shadow/research** |
 | hype.media_attention | 2% | **15-minute sampled collection active** | sampled Polish match mentions + rolling comparison | **shadow/research** |
@@ -43,7 +43,7 @@ Active-prior weights sum to 100%. This does **not** mean the forecast is calcula
 | match.timing | 4% | collecting | raw context | **shadow/research** |
 | match.competition_stage | 3% | collecting | raw context | **shadow/research** |
 | match.opponent_historical_uplift | 3% | historical-data dependent | none yet | **shadow/research** |
-| weather.kickoff_context | 0% | collecting | historical test negative | **shadow only** |
+| weather.kickoff_context | 0% | collecting automatically | historical test negative | **shadow only** |
 | dq.release_activity | 0% | available | confidence modifier | never demand |
 | dq.sector_coverage_change | 0% | available | confidence modifier | never demand |
 
@@ -62,6 +62,30 @@ Rivalry and opponent prestige are intentionally excluded and are separate featur
 For a UEFA-style league phase, `european_league_phase_stakes_v01` uses competition baseline, league-phase progress and previous-result pressure.
 
 Every stored score must carry `research_heuristic_not_model_active`.
+
+#### Ekstraklasa shadow automation
+
+Ekstraklasa `sport.match_stakes` now has a **shadow-only automated validation path**. The verified/manual context remains the user-facing reference and is never overwritten by the automated source.
+
+Collection model:
+1. Supabase `pg_cron` enqueues TheSportsDB `eventsround.php` requests through `pg_net` every 6 hours;
+2. initial bootstrap collects historical rounds; later runs refresh only the previous/current/next round window;
+3. raw fixtures are cached in `sporting_league_matches_shadow`;
+4. a match counts toward standings **only when `strStatus = FT`** — live/HT scores are explicitly excluded;
+5. standings are reconstructed from completed matches using points, goal difference and goals for as the shadow ranking order;
+6. the existing `league_match_stakes_v01` formula is reproduced in SQL;
+7. each shadow score is compared with the latest verified `sport.match_stakes` reference and stored separately in `sporting_context_shadow_samples`;
+8. `dashboard_sporting_shadow_v1` and `dashboard_sporting_shadow_summary_v1` expose only safe validation results to Model Lab.
+
+The first validated run produced **7 exact matches out of 9 comparable upcoming Ekstraklasa events**. The two differences involved Radomiak and were consistent with the automated source already containing a newer completed Radomiak–Motor result than the stored manual reference snapshot. A difference from reference is therefore a review signal, not automatically an error.
+
+TheSportsDB free v1 is **not the canonical production provider**. It is used to test whether standings-derived Match Stakes can be automated reliably before choosing/promoting a licensed long-term feed.
+
+### Recent Form (`sport.form5`)
+
+`form5` means the **last five relevant matches**, not simply the last five league fixtures. The current verified Lech sample includes cross-competition context. TheSportsDB free `eventslast.php` returned only one event per team in validation, so it is insufficient to automate this feature without silently changing its meaning.
+
+Therefore `sport.form5` remains manual/verified research until a complete recurring cross-competition source is available.
 
 ### Absence Impact
 
@@ -93,7 +117,7 @@ The active forward-only collector uses **GDELT Web News NGrams sampled data**, n
 Why:
 - the legacy DOC API returned repeated `429` responses during integration tests;
 - Google News RSS was technically accessible but its feed terms were unsuitable for Beyond's commercial/product use;
-- raw GDELT Web News NGrams files are downloadable without an application API key and GDELT explicitly recommends Web NGrams for rate-limited/high-volume native-language research.
+- raw GDELT Web News NGrams files are downloadable without an application API key and are suitable for the current research collector.
 
 Collection model:
 1. GitHub Actions runs at minutes `07, 22, 37 and 52` of each hour;
@@ -116,8 +140,12 @@ Interpretation gates:
 
 A zero in an individual sample is **not** interpreted as “no hype”. `no_signal` is available only after the comparison gate above is satisfied.
 
+### Search interest
+
+The official Google Trends API remains alpha/early-access and requires approval. `hype.search_interest` is therefore marked `blocked_external_access`; Beyond does not use an unofficial scraper as a production dependency.
+
 Current candidate order after media attention:
-1. search interest;
+1. search interest when official access becomes available;
 2. public social volume/acceleration;
 3. club-specific local fan buzz;
 4. sentiment last.
@@ -136,6 +164,8 @@ Every context observation must be point-in-time and contain:
 No post-kickoff fact may be backdated into a pre-match feature snapshot.
 
 A structural inventory release or sector-coverage change modifies confidence; it is never interpreted as demand by itself.
+
+A shadow source may be newer than a verified reference. Such a delta must be preserved and reviewed; it must not be automatically classified as an error or overwrite the reference.
 
 ## Promotion rule
 
