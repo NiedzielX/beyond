@@ -8,7 +8,7 @@ create policy dashboard_event_context_read
 on public.event_context_observations
 for select
 to anon, authenticated
-using (feature_key in ('sport.form5','sport.match_stakes','sport.absence_impact'));
+using (feature_key in ('sport.form5','sport.match_stakes','sport.absence_impact','sport.rivalry_opponent'));
 
 grant select (ticket_event_id, feature_key, observed_at, numeric_value, text_value, confidence)
 on public.event_context_observations
@@ -25,7 +25,7 @@ select distinct on (ticket_event_id, feature_key)
   text_value,
   confidence
 from public.event_context_observations
-where feature_key in ('sport.form5','sport.match_stakes','sport.absence_impact')
+where feature_key in ('sport.form5','sport.match_stakes','sport.absence_impact','sport.rivalry_opponent')
 order by ticket_event_id, feature_key, observed_at desc;
 
 revoke all on public.dashboard_event_context_v1 from public;
