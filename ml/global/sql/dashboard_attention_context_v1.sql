@@ -30,7 +30,9 @@ with stats as (
 ), scored as (
   select *,
     case
-      when samples_24h >= 12 and samples_previous_24h >= 12 then round(
+      when samples_24h >= 12
+       and samples_previous_24h >= 12
+       and (mentions_24h + mentions_previous_24h) > 0 then round(
         ((mentions_24h::numeric/samples_24h)+0.25) /
         ((mentions_previous_24h::numeric/samples_previous_24h)+0.25),4
       )
@@ -49,6 +51,7 @@ select
   case
     when samples_24h < 12 then 'collecting_baseline'
     when samples_previous_24h < 12 then 'collecting_comparison'
+    when mentions_24h=0 and mentions_previous_24h=0 then 'no_signal'
     when acceleration_ratio >= 1.5 then 'rising'
     when acceleration_ratio <= 0.67 then 'falling'
     else 'stable'
