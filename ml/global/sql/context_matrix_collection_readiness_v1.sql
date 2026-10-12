@@ -16,6 +16,7 @@ alter table public.context_feature_definitions
     'active_manual',
     'verified_registry',
     'shadow_automated',
+    'degraded_automation',
     'planned',
     'blocked_external_access'
   ));
@@ -30,7 +31,8 @@ set collection_status = case
   when feature_key = 'sport.match_stakes' then 'shadow_automated'
   when feature_key in ('sport.rivalry_opponent','sport.absence_impact') then 'verified_registry'
   when feature_key = 'sport.form5' then 'active_manual'
-  when feature_key in ('hype.media_attention','hype.mention_acceleration') then 'active_automated'
+  when feature_key in ('hype.media_attention','hype.mention_acceleration')
+    then case when collection_status='degraded_automation' then 'degraded_automation' else 'active_automated' end
   when feature_key = 'hype.search_interest' then 'blocked_external_access'
   else 'planned'
 end,
@@ -57,11 +59,11 @@ collection_note = case
   when feature_key = 'match.timing' then 'Kickoff day/time is refreshed automatically from ticket_events in Europe/Warsaw. Reschedules overwrite the stable v2 observation rather than leaving stale timing context.'
   when feature_key = 'match.competition_stage' then 'Competition is refreshed automatically from ticket_events. Stage remains explicitly unknown when the event source does not provide it; Beyond does not infer it from competition name alone.'
   when feature_key = 'match.opponent_historical_uplift' then 'Automated leakage-safe readiness gate uses only verified outcomes before the target kickoff, within the same home club and competition class. Uplift is emitted only after >=8 prior club outcomes and >=3 prior home meetings with the same opponent in a 730-day lookback; otherwise the value stays null rather than defaulting to zero.'
-  when feature_key = 'sport.match_stakes' then 'Automated shadow collector active: Supabase pg_cron + pg_net reads complete TheSportsDB Ekstraklasa round data, reconstructs standings, applies league_match_stakes_v01 and compares each sample with the latest verified manual/official reference. Shadow values never replace Event Detail context and never affect P50.'
+  when feature_key = 'sport.match_stakes' then 'Automated shadow collector reconstructs Ekstraklasa standings from completed FT results and compares the research score with verified references. It never replaces Event Detail context or P50.'
   when feature_key = 'sport.form5' then 'The feature means the last five relevant matches across competitions, not league-only form. TheSportsDB free eventslast endpoint returned only one event, so form5 remains verified manual research until a complete licensed recurring feed is selected.'
-  when feature_key = 'sport.rivalry_opponent' then 'Verified rivalry relationships are stored once in a maintained symmetric map and automatically propagated to matching future fixtures. The current map is intentionally incomplete: absence of a relation means unknown, never "not a rivalry".'
-  when feature_key = 'sport.absence_impact' then 'Absences are verified once from official evidence and stored with an active validity window; Beyond then propagates them automatically to matching future fixtures. The register does not infer player availability from silence, and an absence does not receive a demand score unless player salience, certainty and novelty are supported.'
-  when feature_key in ('hype.media_attention','hype.mention_acceleration') then 'Forward-only GDELT Web News NGrams sampler runs every 15 minutes and waits for comparison coverage before interpreting acceleration.'
+  when feature_key = 'sport.rivalry_opponent' then 'Verified rivalry relationships are stored once in a maintained symmetric map and automatically propagated to matching future fixtures. Absence of a relation means unknown, never "not a rivalry".'
+  when feature_key = 'sport.absence_impact' then 'Absences are verified once from official evidence and propagated automatically to matching future fixtures. Silence never means confirmed availability; demand impact stays unscored without player salience, certainty and novelty.'
+  when feature_key in ('hype.media_attention','hype.mention_acceleration') then 'Forward-only GDELT Web News NGrams sampler targets a 15-minute cadence. A Supabase watchdog marks the automation degraded when the newest persisted sample is older than 45 minutes, so stale collection cannot look healthy in Model Lab.'
   when feature_key = 'hype.search_interest' then 'Official Google Trends API remains alpha/early-access and requires approval; no unofficial scraper is used as a production dependency.'
   when feature_key = 'hype.social_volume' then 'Planned after media-attention baseline; provider/API and commercial-use constraints must be confirmed before automation.'
   when feature_key = 'hype.local_fan_buzz' then 'Planned as club-specific public-source configuration rather than one universal Polish forum source.'
