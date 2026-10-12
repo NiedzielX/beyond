@@ -3,7 +3,7 @@ name: Media Attention Collector
 on:
   workflow_dispatch:
   schedule:
-    - cron: "12 * * * *"
+    - cron: "7,22,37,52 * * * *"
   push:
     paths:
       - "ml/context/gdelt_ngram_sample_v01.py"
