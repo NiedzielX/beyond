@@ -36,8 +36,8 @@ Active-prior weights sum to 100%. This does **not** mean the forecast is calcula
 | sport.absence_impact | 5% | collecting | demand-shock scoring refuses unsupported salience | **shadow/research** |
 | hype.search_interest | 4% | not automated | none | **shadow/research** |
 | hype.social_volume | 3% | not automated | none | **shadow/research** |
-| hype.mention_acceleration | 3% | derived from media samples when enough history exists | comparison ratio | **shadow/research** |
-| hype.media_attention | 2% | **hourly sampled collection active** | raw 24h/48h volume + acceleration | **shadow/research** |
+| hype.mention_acceleration | 3% | derived from sampled media windows when enough history exists | comparison ratio | **shadow/research** |
+| hype.media_attention | 2% | **15-minute sampled collection active** | sampled Polish match mentions + rolling comparison | **shadow/research** |
 | hype.local_fan_buzz | 2% | not automated | none | **shadow/research** |
 | hype.sentiment | 1% | not automated | deliberately low priority | **shadow/research** |
 | match.timing | 4% | collecting | raw context | **shadow/research** |
@@ -91,22 +91,30 @@ For the Polish MVP:
 The active forward-only collector uses **GDELT Web News NGrams sampled data**, not the legacy GDELT DOC search API.
 
 Why:
-- the legacy DOC API returned repeated `429` responses from Supabase, Edge Functions and GitHub runners;
+- the legacy DOC API returned repeated `429` responses during integration tests;
 - Google News RSS was technically accessible but its feed terms were unsuitable for Beyond's commercial/product use;
-- raw GDELT Web News NGrams files are available without an application API key and are suitable for automated research collection.
+- raw GDELT Web News NGrams files are downloadable without an application API key and GDELT explicitly recommends Web NGrams for rate-limited/high-volume native-language research.
 
 Collection model:
-1. GitHub Actions runs hourly;
+1. GitHub Actions runs at minutes `07, 22, 37 and 52` of each hour;
 2. GitHub OIDC obtains a short-lived token with audience `beyond-media-ingest`;
-3. Supabase Edge verifies issuer, repository `NiedzielX/beyond`, and `refs/heads/main` — no Supabase service-role secret is stored in GitHub;
-4. the runner downloads one recent Web NGrams file and its TOC;
-5. documents where both configured team aliases appear are identified;
-6. Polish-language matches are counted and persisted as `media_attention_samples`;
-7. rolling 24h/previous-24h aggregates create `hype.media_attention` evidence.
+3. Supabase Edge verifies the OIDC token and returns the current event/team-alias configuration — no Supabase service-role secret is stored in GitHub;
+4. the runner selects one recent immutable GDELT Web NGrams source file;
+5. for each team, all document IDs containing any configured alias are collected;
+6. match-level candidates are the intersection of home-team and away-team document IDs, even when the two team names occur in different n-gram rows of the same article;
+7. the source TOC is read only for candidate documents and Polish-language candidates are persisted as `media_attention_samples`;
+8. `(ticket_event_id, source_file_timestamp)` is unique, so rerunning the same GDELT interval cannot double-count a sample;
+9. `dashboard_attention_context_v1` compares rolling sampled windows and exposes a layperson status to the dashboard.
 
 The media count is explicitly a **sampled signal**, not a complete count of all articles on the internet.
 
-Acceleration is produced only when both current and previous 24h windows contain at least four samples. Until then the dashboard state is `collecting_baseline` or `collecting_comparison`, not “no hype”.
+Interpretation gates:
+- fewer than 12 samples in the current 24h window → `collecting_baseline`;
+- at least 12 current samples but fewer than 12 comparison samples → `collecting_comparison`;
+- at least 12 samples in both windows and zero mentions in both → `no_signal`;
+- only when both windows have at least 12 samples and at least one mention exists is an acceleration ratio interpreted as `rising`, `falling` or `stable`.
+
+A zero in an individual sample is **not** interpreted as “no hype”. `no_signal` is available only after the comparison gate above is satisfied.
 
 Current candidate order after media attention:
 1. search interest;
