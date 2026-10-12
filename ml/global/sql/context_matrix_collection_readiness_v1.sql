@@ -33,7 +33,7 @@ set collection_status = case
   when feature_key = 'sport.form5' then 'active_manual'
   when feature_key in ('hype.media_attention','hype.mention_acceleration')
     then case when collection_status='degraded_automation' then 'degraded_automation' else 'active_automated' end
-  when feature_key = 'hype.search_interest' then 'blocked_external_access'
+  when feature_key in ('hype.search_interest','hype.social_volume') then 'blocked_external_access'
   else 'planned'
 end,
 primary_source = case
@@ -42,6 +42,8 @@ primary_source = case
   when feature_key = 'sport.absence_impact' then 'Beyond verified absence register backed by official club/competition evidence'
   when feature_key = 'match.opponent_historical_uplift' then 'Beyond verified attendance history'
   when feature_key in ('match.timing','match.competition_stage') then 'ticket_events'
+  when feature_key = 'hype.search_interest' then 'Google Trends API alpha (preferred arbitrary-term source)'
+  when feature_key = 'hype.social_volume' then 'X API v2 search — preferred social-volume source'
   else primary_source
 end,
 fallback_source = case
@@ -50,6 +52,8 @@ fallback_source = case
   when feature_key = 'sport.rivalry_opponent' then 'Manual verified research for unmapped relationships'
   when feature_key = 'sport.absence_impact' then 'Manual verified research for newly discovered or unresolved absences'
   when feature_key = 'match.opponent_historical_uplift' then 'No score until history gate is met'
+  when feature_key = 'hype.search_interest' then 'Google Trends BigQuery public dataset — unsuitable for match-level arbitrary-term monitoring'
+  when feature_key = 'hype.social_volume' then 'No Reddit production feed without separate commercial agreement'
   else fallback_source
 end,
 collection_note = case
@@ -64,8 +68,8 @@ collection_note = case
   when feature_key = 'sport.rivalry_opponent' then 'Verified rivalry relationships are stored once in a maintained symmetric map and automatically propagated to matching future fixtures. Absence of a relation means unknown, never "not a rivalry".'
   when feature_key = 'sport.absence_impact' then 'Absences are verified once from official evidence and propagated automatically to matching future fixtures. Silence never means confirmed availability; demand impact stays unscored without player salience, certainty and novelty.'
   when feature_key in ('hype.media_attention','hype.mention_acceleration') then 'Forward-only GDELT Web News NGrams sampler targets a 15-minute cadence. A Supabase watchdog marks the automation degraded when the newest persisted sample is older than 45 minutes, so stale collection cannot look healthy in Model Lab.'
-  when feature_key = 'hype.search_interest' then 'Official Google Trends API remains alpha/early-access and requires approval; no unofficial scraper is used as a production dependency.'
-  when feature_key = 'hype.social_volume' then 'Planned after media-attention baseline; provider/API and commercial-use constraints must be confirmed before automation.'
+  when feature_key = 'hype.search_interest' then 'The official Google Trends API is the correct arbitrary-term source and provides consistently scaled term interest plus geographic restrictions, but access remains limited to accepted alpha testers. The public BigQuery dataset contains only daily Top 25 / Top 25 Rising terms, so it is rejected as a match-level proxy because it would create selection bias and false zeroes. No unofficial Trends scraper is used.'
+  when feature_key = 'hype.social_volume' then 'X API v2 search is the preferred match-specific public social-volume source and uses consumption-based billing. Activation requires an approved X developer app, credentials and credits. Reddit is excluded from the commercial MVP unless Beyond enters a separate Reddit agreement; no Reddit scraping is used.'
   when feature_key = 'hype.local_fan_buzz' then 'Planned as club-specific public-source configuration rather than one universal Polish forum source.'
   when feature_key = 'hype.sentiment' then 'Deliberately deferred until volume/acceleration signals prove useful.'
   else collection_note
