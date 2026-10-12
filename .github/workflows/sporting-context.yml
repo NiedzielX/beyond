@@ -23,10 +23,12 @@ jobs:
           python-version: "3.12"
 
       - name: Syntax check
-        run: python -m py_compile ml/context/sporting_context_v01.py
+        run: |
+          python -m py_compile ml/context/sporting_context_v01.py
+          python -m py_compile ml/context/context_scoring_v01.py
 
       - name: Unit tests
-        run: python -m unittest ml.context.test_sporting_context_v01
+        run: python -m unittest ml.context.test_sporting_context_v01 ml.context.test_context_scoring_v01
 
       - name: Collect point-in-time context
         env:
