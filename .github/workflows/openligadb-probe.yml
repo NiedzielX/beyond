@@ -1,0 +1,27 @@
+name: OpenLigaDB Source Probe
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - "ml/context/openligadb_probe_v01.py"
+      - ".github/workflows/openligadb-probe.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Probe OpenLigaDB 2026 coverage
+        run: python ml/context/openligadb_probe_v01.py
