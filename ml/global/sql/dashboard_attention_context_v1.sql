@@ -1,7 +1,8 @@
 -- Safe browser-facing sampled media-attention projection.
 -- Raw sample metadata stays private; dashboard sees only aggregate counts/status.
 
-create policy if not exists dashboard_media_attention_samples_read
+drop policy if exists dashboard_media_attention_samples_read on public.media_attention_samples;
+create policy dashboard_media_attention_samples_read
 on public.media_attention_samples
 for select
 to anon, authenticated
@@ -29,7 +30,7 @@ with stats as (
 ), scored as (
   select *,
     case
-      when samples_24h >= 4 and samples_previous_24h >= 4 then round(
+      when samples_24h >= 12 and samples_previous_24h >= 12 then round(
         ((mentions_24h::numeric/samples_24h)+0.25) /
         ((mentions_previous_24h::numeric/samples_previous_24h)+0.25),4
       )
@@ -46,8 +47,8 @@ select
   mentions_previous_24h,
   acceleration_ratio,
   case
-    when samples_24h < 4 then 'collecting_baseline'
-    when samples_previous_24h < 4 then 'collecting_comparison'
+    when samples_24h < 12 then 'collecting_baseline'
+    when samples_previous_24h < 12 then 'collecting_comparison'
     when acceleration_ratio >= 1.5 then 'rising'
     when acceleration_ratio <= 0.67 then 'falling'
     else 'stable'
