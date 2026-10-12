@@ -1,5 +1,6 @@
 name: Media Attention Collector
 
+# Forward-only research sampler. Context remains shadow-only until explicit promotion.
 on:
   workflow_dispatch:
   schedule:
