@@ -30,15 +30,24 @@ set collection_status = case
   when feature_key = 'hype.search_interest' then 'blocked_external_access'
   else 'planned'
 end,
+primary_source = case
+  when feature_key in ('sport.form5','sport.match_stakes') then 'Verified sporting sources / licensed provider TBD'
+  when feature_key in ('sport.absence_impact','sport.rivalry_opponent') then 'Official club/competition evidence / licensed provider TBD'
+  else primary_source
+end,
+fallback_source = case
+  when feature_key in ('sport.form5','sport.match_stakes') then 'Manual verification against official competition/club sources'
+  when feature_key in ('sport.absence_impact','sport.rivalry_opponent') then 'Manual verified research'
+  else fallback_source
+end,
 collection_note = case
   when feature_key like 'ticketing.%' then 'Collected from existing Roboticket/public-inventory snapshots and Beyond derived live features.'
   when feature_key in ('dq.release_activity','dq.sector_coverage_change') then 'Derived automatically from public-inventory snapshot structure; modifies confidence, not demand.'
   when feature_key = 'weather.kickoff_context' then 'Collector is active, but the feature remains shadow-only because historical validation did not improve forecast accuracy.'
   when feature_key in ('match.timing','match.competition_stage') then 'Available from ticket_events / event metadata and stored point-in-time.'
-  when feature_key = 'sport.match_stakes' then 'Research scoring is implemented and current snapshots are populated from verified standings/competition context; recurring sports-provider automation is not yet the canonical source.'
-  when feature_key = 'sport.rivalry_opponent' then 'Verified manually from club/competition evidence; configurable rivalry mapping is the intended automated layer.'
-  when feature_key = 'sport.form5' then 'Current point-in-time values can be collected from verified sporting sources; recurring canonical provider not yet promoted.'
-  when feature_key = 'sport.absence_impact' then 'Verified absences are collected as research evidence; demand impact is intentionally unscored unless player salience and novelty are supported.'
+  when feature_key in ('sport.form5','sport.match_stakes') then 'OpenLigaDB was technically validated but has no Ekstraklasa 2026 coverage. football-data.org does not list Poland in current coverage. Direct product scraping of ekstraklasa.org is not used due to current site terms. Point-in-time values remain verified manual research until a licensed recurring feed is selected.'
+  when feature_key = 'sport.rivalry_opponent' then 'Rivalry/opponent evidence is verified manually from public club/competition sources. A maintained rivalry map is the intended stable product layer.'
+  when feature_key = 'sport.absence_impact' then 'Verified absences are collected from public official evidence. No recurring scraper is used. Demand impact remains unscored unless player salience, certainty and novelty are supported.'
   when feature_key in ('hype.media_attention','hype.mention_acceleration') then 'Forward-only GDELT Web News NGrams sampler runs every 15 minutes and waits for comparison coverage before interpreting acceleration.'
   when feature_key = 'hype.search_interest' then 'Official Google Trends API remains alpha/early-access and requires approval; no unofficial scraper is used as a production dependency.'
   when feature_key = 'hype.social_volume' then 'Planned after media-attention baseline; provider/API and commercial-use constraints must be confirmed before automation.'
