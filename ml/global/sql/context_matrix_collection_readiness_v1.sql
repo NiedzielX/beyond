@@ -26,6 +26,7 @@ set collection_status = case
   when feature_key in ('dq.release_activity','dq.sector_coverage_change') then 'active_automated'
   when feature_key = 'weather.kickoff_context' then 'shadow_automated'
   when feature_key in ('match.timing','match.competition_stage') then 'active_automated'
+  when feature_key = 'match.opponent_historical_uplift' then 'shadow_automated'
   when feature_key = 'sport.match_stakes' then 'shadow_automated'
   when feature_key in ('sport.rivalry_opponent','sport.absence_impact') then 'verified_registry'
   when feature_key = 'sport.form5' then 'active_manual'
@@ -37,6 +38,8 @@ primary_source = case
   when feature_key in ('sport.form5','sport.match_stakes') then 'Verified sporting sources / licensed provider TBD'
   when feature_key = 'sport.rivalry_opponent' then 'Beyond verified rivalry map backed by official club/competition evidence'
   when feature_key = 'sport.absence_impact' then 'Beyond verified absence register backed by official club/competition evidence'
+  when feature_key = 'match.opponent_historical_uplift' then 'Beyond verified attendance history'
+  when feature_key in ('match.timing','match.competition_stage') then 'ticket_events'
   else primary_source
 end,
 fallback_source = case
@@ -44,23 +47,25 @@ fallback_source = case
   when feature_key = 'sport.form5' then 'Manual verification against official competition/club sources'
   when feature_key = 'sport.rivalry_opponent' then 'Manual verified research for unmapped relationships'
   when feature_key = 'sport.absence_impact' then 'Manual verified research for newly discovered or unresolved absences'
+  when feature_key = 'match.opponent_historical_uplift' then 'No score until history gate is met'
   else fallback_source
 end,
 collection_note = case
   when feature_key like 'ticketing.%' then 'Collected from existing Roboticket/public-inventory snapshots and Beyond derived live features.'
   when feature_key in ('dq.release_activity','dq.sector_coverage_change') then 'Derived automatically from public-inventory snapshot structure; modifies confidence, not demand.'
   when feature_key = 'weather.kickoff_context' then 'Collector is active, but the feature remains shadow-only because historical validation did not improve forecast accuracy.'
-  when feature_key in ('match.timing','match.competition_stage') then 'Available from ticket_events / event metadata and stored point-in-time.'
-  when feature_key = 'sport.match_stakes' then 'Automated shadow collector active: Supabase pg_cron + pg_net reads complete TheSportsDB Ekstraklasa round data, reconstructs standings, applies league_match_stakes_v01 and compares each sample with the latest verified manual/official reference. Shadow values never replace Event Detail context and never affect P50. Initial validation: 7/9 comparable upcoming league events matched the stored reference exactly; remaining deltas reflect a newer completed Radomiak-Motor result versus the older reference snapshot.'
+  when feature_key = 'match.timing' then 'Kickoff day/time is refreshed automatically from ticket_events in Europe/Warsaw. Reschedules overwrite the stable v2 observation rather than leaving stale timing context.'
+  when feature_key = 'match.competition_stage' then 'Competition is refreshed automatically from ticket_events. Stage remains explicitly unknown when the event source does not provide it; Beyond does not infer it from competition name alone.'
+  when feature_key = 'match.opponent_historical_uplift' then 'Automated leakage-safe readiness gate uses only verified outcomes before the target kickoff, within the same home club and competition class. Uplift is emitted only after >=8 prior club outcomes and >=3 prior home meetings with the same opponent in a 730-day lookback; otherwise the value stays null rather than defaulting to zero.'
+  when feature_key = 'sport.match_stakes' then 'Automated shadow collector active: Supabase pg_cron + pg_net reads complete TheSportsDB Ekstraklasa round data, reconstructs standings, applies league_match_stakes_v01 and compares each sample with the latest verified manual/official reference. Shadow values never replace Event Detail context and never affect P50.'
   when feature_key = 'sport.form5' then 'The feature means the last five relevant matches across competitions, not league-only form. TheSportsDB free eventslast endpoint returned only one event, so form5 remains verified manual research until a complete licensed recurring feed is selected.'
-  when feature_key = 'sport.rivalry_opponent' then 'Verified rivalry relationships are stored once in a maintained symmetric map and automatically propagated to matching future fixtures. The current map is intentionally incomplete: absence of a relation means unknown, never "not a rivalry". Opponent attractiveness remains a separate unscored/historically learned part of this feature.'
+  when feature_key = 'sport.rivalry_opponent' then 'Verified rivalry relationships are stored once in a maintained symmetric map and automatically propagated to matching future fixtures. The current map is intentionally incomplete: absence of a relation means unknown, never "not a rivalry".'
   when feature_key = 'sport.absence_impact' then 'Absences are verified once from official evidence and stored with an active validity window; Beyond then propagates them automatically to matching future fixtures. The register does not infer player availability from silence, and an absence does not receive a demand score unless player salience, certainty and novelty are supported.'
   when feature_key in ('hype.media_attention','hype.mention_acceleration') then 'Forward-only GDELT Web News NGrams sampler runs every 15 minutes and waits for comparison coverage before interpreting acceleration.'
   when feature_key = 'hype.search_interest' then 'Official Google Trends API remains alpha/early-access and requires approval; no unofficial scraper is used as a production dependency.'
   when feature_key = 'hype.social_volume' then 'Planned after media-attention baseline; provider/API and commercial-use constraints must be confirmed before automation.'
   when feature_key = 'hype.local_fan_buzz' then 'Planned as club-specific public-source configuration rather than one universal Polish forum source.'
   when feature_key = 'hype.sentiment' then 'Deliberately deferred until volume/acceleration signals prove useful.'
-  when feature_key = 'match.opponent_historical_uplift' then 'Requires enough leakage-safe historical attendance by opponent/opponent class before scoring.'
   else collection_note
 end,
 updated_at = now();
