@@ -14,7 +14,7 @@ The matrix defines what contextual evidence Beyond wants to collect around each 
 |---|---:|---|
 | Live Ticketing Signal | 45% | existing live-signal research / primary dynamic evidence |
 | Sporting Context | 30% | point-in-time research evidence |
-| Attention & Hype | 15% | point-in-time research evidence; source work in progress |
+| Attention & Hype | 15% | forward-only point-in-time research evidence |
 | Match Context | 10% | point-in-time/static research evidence |
 | Weather | 0% | shadow only; historical test did not improve accuracy |
 | Data Quality | 0% | confidence modifier, never demand itself |
@@ -36,8 +36,8 @@ Active-prior weights sum to 100%. This does **not** mean the forecast is calcula
 | sport.absence_impact | 5% | collecting | demand-shock scoring refuses unsupported salience | **shadow/research** |
 | hype.search_interest | 4% | not automated | none | **shadow/research** |
 | hype.social_volume | 3% | not automated | none | **shadow/research** |
-| hype.mention_acceleration | 3% | not automated | none | **shadow/research** |
-| hype.media_attention | 2% | source validation in progress | raw volume/acceleration planned | **shadow/research** |
+| hype.mention_acceleration | 3% | derived from media samples when enough history exists | comparison ratio | **shadow/research** |
+| hype.media_attention | 2% | **hourly sampled collection active** | raw 24h/48h volume + acceleration | **shadow/research** |
 | hype.local_fan_buzz | 2% | not automated | none | **shadow/research** |
 | hype.sentiment | 1% | not automated | deliberately low priority | **shadow/research** |
 | match.timing | 4% | collecting | raw context | **shadow/research** |
@@ -77,7 +77,7 @@ Research formula:
 
 If Player Salience is unsupported, the scorer returns no number. A long-known injury should receive low novelty even when absence certainty is near 1.0.
 
-## Attention & Hype principles
+## Attention & Hype v0.1
 
 For the Polish MVP:
 - Reddit is excluded as a core source;
@@ -86,12 +86,33 @@ For the Polish MVP:
 - Polish-audience attention is preferred over generic global volume;
 - no source should be promoted if its commercial-use rights or rate limits are unsuitable for Beyond.
 
-Candidate order:
-1. media-attention volume/acceleration;
-2. search interest;
-3. public social volume/acceleration;
-4. club-specific local fan buzz;
-5. sentiment last.
+### Active media-attention source
+
+The active forward-only collector uses **GDELT Web News NGrams sampled data**, not the legacy GDELT DOC search API.
+
+Why:
+- the legacy DOC API returned repeated `429` responses from Supabase, Edge Functions and GitHub runners;
+- Google News RSS was technically accessible but its feed terms were unsuitable for Beyond's commercial/product use;
+- raw GDELT Web News NGrams files are available without an application API key and are suitable for automated research collection.
+
+Collection model:
+1. GitHub Actions runs hourly;
+2. GitHub OIDC obtains a short-lived token with audience `beyond-media-ingest`;
+3. Supabase Edge verifies issuer, repository `NiedzielX/beyond`, and `refs/heads/main` — no Supabase service-role secret is stored in GitHub;
+4. the runner downloads one recent Web NGrams file and its TOC;
+5. documents where both configured team aliases appear are identified;
+6. Polish-language matches are counted and persisted as `media_attention_samples`;
+7. rolling 24h/previous-24h aggregates create `hype.media_attention` evidence.
+
+The media count is explicitly a **sampled signal**, not a complete count of all articles on the internet.
+
+Acceleration is produced only when both current and previous 24h windows contain at least four samples. Until then the dashboard state is `collecting_baseline` or `collecting_comparison`, not “no hype”.
+
+Current candidate order after media attention:
+1. search interest;
+2. public social volume/acceleration;
+3. club-specific local fan buzz;
+4. sentiment last.
 
 ## Data-quality / leakage rules
 
