@@ -1,4 +1,4 @@
-name: GDELT Egress Probe
+name: GDELT NGrams Probe
 
 on:
   workflow_dispatch:
@@ -11,17 +11,25 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
-      - name: Probe GDELT once
+      - name: Find latest Web NGrams file
         shell: bash
         run: |
           set -euo pipefail
-          url='https://api.gdeltproject.org/api/v2/doc/doc?query=near20%3A%22Lech%20Leverkusen%22&mode=TimelineVolRaw&format=json&timespan=7d&TIMELINESMOOTH=0'
-          status=$(curl --retry 0 --max-time 40 -sS -A 'BeyondTicketingResearch/0.1' -o /tmp/gdelt.json -w '%{http_code}' "$url")
-          echo "GDELT_HTTP_STATUS=$status"
-          head -c 1200 /tmp/gdelt.json || true
-          echo
-          if [ "$status" = "429" ]; then
-            echo 'GDELT_RATE_LIMITED=true'
-            exit 0
+          found=0
+          for minutes in 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30; do
+            stamp=$(date -u -d "$minutes minutes ago" +%Y%m%d%H%M00)
+            base="https://data.gdeltproject.org/gdeltv5/weblegacy/ngrams/${stamp}"
+            status=$(curl -L --max-time 20 -sS -o /dev/null -w '%{http_code}' -r 0-0 "${base}.ngrams.txt.gz" || true)
+            echo "${stamp} ${status}"
+            if [ "$status" = "200" ] || [ "$status" = "206" ]; then
+              echo "GDELT_NGRAMS_FOUND=${base}.ngrams.txt.gz"
+              echo "GDELT_TOC_URL=${base}.toc.json.gz"
+              curl -L --max-time 20 -sSI "${base}.ngrams.txt.gz" | grep -Ei 'content-length|last-modified|content-type' || true
+              found=1
+              break
+            fi
+          done
+          if [ "$found" -ne 1 ]; then
+            echo 'GDELT_NGRAMS_FOUND=false'
+            exit 1
           fi
-          test "$status" = "200"
