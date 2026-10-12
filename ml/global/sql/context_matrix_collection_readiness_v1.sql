@@ -1,6 +1,6 @@
 -- Beyond Ticketing Context Matrix — collection readiness metadata.
 -- Distinguishes what is actually automated today from manual research,
--- planned sources, shadow collection and external-access blockers.
+-- verified registries, planned sources, shadow collection and external-access blockers.
 
 alter table public.context_feature_definitions
   add column if not exists collection_status text,
@@ -14,6 +14,7 @@ alter table public.context_feature_definitions
   check (collection_status is null or collection_status in (
     'active_automated',
     'active_manual',
+    'verified_registry',
     'shadow_automated',
     'planned',
     'blocked_external_access'
@@ -26,8 +27,8 @@ set collection_status = case
   when feature_key = 'weather.kickoff_context' then 'shadow_automated'
   when feature_key in ('match.timing','match.competition_stage') then 'active_automated'
   when feature_key = 'sport.match_stakes' then 'shadow_automated'
-  when feature_key = 'sport.rivalry_opponent' then 'active_automated'
-  when feature_key in ('sport.form5','sport.absence_impact') then 'active_manual'
+  when feature_key in ('sport.rivalry_opponent','sport.absence_impact') then 'verified_registry'
+  when feature_key = 'sport.form5' then 'active_manual'
   when feature_key in ('hype.media_attention','hype.mention_acceleration') then 'active_automated'
   when feature_key = 'hype.search_interest' then 'blocked_external_access'
   else 'planned'
@@ -35,14 +36,14 @@ end,
 primary_source = case
   when feature_key in ('sport.form5','sport.match_stakes') then 'Verified sporting sources / licensed provider TBD'
   when feature_key = 'sport.rivalry_opponent' then 'Beyond verified rivalry map backed by official club/competition evidence'
-  when feature_key = 'sport.absence_impact' then 'Official club/competition evidence / licensed provider TBD'
+  when feature_key = 'sport.absence_impact' then 'Beyond verified absence register backed by official club/competition evidence'
   else primary_source
 end,
 fallback_source = case
   when feature_key = 'sport.match_stakes' then 'TheSportsDB v1 shadow automation + manual official verification'
   when feature_key = 'sport.form5' then 'Manual verification against official competition/club sources'
   when feature_key = 'sport.rivalry_opponent' then 'Manual verified research for unmapped relationships'
-  when feature_key = 'sport.absence_impact' then 'Manual verified research'
+  when feature_key = 'sport.absence_impact' then 'Manual verified research for newly discovered or unresolved absences'
   else fallback_source
 end,
 collection_note = case
@@ -53,7 +54,7 @@ collection_note = case
   when feature_key = 'sport.match_stakes' then 'Automated shadow collector active: Supabase pg_cron + pg_net reads complete TheSportsDB Ekstraklasa round data, reconstructs standings, applies league_match_stakes_v01 and compares each sample with the latest verified manual/official reference. Shadow values never replace Event Detail context and never affect P50. Initial validation: 7/9 comparable upcoming league events matched the stored reference exactly; remaining deltas reflect a newer completed Radomiak-Motor result versus the older reference snapshot.'
   when feature_key = 'sport.form5' then 'The feature means the last five relevant matches across competitions, not league-only form. TheSportsDB free eventslast endpoint returned only one event, so form5 remains verified manual research until a complete licensed recurring feed is selected.'
   when feature_key = 'sport.rivalry_opponent' then 'Verified rivalry relationships are stored once in a maintained symmetric map and automatically propagated to matching future fixtures. The current map is intentionally incomplete: absence of a relation means unknown, never "not a rivalry". Opponent attractiveness remains a separate unscored/historically learned part of this feature.'
-  when feature_key = 'sport.absence_impact' then 'Verified absences are collected from public official evidence. No recurring scraper is used. Demand impact remains unscored unless player salience, certainty and novelty are supported.'
+  when feature_key = 'sport.absence_impact' then 'Absences are verified once from official evidence and stored with an active validity window; Beyond then propagates them automatically to matching future fixtures. The register does not infer player availability from silence, and an absence does not receive a demand score unless player salience, certainty and novelty are supported.'
   when feature_key in ('hype.media_attention','hype.mention_acceleration') then 'Forward-only GDELT Web News NGrams sampler runs every 15 minutes and waits for comparison coverage before interpreting acceleration.'
   when feature_key = 'hype.search_interest' then 'Official Google Trends API remains alpha/early-access and requires approval; no unofficial scraper is used as a production dependency.'
   when feature_key = 'hype.social_volume' then 'Planned after media-attention baseline; provider/API and commercial-use constraints must be confirmed before automation.'
