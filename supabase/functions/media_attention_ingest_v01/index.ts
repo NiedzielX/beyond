@@ -109,6 +109,22 @@ Deno.serve(async (req: Request) => {
     const sampleMs = parseRecentIso(sampleAt, "sampleAt", nowMs, 60 * 60_000);
     if (sampleMs < sourceMs) return json({ ok: false, error: "sampleAt predates source file" }, 400);
 
+    const existingSource = await db(
+      `media_attention_samples?source_file_timestamp=eq.${encodeURIComponent(sourceFileTimestamp)}` +
+      `&select=id&limit=1`,
+      { method: "GET" }
+    ) || [];
+    if (existingSource.length) {
+      return json({
+        ok: true,
+        skipped: true,
+        reason: "source file already ingested",
+        sourceFileTimestamp,
+        repository: claims.repository,
+        sha: claims.sha || null,
+      });
+    }
+
     const allowedEvents = await db(
       `ticket_events?kickoff_at=gte.${encodeURIComponent(windowStart.toISOString())}` +
       `&kickoff_at=lt.${encodeURIComponent(windowEnd.toISOString())}` +
@@ -143,7 +159,7 @@ Deno.serve(async (req: Request) => {
 
     await db("media_attention_samples?on_conflict=ticket_event_id,source_file_timestamp", {
       method: "POST",
-      headers: { Prefer: "resolution=merge-duplicates,return=representation" },
+      headers: { Prefer: "resolution=ignore-duplicates,return=representation" },
       body: JSON.stringify(rows),
     });
     const refreshed = await db("rpc/refresh_media_attention_context_v01", {
@@ -153,7 +169,7 @@ Deno.serve(async (req: Request) => {
 
     return json({
       ok: true,
-      insertedOrUpdated: rows.length,
+      inserted: rows.length,
       sourceFileTimestamp,
       refreshed,
       repository: claims.repository,
