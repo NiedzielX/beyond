@@ -1,0 +1,27 @@
+name: TheSportsDB Coverage Probe
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - "ml/context/thesportsdb_probe_v01.py"
+      - ".github/workflows/thesportsdb-probe.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Probe TheSportsDB Ekstraklasa coverage
+        run: python ml/context/thesportsdb_probe_v01.py
