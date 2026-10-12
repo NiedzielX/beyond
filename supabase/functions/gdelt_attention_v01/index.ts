@@ -67,9 +67,9 @@ async function timeline(query: string): Promise<TimelinePoint[]> {
   url.searchParams.set("timespan", "7d");
   url.searchParams.set("TIMELINESMOOTH", "0");
   const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), 20000);
+  const timer = setTimeout(() => controller.abort(), 25000);
   try {
-    const r = await fetch(url, { signal: controller.signal, headers: { "User-Agent": "BeyondTicketingResearch/0.3", "Accept": "application/json" } });
+    const r = await fetch(url, { signal: controller.signal, headers: { "User-Agent": "BeyondTicketingResearch/0.4", "Accept": "application/json" } });
     const body = await r.text();
     if (r.status === 429) throw new Error("GDELT_RATE_LIMIT");
     if (!r.ok) throw new Error(`GDELT ${r.status}: ${body.slice(0, 300)}`);
@@ -93,48 +93,43 @@ async function upsert(payload: Record<string, unknown>) {
 Deno.serve(async (req: Request) => {
   if (CRON_SECRET === "__runtime-configured__" || req.headers.get("x-beyond-cron") !== CRON_SECRET) return new Response("Unauthorized", { status: 401 });
   const observedAt = new Date();
-  const bucket = observedAt.toISOString().slice(0, 13).replace(/[-T:]/g, "");
-  const output: Record<string, unknown>[] = [];
   try {
     const events = await upcomingLech();
-    for (let index = 0; index < events.length; index += 1) {
-      const event = events[index];
-      if (index > 0) await new Promise(r => setTimeout(r, 5500));
-      const query = queryForEvent(event);
-      try {
-        const points = await timeline(query);
-        const now = observedAt;
-        const h6 = new Date(now.getTime() - 6 * 3600000);
-        const h12 = new Date(now.getTime() - 12 * 3600000);
-        const h24 = new Date(now.getTime() - 24 * 3600000);
-        const h48 = new Date(now.getTime() - 48 * 3600000);
-        const d7 = new Date(now.getTime() - 7 * 86400000);
-        const current6h = sumWindow(points, h6, now);
-        const previous6h = sumWindow(points, h12, h6);
-        const current24h = sumWindow(points, h24, now);
-        const previous24h = sumWindow(points, h48, h24);
-        const prior6d = sumWindow(points, d7, h24);
-        const priorDailyMean = prior6d / 6;
-        const ratio = priorDailyMean > 0 ? current24h / priorDailyMean : null;
-        const acceleration = previous6h > 0 ? current6h / previous6h : (current6h === 0 ? 1 : null);
-        const metadata = {
-          query, window: "7d", language_filter: "polish", scope: "lech_poc",
-          current_6h: current6h, previous_6h: previous6h,
-          current_24h: current24h, previous_24h: previous24h,
-          prior_6d_total: prior6d, prior_daily_mean: Number(priorDailyMean.toFixed(4)),
-          ratio_vs_prior_daily: ratio === null ? null : Number(ratio.toFixed(4)),
-          acceleration_6h: acceleration === null ? null : Number(acceleration.toFixed(4)),
-          scoring_status: "raw_attention_only_not_model_scored"
-        };
-        await upsert({ ticket_event_id: event.id, feature_key: "hype.media_attention", observed_at: observedAt.toISOString(), numeric_value: current24h, text_value: ratio === null ? `${current24h} publikacji w ostatnich 24h; brak stabilnego baseline.` : `${current24h} publikacji w ostatnich 24h; ${ratio.toFixed(2)}× średniego dnia z wcześniejszych 6 dni.`, normalized_score: null, source_name: SOURCE_NAME, source_url: GDELT_URL, confidence: points.length ? 0.85 : 0.4, source_record_key: `gdelt:media:v01:${event.id}:${bucket}`, metadata });
-        await upsert({ ticket_event_id: event.id, feature_key: "hype.mention_acceleration", observed_at: observedAt.toISOString(), numeric_value: acceleration, text_value: acceleration === null ? `${current6h} publikacji w 6h; wcześniejsze 6h = 0, ratio niestabilne.` : `Tempo publikacji 6h: ${acceleration.toFixed(2)}× (${current6h} vs ${previous6h}).`, normalized_score: null, source_name: SOURCE_NAME, source_url: GDELT_URL, confidence: points.length ? 0.8 : 0.35, source_record_key: `gdelt:acceleration:v01:${event.id}:${bucket}`, metadata });
-        output.push({ event_id: event.id, status: "stored", query, points: points.length, current24h, previous24h, ratio, current6h, previous6h, acceleration });
-      } catch (error) {
-        output.push({ event_id: event.id, status: "error", error: String(error), query });
-      }
-    }
-    return Response.json({ collector: "gdelt_attention_v01", observed_at: observedAt.toISOString(), scope: "lech_poc", results: output });
+    if (!events.length) return Response.json({ collector: "gdelt_attention_v01", status: "no_upcoming_lech_events" });
+
+    const event = events[Math.floor(observedAt.getUTCHours() / 3) % events.length];
+    const query = queryForEvent(event);
+    const points = await timeline(query);
+    const now = observedAt;
+    const h6 = new Date(now.getTime() - 6 * 3600000);
+    const h12 = new Date(now.getTime() - 12 * 3600000);
+    const h24 = new Date(now.getTime() - 24 * 3600000);
+    const h48 = new Date(now.getTime() - 48 * 3600000);
+    const d7 = new Date(now.getTime() - 7 * 86400000);
+    const current6h = sumWindow(points, h6, now);
+    const previous6h = sumWindow(points, h12, h6);
+    const current24h = sumWindow(points, h24, now);
+    const previous24h = sumWindow(points, h48, h24);
+    const prior6d = sumWindow(points, d7, h24);
+    const priorDailyMean = prior6d / 6;
+    const ratio = priorDailyMean > 0 ? current24h / priorDailyMean : null;
+    const acceleration = previous6h > 0 ? current6h / previous6h : (current6h === 0 ? 1 : null);
+    const bucket = observedAt.toISOString().slice(0, 13).replace(/[-T:]/g, "");
+    const metadata = {
+      query, window: "7d", language_filter: "polish", scope: "lech_poc_rotating",
+      current_6h: current6h, previous_6h: previous6h,
+      current_24h: current24h, previous_24h: previous24h,
+      prior_6d_total: prior6d, prior_daily_mean: Number(priorDailyMean.toFixed(4)),
+      ratio_vs_prior_daily: ratio === null ? null : Number(ratio.toFixed(4)),
+      acceleration_6h: acceleration === null ? null : Number(acceleration.toFixed(4)),
+      scoring_status: "raw_attention_only_not_model_scored"
+    };
+
+    await upsert({ ticket_event_id: event.id, feature_key: "hype.media_attention", observed_at: observedAt.toISOString(), numeric_value: current24h, text_value: ratio === null ? `${current24h} publikacji w ostatnich 24h; brak stabilnego baseline.` : `${current24h} publikacji w ostatnich 24h; ${ratio.toFixed(2)}× średniego dnia z wcześniejszych 6 dni.`, normalized_score: null, source_name: SOURCE_NAME, source_url: GDELT_URL, confidence: points.length ? 0.85 : 0.4, source_record_key: `gdelt:media:v01:${event.id}:${bucket}`, metadata });
+    await upsert({ ticket_event_id: event.id, feature_key: "hype.mention_acceleration", observed_at: observedAt.toISOString(), numeric_value: acceleration, text_value: acceleration === null ? `${current6h} publikacji w 6h; wcześniejsze 6h = 0, ratio niestabilne.` : `Tempo publikacji 6h: ${acceleration.toFixed(2)}× (${current6h} vs ${previous6h}).`, normalized_score: null, source_name: SOURCE_NAME, source_url: GDELT_URL, confidence: points.length ? 0.8 : 0.35, source_record_key: `gdelt:acceleration:v01:${event.id}:${bucket}`, metadata });
+
+    return Response.json({ collector: "gdelt_attention_v01", observed_at: observedAt.toISOString(), event_id: event.id, query, points: points.length, current24h, previous24h, ratio, current6h, previous6h, acceleration, status: "stored" });
   } catch (error) {
-    return Response.json({ error: String(error) }, { status: 500 });
+    return Response.json({ collector: "gdelt_attention_v01", observed_at: observedAt.toISOString(), status: "error", error: String(error) }, { status: 200 });
   }
 });
