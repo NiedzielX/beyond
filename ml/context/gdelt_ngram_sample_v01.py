@@ -16,7 +16,7 @@ import unicodedata
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
-from urllib.error import HTTPError, URLError
+from urllib.error import HTTPError
 from urllib.request import Request, urlopen
 
 
@@ -36,6 +36,32 @@ def contains_token(phrase: str, token: str) -> bool:
     if not phrase or not token:
         return False
     return f" {token} " in f" {phrase} "
+
+
+def is_polish_lang(value: str | None) -> bool:
+    return str(value or "").casefold() in {"pl", "pol", "polish"}
+
+
+def build_candidate_docs(
+    events: list[dict[str, Any]],
+    team_docs: dict[str, set[int]],
+) -> tuple[dict[int, set[int]], set[int]]:
+    """Return docs mentioning both teams, per event and as one union.
+
+    Team names may occur in different quadgram rows of the same GDELT document;
+    intersecting DOCIDs is therefore intentional and avoids requiring both names
+    to appear in one local phrase.
+    """
+    candidate_by_event: dict[int, set[int]] = {}
+    candidate_union: set[int] = set()
+    for event in events:
+        event_id = int(event["id"])
+        home_docs = team_docs.get(event["homeTeam"], set())
+        away_docs = team_docs.get(event["awayTeam"], set())
+        both = home_docs & away_docs
+        candidate_by_event[event_id] = both
+        candidate_union |= both
+    return candidate_by_event, candidate_union
 
 
 def gdelt_stamp(dt: datetime) -> str:
@@ -121,14 +147,7 @@ def collect(config_path: Path, output_path: Path) -> dict[str, Any]:
         stream.close()
         response.close()
 
-    candidate_by_event: dict[int, set[int]] = {}
-    candidate_union: set[int] = set()
-    for event in events:
-        home_docs = team_docs.get(event["homeTeam"], set())
-        away_docs = team_docs.get(event["awayTeam"], set())
-        both = home_docs & away_docs
-        candidate_by_event[int(event["id"])] = both
-        candidate_union |= both
+    candidate_by_event, candidate_union = build_candidate_docs(events, team_docs)
 
     polish_docs: set[int] = set()
     toc_meta: dict[int, dict[str, Any]] = {}
@@ -149,7 +168,7 @@ def collect(config_path: Path, output_path: Path) -> dict[str, Any]:
                     "url": row.get("url"),
                     "lang": lang,
                 }
-                if lang in {"pl", "pol", "polish"}:
+                if is_polish_lang(lang):
                     polish_docs.add(doc_id)
         finally:
             stream.close()
