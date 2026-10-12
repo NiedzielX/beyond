@@ -25,7 +25,8 @@ set collection_status = case
   when feature_key in ('dq.release_activity','dq.sector_coverage_change') then 'active_automated'
   when feature_key = 'weather.kickoff_context' then 'shadow_automated'
   when feature_key in ('match.timing','match.competition_stage') then 'active_automated'
-  when feature_key in ('sport.match_stakes','sport.rivalry_opponent','sport.form5','sport.absence_impact') then 'active_manual'
+  when feature_key = 'sport.match_stakes' then 'shadow_automated'
+  when feature_key in ('sport.rivalry_opponent','sport.form5','sport.absence_impact') then 'active_manual'
   when feature_key in ('hype.media_attention','hype.mention_acceleration') then 'active_automated'
   when feature_key = 'hype.search_interest' then 'blocked_external_access'
   else 'planned'
@@ -36,7 +37,8 @@ primary_source = case
   else primary_source
 end,
 fallback_source = case
-  when feature_key in ('sport.form5','sport.match_stakes') then 'Manual verification against official competition/club sources'
+  when feature_key = 'sport.match_stakes' then 'TheSportsDB v1 shadow automation + manual official verification'
+  when feature_key = 'sport.form5' then 'Manual verification against official competition/club sources'
   when feature_key in ('sport.absence_impact','sport.rivalry_opponent') then 'Manual verified research'
   else fallback_source
 end,
@@ -45,7 +47,8 @@ collection_note = case
   when feature_key in ('dq.release_activity','dq.sector_coverage_change') then 'Derived automatically from public-inventory snapshot structure; modifies confidence, not demand.'
   when feature_key = 'weather.kickoff_context' then 'Collector is active, but the feature remains shadow-only because historical validation did not improve forecast accuracy.'
   when feature_key in ('match.timing','match.competition_stage') then 'Available from ticket_events / event metadata and stored point-in-time.'
-  when feature_key in ('sport.form5','sport.match_stakes') then 'OpenLigaDB was technically validated but has no Ekstraklasa 2026 coverage. football-data.org does not list Poland in current coverage. Direct product scraping of ekstraklasa.org is not used due to current site terms. Point-in-time values remain verified manual research until a licensed recurring feed is selected.'
+  when feature_key = 'sport.match_stakes' then 'Automated shadow collector active: Supabase pg_cron + pg_net reads complete TheSportsDB Ekstraklasa round data, reconstructs standings, applies league_match_stakes_v01 and compares each sample with the latest verified manual/official reference. Shadow values never replace Event Detail context and never affect P50. Initial validation: 7/9 comparable upcoming league events matched the stored reference exactly; remaining deltas reflect a newer completed Radomiak-Motor result versus the older reference snapshot.'
+  when feature_key = 'sport.form5' then 'The feature means the last five relevant matches across competitions, not league-only form. TheSportsDB free eventslast endpoint returned only one event, so form5 remains verified manual research until a complete licensed recurring feed is selected.'
   when feature_key = 'sport.rivalry_opponent' then 'Rivalry/opponent evidence is verified manually from public club/competition sources. A maintained rivalry map is the intended stable product layer.'
   when feature_key = 'sport.absence_impact' then 'Verified absences are collected from public official evidence. No recurring scraper is used. Demand impact remains unscored unless player salience, certainty and novelty are supported.'
   when feature_key in ('hype.media_attention','hype.mention_acceleration') then 'Forward-only GDELT Web News NGrams sampler runs every 15 minutes and waits for comparison coverage before interpreting acceleration.'
