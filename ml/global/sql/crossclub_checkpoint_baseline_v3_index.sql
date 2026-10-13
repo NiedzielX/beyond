@@ -1,0 +1,2 @@
+create index if not exists idx_crossclub_checkpoint_baselines_checkpoint_code
+  on public.crossclub_checkpoint_baselines_v3(checkpoint_code);
