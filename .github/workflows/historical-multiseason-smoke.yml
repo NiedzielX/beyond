@@ -1,0 +1,68 @@
+name: Historical Multi-Season Source Smoke Test
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/historical-multiseason-smoke.yml'
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: pip install pandas==2.2.3 requests==2.32.5 lxml==6.0.2
+
+      - name: Check Paszport Kibica season pages
+        run: |
+          python - <<'PY'
+          import pandas as pd
+          import requests
+          from io import StringIO
+
+          urls = [
+              'https://kibice.krakow.business/sezon/2022-23',
+              'https://kibice.krakow.business/sezon/2023-24',
+              'https://kibice.krakow.business/sezon/2024-25',
+          ]
+          headers = {'User-Agent': 'Mozilla/5.0 BeyondTicketingResearch/1.0'}
+          for url in urls:
+              r = requests.get(url, headers=headers, timeout=45)
+              print(url, r.status_code, len(r.text), r.url)
+              r.raise_for_status()
+              tables = pd.read_html(StringIO(r.text))
+              candidates=[]
+              for idx,t in enumerate(tables):
+                  cols=[str(c) for c in t.columns]
+                  if any('Mecz' in c for c in cols) and any('Widz' in c for c in cols):
+                      candidates.append((idx, len(t), cols))
+              print('candidate_tables=', candidates)
+              if not candidates:
+                  raise SystemExit(f'No attendance table found at {url}')
+          PY
+
+      - name: Check footballcsv pinned schedule
+        run: |
+          python - <<'PY'
+          import pandas as pd
+          import requests
+          from io import StringIO
+
+          commit='f43a2aa0c65fb061c87e9541e7a567dd58ff933a'
+          url=f'https://raw.githubusercontent.com/footballcsv/cache.footballdata/{commit}/2022-23/pl.1.csv'
+          r=requests.get(url, timeout=45)
+          print(url, r.status_code, len(r.text))
+          r.raise_for_status()
+          df=pd.read_csv(StringIO(r.text))
+          print(df.shape, df.columns.tolist(), df.head(3).to_dict(orient='records'))
+          if len(df) != 306:
+              raise SystemExit(f'Expected 306 rows, got {len(df)}')
+          PY
