@@ -11,9 +11,10 @@ Verified source anomalies
    month/day, teams and result but year=2022 instead of 2021.
 2. Paszport pages for 39 matches in 2023/24 rounds 2-6 expose the correct
    month/day, teams and result but year=2024 instead of 2023.
-3. Radomiak Radom - Piast Gliwice on 2021-12-14 has attendance=0 because the
-   match was played behind closed doors. It remains historical ground truth but
-   is excluded from default demand-model training.
+3. Radomiak Radom - Piast Gliwice on 2021-12-14 has no attendance field on the
+   source page because the match was played behind closed doors. It is parsed
+   only after exact identity checks and recorded as attendance=0; the match is
+   excluded from default demand-model training.
 4. The independent reference uses abbreviated club names in a few seasons
    (e.g. `Legnica` for Miedz Legnica). These are normalized to one canonical
    cross-season club-key contract before reconciliation.
@@ -32,8 +33,6 @@ _original_parse_match_page = legacy.parse_match_page
 _original_canonical_team = legacy.canonical_team
 _original_reconcile = legacy.reconcile
 
-# Probe-verified contiguous ID block for 2021/22, followed by the three blocks
-# already verified by the v1 legacy builder.
 legacy.BLOCKS = [
     legacy.SeasonBlock("2021/2022", 17815, 18120),
     legacy.SeasonBlock("2022/2023", 18427, 18732),
@@ -42,7 +41,6 @@ legacy.BLOCKS = [
 ]
 
 KEY_REMAP = {
-    # Cross-season contract used by Global Model v2.1 / 2025-26 data.
     "legnica": "miedz_legnica",
     "miedzlegnica": "miedz_legnica",
     "lkslodz": "lks_lodz",
@@ -77,8 +75,104 @@ def canonical_team(value: str) -> str:
     return KEY_REMAP.get(key, key)
 
 
+def _parse_closed_doors_match(match_id: int, html: str) -> dict:
+    """Parse the single verified closed-doors page without requiring attendance text.
+
+    All match identity fields are still extracted from the source HTML and later
+    reconciled against the pinned independent schedule/result reference. The
+    exception is therefore narrow: only the missing attendance field is replaced
+    with the externally verified value 0.
+    """
+    if match_id != CLOSED_DOORS_MATCH_ID:
+        raise RuntimeError("closed-doors parser called for unexpected match id")
+
+    soup = legacy.BeautifulSoup(html, "html.parser")
+    text = legacy.compact_text(soup)
+    h1 = soup.find("h1")
+    if h1 is None:
+        raise RuntimeError(f"Match {match_id}: missing h1")
+    title = " ".join(h1.stripped_strings)
+    parts = re.split(r"\s+[—–-]\s+", title, maxsplit=1)
+    if len(parts) != 2:
+        raise RuntimeError(f"Match {match_id}: cannot split teams from h1={title!r}")
+    home_team, away_team = parts[0].strip(), parts[1].strip()
+
+    season_match = re.search(r"Ekstraklasa\s+·\s+(\d{4}/\d{2})\s+·\s+kolejka\s+(\d+)", text)
+    if not season_match:
+        raise RuntimeError(f"Match {match_id}: missing season/round")
+    season = season_match.group(1)
+    round_no = int(season_match.group(2))
+
+    score_match = re.search(
+        re.escape(home_team)
+        + r"\s+[—–-]\s+"
+        + re.escape(away_team)
+        + r"\s+(\d+)\s*[–—-]\s*(\d+)\s+Data",
+        text,
+    )
+    if not score_match:
+        raise RuntimeError(f"Match {match_id}: missing score for {title}")
+    home_goals, away_goals = int(score_match.group(1)), int(score_match.group(2))
+
+    date_match = re.search(
+        r"Data\s+(\d{1,2})\s+([A-Za-zĄąĆćĘęŁłŃńÓóŚśŹźŻż]+)\s+(\d{4})\s+·\s+(\d{1,2}:\d{2})",
+        text,
+    )
+    if not date_match:
+        raise RuntimeError(f"Match {match_id}: missing date/time")
+    match_date = legacy.parse_polish_date(
+        date_match.group(1), date_match.group(2), date_match.group(3)
+    )
+    kickoff_time = date_match.group(4)
+
+    # Fail closed unless this is exactly the verified fixture before assigning 0.
+    identity = (
+        _canonical_season(season),
+        round_no,
+        match_date.isoformat(),
+        canonical_team(home_team),
+        canonical_team(away_team),
+        home_goals,
+        away_goals,
+    )
+    expected = (
+        "2021/2022",
+        17,
+        "2021-12-14",
+        "radomiak_radom",
+        "piastgliwice",
+        2,
+        2,
+    )
+    if identity != expected:
+        raise RuntimeError(
+            f"Match {match_id}: closed-doors identity changed: {identity!r} != {expected!r}"
+        )
+
+    return {
+        "paszport_match_id": match_id,
+        "season": season,
+        "round_no": round_no,
+        "match_date": match_date.isoformat(),
+        "kickoff_time_local": kickoff_time,
+        "home_team": home_team,
+        "away_team": away_team,
+        "home_club_key": canonical_team(home_team),
+        "away_club_key": canonical_team(away_team),
+        "home_goals": home_goals,
+        "away_goals": away_goals,
+        "attendance": 0,
+        "attendance_source": "verified closed-doors exception / Paszport Kibica fixture identity",
+        "source_url": legacy.PASZPORT_MATCH.format(match_id=match_id),
+    }
+
+
 def parse_match_page(match_id: int, html: str) -> dict:
-    row = _original_parse_match_page(match_id, html)
+    row = (
+        _parse_closed_doors_match(match_id, html)
+        if match_id == CLOSED_DOORS_MATCH_ID
+        else _original_parse_match_page(match_id, html)
+    )
     row["season"] = _canonical_season(row["season"])
     row["home_club_key"] = canonical_team(row["home_team"])
     row["away_club_key"] = canonical_team(row["away_team"])
@@ -89,7 +183,6 @@ def parse_match_page(match_id: int, html: str) -> dict:
     row["source_date_delta_days"] = 0
     row["date_correction_reason"] = None
 
-    # 2021/22: 14 independently matched pages in rounds 5-6 have year+1.
     if (
         row["season"] == "2021/2022"
         and int(row["round_no"]) in {5, 6}
@@ -103,7 +196,6 @@ def parse_match_page(match_id: int, html: str) -> dict:
             "verified_against_pinned_reference"
         )
 
-    # 2023/24: 39 independently matched pages in rounds 2-6 have year+1.
     if (
         row["season"] == "2023/2024"
         and int(row["round_no"]) in {2, 3, 4, 5, 6}
@@ -127,7 +219,7 @@ def parse_match_page(match_id: int, html: str) -> dict:
 
 
 def reconcile(scraped, reference):
-    """Keep the base exact reconciliation gate, allowing one verified zero-attendance exception."""
+    """Keep exact reconciliation, allowing only the verified zero-attendance exception."""
     mismatches, report = _original_reconcile(scraped, reference)
 
     closed = scraped[scraped["paszport_match_id"] == CLOSED_DOORS_MATCH_ID]
@@ -156,22 +248,17 @@ def reconcile(scraped, reference):
 
     if not exception_valid:
         report["failures"].append("verified closed-doors match exception missing or changed")
-
     if report["source_date_reconciled_rows"] != 53:
         report["failures"].append(
             f"expected 53 source-date reconciliations, got {report['source_date_reconciled_rows']}"
         )
-
     if report["default_demand_training_excluded_rows"] != 1:
-        report["failures"].append(
-            "expected exactly 1 default demand-training exclusion"
-        )
+        report["failures"].append("expected exactly 1 default demand-training exclusion")
 
     report["status"] = "PASS" if not report["failures"] else "FAIL"
     return mismatches, report
 
 
-# Patch before legacy.main() loads either source.
 legacy.canonical_team = canonical_team
 legacy.parse_match_page = parse_match_page
 legacy.reconcile = reconcile
