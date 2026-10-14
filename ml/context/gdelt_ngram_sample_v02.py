@@ -1,8 +1,8 @@
 """Prospective media-attention v2 sampler for Beyond Ticketing.
 
-Broad attention uses strong club aliases and counts Polish documents mentioning
-at least one team. Match-pair mentions remain a stricter diagnostic: both teams
-must occur somewhere in the same GDELT document.
+Each run samples several recent GDELT Web News NGrams files. Every source file is
+persisted separately, so overlapping workflow runs stay idempotent while sparse
+minute-level news files do not create false zero attention.
 """
 from __future__ import annotations
 
@@ -81,19 +81,29 @@ def probe(url: str) -> bool:
         raise
 
 
-def find_latest_file(now: datetime | None = None) -> dict[str, str]:
+def find_recent_files(now: datetime | None = None) -> list[dict[str, str]]:
+    """Return up to six available source files spread across roughly 30 minutes."""
     now = now or datetime.now(timezone.utc)
-    for minutes in range(5, 36):
-        stamp = gdelt_stamp(now - timedelta(minutes=minutes))
-        base = f"{GDELT_BASE}/{stamp}"
-        ngrams_url = f"{base}.ngrams.txt.gz"
-        if probe(ngrams_url):
-            return {
-                "source_file_timestamp": stamp_to_iso(stamp),
-                "ngrams_url": ngrams_url,
-                "toc_url": f"{base}.toc.json.gz",
-            }
-    raise RuntimeError("No GDELT Web NGrams file found in the last 35 minutes")
+    results: list[dict[str, str]] = []
+    seen: set[str] = set()
+    for target_offset in (5, 10, 15, 20, 25, 30):
+        for minutes in range(target_offset, target_offset + 4):
+            stamp = gdelt_stamp(now - timedelta(minutes=minutes))
+            if stamp in seen:
+                continue
+            base = f"{GDELT_BASE}/{stamp}"
+            ngrams_url = f"{base}.ngrams.txt.gz"
+            if probe(ngrams_url):
+                seen.add(stamp)
+                results.append({
+                    "source_file_timestamp": stamp_to_iso(stamp),
+                    "ngrams_url": ngrams_url,
+                    "toc_url": f"{base}.toc.json.gz",
+                })
+                break
+    if not results:
+        raise RuntimeError("No GDELT Web NGrams files found in the recent sampling window")
+    return results
 
 
 def open_gzip_url(url: str):
@@ -116,10 +126,7 @@ def _tokens(event: dict[str, Any], key: str) -> list[str]:
     return [normalize(x) for x in event.get(key) or [] if normalize(x)]
 
 
-def collect(config_path: Path, output_path: Path) -> dict[str, Any]:
-    events = load_config(config_path)
-    file_info = find_latest_file()
-
+def prepare_tokens(events: list[dict[str, Any]]) -> tuple[dict[str, list[str]], dict[str, list[str]]]:
     all_tokens: dict[str, list[str]] = {}
     strong_tokens: dict[str, list[str]] = {}
     for event in events:
@@ -127,7 +134,15 @@ def collect(config_path: Path, output_path: Path) -> dict[str, Any]:
         all_tokens[event["awayTeam"]] = _tokens(event, "awayTokens")
         strong_tokens[event["homeTeam"]] = _tokens(event, "homeStrongTokens")
         strong_tokens[event["awayTeam"]] = _tokens(event, "awayStrongTokens")
+    return all_tokens, strong_tokens
 
+
+def collect_file(
+    file_info: dict[str, str],
+    events: list[dict[str, Any]],
+    all_tokens: dict[str, list[str]],
+    strong_tokens: dict[str, list[str]],
+) -> tuple[list[dict[str, Any]], dict[str, int]]:
     all_docs: dict[str, set[int]] = {team: set() for team in all_tokens}
     strong_docs: dict[str, set[int]] = {team: set() for team in strong_tokens}
 
@@ -190,15 +205,13 @@ def collect(config_path: Path, output_path: Path) -> dict[str, Any]:
         away_pl = sets["away"] & polish_docs
         union_pl = sets["union"] & polish_docs
         pair_pl = sets["pair"] & polish_docs
-        examples = []
-        for doc_id in sorted(union_pl)[:5]:
-            examples.append({
-                "docId": doc_id,
-                "matchesHome": doc_id in home_pl,
-                "matchesAway": doc_id in away_pl,
-                "matchesPair": doc_id in pair_pl,
-                **toc_meta.get(doc_id, {}),
-            })
+        examples = [{
+            "docId": doc_id,
+            "matchesHome": doc_id in home_pl,
+            "matchesAway": doc_id in away_pl,
+            "matchesPair": doc_id in pair_pl,
+            **toc_meta.get(doc_id, {}),
+        } for doc_id in sorted(union_pl)[:5]]
         samples.append({
             "ticketEventId": event_id,
             "unionMentionsPl": len(union_pl),
@@ -210,23 +223,41 @@ def collect(config_path: Path, output_path: Path) -> dict[str, Any]:
             "examples": examples,
         })
 
-    payload = {
-        "sourceFileTimestamp": file_info["source_file_timestamp"],
-        "sourceFileUrl": file_info["ngrams_url"],
-        "sampleAt": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
-        "samples": samples,
-    }
-    output_path.write_text(json.dumps(payload, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
-
-    summary = {
-        "source_file_timestamp": file_info["source_file_timestamp"],
+    return samples, {
         "ngram_lines": line_count,
-        "configured_events": len(events),
         "candidate_docs_global": len(candidate_union),
         "candidate_docs_polish": len(candidate_union & polish_docs),
         "broad_nonzero_events": sum(1 for row in samples if row["unionMentionsPl"] > 0),
         "pair_nonzero_events": sum(1 for row in samples if row["pairMentionsPl"] > 0),
-        "samples": samples,
+    }
+
+
+def collect(config_path: Path, output_path: Path) -> dict[str, Any]:
+    events = load_config(config_path)
+    all_tokens, strong_tokens = prepare_tokens(events)
+    files = find_recent_files()
+    sample_at = datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
+
+    batches: list[dict[str, Any]] = []
+    summaries: list[dict[str, Any]] = []
+    for file_info in files:
+        samples, stats = collect_file(file_info, events, all_tokens, strong_tokens)
+        batches.append({
+            "sourceFileTimestamp": file_info["source_file_timestamp"],
+            "sourceFileUrl": file_info["ngrams_url"],
+            "samples": samples,
+        })
+        summaries.append({"source_file_timestamp": file_info["source_file_timestamp"], **stats})
+
+    payload = {"sampleAt": sample_at, "batches": batches}
+    output_path.write_text(json.dumps(payload, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
+
+    summary = {
+        "configured_events": len(events),
+        "sampled_files": len(batches),
+        "broad_nonzero_file_events": sum(x["broad_nonzero_events"] for x in summaries),
+        "pair_nonzero_file_events": sum(x["pair_nonzero_events"] for x in summaries),
+        "files": summaries,
     }
     print(json.dumps(summary, ensure_ascii=False, indent=2))
     return summary
