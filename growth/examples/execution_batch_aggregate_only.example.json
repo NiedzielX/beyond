@@ -1,0 +1,33 @@
+{
+  "experimentKey": "lech-korona-protect-yield-20261014-v1",
+  "sourceName": "club-ticketing-export-v1",
+  "batchKey": "lech-korona-20261016T100000Z",
+  "assignmentMode": "aggregate_only",
+  "observedAt": "2026-10-16T10:00:00Z",
+  "arms": [
+    {
+      "armKey": "treatment",
+      "assignedCount": 900,
+      "exposedCount": 720,
+      "purchasersCount": 108,
+      "ticketsCount": 126,
+      "grossTicketRevenue": 18900,
+      "refundsAmount": 0,
+      "campaignCost": 1200
+    },
+    {
+      "armKey": "holdout",
+      "assignedCount": 100,
+      "exposedCount": 0,
+      "purchasersCount": 10,
+      "ticketsCount": 11,
+      "grossTicketRevenue": 1540,
+      "refundsAmount": 0,
+      "campaignCost": 0
+    }
+  ],
+  "metadata": {
+    "exampleOnly": true,
+    "note": "Holdout exposure can be zero while holdout purchasers and revenue remain non-zero."
+  }
+}
