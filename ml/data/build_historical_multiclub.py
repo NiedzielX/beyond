@@ -30,33 +30,85 @@ SEASON = "2025/2026"
 EXPECTED_MATCHES = 306
 EXPECTED_HOME_CLUBS = 18
 
-HOME_TEAM_NAMES = {
-    "arka_gdynia": "Arka Gdynia",
+SOURCE_FILE_TO_CANONICAL = {
+    "arka_gdynia": "arkagdynia",
+    "cracovia": "cracovia",
+    "gks_katowice": "gkskatowice",
+    "gornik_zabrze": "gornikzabrze",
+    "jagiellonia": "jagiellonia",
+    "korona_kielce": "koronakielce",
+    "lech": "lech",
+    "lechia_gdansk": "lechiagdansk",
+    "legia": "legia",
+    "motor_lublin": "motorlublin",
+    "piast_gliwice": "piastgliwice",
+    "pogon_szczecin": "pogonszczecin",
+    "radomiak": "radomiak",
+    "rakow": "rakow",
+    "termalica": "termalica",
+    "widzew_lodz": "widzewlodz",
+    "wisla_plock": "wisla_plock",
+    "zaglebie_lubin": "zaglebie_lubin",
+}
+
+DISPLAY_NAMES = {
+    "arkagdynia": "Arka Gdynia",
     "cracovia": "Cracovia",
-    "gks_katowice": "GKS Katowice",
-    "gornik_zabrze": "Górnik Zabrze",
+    "gkskatowice": "GKS Katowice",
+    "gornikzabrze": "Górnik Zabrze",
     "jagiellonia": "Jagiellonia Białystok",
-    "korona_kielce": "Korona Kielce",
-    "lech_poznan": "Lech Poznań",
-    "lechia_gdansk": "Lechia Gdańsk",
-    "legia_warszawa": "Legia Warszawa",
-    "motor_lublin": "Motor Lublin",
-    "piast_gliwice": "Piast Gliwice",
-    "pogon_szczecin": "Pogoń Szczecin",
-    "radomiak_radom": "Radomiak Radom",
+    "koronakielce": "Korona Kielce",
+    "lech": "Lech Poznań",
+    "lechiagdansk": "Lechia Gdańsk",
+    "legia": "Legia Warszawa",
+    "motorlublin": "Motor Lublin",
+    "piastgliwice": "Piast Gliwice",
+    "pogonszczecin": "Pogoń Szczecin",
+    "radomiak": "Radomiak Radom",
     "rakow": "Raków Częstochowa",
     "termalica": "Bruk-Bet Termalica Nieciecza",
-    "widzew_lodz": "Widzew Łódź",
+    "widzewlodz": "Widzew Łódź",
     "wisla_plock": "Wisła Płock",
     "zaglebie_lubin": "Zagłębie Lubin",
 }
 
+OPPONENT_ALIASES = {
+    "arka gdynia": "arkagdynia",
+    "cracovia": "cracovia",
+    "katowice": "gkskatowice",
+    "gks katowice": "gkskatowice",
+    "gornik zabrze": "gornikzabrze",
+    "jagiellonia": "jagiellonia",
+    "jagiellonia bialystok": "jagiellonia",
+    "korona kielce": "koronakielce",
+    "lech poznan": "lech",
+    "lechia gdansk": "lechiagdansk",
+    "legia warsaw": "legia",
+    "legia warszawa": "legia",
+    "motor lublin": "motorlublin",
+    "piast gliwice": "piastgliwice",
+    "pogon szczecin": "pogonszczecin",
+    "radomiak": "radomiak",
+    "radomiak radom": "radomiak",
+    "rakow": "rakow",
+    "rakow czestochowa": "rakow",
+    "nieciecza": "termalica",
+    "termalica": "termalica",
+    "widzew lodz": "widzewlodz",
+    "wisla plock": "wisla_plock",
+    "zaglebie lubin": "zaglebie_lubin",
+}
 
-def slugify(value: str) -> str:
+
+def ascii_key(value: str) -> str:
     normalized = unicodedata.normalize("NFKD", str(value))
     ascii_only = "".join(ch for ch in normalized if not unicodedata.combining(ch))
-    ascii_only = ascii_only.lower().replace("ł", "l")
-    return re.sub(r"[^a-z0-9]+", "_", ascii_only).strip("_")
+    return re.sub(r"[^a-z0-9]+", " ", ascii_only.lower().replace("ł", "l")).strip()
+
+
+def canonical_opponent(value: str) -> str:
+    key = ascii_key(value)
+    return OPPONENT_ALIASES.get(key, key.replace(" ", "_"))
 
 
 def discover_match_logs(session: requests.Session) -> list[str]:
@@ -88,9 +140,8 @@ def read_log(session: requests.Session, path: str) -> pd.DataFrame:
     return frame
 
 
-def source_club_key(path: str) -> str:
-    filename = Path(path).name
-    return filename.removesuffix("_match_log.csv")
+def source_file_key(path: str) -> str:
+    return Path(path).name.removesuffix("_match_log.csv")
 
 
 def normalize_home_rows(frame: pd.DataFrame, path: str) -> pd.DataFrame:
@@ -102,9 +153,8 @@ def normalize_home_rows(frame: pd.DataFrame, path: str) -> pd.DataFrame:
     if missing:
         raise RuntimeError(f"{path} missing columns: {missing}")
 
-    club_key = source_club_key(path)
-    if club_key not in HOME_TEAM_NAMES:
-        raise RuntimeError(f"No canonical home-team mapping for source key {club_key}")
+    source_key = source_file_key(path)
+    club_key = SOURCE_FILE_TO_CANONICAL.get(source_key, source_key)
 
     out = frame[
         frame["Comp"].astype(str).str.strip().eq("Ekstraklasa")
@@ -125,10 +175,10 @@ def normalize_home_rows(frame: pd.DataFrame, path: str) -> pd.DataFrame:
         "round": out["round"],
         "date": out["date"].dt.strftime("%Y-%m-%d"),
         "kickoff_time_local": out["Time"].astype("string"),
-        "home_team": HOME_TEAM_NAMES[club_key],
+        "home_team": DISPLAY_NAMES.get(club_key, source_key.replace("_", " ").title()),
         "away_team": out["Opponent"].astype(str).str.strip(),
         "home_club_key": club_key,
-        "away_club_key": out["Opponent"].map(slugify),
+        "away_club_key": out["Opponent"].map(canonical_opponent),
         "home_goals": out["home_goals"],
         "away_goals": out["away_goals"],
         "attendance": out["attendance"],
@@ -156,12 +206,15 @@ def quality_report(data: pd.DataFrame, source_paths: list[str]) -> dict:
     coverage = attendance_count / len(completed) if len(completed) else 0.0
     duplicate_count = int(data["match_key"].duplicated().sum())
     home_clubs = int(data["home_club_key"].nunique())
+    away_clubs = int(data["away_club_key"].nunique())
     positive_count = int(completed["attendance_positive"].sum())
 
     if len(completed) != EXPECTED_MATCHES:
         failures.append(f"expected {EXPECTED_MATCHES} completed matches, got {len(completed)}")
     if home_clubs != EXPECTED_HOME_CLUBS:
         failures.append(f"expected {EXPECTED_HOME_CLUBS} home clubs, got {home_clubs}")
+    if away_clubs != EXPECTED_HOME_CLUBS:
+        failures.append(f"expected {EXPECTED_HOME_CLUBS} canonical away clubs, got {away_clubs}")
     if coverage < 0.98:
         failures.append(f"attendance coverage below 98% ({coverage:.2%})")
     if duplicate_count:
@@ -197,6 +250,7 @@ def quality_report(data: pd.DataFrame, source_paths: list[str]) -> dict:
         "attendance_min": int(completed["attendance"].min()),
         "attendance_max": int(completed["attendance"].max()),
         "home_clubs": home_clubs,
+        "away_clubs": away_clubs,
         "club_home_match_counts": club_counts,
         "min_date": str(data["date"].min()),
         "max_date": str(data["date"].max()),
