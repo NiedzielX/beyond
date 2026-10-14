@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 from io import StringIO
-from urllib.parse import urljoin
 
 import pandas as pd
 import requests
@@ -17,7 +16,10 @@ def inspect(url: str) -> None:
     print('\nURL', url, 'STATUS', r.status_code, 'LEN', len(r.text), 'FINAL', r.url)
     r.raise_for_status()
     soup = BeautifulSoup(r.text, 'html.parser')
-    tables = pd.read_html(StringIO(r.text))
+    try:
+        tables = pd.read_html(StringIO(r.text), flavor='lxml')
+    except ValueError:
+        tables = []
     for idx, t in enumerate(tables):
         cols = [str(c) for c in t.columns]
         if any('Mecz' in c for c in cols) or any('Widz' in c for c in cols):
