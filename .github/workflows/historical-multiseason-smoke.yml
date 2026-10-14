@@ -39,7 +39,7 @@ jobs:
               r = requests.get(url, headers=headers, timeout=45)
               print(url, r.status_code, len(r.text), r.url)
               r.raise_for_status()
-              tables = pd.read_html(StringIO(r.text))
+              tables = pd.read_html(StringIO(r.text), flavor='lxml')
               candidates=[]
               for idx,t in enumerate(tables):
                   cols=[str(c) for c in t.columns]
