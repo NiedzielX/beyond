@@ -1,49 +1,54 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
-import re
+from io import StringIO
+from urllib.parse import urljoin
+
+import pandas as pd
 import requests
 from bs4 import BeautifulSoup
 
-URL = 'https://kibice.krakow.business/sezon/2024-25'
+BASE = 'https://kibice.krakow.business'
 HEADERS = {'User-Agent': 'Mozilla/5.0 BeyondTicketingResearch/1.0'}
 
-r = requests.get(URL, headers=HEADERS, timeout=45)
-print('status', r.status_code, 'len', len(r.text), 'url', r.url)
-r.raise_for_status()
-html = r.text
-soup = BeautifulSoup(html, 'html.parser')
 
-print('\nFORMS')
-for form in soup.find_all('form'):
-    print('form', form.get('action'), form.get('method'), form.attrs)
+def inspect(url: str) -> None:
+    r = requests.get(url, headers=HEADERS, timeout=45)
+    print('\nURL', url, 'STATUS', r.status_code, 'LEN', len(r.text), 'FINAL', r.url)
+    r.raise_for_status()
+    soup = BeautifulSoup(r.text, 'html.parser')
+    tables = pd.read_html(StringIO(r.text))
+    for idx, t in enumerate(tables):
+        cols = [str(c) for c in t.columns]
+        if any('Mecz' in c for c in cols) or any('Widz' in c for c in cols):
+            print('TABLE', idx, 'ROWS', len(t), 'COLS', cols)
+            if len(t):
+                print('FIRST', t.head(2).to_dict(orient='records'))
+                print('LAST', t.tail(2).to_dict(orient='records'))
 
-print('\nLINKS_WITH_PAGINATION_HINTS')
-seen=set()
-for a in soup.find_all('a', href=True):
-    href=a['href']
-    text=' '.join(a.stripped_strings)
-    candidate=f'{text} -> {href}'
-    low=candidate.lower()
-    if any(k in low for k in ['page', 'strona', 'offset', 'next', 'nast', 'więcej', 'wiecej', 'ekstraklasa', '2024-25']):
-        if candidate not in seen:
-            seen.add(candidate)
-            print(candidate)
+    print('PAGINATION_LINKS')
+    seen = set()
+    for a in soup.find_all('a', href=True):
+        href = a['href']
+        text = ' '.join(a.stripped_strings)
+        candidate = f'{text} -> {href}'
+        low = candidate.lower()
+        if any(k in low for k in ['page=', 'strona', 'nast', 'poprz', 'next', 'previous', 'cursor', 'offset']):
+            if candidate not in seen:
+                seen.add(candidate)
+                print(candidate)
 
-print('\nSCRIPTS')
-for script in soup.find_all('script'):
-    src=script.get('src')
-    body=script.get_text(' ', strip=True)
-    if src:
-        print('src', src)
-    if body and any(k in body.lower() for k in ['page', 'offset', 'cursor', 'match', 'mecz', 'api', 'fetch', 'htmx']):
-        print('body', body[:1500])
+    print('FORMS')
+    for form in soup.find_all('form'):
+        print('form', form.get('action'), form.get('method'), form.attrs)
+        for inp in form.find_all(['input','select','button']):
+            print(' ', inp.name, inp.get('name'), inp.get('value'), inp.get('type'))
 
-print('\nKEYWORD_CONTEXTS')
-for pattern in ['page', 'offset', 'cursor', 'api/', 'fetch(', 'hx-get', 'load-more', 'pagination', 'strona', 'mecze']:
-    matches=list(re.finditer(pattern, html, re.I))
-    print('PATTERN', pattern, 'COUNT', len(matches))
-    for m in matches[:10]:
-        start=max(0,m.start()-250); end=min(len(html),m.end()+500)
-        print(html[start:end].replace('\n',' ')[:900])
-        print('---')
+
+inspect(f'{BASE}/mecze?season=2024%2F25&tier=1')
+for page in [2, 3, 10, 11]:
+    inspect(f'{BASE}/mecze?season=2024%2F25&tier=1&page={page}')
+
+inspect(f'{BASE}/rozgrywki/ekstraklasa-2024-25')
+for page in [2, 3, 10, 11]:
+    inspect(f'{BASE}/rozgrywki/ekstraklasa-2024-25?page={page}')
