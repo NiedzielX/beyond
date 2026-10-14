@@ -6,6 +6,7 @@ on:
     paths:
       - 'ml/data/probe_pasport_attendance.py'
       - 'ml/data/probe_pasport_pagination.py'
+      - 'ml/data/probe_pasport_match_page.py'
       - '.github/workflows/probe-paszport-attendance.yml'
 
 jobs:
@@ -23,6 +24,7 @@ jobs:
           mkdir -p ml/results
           python -m ml.data.probe_pasport_attendance --output ml/results/paszport_probe.json
           python -m ml.data.probe_pasport_pagination --output ml/results/paszport_pagination_probe.json
+          python -m ml.data.probe_pasport_match_page --output ml/results/paszport_match_probe.json
       - name: Upload diagnostic
         uses: actions/upload-artifact@v4
         with:
@@ -30,3 +32,4 @@ jobs:
           path: |
             ml/results/paszport_probe.json
             ml/results/paszport_pagination_probe.json
+            ml/results/paszport_match_probe.json
