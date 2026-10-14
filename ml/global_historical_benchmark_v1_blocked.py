@@ -2,16 +2,15 @@
 """Blocked time-split version of Beyond Global Historical Benchmark v1.
 
 Protocol per horizon:
-1. build point-in-time snapshots with the canonical Feature Store v2 builder;
-2. fit each candidate only on outcomes completed before the earliest development
-   snapshot `as_of_at`;
-3. select model + naive baseline using the autumn development window;
-4. refit the selected model only on outcomes completed before the earliest
-   spring holdout `as_of_at`;
-5. evaluate the untouched spring holdout.
+1. consume the canonical point-in-time Feature Store v2 artifact;
+2. evaluation targets require >=3 prior home attendances;
+3. model training may also use earlier warm-up rows when their residual baseline
+   is already observable, preserving chronology while avoiding needless data loss;
+4. candidate selection uses autumn 2025 only;
+5. selected candidate is refit strictly before the earliest spring holdout
+   snapshot and then frozen for holdout scoring.
 
-This is intentionally conservative: no model parameters are updated using
-holdout outcomes while the holdout is being scored.
+No production promotion is performed.
 """
 from __future__ import annotations
 
@@ -29,17 +28,25 @@ from ml.global_historical_benchmark_v1 import (
     DEV_START,
     HOLDOUT_START,
     MATCH_COMPLETION_BUFFER,
-    MIN_TRAIN_ROWS,
     baseline_column,
     baseline_report,
     candidates,
     metrics,
-    prepare_store,
 )
+
+MIN_TARGET_HOME_HISTORY = 3
+MIN_TRAIN_ROWS = 24
+
+
+def load_store(path: Path) -> pd.DataFrame:
+    store = pd.read_csv(path)
+    store["as_of_at"] = pd.to_datetime(store["as_of_at"], utc=True)
+    store["kickoff_at"] = pd.to_datetime(store["kickoff_at"], utc=True)
+    return store.sort_values(["horizon", "as_of_at", "match_key"]).reset_index(drop=True)
 
 
 def fit_predict_block(
-    horizon_frame: pd.DataFrame,
+    training_pool: pd.DataFrame,
     target_frame: pd.DataFrame,
     candidate,
     baseline_name: str,
@@ -49,9 +56,10 @@ def fit_predict_block(
 
     baseline_col = baseline_column(baseline_name)
     block_cutoff = target_frame["as_of_at"].min()
-    training = horizon_frame[
-        (horizon_frame["kickoff_at"] + MATCH_COMPLETION_BUFFER < block_cutoff)
-        & horizon_frame[baseline_col].notna()
+    training = training_pool[
+        (training_pool["kickoff_at"] + MATCH_COMPLETION_BUFFER < block_cutoff)
+        & training_pool[baseline_col].notna()
+        & training_pool["target_attendance"].notna()
     ].copy()
     if len(training) < MIN_TRAIN_ROWS:
         return pd.DataFrame(), int(len(training)), "insufficient_training_rows"
@@ -84,10 +92,22 @@ def score(frame: pd.DataFrame) -> dict:
     return metrics(frame["actual"].to_numpy(), frame["prediction"].to_numpy())
 
 
+def eligible_targets(frame: pd.DataFrame) -> pd.DataFrame:
+    return frame[
+        (frame["home_history_n"] >= MIN_TARGET_HOME_HISTORY)
+        & frame["home_attendance_rolling3"].notna()
+        & frame["target_attendance"].notna()
+    ].copy()
+
+
 def evaluate_horizon(store: pd.DataFrame, horizon: str) -> dict:
-    frame = store[store["horizon"] == horizon].copy()
-    dev = frame[(frame["kickoff_at"] >= DEV_START) & (frame["kickoff_at"] < DEV_END)].copy()
-    holdout = frame[frame["kickoff_at"] >= HOLDOUT_START].copy()
+    training_pool = store[store["horizon"] == horizon].copy()
+    targets = eligible_targets(training_pool)
+    dev = targets[(targets["kickoff_at"] >= DEV_START) & (targets["kickoff_at"] < DEV_END)].copy()
+    holdout = targets[targets["kickoff_at"] >= HOLDOUT_START].copy()
+
+    if dev.empty or holdout.empty:
+        raise RuntimeError(f"Missing development/holdout targets for {horizon}")
 
     dev_baselines = baseline_report(dev)
     baseline_name = dev_baselines["winner"]
@@ -95,7 +115,7 @@ def evaluate_horizon(store: pd.DataFrame, horizon: str) -> dict:
 
     development = {}
     for candidate in candidates():
-        pred, train_rows, status = fit_predict_block(frame, dev, candidate, baseline_name)
+        pred, train_rows, status = fit_predict_block(training_pool, dev, candidate, baseline_name)
         development[candidate.name] = {
             "family": candidate.family,
             "train_rows": train_rows,
@@ -108,7 +128,10 @@ def evaluate_horizon(store: pd.DataFrame, horizon: str) -> dict:
         if result["status"] == "ok" and result["metrics"].get("n", 0) > 0
     ]
     if not usable:
-        raise RuntimeError(f"No usable development candidate for {horizon}")
+        counts = sorted({result["train_rows"] for result in development.values()})
+        raise RuntimeError(
+            f"No usable development candidate for {horizon}; training row counts={counts}"
+        )
 
     selected_name = min(
         usable,
@@ -121,7 +144,7 @@ def evaluate_horizon(store: pd.DataFrame, horizon: str) -> dict:
     selected = next(candidate for candidate in candidates() if candidate.name == selected_name)
 
     holdout_pred, holdout_train_rows, holdout_status = fit_predict_block(
-        frame, holdout, selected, baseline_name
+        training_pool, holdout, selected, baseline_name
     )
     if holdout_status != "ok":
         raise RuntimeError(f"Holdout unavailable for {horizon}: {holdout_status}")
@@ -136,7 +159,8 @@ def evaluate_horizon(store: pd.DataFrame, horizon: str) -> dict:
 
     return {
         "horizon": horizon,
-        "eligible_rows": int(len(frame)),
+        "training_pool_rows": int(len(training_pool)),
+        "eligible_target_rows": int(len(targets)),
         "development_rows": int(len(dev)),
         "holdout_rows": int(len(holdout)),
         "development_training_cutoff": dev["as_of_at"].min().isoformat(),
@@ -158,7 +182,7 @@ def write_markdown(report: dict, path: Path) -> None:
     lines = [
         "# Global Historical Benchmark v1 — blocked time split",
         "",
-        "Model selection: autumn 2025. Untouched holdout: spring 2026. No holdout outcomes are used to refit model parameters during scoring.",
+        "Target eligibility: >=3 previous home attendances. Training can use earlier warm-up rows with an observable baseline. Model selection: autumn 2025. Untouched holdout: spring 2026.",
         "",
         "| Horizon | Baseline | Model | Baseline MAE | Model MAE | Δ MAE | Improvement | Decision |",
         "|---|---|---|---:|---:|---:|---:|---|",
@@ -171,7 +195,7 @@ def write_markdown(report: dict, path: Path) -> None:
         )
     lines.extend([
         "",
-        "> This is a one-season global proof-of-signal. It is not a production-promotion benchmark. Multiple historical seasons are still required for season-level generalisation testing.",
+        "> One-season global proof-of-signal only. Multiple historical seasons are required before any production promotion or season-level generalisation claim.",
     ])
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text("\n".join(lines) + "\n")
@@ -179,22 +203,25 @@ def write_markdown(report: dict, path: Path) -> None:
 
 def main() -> None:
     parser = argparse.ArgumentParser()
+    parser.add_argument("--feature-store", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--markdown-output", type=Path)
     args = parser.parse_args()
 
-    store = prepare_store()
+    store = load_store(args.feature_store)
     results = {
         horizon: evaluate_horizon(store, horizon)
         for horizon in sorted(store["horizon"].unique())
     }
     report = {
-        "benchmark_version": "global-historical-v1-blocked",
+        "benchmark_version": "global-historical-v1-blocked-v2",
         "dataset_version": str(store["dataset_version"].iloc[0]),
         "feature_set_version": str(store["feature_set_version"].iloc[0]),
         "protocol": "blocked point-in-time train/dev/holdout",
         "development_window": [DEV_START.isoformat(), DEV_END.isoformat()],
         "holdout_start": HOLDOUT_START.isoformat(),
+        "minimum_target_home_history": MIN_TARGET_HOME_HISTORY,
+        "minimum_training_rows": MIN_TRAIN_ROWS,
         "automatic_promotion": False,
         "horizons": results,
     }
