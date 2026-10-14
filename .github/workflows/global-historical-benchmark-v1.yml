@@ -7,6 +7,7 @@ on:
       - 'ml/features/global_feature_store_v2.py'
       - 'ml/global_historical_benchmark_v1.py'
       - 'ml/global_historical_benchmark_v1_blocked.py'
+      - 'ml/global_historical_readiness_v1.py'
       - 'ml/data/build_historical_multiclub.py'
       - '.github/workflows/global-historical-benchmark-v1.yml'
   pull_request:
@@ -14,11 +15,12 @@ on:
       - 'ml/features/global_feature_store_v2.py'
       - 'ml/global_historical_benchmark_v1.py'
       - 'ml/global_historical_benchmark_v1_blocked.py'
+      - 'ml/global_historical_readiness_v1.py'
       - 'ml/data/build_historical_multiclub.py'
       - '.github/workflows/global-historical-benchmark-v1.yml'
 
 jobs:
-  benchmark:
+  benchmark-readiness:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -41,23 +43,23 @@ jobs:
             --output ml/results/global_feature_store_v2.csv \
             --report ml/results/global_feature_store_v2_quality.json
 
-      - name: Run blocked global historical benchmark
+      - name: Check global benchmark readiness
         run: |
-          python -m ml.global_historical_benchmark_v1_blocked \
+          python -m ml.global_historical_readiness_v1 \
             --feature-store ml/results/global_feature_store_v2.csv \
-            --output ml/results/global_historical_benchmark_v1.json \
-            --markdown-output ml/results/global_historical_benchmark_v1.md
+            --output ml/results/global_historical_readiness_v1.json \
+            --markdown-output ml/results/global_historical_readiness_v1.md
 
-      - name: Publish benchmark summary
-        run: cat ml/results/global_historical_benchmark_v1.md >> "$GITHUB_STEP_SUMMARY"
+      - name: Publish readiness summary
+        run: cat ml/results/global_historical_readiness_v1.md >> "$GITHUB_STEP_SUMMARY"
 
       - name: Upload evidence
         uses: actions/upload-artifact@v4
         with:
-          name: global-historical-benchmark-v1
+          name: global-feature-store-v2-readiness
           path: |
             ml/results/global_feature_store_v2.csv
             ml/results/global_feature_store_v2_quality.json
-            ml/results/global_historical_benchmark_v1.json
-            ml/results/global_historical_benchmark_v1.md
+            ml/results/global_historical_readiness_v1.json
+            ml/results/global_historical_readiness_v1.md
           if-no-files-found: error
