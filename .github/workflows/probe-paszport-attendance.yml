@@ -1,0 +1,28 @@
+name: Probe Paszport Attendance
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'ml/data/probe_pasport_attendance.py'
+      - '.github/workflows/probe-paszport-attendance.yml'
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install dependencies
+        run: pip install pandas==2.2.3 requests==2.32.5 beautifulsoup4==4.14.2 lxml==6.0.2
+      - name: Probe archive structure
+        run: |
+          mkdir -p ml/results
+          python -m ml.data.probe_pasport_attendance --output ml/results/paszport_probe.json
+      - name: Upload diagnostic
+        uses: actions/upload-artifact@v4
+        with:
+          name: paszport-probe
+          path: ml/results/paszport_probe.json
