@@ -5,6 +5,7 @@ on:
   push:
     paths:
       - 'ml/data/build_historical_multiseason_v2.py'
+      - 'ml/data/build_historical_multiseason_v2_verified.py'
       - '.github/workflows/historical-multiseason-v2.yml'
 
 jobs:
@@ -24,10 +25,10 @@ jobs:
           python -m pip install --upgrade pip
           pip install pandas==2.2.3 requests==2.32.5
 
-      - name: Build and cross-validate dataset
+      - name: Build and cross-validate curated dataset
         run: |
           mkdir -p ml/results
-          python -m ml.data.build_historical_multiseason_v2 \
+          python -m ml.data.build_historical_multiseason_v2_verified \
             --output ml/results/historical_multiclub_2021_25_v2.csv \
             --report ml/results/historical_multiclub_2021_25_v2_quality.json
 
@@ -44,14 +45,21 @@ jobs:
           print(f"Status: **{r['status']}**")
           print(f"Canonical rows: **{r['canonical_rows']} / {r['expected_total_rows']}**")
           print(f"Reference matches: **{r['matched_to_reference']}**")
-          print(f"Date mismatches: **{r['date_mismatches']}**")
           print(f"Unmatched Paszport: **{r['unmatched_pasport_rows']}**")
           print(f"Unmatched reference: **{r['unmatched_reference_rows']}**")
+          print(f"Exact source dates: **{r['source_date_exact_rows']}**")
+          print(f"Known +1y source-date anomalies reconciled: **{r['source_date_known_year_shift_rows']}**")
+          print(f"Unexpected source-date mismatches: **{r['source_date_unexpected_rows']}**")
+          print(f"Default demand-training eligible: **{r.get('default_demand_training_eligible_rows', 'n/a')}**")
           print()
           print('| Season | Paszport | Reference | Attendance |')
           print('|---|---:|---:|---:|')
           for season,s in r['seasons'].items():
               print(f"| {season} | {s['paszport_rows']} | {s['reference_rows']} | {s['attendance_rows']} |")
+          if r.get('verified_attendance_overrides'):
+              print('\n## Verified attendance exceptions')
+              for item in r['verified_attendance_overrides']:
+                  print(f"- Paszport {item['paszport_id']}: attendance={item['attendance']} — {item['exception_type']}")
           if r['failures']:
               print('\n## Failures')
               for failure in r['failures']:
