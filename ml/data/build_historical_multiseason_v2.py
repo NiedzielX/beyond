@@ -2,19 +2,19 @@
 """Build Beyond historical multi-season Ekstraklasa attendance dataset v2.
 
 Attendance source:
-  Public Paszport Kibica API, whose match records identify their source as
-  `90minut`.
+  Public Paszport Kibica API. Its records declare `90minut` as the source.
 
-Independent fixture/result cross-check:
+Independent fixture/result reference:
   `tmorcinek/ekstraklasa-analysis/data/POL.csv`, pinned to an immutable Git
-  commit. The file is derived from football-data.co.uk and contains
-  Ekstraklasa fixtures/results across the target seasons.
+  commit and derived from football-data.co.uk.
 
-The builder does not silently repair mismatches. Every desired season must
-contain exactly 306 unique Ekstraklasa matches and every attendance record must
-match exactly one independent fixture by season + home + away + score. Date
-mismatches are reported separately and block the dataset unless explicitly
-understood and encoded in a later dataset version.
+Acceptance rules:
+- exactly 306 Ekstraklasa matches per target season in both sources;
+- one-to-one reconciliation on season + home + away + final score;
+- no silent attendance imputation;
+- canonical date comes from the independent reference;
+- a Paszport date discrepancy is tolerated only when it is the observed source
+  anomaly of exactly +365/+366 days. Any other date mismatch blocks the build.
 """
 from __future__ import annotations
 
@@ -32,14 +32,15 @@ import requests
 PASZPORT_API = "https://api.fundacjanh.org/api/kibice/matches"
 PASZPORT_UI = "https://kibice.krakow.business"
 USER_AGENT = "Mozilla/5.0 BeyondTicketingResearch/2.0"
-TARGET_SEASONS = ["2021/22", "2022/23", "2023/24", "2024/25"]
-REFERENCE_SEASON_TO_CANONICAL = {
-    "2021/2022": "2021/22",
-    "2022/2023": "2022/23",
-    "2023/2024": "2023/24",
-    "2024/2025": "2024/25",
+PASZPORT_SEASON_TO_CANONICAL = {
+    "2021/22": "2021/2022",
+    "2022/23": "2022/2023",
+    "2023/24": "2023/2024",
+    "2024/25": "2024/2025",
 }
+TARGET_SEASONS = list(PASZPORT_SEASON_TO_CANONICAL.values())
 EXPECTED_MATCHES_PER_SEASON = 306
+KNOWN_PASZPORT_DATE_SHIFT_DAYS = {365, 366}
 
 REFERENCE_REPO = "tmorcinek/ekstraklasa-analysis"
 REFERENCE_COMMIT = "390b85cd67aae2223be1c9a0ff558259559596a5"
@@ -49,10 +50,8 @@ REFERENCE_URL = (
     f"{REFERENCE_COMMIT}/{REFERENCE_PATH}"
 )
 
-# Broad range is deliberate. Paszport contains a small number of records whose
-# query-indexed date falls outside a nominal season window while the explicit
-# source `season` label is correct. Retrieve a wider interval and select the
-# target seasons by their explicit season label.
+# Deliberately broad. Some Paszport records carry a correct season label but a
+# stored match_date shifted into the following calendar year.
 DATE_FROM = "2021-07-01"
 DATE_TO = "2025-08-31"
 PAGE_SIZE = 100
@@ -95,6 +94,7 @@ REFERENCE_NAME_ALIASES = {
     "gks katowice": "gkskatowice",
     "gornik l": "gornik_leczna",
     "gornik leczna": "gornik_leczna",
+    "leczna": "gornik_leczna",
     "gornik z": "gornikzabrze",
     "gornik zabrze": "gornikzabrze",
     "jagiellonia": "jagiellonia",
@@ -123,8 +123,10 @@ REFERENCE_NAME_ALIASES = {
     "stal mielec": "stal_mielec",
     "termalica b b": "termalica",
     "termalica": "termalica",
+    "nieciecza": "termalica",
     "warta poznan": "warta_poznan",
     "widzew lodz": "widzewlodz",
+    "wisla": "wisla_krakow",
     "wisla krakow": "wisla_krakow",
     "wisla plock": "wisla_plock",
     "zaglebie": "zaglebie_lubin",
@@ -206,10 +208,12 @@ def normalize_pasport(rows: Iterable[dict]) -> pd.DataFrame:
         raise RuntimeError(f"Paszport API missing fields: {missing}")
 
     raw = raw[
-        raw["season"].isin(TARGET_SEASONS)
+        raw["season"].isin(PASZPORT_SEASON_TO_CANONICAL)
         & raw["competition_name"].astype(str).str.casefold().eq("ekstraklasa")
         & pd.to_numeric(raw["tier_level"], errors="coerce").eq(1)
     ].copy()
+    raw["source_season"] = raw["season"].astype(str)
+    raw["season"] = raw["source_season"].map(PASZPORT_SEASON_TO_CANONICAL)
     raw["match_date_parsed"] = pd.to_datetime(
         raw["match_date"], utc=True, errors="coerce"
     )
@@ -247,7 +251,7 @@ def load_reference(session: requests.Session) -> pd.DataFrame:
     if missing:
         raise RuntimeError(f"Reference POL.csv missing fields: {missing}")
 
-    ref["season"] = ref["Season"].map(REFERENCE_SEASON_TO_CANONICAL)
+    ref["season"] = ref["Season"].astype(str)
     ref = ref[
         ref["Country"].astype(str).str.casefold().eq("poland")
         & ref["League"].astype(str).str.casefold().eq("ekstraklasa")
@@ -281,10 +285,17 @@ def quality_and_join(
         p_duplicate_identity = int(p["identity_key"].duplicated().sum())
         r_duplicate_identity = int(r["identity_key"].duplicated().sum())
         attendance_rows = int(p["attendance"].notna().sum())
+        missing_attendance = p[p["attendance"].isna()][
+            [
+                "paszport_id", "external_id", "home_name_raw", "away_name_raw",
+                "home_goals", "away_goals", "match_date", "round_number",
+            ]
+        ].to_dict(orient="records")
         seasons[season] = {
             "paszport_rows": int(len(p)),
             "reference_rows": int(len(r)),
             "attendance_rows": attendance_rows,
+            "missing_attendance": missing_attendance,
             "paszport_duplicate_ids": p_duplicate_ids,
             "paszport_duplicate_identity_keys": p_duplicate_identity,
             "reference_duplicate_identity_keys": r_duplicate_identity,
@@ -295,7 +306,8 @@ def quality_and_join(
             failures.append(f"{season}: reference expected 306 rows, got {len(r)}")
         if attendance_rows != len(p):
             failures.append(
-                f"{season}: missing attendance on {len(p) - attendance_rows} rows"
+                f"{season}: missing attendance on {len(p) - attendance_rows} rows; "
+                f"details={missing_attendance}"
             )
         if p_duplicate_ids:
             failures.append(f"{season}: duplicate Paszport ids={p_duplicate_ids}")
@@ -322,10 +334,24 @@ def quality_and_join(
     )
     unmatched = joined[joined["_merge"] != "both"].copy()
     matched = joined[joined["_merge"] == "both"].copy()
-    date_mismatch = matched[
-        matched["match_date_only"].notna()
-        & matched["reference_date"].notna()
-        & (matched["match_date_only"] != matched["reference_date"])
+
+    matched["source_date"] = pd.to_datetime(
+        matched["match_date_only"].astype(str), errors="coerce"
+    )
+    matched["canonical_reference_date"] = pd.to_datetime(
+        matched["reference_date"].astype(str), errors="coerce"
+    )
+    matched["source_date_delta_days"] = (
+        matched["source_date"] - matched["canonical_reference_date"]
+    ).dt.days.astype("Int64")
+    exact_date = matched[matched["source_date_delta_days"].eq(0)].copy()
+    known_shift = matched[
+        matched["source_date_delta_days"].isin(KNOWN_PASZPORT_DATE_SHIFT_DAYS)
+    ].copy()
+    unexpected_date = matched[
+        ~matched["source_date_delta_days"].isin(
+            {0, *KNOWN_PASZPORT_DATE_SHIFT_DAYS}
+        )
     ].copy()
 
     if len(unmatched):
@@ -338,15 +364,15 @@ def quality_and_join(
         failures.append(
             f"reference unmatched Paszport rows={len(unmatched)}; examples={examples}"
         )
-    if len(date_mismatch):
-        examples = date_mismatch[
+    if len(unexpected_date):
+        examples = unexpected_date[
             [
-                "season", "home_name_raw", "away_name_raw",
-                "match_date_only", "reference_date",
+                "season", "home_name_raw", "away_name_raw", "match_date_only",
+                "reference_date", "source_date_delta_days",
             ]
         ].head(10).astype(str).to_dict(orient="records")
         failures.append(
-            f"date mismatches={len(date_mismatch)}; examples={examples}"
+            f"unexpected date mismatches={len(unexpected_date)}; examples={examples}"
         )
 
     reverse = reference.merge(
@@ -379,6 +405,10 @@ def quality_and_join(
         "attendance": matched["attendance"],
         "paszport_id": matched["paszport_id"],
         "paszport_external_id": matched["paszport_external_id"],
+        "source_season": matched["source_season"],
+        "source_match_date": matched["match_date_only"].astype(str),
+        "source_date_delta_days": matched["source_date_delta_days"],
+        "source_date_reconciled": matched["source_date_delta_days"].ne(0),
         "source_name": "paszport_kibica_api_90minut",
         "source_url": PASZPORT_API,
         "source_record_url": (
@@ -400,6 +430,11 @@ def quality_and_join(
             f"canonical duplicate match_key rows={match_key_duplicates}"
         )
 
+    delta_distribution = {
+        str(int(k)): int(v)
+        for k, v in matched["source_date_delta_days"].value_counts(dropna=False).items()
+        if pd.notna(k)
+    }
     report = {
         "dataset_version": DATASET_VERSION,
         "sources": {
@@ -420,7 +455,10 @@ def quality_and_join(
         "matched_to_reference": int(len(matched)),
         "unmatched_pasport_rows": int(len(unmatched)),
         "unmatched_reference_rows": int(len(reverse_unmatched)),
-        "date_mismatches": int(len(date_mismatch)),
+        "source_date_exact_rows": int(len(exact_date)),
+        "source_date_known_year_shift_rows": int(len(known_shift)),
+        "source_date_unexpected_rows": int(len(unexpected_date)),
+        "source_date_delta_distribution": delta_distribution,
         "duplicate_match_keys": match_key_duplicates,
         "seasons": seasons,
         "failures": failures,
