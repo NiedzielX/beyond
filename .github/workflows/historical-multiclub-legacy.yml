@@ -1,0 +1,55 @@
+name: Historical Multi-Club Legacy Dataset
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'ml/data/build_historical_multiclub_legacy.py'
+      - '.github/workflows/historical-multiclub-legacy.yml'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install pinned dependencies
+        run: pip install pandas==2.2.3 requests==2.32.5 beautifulsoup4==4.14.2
+      - name: Build and independently reconcile 2022/23-2024/25
+        run: |
+          mkdir -p ml/results
+          python -m ml.data.build_historical_multiclub_legacy \
+            --output ml/results/historical_multiclub_2022_25_v1.csv \
+            --report ml/results/historical_multiclub_2022_25_v1_quality.json \
+            --mismatches ml/results/historical_multiclub_2022_25_v1_mismatches.csv \
+            --sleep-seconds 0.10
+      - name: Publish quality summary
+        run: |
+          python - <<'PY' >> "$GITHUB_STEP_SUMMARY"
+          import json
+          from pathlib import Path
+          r=json.loads(Path('ml/results/historical_multiclub_2022_25_v1_quality.json').read_text())
+          print('# Historical Multi-Club 2022/23–2024/25')
+          print()
+          print(f"Status: **{r['status']}**")
+          print(f"Rows: **{r['rows']}**")
+          print(f"Independent mismatches: **{r['total_mismatch_rows']}**")
+          print()
+          print('| Season | Attendance rows | Reference rows | Matched | Mismatches | Attendance sum |')
+          print('|---|---:|---:|---:|---:|---:|')
+          for season,s in r['seasons'].items():
+              print(f"| {season} | {s['attendance_rows']} | {s['reference_rows']} | {s['matched_rows']} | {s['mismatch_rows']} | {s['attendance_sum']:,} |")
+          PY
+      - name: Upload evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: historical-multiclub-2022-25-v1
+          path: |
+            ml/results/historical_multiclub_2022_25_v1.csv
+            ml/results/historical_multiclub_2022_25_v1_quality.json
+            ml/results/historical_multiclub_2022_25_v1_mismatches.csv
+          if-no-files-found: warn
