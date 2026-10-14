@@ -5,6 +5,7 @@ on:
   push:
     paths:
       - 'ml/data/probe_pasport_attendance.py'
+      - 'ml/data/probe_pasport_pagination.py'
       - '.github/workflows/probe-paszport-attendance.yml'
 
 jobs:
@@ -21,8 +22,11 @@ jobs:
         run: |
           mkdir -p ml/results
           python -m ml.data.probe_pasport_attendance --output ml/results/paszport_probe.json
+          python -m ml.data.probe_pasport_pagination --output ml/results/paszport_pagination_probe.json
       - name: Upload diagnostic
         uses: actions/upload-artifact@v4
         with:
           name: paszport-probe
-          path: ml/results/paszport_probe.json
+          path: |
+            ml/results/paszport_probe.json
+            ml/results/paszport_pagination_probe.json
