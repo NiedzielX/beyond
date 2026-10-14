@@ -5,6 +5,7 @@ on:
   push:
     paths:
       - '.github/workflows/historical-multiseason-smoke.yml'
+      - 'ml/data/probe_pasport_pagination.py'
 
 jobs:
   smoke:
@@ -19,7 +20,7 @@ jobs:
           python-version: '3.12'
 
       - name: Install dependencies
-        run: pip install pandas==2.2.3 requests==2.32.5 lxml==6.0.2
+        run: pip install pandas==2.2.3 requests==2.32.5 lxml==6.0.2 beautifulsoup4==4.14.2
 
       - name: Check Paszport Kibica season pages
         run: |
@@ -48,6 +49,9 @@ jobs:
               if not candidates:
                   raise SystemExit(f'No attendance table found at {url}')
           PY
+
+      - name: Probe Paszport pagination/API hints
+        run: python -m ml.data.probe_pasport_pagination
 
       - name: Check footballcsv pinned schedule
         run: |
