@@ -8,6 +8,8 @@ on:
       - 'ml/data/build_historical_multiclub_legacy_v2.py'
       - '.github/workflows/historical-multiclub-legacy.yml'
 
+# Strict evidence job: source normalizations must still end at 306/306 exact
+# date/team/score reconciliation per season against the pinned reference.
 jobs:
   build:
     runs-on: ubuntu-latest
