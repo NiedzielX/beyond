@@ -1,0 +1,27 @@
+{
+  "benchmark_version": "beyond-global-forecast-v2-2026-10-14",
+  "objective": "minimise leakage-safe out-of-sample final attendance error across clubs and forecast horizons",
+  "data": {
+    "seasons": ["2021/2022", "2022/2023", "2023/2024", "2024/2025", "2025/2026"],
+    "matches": 1530,
+    "feature_snapshots": 7650,
+    "development_selection_season": "2023/2024",
+    "holdout_seasons": ["2024/2025", "2025/2026"],
+    "target_eligibility": "valid demand attendance; >=3 prior eligible home attendances at checkpoint",
+    "closed_doors_excluded_from_demand_training": 1
+  },
+  "protocol": {
+    "point_in_time": true,
+    "candidate_selection": "model family/hyperparameters and baseline selected on 2023/24 only after training on 2021/22-2022/23",
+    "holdout_2024_25": "refit selected specification on 2021/22-2023/24; evaluate 2024/25",
+    "holdout_2025_26": "refit same selected specification on 2021/22-2024/25; evaluate 2025/26",
+    "automatic_production_promotion": false
+  },
+  "horizons": {
+    "T-30": {"baseline":"b_season","selected_model":"gbr","holdouts":{"2024/2025":{"n":297,"baseline_mae":2670.0,"model_mae":2199.3,"improvement_pct":17.6},"2025/2026":{"n":302,"baseline_mae":2768.4,"model_mae":2184.6,"improvement_pct":21.1}},"combined_holdout_baseline_mae":2719.7,"combined_holdout_model_mae":2191.9,"combined_holdout_improvement_pct":19.4},
+    "T-14": {"baseline":"b_r3","selected_model":"histgbr","holdouts":{"2024/2025":{"n":299,"baseline_mae":2395.7,"model_mae":2026.6,"improvement_pct":15.4},"2025/2026":{"n":303,"baseline_mae":2403.9,"model_mae":2020.4,"improvement_pct":16.0}},"combined_holdout_baseline_mae":2399.8,"combined_holdout_model_mae":2023.5,"combined_holdout_improvement_pct":15.7},
+    "T-7": {"baseline":"b_season","selected_model":"gbr","holdouts":{"2024/2025":{"n":300,"baseline_mae":2427.7,"model_mae":1936.1,"improvement_pct":20.2},"2025/2026":{"n":303,"baseline_mae":2503.5,"model_mae":1982.9,"improvement_pct":20.8}},"combined_holdout_baseline_mae":2465.8,"combined_holdout_model_mae":1959.6,"combined_holdout_improvement_pct":20.5},
+    "T-3": {"baseline":"b_season","selected_model":"histgbr","holdouts":{"2024/2025":{"n":300,"baseline_mae":2429.3,"model_mae":1967.8,"improvement_pct":19.0},"2025/2026":{"n":303,"baseline_mae":2501.1,"model_mae":1911.1,"improvement_pct":23.6}},"combined_holdout_baseline_mae":2465.3,"combined_holdout_model_mae":1939.3,"combined_holdout_improvement_pct":21.3},
+    "T-1": {"baseline":"b_season","selected_model":"histgbr","holdouts":{"2024/2025":{"n":300,"baseline_mae":2426.2,"model_mae":1929.5,"improvement_pct":20.5},"2025/2026":{"n":303,"baseline_mae":2500.4,"model_mae":1918.3,"improvement_pct":23.3}},"combined_holdout_baseline_mae":2463.5,"combined_holdout_model_mae":1923.9,"combined_holdout_improvement_pct":21.9}
+  }
+}
