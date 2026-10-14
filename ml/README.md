@@ -1,5 +1,7 @@
 # Beyond ML Benchmark Harness
 
+> **Current source of truth:** [`CORE_PRODUCT_STATUS.md`](./CORE_PRODUCT_STATUS.md) — forecasting-core architecture, sample-size gates, 12 canonical ML questions, known gaps and next implementation sequence. Update that file whenever model/data status materially changes.
+
 This directory is the evaluation gate for Beyond forecasting models.
 
 ## Goal
