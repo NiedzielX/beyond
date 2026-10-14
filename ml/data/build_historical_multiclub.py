@@ -1,18 +1,21 @@
 #!/usr/bin/env python3
 """Build a canonical historical Ekstraklasa match-attendance dataset.
 
-Source: FBref Scores & Fixtures tables.
-Scope: completed 2021/22 through 2025/26 Ekstraklasa seasons.
+Source v1: a public, versioned GitHub mirror of FBref club match logs for the
+completed 2025/26 Ekstraklasa season. We intentionally do not bypass FBref's
+403 protection from CI.
 
-This script is a data-acquisition and quality-gate step only. It does not train,
-promote, or score any model.
+The mirror is pinned to an immutable commit for reproducibility. Only HOME
+Ekstraklasa rows are used, so every league match occurs exactly once.
+
+This script is data acquisition + quality gating only. It never trains or
+promotes a model.
 """
 from __future__ import annotations
 
 import argparse
 import json
 import re
-import time
 import unicodedata
 from io import StringIO
 from pathlib import Path
@@ -20,13 +23,33 @@ from pathlib import Path
 import pandas as pd
 import requests
 
-SEASONS = ["2021-2022", "2022-2023", "2023-2024", "2024-2025", "2025-2026"]
-BASE = "https://fbref.com/en/comps/36/{season}/schedule/{season}-Ekstraklasa-Scores-and-Fixtures"
-EXPECTED_MATCHES_PER_SEASON = 306
-USER_AGENT = (
-    "Mozilla/5.0 (compatible; BeyondTicketingResearch/1.0; "
-    "+https://github.com/NiedzielX/beyond)"
-)
+SOURCE_REPO = "Mewhoosh/ekstraklasa-2025-26-analytics"
+SOURCE_COMMIT = "bce5fb1ef95298a7f2c8687177bd6e9c5461c63a"
+SOURCE_DIR = "data/processed/fbref"
+SEASON = "2025/2026"
+EXPECTED_MATCHES = 306
+EXPECTED_HOME_CLUBS = 18
+
+HOME_TEAM_NAMES = {
+    "arka_gdynia": "Arka Gdynia",
+    "cracovia": "Cracovia",
+    "gks_katowice": "GKS Katowice",
+    "gornik_zabrze": "Górnik Zabrze",
+    "jagiellonia": "Jagiellonia Białystok",
+    "korona_kielce": "Korona Kielce",
+    "lech_poznan": "Lech Poznań",
+    "lechia_gdansk": "Lechia Gdańsk",
+    "legia_warszawa": "Legia Warszawa",
+    "motor_lublin": "Motor Lublin",
+    "piast_gliwice": "Piast Gliwice",
+    "pogon_szczecin": "Pogoń Szczecin",
+    "radomiak_radom": "Radomiak Radom",
+    "rakow": "Raków Częstochowa",
+    "termalica": "Bruk-Bet Termalica Nieciecza",
+    "widzew_lodz": "Widzew Łódź",
+    "wisla_plock": "Wisła Płock",
+    "zaglebie_lubin": "Zagłębie Lubin",
+}
 
 
 def slugify(value: str) -> str:
@@ -36,93 +59,89 @@ def slugify(value: str) -> str:
     return re.sub(r"[^a-z0-9]+", "_", ascii_only).strip("_")
 
 
-def flatten_columns(frame: pd.DataFrame) -> pd.DataFrame:
-    out = frame.copy()
-    if isinstance(out.columns, pd.MultiIndex):
-        out.columns = [
-            next((str(part) for part in reversed(parts) if str(part) != "nan"), "")
-            for parts in out.columns.to_flat_index()
-        ]
-    else:
-        out.columns = [str(column) for column in out.columns]
-    return out
-
-
-def read_schedule(session: requests.Session, season: str) -> tuple[pd.DataFrame, str]:
-    url = BASE.format(season=season)
-    response = session.get(url, headers={"User-Agent": USER_AGENT}, timeout=45)
+def discover_match_logs(session: requests.Session) -> list[str]:
+    url = f"https://api.github.com/repos/{SOURCE_REPO}/git/trees/{SOURCE_COMMIT}?recursive=1"
+    response = session.get(url, timeout=45)
     response.raise_for_status()
-
-    # FBref sometimes wraps tables in HTML comments. Removing comment markers is
-    # sufficient for pandas to discover the schedule table without browser logic.
-    html = response.text.replace("<!--", "").replace("-->", "")
-    tables = pd.read_html(StringIO(html))
-    candidates: list[pd.DataFrame] = []
-    for table in tables:
-        table = flatten_columns(table)
-        required = {"Date", "Home", "Away", "Attendance"}
-        if required.issubset(set(table.columns)):
-            candidates.append(table)
-    if not candidates:
-        raise RuntimeError(f"No Scores & Fixtures table found for {season}: {url}")
-
-    # The schedule table is the candidate with the largest number of rows.
-    return max(candidates, key=len).copy(), url
+    tree = response.json().get("tree", [])
+    paths = sorted(
+        item["path"]
+        for item in tree
+        if item.get("type") == "blob"
+        and item.get("path", "").startswith(f"{SOURCE_DIR}/")
+        and item.get("path", "").endswith("_match_log.csv")
+    )
+    if len(paths) != EXPECTED_HOME_CLUBS:
+        raise RuntimeError(
+            f"Expected {EXPECTED_HOME_CLUBS} club match logs at pinned source commit, got {len(paths)}"
+        )
+    return paths
 
 
-def parse_score(value) -> tuple[int | None, int | None]:
-    if pd.isna(value):
-        return None, None
-    text = str(value).strip().replace("–", "-").replace("—", "-")
-    match = re.match(r"^(\d+)\s*-\s*(\d+)$", text)
-    if not match:
-        return None, None
-    return int(match.group(1)), int(match.group(2))
+def read_log(session: requests.Session, path: str) -> pd.DataFrame:
+    url = f"https://raw.githubusercontent.com/{SOURCE_REPO}/{SOURCE_COMMIT}/{path}"
+    response = session.get(url, timeout=45)
+    response.raise_for_status()
+    frame = pd.read_csv(StringIO(response.text))
+    frame["_source_path"] = path
+    frame["_source_url"] = url
+    return frame
 
 
-def normalize_season(frame: pd.DataFrame, season: str, source_url: str) -> pd.DataFrame:
-    out = frame.copy()
-    out = out[out["Home"].notna() & out["Away"].notna() & out["Date"].notna()].copy()
+def source_club_key(path: str) -> str:
+    filename = Path(path).name
+    return filename.removesuffix("_match_log.csv")
+
+
+def normalize_home_rows(frame: pd.DataFrame, path: str) -> pd.DataFrame:
+    required = {
+        "Date", "Time", "Comp", "Round", "Venue", "GF", "GA",
+        "Opponent", "Attendance", "Referee",
+    }
+    missing = sorted(required - set(frame.columns))
+    if missing:
+        raise RuntimeError(f"{path} missing columns: {missing}")
+
+    club_key = source_club_key(path)
+    if club_key not in HOME_TEAM_NAMES:
+        raise RuntimeError(f"No canonical home-team mapping for source key {club_key}")
+
+    out = frame[
+        frame["Comp"].astype(str).str.strip().eq("Ekstraklasa")
+        & frame["Venue"].astype(str).str.strip().eq("Home")
+    ].copy()
 
     out["date"] = pd.to_datetime(out["Date"], errors="coerce")
-    out = out[out["date"].notna()].copy()
-
-    out["attendance"] = pd.to_numeric(
-        out["Attendance"].astype(str).str.replace(",", "", regex=False).str.replace(" ", "", regex=False),
-        errors="coerce",
-    ).astype("Int64")
-
-    parsed_scores = out.get("Score", pd.Series(index=out.index, dtype=object)).apply(parse_score)
-    out["home_goals"] = [pair[0] for pair in parsed_scores]
-    out["away_goals"] = [pair[1] for pair in parsed_scores]
-
-    result = pd.DataFrame(
-        {
-            "season": season.replace("-", "/"),
-            "round": pd.to_numeric(out.get("Wk"), errors="coerce").astype("Int64"),
-            "date": out["date"].dt.strftime("%Y-%m-%d"),
-            "kickoff_time_local": out.get("Time", pd.Series(index=out.index, dtype=object)).astype("string"),
-            "home_team": out["Home"].astype(str).str.strip(),
-            "away_team": out["Away"].astype(str).str.strip(),
-            "home_goals": pd.array(out["home_goals"], dtype="Int64"),
-            "away_goals": pd.array(out["away_goals"], dtype="Int64"),
-            "attendance": out["attendance"],
-            "venue": out.get("Venue", pd.Series(index=out.index, dtype=object)).astype("string"),
-            "referee": out.get("Referee", pd.Series(index=out.index, dtype=object)).astype("string"),
-            "source_name": "fbref",
-            "source_url": source_url,
-        }
+    out["attendance"] = pd.to_numeric(out["Attendance"], errors="coerce").astype("Int64")
+    out["home_goals"] = pd.to_numeric(out["GF"], errors="coerce").astype("Int64")
+    out["away_goals"] = pd.to_numeric(out["GA"], errors="coerce").astype("Int64")
+    out["round"] = (
+        out["Round"].astype(str).str.extract(r"(\d+)", expand=False)
+        .pipe(pd.to_numeric, errors="coerce").astype("Int64")
     )
-    result["home_club_key"] = result["home_team"].map(slugify)
-    result["away_club_key"] = result["away_team"].map(slugify)
+
+    result = pd.DataFrame({
+        "season": SEASON,
+        "round": out["round"],
+        "date": out["date"].dt.strftime("%Y-%m-%d"),
+        "kickoff_time_local": out["Time"].astype("string"),
+        "home_team": HOME_TEAM_NAMES[club_key],
+        "away_team": out["Opponent"].astype(str).str.strip(),
+        "home_club_key": club_key,
+        "away_club_key": out["Opponent"].map(slugify),
+        "home_goals": out["home_goals"],
+        "away_goals": out["away_goals"],
+        "attendance": out["attendance"],
+        "referee": out["Referee"].astype("string"),
+        "source_name": "github_mirror_fbref",
+        "source_repo": SOURCE_REPO,
+        "source_commit": SOURCE_COMMIT,
+        "source_path": path,
+        "source_url": out["_source_url"].astype("string"),
+    })
     result["match_key"] = (
-        result["season"].astype(str)
-        + "|"
-        + result["date"].astype(str)
-        + "|"
-        + result["home_club_key"]
-        + "|"
-        + result["away_club_key"]
+        result["season"] + "|" + result["date"] + "|"
+        + result["home_club_key"] + "|" + result["away_club_key"]
     )
     result["completed"] = result["home_goals"].notna() & result["away_goals"].notna()
     result["attendance_observed"] = result["attendance"].notna()
@@ -130,47 +149,57 @@ def normalize_season(frame: pd.DataFrame, season: str, source_url: str) -> pd.Da
     return result
 
 
-def quality_report(data: pd.DataFrame) -> dict:
-    seasons: dict[str, dict] = {}
+def quality_report(data: pd.DataFrame, source_paths: list[str]) -> dict:
     failures: list[str] = []
-
-    for season, group in data.groupby("season", sort=True):
-        completed = group[group["completed"]]
-        attendance_count = int(completed["attendance_observed"].sum())
-        expected = EXPECTED_MATCHES_PER_SEASON
-        coverage = attendance_count / len(completed) if len(completed) else 0.0
-        seasons[season] = {
-            "rows": int(len(group)),
-            "completed_rows": int(len(completed)),
-            "attendance_rows": attendance_count,
-            "attendance_coverage_pct": round(coverage * 100.0, 2),
-            "home_clubs": int(group["home_club_key"].nunique()),
-            "min_date": str(group["date"].min()),
-            "max_date": str(group["date"].max()),
-        }
-        if len(completed) != expected:
-            failures.append(f"{season}: expected {expected} completed matches, got {len(completed)}")
-        if coverage < 0.95:
-            failures.append(f"{season}: attendance coverage below 95% ({coverage:.2%})")
-
+    completed = data[data["completed"]]
+    attendance_count = int(completed["attendance_observed"].sum())
+    coverage = attendance_count / len(completed) if len(completed) else 0.0
     duplicate_count = int(data["match_key"].duplicated().sum())
+    home_clubs = int(data["home_club_key"].nunique())
+    positive_count = int(completed["attendance_positive"].sum())
+
+    if len(completed) != EXPECTED_MATCHES:
+        failures.append(f"expected {EXPECTED_MATCHES} completed matches, got {len(completed)}")
+    if home_clubs != EXPECTED_HOME_CLUBS:
+        failures.append(f"expected {EXPECTED_HOME_CLUBS} home clubs, got {home_clubs}")
+    if coverage < 0.98:
+        failures.append(f"attendance coverage below 98% ({coverage:.2%})")
     if duplicate_count:
         failures.append(f"duplicate match_key rows: {duplicate_count}")
+    if positive_count != attendance_count:
+        failures.append(
+            f"non-positive observed attendance rows: {attendance_count - positive_count}"
+        )
 
-    invalid_attendance = int(
-        (data["attendance_observed"] & (data["attendance"].astype("Float64") < 0)).sum()
-    )
-    if invalid_attendance:
-        failures.append(f"negative attendance rows: {invalid_attendance}")
+    club_counts = {
+        str(key): int(value)
+        for key, value in data.groupby("home_club_key").size().sort_index().items()
+    }
+    unexpected_home_counts = {
+        key: count for key, count in club_counts.items() if count != 17
+    }
+    if unexpected_home_counts:
+        failures.append(f"clubs without 17 home league matches: {unexpected_home_counts}")
 
     return {
-        "dataset_version": "historical-multiclub-fbref-v1",
-        "source": "FBref Scores & Fixtures",
-        "seasons": seasons,
+        "dataset_version": "historical-multiclub-2025-26-v1",
+        "source": {
+            "type": "public_git_mirror_of_fbref_match_logs",
+            "repository": SOURCE_REPO,
+            "commit": SOURCE_COMMIT,
+            "files": len(source_paths),
+        },
+        "season": SEASON,
         "rows": int(len(data)),
-        "completed_rows": int(data["completed"].sum()),
-        "attendance_rows": int(data["attendance_observed"].sum()),
-        "clubs": int(pd.concat([data["home_club_key"], data["away_club_key"]]).nunique()),
+        "completed_rows": int(len(completed)),
+        "attendance_rows": attendance_count,
+        "attendance_coverage_pct": round(coverage * 100.0, 2),
+        "attendance_min": int(completed["attendance"].min()),
+        "attendance_max": int(completed["attendance"].max()),
+        "home_clubs": home_clubs,
+        "club_home_match_counts": club_counts,
+        "min_date": str(data["date"].min()),
+        "max_date": str(data["date"].max()),
         "duplicate_match_keys": duplicate_count,
         "failures": failures,
         "status": "PASS" if not failures else "FAIL",
@@ -181,20 +210,14 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--report", type=Path, required=True)
-    parser.add_argument("--sleep-seconds", type=float, default=4.0)
     args = parser.parse_args()
 
     session = requests.Session()
-    frames: list[pd.DataFrame] = []
-    for idx, season in enumerate(SEASONS):
-        raw, source_url = read_schedule(session, season)
-        frames.append(normalize_season(raw, season, source_url))
-        if idx < len(SEASONS) - 1:
-            time.sleep(args.sleep_seconds)
-
+    source_paths = discover_match_logs(session)
+    frames = [normalize_home_rows(read_log(session, path), path) for path in source_paths]
     data = pd.concat(frames, ignore_index=True)
     data = data.sort_values(["date", "home_club_key", "away_club_key"]).reset_index(drop=True)
-    report = quality_report(data)
+    report = quality_report(data, source_paths)
 
     args.output.parent.mkdir(parents=True, exist_ok=True)
     data.to_csv(args.output, index=False)
