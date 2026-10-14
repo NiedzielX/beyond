@@ -5,6 +5,7 @@ on:
   push:
     paths:
       - 'ml/data/build_historical_multiclub_legacy.py'
+      - 'ml/data/build_historical_multiclub_legacy_v2.py'
       - '.github/workflows/historical-multiclub-legacy.yml'
 
 jobs:
@@ -21,7 +22,7 @@ jobs:
       - name: Build and independently reconcile 2022/23-2024/25
         run: |
           mkdir -p ml/results
-          python -m ml.data.build_historical_multiclub_legacy \
+          python -m ml.data.build_historical_multiclub_legacy_v2 \
             --output ml/results/historical_multiclub_2022_25_v1.csv \
             --report ml/results/historical_multiclub_2022_25_v1_quality.json \
             --mismatches ml/results/historical_multiclub_2022_25_v1_mismatches.csv \
