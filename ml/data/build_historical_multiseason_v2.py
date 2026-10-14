@@ -22,6 +22,7 @@ import argparse
 import json
 import re
 import unicodedata
+from io import StringIO
 from pathlib import Path
 from typing import Iterable
 
@@ -32,6 +33,12 @@ PASZPORT_API = "https://api.fundacjanh.org/api/kibice/matches"
 PASZPORT_UI = "https://kibice.krakow.business"
 USER_AGENT = "Mozilla/5.0 BeyondTicketingResearch/2.0"
 TARGET_SEASONS = ["2021/22", "2022/23", "2023/24", "2024/25"]
+REFERENCE_SEASON_TO_CANONICAL = {
+    "2021/2022": "2021/22",
+    "2022/2023": "2022/23",
+    "2023/2024": "2023/24",
+    "2024/2025": "2024/25",
+}
 EXPECTED_MATCHES_PER_SEASON = 306
 
 REFERENCE_REPO = "tmorcinek/ekstraklasa-analysis"
@@ -43,16 +50,14 @@ REFERENCE_URL = (
 )
 
 # Broad range is deliberate. Paszport contains a small number of records whose
-# stored match_date falls outside the nominal season window while the explicit
-# `season` label is correct. We retrieve the whole four-season interval and then
-# filter by the source-provided season label.
+# query-indexed date falls outside a nominal season window while the explicit
+# source `season` label is correct. Retrieve a wider interval and select the
+# target seasons by their explicit season label.
 DATE_FROM = "2021-07-01"
 DATE_TO = "2025-08-31"
 PAGE_SIZE = 100
 DATASET_VERSION = "historical-multiclub-2021-25-v2"
 
-# Canonical Beyond keys. Slugs not listed here are normalized mechanically, but
-# known clubs use the same keys as the live Beyond data wherever possible.
 SLUG_ALIASES = {
     "arka-gdynia": "arkagdynia",
     "bruk-bet-termalica-nieciecza": "termalica",
@@ -84,8 +89,6 @@ SLUG_ALIASES = {
     "zaglebie-lubin": "zaglebie_lubin",
 }
 
-# football-data style naming differs from Paszport/90minut. This map is kept
-# explicit to make matching auditable rather than fuzzy.
 REFERENCE_NAME_ALIASES = {
     "arka gdynia": "arkagdynia",
     "cracovia": "cracovia",
@@ -114,6 +117,7 @@ REFERENCE_NAME_ALIASES = {
     "radomiak": "radomiak",
     "rakow": "rakow",
     "rakow czestochowa": "rakow",
+    "ruch": "ruch_chorzow",
     "ruch chorzow": "ruch_chorzow",
     "slask wroclaw": "slask_wroclaw",
     "stal mielec": "stal_mielec",
@@ -129,33 +133,22 @@ REFERENCE_NAME_ALIASES = {
 
 
 def ascii_text(value: object) -> str:
-    text = unicodedata.normalize("NFKD", str(value))
+    text = str(value).replace("Ł", "L").replace("ł", "l")
+    text = unicodedata.normalize("NFKD", text)
     text = "".join(ch for ch in text if not unicodedata.combining(ch))
-    text = text.lower().replace("ł", "l")
-    return re.sub(r"[^a-z0-9]+", " ", text).strip()
+    return re.sub(r"[^a-z0-9]+", " ", text.lower()).strip()
 
 
 def slug_to_key(slug: object, fallback_name: object) -> str:
     slug_text = str(slug or "").strip().lower()
     if slug_text in SLUG_ALIASES:
         return SLUG_ALIASES[slug_text]
-    raw = ascii_text(fallback_name)
-    return re.sub(r"[^a-z0-9]+", "_", raw).strip("_")
+    return ascii_text(fallback_name).replace(" ", "_")
 
 
 def reference_name_to_key(value: object) -> str:
-    key = ascii_text(value)
-    return REFERENCE_NAME_ALIASES.get(key, key.replace(" ", "_"))
-
-
-def parse_reference_score(value: object) -> tuple[int | None, int | None]:
-    if pd.isna(value):
-        return None, None
-    text = str(value).strip().replace("–", "-").replace("—", "-")
-    match = re.match(r"^(\d+)\s*-\s*(\d+)$", text)
-    if not match:
-        return None, None
-    return int(match.group(1)), int(match.group(2))
+    normalized = ascii_text(value)
+    return REFERENCE_NAME_ALIASES.get(normalized, normalized.replace(" ", "_"))
 
 
 def fetch_pasport(session: requests.Session) -> list[dict]:
@@ -192,7 +185,9 @@ def fetch_pasport(session: requests.Session) -> list[dict]:
         if offset > 5000:
             raise RuntimeError("Paszport pagination safety stop")
     if expected_total is not None and len(rows) != expected_total:
-        raise RuntimeError(f"Paszport pagination mismatch: expected {expected_total}, got {len(rows)}")
+        raise RuntimeError(
+            f"Paszport pagination mismatch: expected {expected_total}, got {len(rows)}"
+        )
     return rows
 
 
@@ -215,8 +210,9 @@ def normalize_pasport(rows: Iterable[dict]) -> pd.DataFrame:
         & raw["competition_name"].astype(str).str.casefold().eq("ekstraklasa")
         & pd.to_numeric(raw["tier_level"], errors="coerce").eq(1)
     ].copy()
-
-    raw["match_date_parsed"] = pd.to_datetime(raw["match_date"], utc=True, errors="coerce")
+    raw["match_date_parsed"] = pd.to_datetime(
+        raw["match_date"], utc=True, errors="coerce"
+    )
     raw["match_date_only"] = raw["match_date_parsed"].dt.date
     raw["home_club_key"] = [
         slug_to_key(slug, name)
@@ -232,7 +228,6 @@ def normalize_pasport(rows: Iterable[dict]) -> pd.DataFrame:
     raw["round_number"] = pd.to_numeric(raw["round_number"], errors="coerce").astype("Int64")
     raw["paszport_id"] = raw["id"].astype(str)
     raw["paszport_external_id"] = raw["external_id"].astype("string")
-
     raw["identity_key"] = (
         raw["season"].astype(str) + "|" + raw["home_club_key"] + "|"
         + raw["away_club_key"] + "|" + raw["home_goals"].astype(str)
@@ -242,46 +237,50 @@ def normalize_pasport(rows: Iterable[dict]) -> pd.DataFrame:
 
 
 def load_reference(session: requests.Session) -> pd.DataFrame:
-    response = session.get(REFERENCE_URL, headers={"User-Agent": USER_AGENT}, timeout=45)
+    response = session.get(
+        REFERENCE_URL, headers={"User-Agent": USER_AGENT}, timeout=45
+    )
     response.raise_for_status()
-    from io import StringIO
     ref = pd.read_csv(StringIO(response.text))
     required = {"Country", "League", "Season", "Date", "Home", "Away", "HG", "AG"}
     missing = sorted(required - set(ref.columns))
     if missing:
         raise RuntimeError(f"Reference POL.csv missing fields: {missing}")
+
+    ref["season"] = ref["Season"].map(REFERENCE_SEASON_TO_CANONICAL)
     ref = ref[
         ref["Country"].astype(str).str.casefold().eq("poland")
         & ref["League"].astype(str).str.casefold().eq("ekstraklasa")
-        & ref["Season"].isin(TARGET_SEASONS)
+        & ref["season"].isin(TARGET_SEASONS)
     ].copy()
-    ref["reference_date"] = pd.to_datetime(ref["Date"], dayfirst=True, errors="coerce").dt.date
+    ref["reference_date"] = pd.to_datetime(
+        ref["Date"], dayfirst=True, errors="coerce"
+    ).dt.date
     ref["home_club_key"] = ref["Home"].map(reference_name_to_key)
     ref["away_club_key"] = ref["Away"].map(reference_name_to_key)
     ref["home_goals_ref"] = pd.to_numeric(ref["HG"], errors="coerce").astype("Int64")
     ref["away_goals_ref"] = pd.to_numeric(ref["AG"], errors="coerce").astype("Int64")
     ref["identity_key"] = (
-        ref["Season"].astype(str) + "|" + ref["home_club_key"] + "|"
+        ref["season"].astype(str) + "|" + ref["home_club_key"] + "|"
         + ref["away_club_key"] + "|" + ref["home_goals_ref"].astype(str)
         + "-" + ref["away_goals_ref"].astype(str)
     )
     return ref
 
 
-def quality_and_join(paszport: pd.DataFrame, reference: pd.DataFrame) -> tuple[pd.DataFrame, dict]:
+def quality_and_join(
+    paszport: pd.DataFrame, reference: pd.DataFrame
+) -> tuple[pd.DataFrame, dict]:
     failures: list[str] = []
     seasons: dict[str, dict] = {}
 
-    # Independent source is expected to contain the complete 306-match schedule
-    # for every target season.
     for season in TARGET_SEASONS:
         p = paszport[paszport["season"] == season].copy()
-        r = reference[reference["Season"] == season].copy()
+        r = reference[reference["season"] == season].copy()
         p_duplicate_ids = int(p["paszport_id"].duplicated().sum())
         p_duplicate_identity = int(p["identity_key"].duplicated().sum())
         r_duplicate_identity = int(r["identity_key"].duplicated().sum())
         attendance_rows = int(p["attendance"].notna().sum())
-
         seasons[season] = {
             "paszport_rows": int(len(p)),
             "reference_rows": int(len(r)),
@@ -295,17 +294,26 @@ def quality_and_join(paszport: pd.DataFrame, reference: pd.DataFrame) -> tuple[p
         if len(r) != EXPECTED_MATCHES_PER_SEASON:
             failures.append(f"{season}: reference expected 306 rows, got {len(r)}")
         if attendance_rows != len(p):
-            failures.append(f"{season}: missing attendance on {len(p) - attendance_rows} rows")
+            failures.append(
+                f"{season}: missing attendance on {len(p) - attendance_rows} rows"
+            )
         if p_duplicate_ids:
             failures.append(f"{season}: duplicate Paszport ids={p_duplicate_ids}")
         if p_duplicate_identity:
-            failures.append(f"{season}: duplicate Paszport identity keys={p_duplicate_identity}")
+            failures.append(
+                f"{season}: duplicate Paszport identity keys={p_duplicate_identity}"
+            )
         if r_duplicate_identity:
-            failures.append(f"{season}: duplicate reference identity keys={r_duplicate_identity}")
+            failures.append(
+                f"{season}: duplicate reference identity keys={r_duplicate_identity}"
+            )
 
     joined = paszport.merge(
         reference[
-            ["identity_key", "reference_date", "Home", "Away", "home_goals_ref", "away_goals_ref"]
+            [
+                "identity_key", "reference_date", "Home", "Away",
+                "home_goals_ref", "away_goals_ref",
+            ]
         ],
         on="identity_key",
         how="left",
@@ -322,16 +330,25 @@ def quality_and_join(paszport: pd.DataFrame, reference: pd.DataFrame) -> tuple[p
 
     if len(unmatched):
         examples = unmatched[
-            ["season", "home_name_raw", "away_name_raw", "home_goals", "away_goals", "match_date"]
+            [
+                "season", "home_name_raw", "away_name_raw",
+                "home_goals", "away_goals", "match_date",
+            ]
         ].head(10).to_dict(orient="records")
-        failures.append(f"reference unmatched Paszport rows={len(unmatched)}; examples={examples}")
+        failures.append(
+            f"reference unmatched Paszport rows={len(unmatched)}; examples={examples}"
+        )
     if len(date_mismatch):
         examples = date_mismatch[
-            ["season", "home_name_raw", "away_name_raw", "match_date_only", "reference_date"]
+            [
+                "season", "home_name_raw", "away_name_raw",
+                "match_date_only", "reference_date",
+            ]
         ].head(10).astype(str).to_dict(orient="records")
-        failures.append(f"date mismatches={len(date_mismatch)}; examples={examples}")
+        failures.append(
+            f"date mismatches={len(date_mismatch)}; examples={examples}"
+        )
 
-    # Reverse coverage: every reference fixture must be represented in Paszport.
     reverse = reference.merge(
         paszport[["identity_key", "paszport_id"]],
         on="identity_key",
@@ -340,11 +357,13 @@ def quality_and_join(paszport: pd.DataFrame, reference: pd.DataFrame) -> tuple[p
     )
     reverse_unmatched = reverse[reverse["_merge"] != "both"]
     if len(reverse_unmatched):
-        examples = reverse_unmatched[["Season", "Home", "Away", "HG", "AG"]].head(10).to_dict(orient="records")
-        failures.append(f"reference fixtures missing in Paszport={len(reverse_unmatched)}; examples={examples}")
+        examples = reverse_unmatched[
+            ["season", "Home", "Away", "HG", "AG"]
+        ].head(10).to_dict(orient="records")
+        failures.append(
+            f"reference fixtures missing in Paszport={len(reverse_unmatched)}; examples={examples}"
+        )
 
-    # Produce canonical output only from matched rows. The caller refuses to
-    # publish it if any failure is present.
     out = pd.DataFrame({
         "dataset_version": DATASET_VERSION,
         "season": matched["season"],
@@ -362,7 +381,9 @@ def quality_and_join(paszport: pd.DataFrame, reference: pd.DataFrame) -> tuple[p
         "paszport_external_id": matched["paszport_external_id"],
         "source_name": "paszport_kibica_api_90minut",
         "source_url": PASZPORT_API,
-        "source_record_url": PASZPORT_UI + "/mecze/" + matched["paszport_id"].astype(str),
+        "source_record_url": (
+            PASZPORT_UI + "/mecze/" + matched["paszport_id"].astype(str)
+        ),
         "source_declared_origin": matched["source"].astype("string"),
         "reference_name": "tmorcinek_ekstraklasa_analysis_POL.csv",
         "reference_repo": REFERENCE_REPO,
@@ -375,7 +396,9 @@ def quality_and_join(paszport: pd.DataFrame, reference: pd.DataFrame) -> tuple[p
     )
     match_key_duplicates = int(out["match_key"].duplicated().sum())
     if match_key_duplicates:
-        failures.append(f"canonical duplicate match_key rows={match_key_duplicates}")
+        failures.append(
+            f"canonical duplicate match_key rows={match_key_duplicates}"
+        )
 
     report = {
         "dataset_version": DATASET_VERSION,
@@ -403,7 +426,9 @@ def quality_and_join(paszport: pd.DataFrame, reference: pd.DataFrame) -> tuple[p
         "failures": failures,
         "status": "PASS" if not failures else "FAIL",
     }
-    return out.sort_values(["date", "home_club_key", "away_club_key"]), report
+    return out.sort_values(
+        ["date", "home_club_key", "away_club_key"]
+    ).reset_index(drop=True), report
 
 
 def main() -> None:
@@ -418,7 +443,9 @@ def main() -> None:
     output, report = quality_and_join(paszport, reference)
 
     args.report.parent.mkdir(parents=True, exist_ok=True)
-    args.report.write_text(json.dumps(report, ensure_ascii=False, indent=2, default=str) + "\n")
+    args.report.write_text(
+        json.dumps(report, ensure_ascii=False, indent=2, default=str) + "\n"
+    )
     print(json.dumps(report, ensure_ascii=False, indent=2, default=str))
 
     if report["status"] != "PASS":
