@@ -1,0 +1,70 @@
+name: Historical Multi-Season Dataset v2
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'ml/data/build_historical_multiseason_v2.py'
+      - '.github/workflows/historical-multiseason-v2.yml'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install pinned dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pandas==2.2.3 requests==2.32.5
+
+      - name: Build and cross-validate dataset
+        run: |
+          mkdir -p ml/results
+          python -m ml.data.build_historical_multiseason_v2 \
+            --output ml/results/historical_multiclub_2021_25_v2.csv \
+            --report ml/results/historical_multiclub_2021_25_v2_quality.json
+
+      - name: Publish quality summary
+        if: always()
+        run: |
+          if [ -f ml/results/historical_multiclub_2021_25_v2_quality.json ]; then
+            python - <<'PY' >> "$GITHUB_STEP_SUMMARY"
+          import json
+          from pathlib import Path
+          r=json.loads(Path('ml/results/historical_multiclub_2021_25_v2_quality.json').read_text())
+          print('# Historical Multi-Season Dataset v2')
+          print()
+          print(f"Status: **{r['status']}**")
+          print(f"Canonical rows: **{r['canonical_rows']} / {r['expected_total_rows']}**")
+          print(f"Reference matches: **{r['matched_to_reference']}**")
+          print(f"Date mismatches: **{r['date_mismatches']}**")
+          print(f"Unmatched Paszport: **{r['unmatched_pasport_rows']}**")
+          print(f"Unmatched reference: **{r['unmatched_reference_rows']}**")
+          print()
+          print('| Season | Paszport | Reference | Attendance |')
+          print('|---|---:|---:|---:|')
+          for season,s in r['seasons'].items():
+              print(f"| {season} | {s['paszport_rows']} | {s['reference_rows']} | {s['attendance_rows']} |")
+          if r['failures']:
+              print('\n## Failures')
+              for failure in r['failures']:
+                  print(f'- {failure}')
+          PY
+          fi
+
+      - name: Upload evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: historical-multiclub-2021-25-v2
+          path: |
+            ml/results/historical_multiclub_2021_25_v2.csv
+            ml/results/historical_multiclub_2021_25_v2_quality.json
+          if-no-files-found: warn
