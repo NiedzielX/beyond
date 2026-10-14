@@ -1,0 +1,55 @@
+name: Forecast Benchmark v2
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'ml/forecast_benchmark_v2.py'
+      - 'ml/recovered/v17/**'
+      - '.github/workflows/forecast-benchmark-v2.yml'
+  pull_request:
+    paths:
+      - 'ml/forecast_benchmark_v2.py'
+      - 'ml/recovered/v17/**'
+      - '.github/workflows/forecast-benchmark-v2.yml'
+
+jobs:
+  benchmark:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install pinned benchmark dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install numpy==2.3.5 pandas==2.2.3 scikit-learn==1.8.0 joblib
+
+      - name: Verify recovered v1.7 evidence
+        run: |
+          python ml/recovered/v17/verify_recovered_bundle.py
+          python -m ml.recovered.v17.verify_t7_runtime
+
+      - name: Run Forecast Benchmark v2
+        run: |
+          mkdir -p ml/results
+          python -m ml.forecast_benchmark_v2 \
+            --output ml/results/forecast_benchmark_v2.json \
+            --markdown-output ml/results/forecast_benchmark_v2.md
+
+      - name: Publish benchmark summary
+        run: cat ml/results/forecast_benchmark_v2.md >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload benchmark report
+        uses: actions/upload-artifact@v4
+        with:
+          name: forecast-benchmark-v2
+          path: |
+            ml/results/forecast_benchmark_v2.json
+            ml/results/forecast_benchmark_v2.md
+          if-no-files-found: error
