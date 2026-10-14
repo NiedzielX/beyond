@@ -6,12 +6,14 @@ on:
     paths:
       - 'ml/features/global_feature_store_v2.py'
       - 'ml/global_historical_benchmark_v1.py'
+      - 'ml/global_historical_benchmark_v1_blocked.py'
       - 'ml/data/build_historical_multiclub.py'
       - '.github/workflows/global-historical-benchmark-v1.yml'
   pull_request:
     paths:
       - 'ml/features/global_feature_store_v2.py'
       - 'ml/global_historical_benchmark_v1.py'
+      - 'ml/global_historical_benchmark_v1_blocked.py'
       - 'ml/data/build_historical_multiclub.py'
       - '.github/workflows/global-historical-benchmark-v1.yml'
 
@@ -39,9 +41,9 @@ jobs:
             --output ml/results/global_feature_store_v2.csv \
             --report ml/results/global_feature_store_v2_quality.json
 
-      - name: Run global historical benchmark
+      - name: Run blocked global historical benchmark
         run: |
-          python -m ml.global_historical_benchmark_v1 \
+          python -m ml.global_historical_benchmark_v1_blocked \
             --output ml/results/global_historical_benchmark_v1.json \
             --markdown-output ml/results/global_historical_benchmark_v1.md
 
