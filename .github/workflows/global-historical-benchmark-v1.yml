@@ -44,6 +44,7 @@ jobs:
       - name: Run blocked global historical benchmark
         run: |
           python -m ml.global_historical_benchmark_v1_blocked \
+            --feature-store ml/results/global_feature_store_v2.csv \
             --output ml/results/global_historical_benchmark_v1.json \
             --markdown-output ml/results/global_historical_benchmark_v1.md
 
