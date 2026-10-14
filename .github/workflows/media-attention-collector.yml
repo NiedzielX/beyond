@@ -1,16 +1,15 @@
 name: Media Attention Collector
 
 # Forward-only research sampler. Context remains shadow-only until explicit promotion.
-# GitHub schedule is best-effort, so Supabase independently watches sample freshness
-# and marks the feature degraded when no sample is persisted for >45 minutes.
+# v2 separates broad event-team attention from exact match-pair mentions.
 on:
   workflow_dispatch:
   schedule:
     - cron: "4,19,34,49 * * * *"
   push:
     paths:
-      - "ml/context/gdelt_ngram_sample_v01.py"
-      - "ml/context/test_gdelt_ngram_sample_v01.py"
+      - "ml/context/gdelt_ngram_sample_v02.py"
+      - "ml/context/test_gdelt_ngram_sample_v02.py"
       - ".github/workflows/media-attention-collector.yml"
 
 permissions:
@@ -34,10 +33,10 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Verify matcher
+      - name: Verify v2 matcher
         run: |
-          python -m py_compile ml/context/gdelt_ngram_sample_v01.py
-          python -m unittest ml.context.test_gdelt_ngram_sample_v01
+          python -m py_compile ml/context/gdelt_ngram_sample_v02.py
+          python -m unittest ml.context.test_gdelt_ngram_sample_v02
 
       - name: Request GitHub OIDC token
         shell: bash
@@ -51,20 +50,20 @@ jobs:
           echo "::add-mask::$token"
           echo "BEYOND_OIDC_TOKEN=$token" >> "$GITHUB_ENV"
 
-      - name: Fetch live event media config
+      - name: Fetch live event media config v2
         shell: bash
         run: |
           set -euo pipefail
           curl -fsS \
             -H "Authorization: Bearer $BEYOND_OIDC_TOKEN" \
-            'https://adchzwqboeekhokapxqi.supabase.co/functions/v1/media_attention_ingest_v01?mode=config' \
+            'https://adchzwqboeekhokapxqi.supabase.co/functions/v1/media_attention_ingest_v02?mode=config' \
             -o /tmp/media-config.json
-          jq '{ok,eventCount:(.events|length),events:[.events[]|{id,homeTeam,awayTeam}]}' /tmp/media-config.json
+          jq '{ok,version,eventCount:(.events|length),events:[.events[]|{id,homeTeam,awayTeam}]}' /tmp/media-config.json
 
-      - name: Collect GDELT Web NGrams sample
-        run: python ml/context/gdelt_ngram_sample_v01.py --config /tmp/media-config.json --output /tmp/media-payload.json
+      - name: Collect GDELT Web NGrams v2 sample
+        run: python ml/context/gdelt_ngram_sample_v02.py --config /tmp/media-config.json --output /tmp/media-payload.json
 
-      - name: Ingest sample into Beyond
+      - name: Ingest v2 sample into Beyond
         shell: bash
         run: |
           set -euo pipefail
@@ -73,6 +72,6 @@ jobs:
             -H "Authorization: Bearer $BEYOND_OIDC_TOKEN" \
             -H 'Content-Type: application/json' \
             --data-binary @/tmp/media-payload.json \
-            'https://adchzwqboeekhokapxqi.supabase.co/functions/v1/media_attention_ingest_v01' \
+            'https://adchzwqboeekhokapxqi.supabase.co/functions/v1/media_attention_ingest_v02' \
             | tee /tmp/media-ingest-response.json
           jq . /tmp/media-ingest-response.json
