@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 """Probe Paszport Kibica Ekstraklasa archive structure without persisting data.
 
-The goal is to discover stable table/pagination semantics before writing an
-attendance importer. Output is a machine-readable diagnostic only.
+Checks both the competition route and the dedicated season route. The latter is
+indexed publicly as "Wszystkie mecze sezonu" and may expose the complete 306-row
+match table without pagination.
 """
 from __future__ import annotations
 
@@ -11,22 +12,26 @@ import json
 import re
 from io import StringIO
 from pathlib import Path
-from urllib.parse import urljoin, urlparse
+from urllib.parse import urljoin
 
 import pandas as pd
 import requests
 from bs4 import BeautifulSoup
 
 SEASONS = ["2022-23", "2023-24", "2024-25"]
-BASE = "https://kibice.krakow.business/rozgrywki/ekstraklasa-{season}"
+ROUTES = {
+    "competition": "https://kibice.krakow.business/rozgrywki/ekstraklasa-{season}",
+    "season": "https://kibice.krakow.business/sezon/{season}",
+}
 UA = "Mozilla/5.0 (compatible; BeyondTicketingResearch/1.0)"
 
 
-def probe(session: requests.Session, season: str) -> dict:
-    url = BASE.format(season=season)
+def probe_url(session: requests.Session, season: str, route_name: str, template: str) -> dict:
+    url = template.format(season=season)
     response = session.get(url, headers={"User-Agent": UA}, timeout=45)
     result = {
         "season": season,
+        "route": route_name,
         "url": url,
         "status_code": response.status_code,
         "bytes": len(response.content),
@@ -48,13 +53,13 @@ def probe(session: requests.Session, season: str) -> dict:
             "rows": int(len(table)),
             "columns": [str(c) for c in table.columns],
             "head": table.head(3).astype(str).to_dict(orient="records"),
+            "tail": table.tail(3).astype(str).to_dict(orient="records"),
         })
 
     soup = BeautifulSoup(html, "html.parser")
     seen = set()
     for anchor in soup.find_all("a", href=True):
         href = urljoin(url, anchor["href"])
-        parsed = urlparse(href)
         text = " ".join(anchor.stripped_strings)
         fingerprint = f"{href}|{text}"
         if fingerprint in seen:
@@ -74,13 +79,12 @@ def probe(session: requests.Session, season: str) -> dict:
             ],
         })
 
-    # Search raw HTML for likely query/pagination patterns and API-ish paths.
-    patterns = sorted(set(re.findall(
+    result["raw_patterns"] = sorted(set(re.findall(
         r"(?:href=|fetch\(|url:|endpoint[^=]*=)[\"']([^\"']*(?:page|strona|api|mecz)[^\"']*)[\"']",
         html,
         flags=re.IGNORECASE,
-    )))
-    result["raw_patterns"] = patterns[:100]
+    )))[:100]
+    result["text_head"] = " ".join(soup.stripped_strings)[:2000]
     return result
 
 
@@ -89,7 +93,11 @@ def main() -> None:
     parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args()
     session = requests.Session()
-    report = {"source": "Paszport Kibica", "seasons": [probe(session, s) for s in SEASONS]}
+    rows = []
+    for season in SEASONS:
+        for route_name, template in ROUTES.items():
+            rows.append(probe_url(session, season, route_name, template))
+    report = {"source": "Paszport Kibica", "probes": rows}
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n")
     print(json.dumps(report, ensure_ascii=False, indent=2))
