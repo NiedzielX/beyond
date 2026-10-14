@@ -1,0 +1,46 @@
+{
+  "experimentKey": "lech-korona-protect-yield-20261014-v1",
+  "sourceName": "club-crm-v1",
+  "batchKey": "lech-korona-20261016T100000Z",
+  "assignmentMode": "exact_manifest",
+  "observedAt": "2026-10-16T10:00:00Z",
+  "assignments": [
+    {
+      "subjectKeyHash": "1111111111111111111111111111111111111111111111111111111111111111",
+      "armKey": "treatment",
+      "assignedAt": "2026-10-16T08:00:00Z",
+      "sourceRecordKey": "crm-assignment-0001"
+    },
+    {
+      "subjectKeyHash": "2222222222222222222222222222222222222222222222222222222222222222",
+      "armKey": "holdout",
+      "assignedAt": "2026-10-16T08:00:00Z",
+      "sourceRecordKey": "crm-assignment-0002"
+    }
+  ],
+  "arms": [
+    {
+      "armKey": "treatment",
+      "assignedCount": 1,
+      "exposedCount": 1,
+      "purchasersCount": 0,
+      "ticketsCount": 0,
+      "grossTicketRevenue": 0,
+      "refundsAmount": 0,
+      "campaignCost": 25
+    },
+    {
+      "armKey": "holdout",
+      "assignedCount": 1,
+      "exposedCount": 0,
+      "purchasersCount": 0,
+      "ticketsCount": 0,
+      "grossTicketRevenue": 0,
+      "refundsAmount": 0,
+      "campaignCost": 0
+    }
+  ],
+  "metadata": {
+    "exampleOnly": true
+  }
+}
