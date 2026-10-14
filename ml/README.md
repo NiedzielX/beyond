@@ -1,14 +1,35 @@
 # Beyond ML Benchmark Harness
 
-> **Current source of truth:** [`CORE_PRODUCT_STATUS.md`](./CORE_PRODUCT_STATUS.md) — forecasting-core architecture, sample-size gates, 12 canonical ML questions, known gaps and next implementation sequence. Update that file whenever model/data status materially changes.
+> **Current model source of truth:** [`CURRENT_MODEL.md`](./CURRENT_MODEL.md) — current dataset, winner per horizon, MAE, accepted/rejected challengers and next modelling experiments.
+>
+> **Core architecture / governance:** [`CORE_PRODUCT_STATUS.md`](./CORE_PRODUCT_STATUS.md) — forecasting-core architecture, evidence gates, canonical ML questions and implementation gaps.
 
 This directory is the evaluation gate for Beyond forecasting models.
 
 ## Goal
 
-A challenger is not promoted because it is newer or more complex. It must improve the same no-leakage walk-forward benchmark used by the incumbent and must not degrade the untouched holdout.
+A challenger is not promoted because it is newer or more complex. It must improve the same no-leakage point-in-time benchmark used by the incumbent and must not degrade the untouched holdout.
 
-## Current protocol — benchmark v0.1
+## Current global benchmark
+
+The active historical research benchmark is now multi-club:
+
+- five Ekstraklasa seasons: 2021/22–2025/26;
+- 1,530 matches;
+- 7,650 point-in-time feature snapshots;
+- horizons: T-30 / T-14 / T-7 / T-3 / T-1;
+- development model selection: 2023/24;
+- untouched holdouts: 2024/25 and 2025/26.
+
+See:
+
+- [`CURRENT_MODEL.md`](./CURRENT_MODEL.md)
+- [`results/BEYOND_GLOBAL_FORECAST_V2_BENCHMARK_2026-10-14.md`](./results/BEYOND_GLOBAL_FORECAST_V2_BENCHMARK_2026-10-14.md)
+- [`results/BEYOND_GLOBAL_FORECAST_V2_1_CHALLENGERS_2026-10-14.md`](./results/BEYOND_GLOBAL_FORECAST_V2_1_CHALLENGERS_2026-10-14.md)
+
+## Historical benchmark v0.1 — retained for lineage
+
+The original benchmark was Lech-only and is retained as model lineage, not as the current research state.
 
 - Club: Lech Poznań.
 - Target: final match attendance.
@@ -20,25 +41,25 @@ A challenger is not promoted because it is newer or more complex. It must improv
 - A model for a test season is trained only on matches before that season starts.
 - CatBoost configuration is selected using development MAE only. Holdout results are read only after selection.
 
-## Models in v0.1
+### Models in v0.1
 
 1. Rolling-5 attendance baseline.
 2. Opponent historical attendance baseline.
 3. Existing Beyond historical model: sklearn `GradientBoostingRegressor` (v1.3 early-seasonality feature set).
 4. CatBoost challenger.
 
+### v0.1 decision
+
+CatBoost was **not promoted**. On the untouched 32-match holdout it reached MAE `5,918` vs `5,318` for the incumbent and had a much larger negative bias (`-4,867` vs `-2,338`).
+
+That result remains useful historical lineage, but it has been superseded by the five-season Global Forecast v2 benchmark.
+
 ## Promotion criteria
 
-The first gate is the untouched holdout. A challenger should not be promoted if it improves one headline percentage while materially worsening MAE/WAPE or introducing a large directional bias.
+A challenger should not be promoted if it improves one headline percentage while materially worsening MAE/WAPE, bias, stability across seasons/clubs, or uncertainty calibration.
 
-For future probabilistic models the gate will also include pinball loss and P10–P90 coverage.
-
-## v0.1 decision
-
-CatBoost is **not promoted**. On the untouched 32-match holdout it reaches MAE `5,918` vs `5,318` for the incumbent and has a much larger negative bias (`-4,867` vs `-2,338`). It does improve the share inside ±10% (`37.5%` vs `31.25%`), but this is not enough to justify replacement.
-
-The next modelling priority is not another generic tabular algorithm. Existing Beyond research already produced a stronger horizon-specific historical baseline (v1.7, T30/T7). The live pipeline should consume that baseline and then measure the incremental value of proprietary ticket-inventory signals: inventory index, velocity, acceleration, sector movement, anomaly filtering and signal readiness.
+For probabilistic models the gate also includes pinball loss and P10–P90 empirical coverage.
 
 ## Data contract
 
-The historical dataset itself is intentionally not committed here. Run the harness against the approved enriched historical dataset used by the Lech demand studies. Benchmark outputs belong in `ml/results/`.
+Raw historical datasets are not treated as model outputs. Training and inference must use versioned, point-in-time feature contracts. Benchmark outputs belong in `ml/results/`.
