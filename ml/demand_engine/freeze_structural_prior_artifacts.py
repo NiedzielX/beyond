@@ -26,10 +26,18 @@ EXPECTED_HOLDOUT_MAE = {
     "T-30": {"2024/2025": 1889.3672272292858, "2025/2026": 1846.2792557036205},
     "T-14": {"2024/2025": 1748.4970512511325, "2025/2026": 1870.393553818474},
     "T-7": {"2024/2025": 1777.6927306628588, "2025/2026": 1802.2755802253876},
+    # One-time recovery reference for the pre-specified v2.3 T-3 champion.
+    # These rounded values intentionally make the first Structural Prior v1
+    # recovery run disclose any contract delta before exact values are pinned.
+    "T-3": {"2024/2025": 1701.4, "2025/2026": 1686.4},
 }
-EXPECTED_HOLDOUT_ATOL = {"T-30": 1e-9, "T-14": 1e-9, "T-7": 1e-9}
+EXPECTED_HOLDOUT_ATOL = {"T-30": 1e-9, "T-14": 1e-9, "T-7": 1e-9, "T-3": 0.051}
 EXPECTED_T7_DEVELOPMENT_MAE = 2476.8168272009416
-ARTIFACT_VERSION = "structural-prior-runtime-v1-frozen-2026-10-15-t7"
+# Deliberate one-time recovery sentinel. The T-3 estimator/baseline/full-feature
+# contract is fixed before this run; CI reports the actual dev value, after
+# which it is pinned exactly without any post-holdout parameter search.
+EXPECTED_T3_DEVELOPMENT_MAE = 0.0
+ARTIFACT_VERSION = "structural-prior-runtime-v1-frozen-2026-10-15-t3-recovery"
 
 
 def sha256_file(path: Path) -> str:
@@ -89,24 +97,33 @@ def _score_season(
 def verify_frozen_selection(store: pd.DataFrame) -> tuple[dict[str, dict[str, float]], dict[str, dict[str, float]]]:
     mismatches: list[str] = []
 
-    # The T-7 estimator/baseline contract was inherited from the approved v2.2
-    # champion before this executable-runtime gate. Structural Prior v1 uses its
-    # canonical PIT feature contract, so the exact runtime values are pinned here
-    # only after a one-time verification on development plus both untouched holdouts.
     t7_dev = _score_season(
         store,
         "T-7",
         ["2021/2022", "2022/2023"],
         "2023/2024",
     )
-    development = {"T-7": {"2023/2024": t7_dev}}
+    t3_dev = _score_season(
+        store,
+        "T-3",
+        ["2021/2022", "2022/2023"],
+        "2023/2024",
+    )
+    development = {
+        "T-7": {"2023/2024": t7_dev},
+        "T-3": {"2023/2024": t3_dev},
+    }
     if not np.isclose(t7_dev, EXPECTED_T7_DEVELOPMENT_MAE, rtol=0.0, atol=1e-9):
         mismatches.append(
             f"T-7/development-2023/2024: actual={t7_dev} expected={EXPECTED_T7_DEVELOPMENT_MAE}"
         )
+    if not np.isclose(t3_dev, EXPECTED_T3_DEVELOPMENT_MAE, rtol=0.0, atol=1e-9):
+        mismatches.append(
+            f"T-3/development-2023/2024: actual={t3_dev} recovery_sentinel={EXPECTED_T3_DEVELOPMENT_MAE}"
+        )
 
     holdouts: dict[str, dict[str, float]] = {}
-    for horizon in ("T-30", "T-14", "T-7"):
+    for horizon in ("T-30", "T-14", "T-7", "T-3"):
         holdouts[horizon] = {}
         for test_season, training_seasons in (
             ("2024/2025", ["2021/2022", "2022/2023", "2023/2024"]),
@@ -117,7 +134,7 @@ def verify_frozen_selection(store: pd.DataFrame) -> tuple[dict[str, dict[str, fl
             holdouts[horizon][test_season] = value
             if not np.isclose(value, expected, rtol=0.0, atol=EXPECTED_HOLDOUT_ATOL[horizon]):
                 mismatches.append(
-                    f"{horizon}/{test_season}: actual={value} expected={expected}"
+                    f"{horizon}/{test_season}: actual={value} reference={expected}"
                 )
 
     if mismatches:
@@ -164,7 +181,6 @@ def main() -> None:
             "numpy": np.__version__,
             "joblib": joblib.__version__,
         },
-        # Keep the historical manifest contract stable for the scheduled materializer.
         "benchmark_reproduction": benchmark,
         "development_verification": development,
         "quality": quality,
@@ -180,6 +196,7 @@ def main() -> None:
         ("T-30", "structural_prior_t30_v1.joblib"),
         ("T-14", "structural_prior_t14_v1.joblib"),
         ("T-7", "structural_prior_t7_v1.joblib"),
+        ("T-3", "structural_prior_t3_v1.joblib"),
     )
     for horizon, filename in artifact_files:
         runtime = fit_structural_prior_runtime(store, horizon, TRAINING_SEASONS)
