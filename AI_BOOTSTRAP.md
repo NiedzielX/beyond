@@ -1,8 +1,8 @@
 # Beyond — AI Bootstrap / Read This First
 
-Last verified: **2026-10-15**
+Last verified: **2026-10-15 20:30 UTC**
 
-This file exists to prevent every new AI/chat session from rediscovering the same model state by re-running benchmarks, rebuilding datasets or reverse-engineering the repo history.
+This file exists to prevent every new AI/chat session from rediscovering model state by re-running benchmarks, rebuilding datasets or reverse-engineering repo history.
 
 ## Cold-start rule
 
@@ -70,148 +70,101 @@ Trusted state:
 - Supabase historical backfill is complete;
 - canonical DB export: `public.export_historical_runtime_v1()`.
 
-Pinned exact input hashes:
+Pinned input contract:
 
-`ml/data/STRUCTURAL_PRIOR_RUNTIME_V1_INPUT_MANIFEST.md`
+- `ml/data/STRUCTURAL_PRIOR_RUNTIME_V1_INPUT_MANIFEST.md`;
+- `supabase/sql/structural_prior_training_export_v1.sql`.
 
-### Historical-export invariant
+Historical source keys are immutable benchmark inputs. Current-event alias normalization must not rewrite historical training rows.
 
-Historical training rows must preserve pinned source keys exactly. Current-event alias normalization must **not** rewrite historical training data.
+## Structural Prior Runtime v1 — all five executable horizons
 
-This was explicitly validated during artifact freeze after a `radomiak -> radomiak_radom` export normalization changed the 2025/26 T-30 reproduction. The export was corrected rather than changing the approved benchmark.
+All canonical checkpoints now have frozen executable current-event runtimes. Scheduled inference is **load + predict only** and must never call model `fit()`.
 
-Versioned contract:
+| Horizon | Model spec | Baseline | Features | Estimator | Dev 2023/24 MAE | 2024/25 MAE | 2025/26 MAE |
+|---|---|---|---|---|---:|---:|---:|
+| T-30 | `structural-prior-runtime-v1-t30-extra-full` | `baseline_season` | full PIT + importance | ExtraTrees leaf=3 | 2,559.7 | **1,889.4** | **1,846.3** |
+| T-14 | `structural-prior-runtime-v1-t14-hist-base` | `baseline_r3` | base PIT | HistGBR absolute-error | 2,340.0 | **1,748.5** | **1,870.4** |
+| T-7 | `structural-prior-runtime-v1-t7-gbr-base` | `baseline_season` | base PIT | GBR Huber | **2,476.8168** | **1,777.6927** | **1,802.2756** |
+| T-3 | `structural-prior-runtime-v1-t3-hist-full` | `baseline_season` | full PIT + importance | HistGBR 250 | **2,311.6247** | **1,661.7160** | **1,775.0691** |
+| T-1 | `structural-prior-runtime-v1-t1-hist-full` | `baseline_season` | full PIT + importance | HistGBR 250 | **2,347.9931** | **1,651.7336** | **1,742.8351** |
 
-`supabase/sql/structural_prior_training_export_v1.sql`
-
-## Current historical champions / candidates
-
-| Horizon | Current best spec | 2024/25 MAE | 2025/26 MAE |
-|---|---|---:|---:|
-| T-30 | `structural-prior-runtime-v1-t30-extra-full` | **1,889.4** | **1,846.3** |
-| T-14 | `structural-prior-runtime-v1-t14-hist-base` | **1,748.5** | **1,870.4** |
-| T-7 | Global v2 verified-capacity occupancy | **1,799.2** | **1,848.0** |
-| T-3 | Global v2.3 verified-capacity + match-importance | **1,701.4** | **1,686.4** |
-| T-1 | Global v2.3 verified-capacity + match-importance | **1,684.3** | **1,682.0** |
-
-Do not reproduce these numbers unless a re-run trigger above is true.
+T-7/T-3/T-1 were recovered as pre-specified executable contracts and then pinned exactly. No post-holdout parameter search was performed. Detailed provenance is in `ml/results/STRUCTURAL_PRIOR_RUNTIME_V1_2026-10-15.md`.
 
 Strategic R&D target remains: **T-30 < 1,700 MAE** while preserving true OOS validation.
 
-## Structural Prior Runtime v1 — frozen executable early horizons
-
-### T-30
-
-Model ID:
-
-`structural-prior-runtime-v1-t30-extra-full`
-
-- estimator: ExtraTreesRegressor;
-- 500 trees;
-- `min_samples_leaf=3`;
-- `max_features=0.8`;
-- baseline: `baseline_season`;
-- full PIT features including validated importance interactions;
-- target: verified-capacity occupancy residual;
-- output clipped to `[0, verified_capacity]`.
-
-### T-14
-
-Model ID:
-
-`structural-prior-runtime-v1-t14-hist-base`
-
-- estimator: HistGradientBoostingRegressor, absolute-error loss;
-- learning rate 0.05;
-- max iter 180;
-- max leaf nodes 15;
-- min samples leaf 10;
-- L2 = 1;
-- baseline: `baseline_r3`;
-- base PIT features;
-- target: verified-capacity occupancy residual.
-
-Runtime / feature code:
-
-- `ml/features/structural_prior_feature_store_v1.py`;
-- `ml/demand_engine/current_structural_prior_features.py`;
-- `ml/demand_engine/structural_prior_runtime.py`;
-- `ml/structural_prior_runtime_benchmark_v1.py`.
-
-### Frozen artifacts — TRUST WITHOUT REBUILDING
+## Frozen artifact bundle — TRUST WITHOUT REBUILDING
 
 Artifact version:
 
-`structural-prior-runtime-v1-frozen-2026-10-15`
+`structural-prior-runtime-v1-frozen-2026-10-15-t1`
 
-Freeze gate reproduced the approved holdouts exactly before the one-time final fit.
+Artifact freeze commit:
 
-- T-30 artifact SHA-256:
-  `33e32a8b2f0c617c5adde5cdba592151bb25651ef00fc60aa2e5c090adb51da7`
-- T-14 artifact SHA-256:
-  `8d2dbb6ce48ae48fe2e5b7f4340c9e2dfadd38c6e23cc7b123c6f1d2303cdc20`
-- historical runtime SHA-256:
-  `345bbf72c702fc4356b2ccfe998b5c3c121adea5fef32d34bb9daa9aae10b89d`
-- artifact commit:
-  `4a8f066742faa24508b733175f7366b4ccaabe2e`
+`4d6fbae1ab16bfa7b432a012c889c451ab9161ff`
+
+Hashes:
+
+- T-30: `33e32a8b2f0c617c5adde5cdba592151bb25651ef00fc60aa2e5c090adb51da7`
+- T-14: `8d2dbb6ce48ae48fe2e5b7f4340c9e2dfadd38c6e23cc7b123c6f1d2303cdc20`
+- T-7: `97e712245d6539396030e88ea450809f4265bd7538aa90b29e234420231ac927`
+- T-3: `33f83899a86b8ebbc61ff5cfb2a3ccb2f09d708d41730136f136bda31d374f30`
+- T-1: `f67ee9bf6853a01245de5406861b59e491b86a01a8120023868ad54b19f0ebfa`
+- historical runtime: `3c6b35142c6bd20a484f2aa758cd41284fd6f4c6db1353b138f81cf321161569`
 
 Files:
 
 `ml/artifacts/structural_prior_runtime_v1/`
 
-Normal scheduled materialization does **load + predict only**. It must never call model `fit()`.
+Quality gate at freeze:
 
-## Current genuine Structural Priors
-
-### Original T-30 prior
-
-**Lech Poznań vs Wisła Kraków — event 6**
-
-- horizon: T-30;
-- PIT cutoff: 2026-10-01 16:30 UTC;
-- P50: **31,832.41**;
-- capacity: 43,269;
-- expected occupancy: 73.57%;
-- persisted prior id: **1**.
-
-### First automatic T-14 batch
-
-Automatic frozen-artifact materialization passed end-to-end on 2026-10-15:
-
-| Prior ID | Event | P50 | Capacity | Occupancy |
-|---:|---|---:|---:|---:|
-| 2 | Pogoń Szczecin — Radomiak Radom | 16,226.996 | 21,163 | 76.68% |
-| 3 | Wisła Kraków — Raków Częstochowa | 17,350.596 | 33,130 | 52.37% |
-| 4 | Śląsk Wrocław — Wieczysta Kraków | 19,552.562 | 43,708 | 44.73% |
-| 5 | Jagiellonia Białystok — Wisła Płock | 15,635.204 | 22,372 | 69.89% |
-| 6 | Legia Warszawa — Lech Poznań | 29,635.741 | 31,006 | 95.58% |
-
-All automatic T-14 priors use the frozen T-14 artifact SHA above.
-
-Do not regenerate persisted priors merely to prove that they exist. Query them if a latest-state check is needed.
+- 1,530 matches;
+- 7,650 PIT rows;
+- 7,198 training-eligible rows;
+- capacity missing: 0;
+- invalid-time rows: 0;
+- status: PASS.
 
 ## Automatic Structural Prior Materializer
 
 Status:
 
-**DONE / LIVE for T-30 and T-14**
-
-Canonical doc:
-
-`ml/STRUCTURAL_PRIOR_MATERIALIZER_V1.md`
+**DONE / LIVE for T-30 / T-14 / T-7 / T-3 / T-1**
 
 Automation:
 
 - freeze/build workflow: `.github/workflows/structural-prior-artifacts.yml`;
 - materializer workflow: `.github/workflows/structural-prior-materializer.yml`;
-- materializer cadence: `5,20,35,50 * * * *`;
+- cadence: `5,20,35,50 * * * *`;
 - Edge Function: `structural_prior_materializer_v1`;
+- Edge Function production version at this verification: **10**;
 - writer: `public.insert_structural_prior_forecast_v1(jsonb)`;
-- due resolver: `public.get_due_early_structural_prior_inputs_v1(...)`.
+- due resolver: `public.get_due_early_structural_prior_inputs_v1(...)`;
+- model registry: `private.structural_prior_model_specs_v1`.
 
-The materializer invokes Live Forecast Orchestrator immediately after inserting priors.
+Versioned activation migrations:
 
-T-7 / T-3 / T-1 do not yet have a frozen executable current-event runtime and intentionally remain fail-closed.
+- `supabase/sql/structural_prior_t7_runtime_v1.sql`;
+- `supabase/sql/structural_prior_t3_runtime_v1.sql`;
+- `supabase/sql/structural_prior_t1_runtime_v1.sql`.
+
+The T-1 resolver path has been verified with future-time read-only simulation: current events resolve to `T-1 / missing_prior` at their genuine T-1 cutoffs and use `structural-prior-runtime-v1-t1-hist-full`.
+
+**Do not pre-materialize T-1 forecasts before their PIT cutoff.** The first current T-1 cutoffs are on 2026-10-16 UTC, so zero persisted T-1 priors is currently expected.
+
+## Current persisted Structural Prior counts
+
+Dynamic state at this verification:
+
+| Horizon | Persisted priors |
+|---|---:|
+| T-30 | 1 |
+| T-14 | 5 |
+| T-7 | 1 |
+| T-3 | 5 |
+| T-1 | 0 — not yet naturally due |
+
+Do not regenerate persisted priors merely to prove they exist. Query current state when needed.
 
 ## Live Demand Engine status
 
@@ -229,41 +182,29 @@ Canonical evidence store:
 
 Completed:
 
-- Step 6 — genuine Structural Prior runtime;
-- Step 7 — expected trajectory / trajectory gap;
-- Step 8 — Structural Prior shadow revisions;
-- Step 9 — first-detection / revision audit;
-- Step 10 — promotion governance / shadow-only enforcement.
+- genuine Structural Prior runtime;
+- expected trajectory / trajectory gap;
+- Structural Prior shadow revisions;
+- first-detection / revision audit;
+- promotion governance / shadow-only enforcement;
+- automatic Structural Prior materialization at all five checkpoints.
 
-### Operational automation: DONE for T-30/T-14
+### Latest verified orchestration health
 
-Live Forecast Orchestrator v1 and automatic T-30/T-14 Structural Prior Materializer are deployed.
+`private.live_forecast_orchestrator_runs_v1.id = 18`
 
-Latest verified orchestrator run:
-
-`private.live_forecast_orchestrator_runs_v1.id = 3`
-
-- active events: **13**;
-- processed end-to-end: **6**;
-- remaining `missing_prior`: **6**;
-- skipped/out-of-domain: **1**;
+- active events: **12**;
+- processed end-to-end: **12**;
+- `missing_prior`: **0**;
+- skipped: **0**;
 - event errors: **0**;
-- canonical checkpoint rows materialized: **34**.
+- checkpoint rows materialized: **34**.
 
-The six remaining `missing_prior` events are T-7/T-3 and are expected until later-horizon executable runtimes exist.
-
-Latest shadow observation IDs from the first automatic T-14 batch:
-
-- event 10 -> `forecast_observations.id = 1211`;
-- event 16 -> `1212`;
-- event 23 -> `1213`;
-- event 21 -> `1214`;
-- event 22 -> `1215`;
-- event 6 -> `1216`.
+This is the key operational invariant: the currently active event set is fully processed with no missing Structural Prior anchor.
 
 No learned live correction is active. `live_adjustment = 0` remains enforced.
 
-### Trajectory gap contract
+## Trajectory gap contract
 
 Code:
 
@@ -285,28 +226,19 @@ Rules:
 - status = `UNDERPERFORMING / ON_TRACK / OUTPERFORMING / INSUFFICIENT_SIGNAL`;
 - confidence = `NONE / LOW / MEDIUM / HIGH`.
 
-Current T-14 descriptive reference pool at last verification:
-
-- 3 events;
-- 2 clubs;
-- progress Q25 2.01%;
-- median 2.23%;
-- Q75 6.19%;
-- confidence LOW.
-
 ## Evidence maturity / learned correction
 
 Phase C learned live correction is **blocked on evidence, not on infrastructure**.
 
-Current training-eligible checkpoint evidence at last verification:
+Current training-eligible live evidence:
 
-| Horizon | Eligible |
-|---|---:|
-| T-30 | 0 |
-| T-14 | 3 |
-| T-7 | 3 |
-| T-3 | 2 |
-| T-1 | 5 |
+| Horizon | Eligible | Total stored |
+|---|---:|---:|
+| T-30 | 0 | 1 |
+| T-14 | 3 | 5 |
+| T-7 | 3 | 9 |
+| T-3 | 4 | 9 |
+| T-1 | 5 | 10 |
 
 Promotion governance remains:
 
@@ -325,16 +257,16 @@ Source of truth:
 
 When starting a new session, do not reconstruct old work. Continue here:
 
-1. **NEXT — freeze executable current-event Structural Prior runtimes for T-7 / T-3 / T-1** and extend automatic materialization so the live loop keeps a genuine historical anchor through kickoff;
-2. keep collecting prospective live evidence on the deployed stack;
-3. continue T-30 historical R&D toward <1,700 MAE in parallel, without blocking live evidence collection;
-4. train Phase C residual correction only when evidence governance permits;
+1. **NEXT operational checkpoint — verify the first naturally due T-1 materialization after 2026-10-16 15:30 UTC**; do not create it early;
+2. keep collecting prospective live snapshots, outcomes and governance-eligible evidence on the deployed five-horizon stack;
+3. continue T-30 historical R&D toward `<1,700 MAE` in parallel, without blocking evidence collection;
+4. train Phase C residual correction only when the evidence gate permits;
 5. calibrate P10/P50/P90 after the point forecast/revision layer is mature;
 6. recommendations/intervention learning comes later.
 
 ## What may need a live check in a new session
 
-The following are dynamic and may legitimately require a quick DB/GitHub read:
+The following are dynamic and may legitimately require a small DB/GitHub read:
 
 - new snapshots/checkpoints;
 - current trajectory classifications;
