@@ -22,7 +22,7 @@ from ml.features.structural_prior_feature_store_v1 import (
     history_stats,
 )
 
-HORIZON_DAYS = {"T-30": 30, "T-14": 14, "T-7": 7}
+HORIZON_DAYS = {"T-30": 30, "T-14": 14, "T-7": 7, "T-3": 3}
 
 DEFAULT_KEY_ALIASES = {
     "korona": "koronakielce",

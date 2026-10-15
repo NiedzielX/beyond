@@ -161,7 +161,7 @@ Deno.serve(async (req: Request) => {
       const generatedAt = String(prediction.generated_at || "");
       parseRecentIso(generatedAt, "generated_at", nowMs, 30 * 60_000);
       const horizon = String(prediction.horizon || "");
-      if (horizon !== "T-30" && horizon !== "T-14" && horizon !== "T-7") {
+      if (horizon !== "T-30" && horizon !== "T-14" && horizon !== "T-7" && horizon !== "T-3") {
         throw new Error(`unsupported horizon ${horizon}`);
       }
       const p50 = Number(prediction.p50);

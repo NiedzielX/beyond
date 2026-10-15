@@ -17,7 +17,7 @@ from sklearn.ensemble import ExtraTreesRegressor, GradientBoostingRegressor, His
 from sklearn.impute import SimpleImputer
 from sklearn.preprocessing import OneHotEncoder
 
-Horizon = Literal["T-30", "T-14", "T-7"]
+Horizon = Literal["T-30", "T-14", "T-7", "T-3"]
 CAT = ["home_club_key", "away_club_key"]
 META = {
     "feature_set_version", "match_key", "season", "horizon", "as_of_at", "kickoff_at",
@@ -37,7 +37,7 @@ class RuntimeSpec:
     model_spec_id: str
     baseline_column: str
     feature_mode: Literal["base", "full"]
-    estimator_name: Literal["extra_leaf3", "hist15", "gbr_huber"]
+    estimator_name: Literal["extra_leaf3", "hist15", "gbr_huber", "hist250"]
     feature_contract: str = "structural-prior-pit-v1+verified-capacity-v1"
     validated_competitions: tuple[str, ...] = ("Ekstraklasa",)
 
@@ -63,6 +63,13 @@ CURRENT_EARLY_RUNTIME_SPECS: dict[Horizon, RuntimeSpec] = {
         baseline_column="baseline_season",
         feature_mode="base",
         estimator_name="gbr_huber",
+    ),
+    "T-3": RuntimeSpec(
+        horizon="T-3",
+        model_spec_id="structural-prior-runtime-v1-t3-hist-full",
+        baseline_column="baseline_season",
+        feature_mode="full",
+        estimator_name="hist250",
     ),
 }
 
@@ -137,6 +144,16 @@ def _estimator(name: str):
             learning_rate=0.03,
             max_depth=2,
             min_samples_leaf=8,
+            random_state=42,
+        )
+    if name == "hist250":
+        return HistGradientBoostingRegressor(
+            loss="absolute_error",
+            learning_rate=0.05,
+            max_iter=250,
+            max_leaf_nodes=15,
+            min_samples_leaf=10,
+            l2_regularization=1.0,
             random_state=42,
         )
     raise KeyError(name)
