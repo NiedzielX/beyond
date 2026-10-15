@@ -11,10 +11,23 @@ from .live_trajectory_feature_store import (
     build_live_trajectory_features,
 )
 from .storage import to_forecast_observation
+from .structural_prior import (
+    CURRENT_STRUCTURAL_PRIOR_SPECS,
+    RowStructuralPriorAdapter,
+    StructuralPrior,
+    StructuralPriorError,
+    StructuralPriorNotDueError,
+    StructuralPriorOutOfDomainError,
+    StructuralPriorSpec,
+    StructuralPriorUnavailableError,
+    SupabaseStructuralPriorAdapter,
+    resolve_structural_prior_spec,
+)
 
 __all__ = [
     "CalibrationBand",
     "ConformalIntervalCalibrator",
+    "CURRENT_STRUCTURAL_PRIOR_SPECS",
     "DemandEngine",
     "EngineForecast",
     "ForecastRequest",
@@ -25,11 +38,20 @@ __all__ = [
     "NoOpLiveCorrector",
     "QuantileForecast",
     "RowLiveFeatureProvider",
+    "RowStructuralPriorAdapter",
     "SectorInventoryRecord",
     "SnapshotRecord",
+    "StructuralPrior",
+    "StructuralPriorError",
+    "StructuralPriorNotDueError",
+    "StructuralPriorOutOfDomainError",
+    "StructuralPriorSpec",
+    "StructuralPriorUnavailableError",
     "SupabaseStoredHistoricalForecaster",
+    "SupabaseStructuralPriorAdapter",
     "build_live_trajectory_features",
     "conformal_radius",
     "fit_calibration_band",
+    "resolve_structural_prior_spec",
     "to_forecast_observation",
 ]
