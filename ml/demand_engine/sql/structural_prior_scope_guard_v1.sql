@@ -8,9 +8,10 @@ update private.structural_prior_model_specs_v1
 set validated_competitions=array['Ekstraklasa']::text[]
 where horizon in ('T-30','T-14','T-7','T-3','T-1');
 
+-- Keep the existing view column order stable; append the new scope column.
 create or replace view private.current_structural_prior_model_specs_v1 as
 select horizon,target_days_before,model_spec_id,model_family,feature_contract,
-       validation_report,validated_competitions,status,activated_at,notes
+       validation_report,status,activated_at,notes,validated_competitions
 from private.structural_prior_model_specs_v1
 where is_current;
 
