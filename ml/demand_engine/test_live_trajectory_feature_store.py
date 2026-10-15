@@ -75,7 +75,7 @@ class LiveTrajectoryFeatureStoreTest(unittest.TestCase):
 
     def test_stale_anchor_is_not_mislabeled_as_short_window(self) -> None:
         snapshots = [
-            self._snap(1, 30, 10000),
+            self._snap(1, 40, 10000),
             self._snap(2, 0, 9000),
         ]
         features = build_live_trajectory_features(
