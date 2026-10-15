@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-"""Freeze the selected Structural Prior Runtime v1 into reusable artifacts.
+"""Freeze selected Structural Prior Runtime v1 models into reusable artifacts.
 
 This is deliberately a build-time operation, not a scheduled inference step.
 It reconstructs the canonical five-season PIT feature store, verifies the
-already-approved holdout metrics exactly, fits the production runtimes on all
-five completed seasons, and writes joblib artifacts plus a hash manifest.
+approved development/holdout metrics, fits the production runtimes on all five
+completed seasons, and writes joblib artifacts plus a hash manifest.
 """
 from __future__ import annotations
 
@@ -25,8 +25,11 @@ TRAINING_SEASONS = ["2021/2022", "2022/2023", "2023/2024", "2024/2025", "2025/20
 EXPECTED_HOLDOUT_MAE = {
     "T-30": {"2024/2025": 1889.3672272292858, "2025/2026": 1846.2792557036205},
     "T-14": {"2024/2025": 1748.4970512511325, "2025/2026": 1870.393553818474},
+    "T-7": {"2024/2025": 1777.6927306628588, "2025/2026": 1802.2755802253876},
 }
-ARTIFACT_VERSION = "structural-prior-runtime-v1-frozen-2026-10-15"
+EXPECTED_HOLDOUT_ATOL = {"T-30": 1e-9, "T-14": 1e-9, "T-7": 1e-9}
+EXPECTED_T7_DEVELOPMENT_MAE = 2476.8168272009416
+ARTIFACT_VERSION = "structural-prior-runtime-v1-frozen-2026-10-15-t7"
 
 
 def sha256_file(path: Path) -> str:
@@ -66,30 +69,60 @@ def _mae(actual, predicted) -> float:
     return float(np.mean(np.abs(np.asarray(actual, dtype=float) - np.asarray(predicted, dtype=float))))
 
 
-def verify_frozen_selection(store: pd.DataFrame) -> dict:
-    report: dict[str, dict[str, float]] = {}
-    for horizon in ("T-30", "T-14"):
-        report[horizon] = {}
+def _score_season(
+    store: pd.DataFrame,
+    horizon: str,
+    training_seasons: list[str],
+    test_season: str,
+) -> float:
+    runtime = fit_structural_prior_runtime(store, horizon, training_seasons)
+    spec = runtime.spec
+    test = store[
+        (store["horizon"].astype(str) == horizon)
+        & store["training_eligible"].astype(bool)
+        & (store["season"] == test_season)
+        & store[spec.baseline_column].notna()
+    ].copy()
+    return _mae(test["target_attendance"], runtime.predict(test))
+
+
+def verify_frozen_selection(store: pd.DataFrame) -> tuple[dict[str, dict[str, float]], dict[str, dict[str, float]]]:
+    mismatches: list[str] = []
+
+    # The T-7 estimator/baseline contract was inherited from the approved v2.2
+    # champion before this executable-runtime gate. Structural Prior v1 uses its
+    # canonical PIT feature contract, so the exact runtime values are pinned here
+    # only after a one-time verification on development plus both untouched holdouts.
+    t7_dev = _score_season(
+        store,
+        "T-7",
+        ["2021/2022", "2022/2023"],
+        "2023/2024",
+    )
+    development = {"T-7": {"2023/2024": t7_dev}}
+    if not np.isclose(t7_dev, EXPECTED_T7_DEVELOPMENT_MAE, rtol=0.0, atol=1e-9):
+        mismatches.append(
+            f"T-7/development-2023/2024: actual={t7_dev} expected={EXPECTED_T7_DEVELOPMENT_MAE}"
+        )
+
+    holdouts: dict[str, dict[str, float]] = {}
+    for horizon in ("T-30", "T-14", "T-7"):
+        holdouts[horizon] = {}
         for test_season, training_seasons in (
             ("2024/2025", ["2021/2022", "2022/2023", "2023/2024"]),
             ("2025/2026", ["2021/2022", "2022/2023", "2023/2024", "2024/2025"]),
         ):
-            runtime = fit_structural_prior_runtime(store, horizon, training_seasons)
-            spec = runtime.spec
-            test = store[
-                (store["horizon"].astype(str) == horizon)
-                & store["training_eligible"].astype(bool)
-                & (store["season"] == test_season)
-                & store[spec.baseline_column].notna()
-            ].copy()
-            value = _mae(test["target_attendance"], runtime.predict(test))
+            value = _score_season(store, horizon, training_seasons, test_season)
             expected = EXPECTED_HOLDOUT_MAE[horizon][test_season]
-            if not np.isclose(value, expected, rtol=0.0, atol=1e-9):
-                raise RuntimeError(
-                    f"frozen benchmark mismatch {horizon}/{test_season}: {value} != {expected}"
+            holdouts[horizon][test_season] = value
+            if not np.isclose(value, expected, rtol=0.0, atol=EXPECTED_HOLDOUT_ATOL[horizon]):
+                mismatches.append(
+                    f"{horizon}/{test_season}: actual={value} expected={expected}"
                 )
-            report[horizon][test_season] = value
-    return report
+
+    if mismatches:
+        raise RuntimeError("frozen benchmark mismatch: " + "; ".join(mismatches))
+    return holdouts, development
 
 
 def main() -> None:
@@ -108,7 +141,7 @@ def main() -> None:
     quality = quality_report(store)
     if quality["status"] != "PASS":
         raise RuntimeError(f"feature-store quality failed: {quality}")
-    benchmark = verify_frozen_selection(store)
+    benchmark, development = verify_frozen_selection(store)
 
     output = args.output_dir
     output.mkdir(parents=True, exist_ok=True)
@@ -131,8 +164,10 @@ def main() -> None:
             "numpy": np.__version__,
             "joblib": joblib.__version__,
         },
-        "quality": quality,
+        # Keep the historical manifest contract stable for the scheduled materializer.
         "benchmark_reproduction": benchmark,
+        "development_verification": development,
+        "quality": quality,
         "historical_runtime": {
             "filename": historical_path.name,
             "sha256": sha256_file(historical_path),
@@ -141,7 +176,12 @@ def main() -> None:
         "artifacts": {},
     }
 
-    for horizon, filename in (("T-30", "structural_prior_t30_v1.joblib"), ("T-14", "structural_prior_t14_v1.joblib")):
+    artifact_files = (
+        ("T-30", "structural_prior_t30_v1.joblib"),
+        ("T-14", "structural_prior_t14_v1.joblib"),
+        ("T-7", "structural_prior_t7_v1.joblib"),
+    )
+    for horizon, filename in artifact_files:
         runtime = fit_structural_prior_runtime(store, horizon, TRAINING_SEASONS)
         path = output / filename
         joblib.dump(runtime, path, compress=3)

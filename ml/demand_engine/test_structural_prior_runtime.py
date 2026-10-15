@@ -10,9 +10,10 @@ from ml.demand_engine.structural_prior_runtime import (
 
 
 class StructuralPriorRuntimeContractTest(unittest.TestCase):
-    def test_current_early_specs_are_explicit_and_horizon_specific(self) -> None:
+    def test_current_specs_are_explicit_and_horizon_specific(self) -> None:
         t30 = CURRENT_EARLY_RUNTIME_SPECS["T-30"]
         t14 = CURRENT_EARLY_RUNTIME_SPECS["T-14"]
+        t7 = CURRENT_EARLY_RUNTIME_SPECS["T-7"]
         self.assertEqual(t30.model_spec_id, "structural-prior-runtime-v1-t30-extra-full")
         self.assertEqual(t30.baseline_column, "baseline_season")
         self.assertEqual(t30.feature_mode, "full")
@@ -21,6 +22,10 @@ class StructuralPriorRuntimeContractTest(unittest.TestCase):
         self.assertEqual(t14.baseline_column, "baseline_r3")
         self.assertEqual(t14.feature_mode, "base")
         self.assertEqual(t14.estimator_name, "hist15")
+        self.assertEqual(t7.model_spec_id, "structural-prior-runtime-v1-t7-gbr-base")
+        self.assertEqual(t7.baseline_column, "baseline_season")
+        self.assertEqual(t7.feature_mode, "base")
+        self.assertEqual(t7.estimator_name, "gbr_huber")
 
     def test_base_feature_contract_excludes_importance_interactions(self) -> None:
         frame = pd.DataFrame({

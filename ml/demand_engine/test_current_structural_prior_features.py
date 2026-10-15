@@ -122,6 +122,21 @@ class CurrentStructuralPriorFeaturesTest(unittest.TestCase):
         self.assertFalse(bool(row["training_eligible"]))
         self.assertFalse(bool(row["target_eligible"]))
 
+    def test_builds_exact_t7_cutoff(self):
+        sporting = self.sporting.copy()
+        sporting["as_of_at"] = pd.Timestamp("2026-10-24T16:30:00Z")
+        row = build_current_structural_prior_row(
+            historical_matches=self.historical,
+            current_attendance=self.current_attendance,
+            sporting_state=sporting,
+            event=self.event,
+            horizon="T-7",
+        ).iloc[0]
+
+        self.assertEqual(row["as_of_at"], pd.Timestamp("2026-10-24T16:30:00Z"))
+        self.assertEqual(row["horizon"], "T-7")
+        self.assertEqual(row["capacity"], 43000.0)
+
     def test_rejects_sporting_state_from_future(self):
         sporting = self.sporting.copy()
         sporting.loc[sporting["club_key"] == "away", "as_of_at"] = pd.Timestamp(

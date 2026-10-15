@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Materialize genuine current-event T-30/T-14 Structural Priors.
+"""Materialize genuine current-event T-30/T-14/T-7 Structural Priors.
 
 Normal scheduled runs never fit a model. They load frozen joblib artifacts,
 build a point-in-time current-event row from canonical DB evidence, predict P50,
@@ -24,7 +24,7 @@ from ml.demand_engine.current_structural_prior_features import (
 )
 
 WARSAW = ZoneInfo("Europe/Warsaw")
-SUPPORTED = {"T-30", "T-14"}
+SUPPORTED = {"T-30", "T-14", "T-7"}
 
 
 def sha256_file(path: Path) -> str:
@@ -35,7 +35,7 @@ def sha256_file(path: Path) -> str:
     return digest.hexdigest()
 
 
-def load_frozen_bundle(artifact_dir: Path):
+def load_frozen_bundle(artifact_dir: Path, required_horizons: set[str]):
     manifest_path = artifact_dir / "manifest.json"
     if not manifest_path.exists():
         raise RuntimeError(f"frozen Structural Prior manifest missing: {manifest_path}")
@@ -44,8 +44,15 @@ def load_frozen_bundle(artifact_dir: Path):
     if sha256_file(historical) != manifest["historical_runtime"]["sha256"]:
         raise RuntimeError("historical runtime hash mismatch")
     models = {}
-    for horizon in SUPPORTED:
-        spec = manifest["artifacts"][horizon]
+    for horizon in sorted(required_horizons):
+        if horizon not in SUPPORTED:
+            continue
+        spec = manifest["artifacts"].get(horizon)
+        if not spec:
+            # Fail closed only when the DB has actually made this horizon due.
+            # This keeps rolling deployments safe while a new frozen artifact is
+            # being committed, without silently falling back to another model.
+            raise RuntimeError(f"frozen Structural Prior artifact missing for due horizon {horizon}")
         path = artifact_dir / spec["filename"]
         if sha256_file(path) != spec["sha256"]:
             raise RuntimeError(f"artifact hash mismatch for {horizon}")
@@ -168,7 +175,12 @@ def _stable_feature_hash(row: pd.Series) -> str:
 
 
 def materialize(payload: dict, artifact_dir: Path, generated_at: pd.Timestamp) -> dict:
-    manifest, historical, models = load_frozen_bundle(artifact_dir)
+    due_horizons = {
+        str(row.get("horizon"))
+        for row in payload.get("events") or []
+        if row.get("input_status") == "ready" and str(row.get("horizon")) in SUPPORTED
+    }
+    manifest, historical, models = load_frozen_bundle(artifact_dir, due_horizons)
     aliases = _aliases(payload)
     attendance = pd.DataFrame(payload.get("attendance") or [])
     sporting_matches = payload.get("sportingMatches") or []

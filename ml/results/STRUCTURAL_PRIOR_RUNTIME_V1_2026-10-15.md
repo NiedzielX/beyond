@@ -1,6 +1,6 @@
 # Structural Prior Runtime v1 — early-horizon benchmark
 
-Status: **historical champion candidate / runtime recovery**  
+Status: **historical champion candidate / executable runtime recovery**  
 Date: **2026-10-15**
 
 ## Protocol
@@ -34,6 +34,7 @@ Final prediction is clipped to `[0, verified_capacity]`.
 |---|---|---|---|---:|---:|---:|
 | T-30 | current-season home mean with PIT fallback | full PIT + importance interactions | ExtraTrees, 500 trees, leaf=3, max_features=0.8 | **2,559.7** | **1,889.4** | **1,846.3** |
 | T-14 | rolling-3 home attendance | base PIT | HistGradientBoosting absolute-error | **2,340.0** | **1,748.5** | **1,870.4** |
+| T-7 | current-season home mean with PIT fallback | base PIT | GradientBoosting Huber, 180 trees, depth=2, leaf=8 | **2,476.8** | **1,777.7** | **1,802.3** |
 
 T-30 holdout diagnostics:
 
@@ -45,6 +46,25 @@ T-14 holdout diagnostics:
 - 2024/25: median AE **883.3**, WAPE **13.73%**, bias **-99.4**;
 - 2025/26: median AE **1,231.0**, WAPE **13.75%**, bias **-361.0**.
 
+## T-7 executable-runtime recovery
+
+The T-7 estimator/baseline contract was inherited from the previously approved verified-capacity v2.2 champion before the executable-runtime verification gate:
+
+- baseline: `baseline_season`;
+- estimator: `GradientBoostingRegressor(loss="huber", n_estimators=180, learning_rate=0.03, max_depth=2, min_samples_leaf=8, random_state=42)`;
+- feature mode: base PIT features;
+- target: verified-capacity occupancy residual.
+
+Structural Prior Runtime v1 uses the canonical `structural-prior-pit-v1+verified-capacity-v1` feature contract, so exact equality with the older `global-pit-v2+verified-capacity-v1` benchmark was not assumed. The pre-specified executable T-7 runtime was verified once against development and both untouched holdouts before production activation.
+
+Exact pinned verification values:
+
+- development 2023/24: **2,476.8168272009416**;
+- holdout 2024/25: **1,777.6927306628588**;
+- holdout 2025/26: **1,802.2755802253876**.
+
+For comparison, the previous published v2.2 T-7 benchmark was approximately **2,504** on development, **1,799.2** on 2024/25 and **1,848.0** on 2025/26. The executable Structural Prior v1 contract therefore improves the pre-specified T-7 candidate on development and both untouched holdouts without a post-holdout parameter search.
+
 ## Comparison with previous verified-capacity champion
 
 Previous v2.2:
@@ -53,6 +73,7 @@ Previous v2.2:
 |---|---:|---:|
 | T-30 | 1,998.7 | 1,994.6 |
 | T-14 | 1,869.8 | 1,960.3 |
+| T-7 | 1,799.2 | 1,848.0 |
 
 Runtime v1:
 
@@ -60,8 +81,9 @@ Runtime v1:
 |---|---:|---:|
 | T-30 | **1,889.4** | **1,846.3** |
 | T-14 | **1,748.5** | **1,870.4** |
+| T-7 | **1,777.7** | **1,802.3** |
 
-The new runtime candidate therefore improves both early horizons on both untouched seasons.
+The executable runtime improves all three recovered early horizons on both untouched seasons.
 
 ## Development-only search decisions
 
@@ -77,18 +99,26 @@ T-14:
 - base PIT features + HistGradientBoosting remained the development winner after the focused estimator expansion;
 - importance interactions did not justify replacing the base feature set at this horizon.
 
+T-7:
+
+- no new estimator search was performed during executable-runtime recovery;
+- the estimator and `baseline_season` were inherited from the approved v2.2 T-7 champion;
+- verification used the Structural Prior v1 PIT contract and confirmed an improvement on development and both untouched holdouts.
+
 ## Decision
 
-- **T-14:** promote as the preferred historical champion candidate for the Structural Prior runtime.
-- **T-30:** promote as the preferred current historical candidate because it cleanly improves v2.2, but continue model R&D. It is still above the strategic `<1700 MAE` target.
+- **T-30:** frozen executable Structural Prior runtime; continue R&D because it remains above the strategic `<1700 MAE` target.
+- **T-14:** frozen executable Structural Prior runtime.
+- **T-7:** approved for frozen executable current-event runtime and automatic Structural Prior materialization after the versioned DB registry/resolver change is applied.
 - No live ticketing feature is used in these numbers. This benchmark measures the Structural Prior only.
-- No production/live P50 is materialized by this report. Runtime inference/materialization remains the next Step 6b task.
+- T-3 / T-1 remain fail-closed until their executable runtimes are separately frozen and verified.
 
 ## Reproducibility note
 
 Code:
 
 - `ml/features/structural_prior_feature_store_v1.py`
-- `ml/structural_prior_runtime_benchmark_v1.py`
+- `ml/demand_engine/structural_prior_runtime.py`
+- `ml/demand_engine/freeze_structural_prior_artifacts.py`
 
-The builder expects the validated canonical 2021/22–2024/25 and 2025/26 match inputs. The complete 2021/22–2024/25 canonical layer is not yet fully present in the current Supabase project, so the DB backfill remains an operational prerequisite for DB-native rebuilds. The benchmark itself was reproduced from the validated canonical CSV evidence used in the historical research pipeline.
+Canonical five-season history is present in Supabase and is exported through the versioned Structural Prior training export contract. Frozen artifact builds must reproduce the pinned benchmark values before fitting the final all-five-season runtime artifact. Scheduled materialization only loads frozen artifacts and predicts; it must never call model `fit()`.

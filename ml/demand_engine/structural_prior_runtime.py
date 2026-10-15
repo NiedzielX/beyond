@@ -1,7 +1,7 @@
-"""Executable early-horizon Structural Prior runtime v1.
+"""Executable Structural Prior runtime v1.
 
-This module is the single implementation path for the T-30/T-14 historical
-champions selected under the frozen season-blocked protocol. It fits on an
+This module is the single implementation path for the frozen historical
+champions that have an executable current-event runtime. It fits on an
 explicit list of historical seasons and scores point-in-time feature rows.
 It does not fetch future data and does not materialize forecasts by itself.
 """
@@ -13,11 +13,11 @@ from typing import Literal
 import numpy as np
 import pandas as pd
 from sklearn.compose import ColumnTransformer
-from sklearn.ensemble import ExtraTreesRegressor, HistGradientBoostingRegressor
+from sklearn.ensemble import ExtraTreesRegressor, GradientBoostingRegressor, HistGradientBoostingRegressor
 from sklearn.impute import SimpleImputer
 from sklearn.preprocessing import OneHotEncoder
 
-Horizon = Literal["T-30", "T-14"]
+Horizon = Literal["T-30", "T-14", "T-7"]
 CAT = ["home_club_key", "away_club_key"]
 META = {
     "feature_set_version", "match_key", "season", "horizon", "as_of_at", "kickoff_at",
@@ -37,7 +37,7 @@ class RuntimeSpec:
     model_spec_id: str
     baseline_column: str
     feature_mode: Literal["base", "full"]
-    estimator_name: Literal["extra_leaf3", "hist15"]
+    estimator_name: Literal["extra_leaf3", "hist15", "gbr_huber"]
     feature_contract: str = "structural-prior-pit-v1+verified-capacity-v1"
     validated_competitions: tuple[str, ...] = ("Ekstraklasa",)
 
@@ -56,6 +56,13 @@ CURRENT_EARLY_RUNTIME_SPECS: dict[Horizon, RuntimeSpec] = {
         baseline_column="baseline_r3",
         feature_mode="base",
         estimator_name="hist15",
+    ),
+    "T-7": RuntimeSpec(
+        horizon="T-7",
+        model_spec_id="structural-prior-runtime-v1-t7-gbr-base",
+        baseline_column="baseline_season",
+        feature_mode="base",
+        estimator_name="gbr_huber",
     ),
 }
 
@@ -121,6 +128,15 @@ def _estimator(name: str):
             max_leaf_nodes=15,
             min_samples_leaf=10,
             l2_regularization=1.0,
+            random_state=42,
+        )
+    if name == "gbr_huber":
+        return GradientBoostingRegressor(
+            loss="huber",
+            n_estimators=180,
+            learning_rate=0.03,
+            max_depth=2,
+            min_samples_leaf=8,
             random_state=42,
         )
     raise KeyError(name)
