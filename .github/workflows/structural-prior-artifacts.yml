@@ -28,7 +28,7 @@ concurrency:
 jobs:
   validate:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -48,6 +48,50 @@ jobs:
           python -m py_compile ml/demand_engine/freeze_structural_prior_artifacts.py
           python -m py_compile ml/demand_engine/structural_prior_runtime.py
           python -m py_compile ml/features/structural_prior_feature_store_v1.py
+
+      - name: Run Structural Prior runtime contract tests
+        run: |
+          python -m unittest ml.demand_engine.test_structural_prior_runtime
+
+      - name: Reproduce frozen benchmark from committed canonical history
+        if: github.event_name == 'pull_request'
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          import pandas as pd
+
+          source = Path("ml/artifacts/structural_prior_runtime_v1/historical_runtime_v1.csv.gz")
+          frame = pd.read_csv(source)
+          rows = []
+          for row in frame.to_dict("records"):
+              rows.append({
+                  "dataset_version": "committed-frozen-runtime-input",
+                  "season": row["season"],
+                  "round_no": int(row["round"]),
+                  "match_date": row["date"],
+                  "kickoff_time_local": row["kickoff_time_local"],
+                  "home_team": row["home_team"],
+                  "away_team": row["away_team"],
+                  "home_club_key": row["home_club_key"],
+                  "away_club_key": row["away_club_key"],
+                  "home_goals": int(row["home_goals"]),
+                  "away_goals": int(row["away_goals"]),
+                  "attendance": int(row["attendance"]),
+                  "default_demand_training_eligible": int(row["attendance"]) != 0,
+                  "match_key": row["match_key"],
+              })
+          Path("/tmp/structural-prior-pr-training.json").write_text(
+              json.dumps({"rows": rows}, ensure_ascii=False)
+          )
+          PY
+          rm -rf /tmp/structural-prior-pr-artifacts
+          python -m ml.demand_engine.freeze_structural_prior_artifacts \
+            --input /tmp/structural-prior-pr-training.json \
+            --output-dir /tmp/structural-prior-pr-artifacts
+          jq '.benchmark_reproduction' /tmp/structural-prior-pr-artifacts/manifest.json
 
   freeze:
     if: github.event_name != 'pull_request'
