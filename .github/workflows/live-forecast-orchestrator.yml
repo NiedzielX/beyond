@@ -11,17 +11,39 @@ on:
       - "supabase/functions/live_forecast_orchestrator_v1/**"
       - "supabase/sql/live_forecast_orchestrator_v1.sql"
       - ".github/workflows/live-forecast-orchestrator.yml"
+  pull_request:
+    paths:
+      - "supabase/functions/live_forecast_orchestrator_v1/**"
+      - "supabase/sql/live_forecast_orchestrator_v1.sql"
+      - ".github/workflows/live-forecast-orchestrator.yml"
 
 permissions:
   contents: read
   id-token: write
 
 concurrency:
-  group: live-forecast-orchestrator
+  group: live-forecast-orchestrator-${{ github.ref }}
   cancel-in-progress: false
 
 jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Deno
+        uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+
+      - name: Check Edge Function
+        run: deno check supabase/functions/live_forecast_orchestrator_v1/index.ts
+
   orchestrate:
+    if: github.event_name != 'pull_request'
+    needs: validate
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
