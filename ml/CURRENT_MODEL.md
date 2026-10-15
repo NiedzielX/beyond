@@ -34,7 +34,8 @@ Early actionability is first-class. Model development must not optimise T-1/T-3 
 - verified historical stadium-capacity coverage: **100%**;
 - model selection: **2023/24 only** after training on 2021/22–2022/23;
 - untouched holdouts: **2024/25 + 2025/26**;
-- one verified closed-door zero-attendance match remains historical truth but is excluded from normal demand-model training.
+- one verified closed-door zero-attendance match remains historical truth but is excluded from normal demand-model training;
+- DB-native historical backfill is complete: **1,224** validated matches for 2021/22–2024/25 plus **306** matches for 2025/26 = **1,530** canonical historical rows in Supabase.
 
 Exact Structural Prior Runtime v1 input hashes are pinned in:
 
@@ -103,6 +104,23 @@ Holdouts:
 
 This improves the previous v2.2 T-14 result (`1,869.8 / 1,960.3`) on both untouched seasons and becomes the preferred T-14 historical champion candidate.
 
+## First genuine current Structural Prior
+
+A genuine current-event Structural Prior has now been materialized for **Lech Poznań vs Wisła Kraków, 31 October 2026**:
+
+- ticket event: `6`;
+- horizon: **T-30**;
+- exact PIT cutoff: **2026-10-01 16:30:00 UTC**;
+- model: `structural-prior-runtime-v1-t30-extra-full`;
+- P50: **31,832.41**;
+- verified current stadium capacity: **43,269**;
+- expected occupancy: **73.57%**;
+- row persisted in `private.structural_prior_forecasts_v1` with `point_in_time_validated = true`;
+- model / feature / input lineage persisted with the forecast;
+- P10/P90 are intentionally null until the current Structural Prior interval layer is calibrated.
+
+The DB current Structural Prior specs for **T-30** and **T-14** now point to the Runtime v1 model IDs above.
+
 ## Current historical model families
 
 - T-30: ExtraTrees verified-capacity occupancy-residual model with full PIT demand/context features;
@@ -127,7 +145,9 @@ Horizon-specific contracts remain intentional. A feature family or model that he
 - every target has T-30/T-14/T-7/T-3/T-1 snapshots before kickoff;
 - the target match never enters its own feature state.
 
-The current builder produces:
+`ml/demand_engine/current_structural_prior_features.py` builds the equivalent row for a future current event and enforces that current attendance and sporting state are not from after the requested PIT cutoff.
+
+The historical builder produces:
 
 - **1,530 matches**;
 - **7,650 snapshots**;
@@ -153,10 +173,10 @@ Current canonical live contracts are documented in:
 
 ### Phase B — Shadow Forecasting: **ACTIVE**
 
-**Step 6 — Structural Prior**
+**Step 6 — Structural Prior: DONE**
 
 - **6a adapter / model-domain guard: DONE**;
-- **6b executable runtime: ACTIVE**.
+- **6b executable runtime: DONE**.
 
 Completed in 6b:
 
@@ -164,17 +184,13 @@ Completed in 6b:
 - exact canonical input hashes;
 - executable T-30/T-14 runtime implementation;
 - frozen season-blocked benchmark;
-- T-30/T-14 historical champion candidates improved on both holdouts.
+- T-30/T-14 historical champion candidates improved on both holdouts;
+- reusable current-event PIT feature-row builder;
+- first genuine current Ekstraklasa Structural Prior P50 materialized with exact lineage;
+- DB T-30/T-14 Structural Prior current specs switched to Runtime v1;
+- 2021/22–2024/25 historical Supabase backfill completed and QA-validated.
 
-Remaining before Step 6 is closed:
-
-1. connect the runtime to a current-event PIT feature-row builder;
-2. fit on the approved historical seasons and generate a genuine current P50 for an eligible future Ekstraklasa event;
-3. persist that P50 in `private.structural_prior_forecasts_v1` with exact model/feature/input lineage;
-4. update current DB Structural Prior specs to the new T-30/T-14 model IDs;
-5. finish the missing 2021/22–2024/25 Supabase historical backfill for DB-native rebuilds.
-
-**Do not start Step 7 trajectory-gap logic by pretending a prior exists.** Step 7 consumes only a genuine current Structural Prior row.
+Step 7 may now consume only genuine rows from `private.structural_prior_forecasts_v1`; there is no permission to fall back silently to Lech v1.3/v0.3.
 
 ## Structural Prior domain guard
 
@@ -207,15 +223,14 @@ A first genuine T-30+ collection case is active for Jagiellonia Białystok vs Cr
 
 ## Next implementation sequence
 
-1. **NOW — finish Phase B / Step 6b current-event Structural Prior runtime + P50 materialization.**
+1. **NOW — Step 7: expected trajectory / trajectory gap against the genuine Structural Prior.**
 2. Continue T-30 historical R&D toward **<1,700 MAE** in parallel; do not block runtime integration on that research goal.
-3. Step 7 — expected trajectory / trajectory gap against the genuine Structural Prior.
-4. Step 8 — persist shadow live forecasts.
-5. Step 9 — first-detection and forecast-revision history.
-6. Step 10 — keep live correction shadow-only until completed-event evidence is sufficient.
-7. Phase C — learned live residual correction.
-8. Phase D — calibrated P10/P50/P90.
-9. Phase E — recommendations / intervention learning.
+3. Step 8 — persist shadow live forecasts using the genuine prior + trajectory-gap contract.
+4. Step 9 — first-detection and forecast-revision history.
+5. Step 10 — keep live correction shadow-only until completed-event evidence is sufficient.
+6. Phase C — learned live residual correction.
+7. Phase D — calibrated P10/P50/P90.
+8. Phase E — recommendations / intervention learning.
 
 ## Evaluation rule
 
@@ -239,6 +254,7 @@ No model is promoted because it looks intuitive or wins on a tiny prospective sa
 - `ml/results/STRUCTURAL_PRIOR_RUNTIME_V1_2026-10-15.md`
 - `ml/data/STRUCTURAL_PRIOR_RUNTIME_V1_INPUT_MANIFEST.md`
 - `ml/features/structural_prior_feature_store_v1.py`
+- `ml/demand_engine/current_structural_prior_features.py`
 - `ml/structural_prior_runtime_benchmark_v1.py`
 - `ml/results/BEYOND_GLOBAL_FORECAST_V2_BENCHMARK_2026-10-14.md`
 - `ml/results/BEYOND_GLOBAL_FORECAST_V2_2_VERIFIED_CAPACITY_2026-10-14.md`
