@@ -18,19 +18,19 @@ from .contracts import SignalReadiness
 FEATURE_VERSION = "live-trajectory-v1"
 INVENTORY_INTERPRETATION = "demand_proxy_not_confirmed_sales"
 DATA_GAP_HOURS = 12.0
+RECENT_QUALITY_WINDOW_HOURS = 168
 MIN_READY_SNAPSHOTS = 4
 MIN_READY_OBSERVATION_HOURS = 24.0
 
-# One-sided checkpoint windows: the snapshot must be at or before the business
-# checkpoint. This prevents a T-30 feature row from silently using T-29 data.
+# One-sided checkpoint windows: data from after the business checkpoint must
+# never leak into the checkpoint feature row.
 CHECKPOINTS: tuple[tuple[str, float, float], ...] = (
-    ("T-30", 30.0 * 24.0, 3.0 * 24.0),
-    ("T-14", 14.0 * 24.0, 2.0 * 24.0),
-    ("T-7", 7.0 * 24.0, 1.0 * 24.0),
-    ("T-3", 3.0 * 24.0, 18.0),
-    ("T-1", 1.0 * 24.0, 12.0),
+    ("T-30", 720.0, 72.0),
+    ("T-14", 336.0, 48.0),
+    ("T-7", 168.0, 24.0),
+    ("T-3", 72.0, 18.0),
+    ("T-1", 24.0, 12.0),
 )
-
 WINDOWS_HOURS: tuple[int, ...] = (6, 24, 72, 168)
 
 
@@ -113,7 +113,6 @@ class LiveTrajectoryFeatures:
     velocity_24h_pct_of_first_per_hour: float | None = None
     velocity_72h_pct_of_first_per_hour: float | None = None
     velocity_7d_pct_of_first_per_hour: float | None = None
-
     velocity_6h_pct_of_capacity_per_hour: float | None = None
     velocity_24h_pct_of_capacity_per_hour: float | None = None
     velocity_72h_pct_of_capacity_per_hour: float | None = None
@@ -152,13 +151,13 @@ def build_live_trajectory_features(
     stadium_capacity: int | None = None,
     public_seat_map_size: int | None = None,
 ) -> LiveTrajectoryFeatures:
-    """Build a leakage-safe feature row from snapshot history visible at ``as_of``.
+    """Build one leakage-safe feature row from inventory visible at ``as_of``.
 
-    Invalid negative inventory rows and duplicate timestamps are excluded from
-    calculations and counted as anomalies. When multiple rows share a timestamp,
-    the highest snapshot id wins deterministically.
+    ``max_visible_gap_hours`` is retained as all-history telemetry. Readiness is
+    intentionally based on gaps in the most recent seven days, because seven
+    days is the longest live velocity window in v1. A collector outage weeks ago
+    must not permanently block a currently healthy signal.
     """
-
     _require_aware("as_of", as_of)
     _require_aware("kickoff_at", kickoff_at)
     if kickoff_at <= as_of:
@@ -168,26 +167,39 @@ def build_live_trajectory_features(
     if public_seat_map_size is not None and public_seat_map_size <= 0:
         raise ValueError("public_seat_map_size must be positive")
 
-    visible = [s for s in snapshots if s.captured_at <= as_of]
+    snapshot_rows = list(snapshots)
+    sector_rows = list(sectors)
+    for snapshot in snapshot_rows:
+        _require_aware("snapshot.captured_at", snapshot.captured_at)
+
+    visible = [snapshot for snapshot in snapshot_rows if snapshot.captured_at <= as_of]
     raw_snapshot_count = len(visible)
     invalid_snapshot_count = sum(
-        1 for s in visible if s.available_total is None or int(s.available_total) < 0
+        1
+        for snapshot in visible
+        if snapshot.available_total is None or int(snapshot.available_total) < 0
     )
-
     valid = [
-        s for s in visible if s.available_total is not None and int(s.available_total) >= 0
+        snapshot
+        for snapshot in visible
+        if snapshot.available_total is not None and int(snapshot.available_total) >= 0
     ]
+
+    # Same timestamp => use the highest snapshot id deterministically.
     deduped_by_time: dict[datetime, SnapshotRecord] = {}
-    for snapshot in sorted(valid, key=lambda s: (s.captured_at, s.snapshot_id)):
-        _require_aware("snapshot.captured_at", snapshot.captured_at)
+    for snapshot in sorted(valid, key=lambda row: (row.captured_at, row.snapshot_id)):
         deduped_by_time[snapshot.captured_at] = snapshot
     duplicate_timestamp_count = len(valid) - len(deduped_by_time)
-    clean = sorted(deduped_by_time.values(), key=lambda s: (s.captured_at, s.snapshot_id))
+    clean = sorted(
+        deduped_by_time.values(),
+        key=lambda row: (row.captured_at, row.snapshot_id),
+    )
     excluded_anomaly_count = invalid_snapshot_count + duplicate_timestamp_count
 
+    hours_to_kickoff = _hours(kickoff_at - as_of)
+    checkpoint_label, checkpoint_distance, checkpoint_ready = _checkpoint(hours_to_kickoff)
+
     if not clean:
-        hours_to_kickoff = _hours(kickoff_at - as_of)
-        checkpoint_label, checkpoint_distance, checkpoint_ready = _checkpoint(hours_to_kickoff)
         return LiveTrajectoryFeatures(
             feature_version=FEATURE_VERSION,
             signal_readiness="not_ready",
@@ -214,19 +226,17 @@ def build_live_trajectory_features(
     previous = clean[-2] if len(clean) >= 2 else None
     first_available = int(first.available_total or 0)
     current_available = int(current.available_total or 0)
-
-    hours_to_kickoff = _hours(kickoff_at - as_of)
-    checkpoint_label, checkpoint_distance, checkpoint_ready = _checkpoint(hours_to_kickoff)
     observation_window_hours = _hours(current.captured_at - first.captured_at)
     snapshot_age_minutes = (as_of - current.captured_at).total_seconds() / 60.0
 
-    max_gap = _max_gap_hours(clean)
+    max_visible_gap = _max_gap_hours(clean)
+    max_recent_gap = _recent_max_gap_hours(clean, current, RECENT_QUALITY_WINDOW_HOURS)
     data_gap_detected = bool(
-        (max_gap is not None and max_gap > DATA_GAP_HOURS)
+        (max_recent_gap is not None and max_recent_gap > DATA_GAP_HOURS)
         or snapshot_age_minutes > DATA_GAP_HOURS * 60.0
     )
 
-    window_metrics = {
+    windows = {
         hours: _window_metric(
             clean,
             current,
@@ -236,11 +246,10 @@ def build_live_trajectory_features(
         )
         for hours in WINDOWS_HOURS
     }
+    sector_metrics = _sector_transition_metrics(previous, current, sector_rows)
 
-    sector_metrics = _sector_transition_metrics(previous, current, sectors)
-    feature_quality: FeatureQuality
     if len(clean) == 1:
-        feature_quality = "single_snapshot_only"
+        feature_quality: FeatureQuality = "single_snapshot_only"
     elif sector_metrics["sector_data_available"]:
         feature_quality = "sector_matched_plus_raw"
     else:
@@ -254,7 +263,7 @@ def build_live_trajectory_features(
             net_removed_previous = int(previous.available_total or 0) - current_available
             velocity_previous = net_removed_previous / elapsed
 
-    unexplained_increase = None
+    unexplained_increase: bool | None = None
     if previous is not None:
         increase = current_available - int(previous.available_total or 0)
         material_threshold = max(100, round(first_available * 0.05)) if first_available else 100
@@ -271,10 +280,10 @@ def build_live_trajectory_features(
         unexplained_inventory_increase_flag=bool(unexplained_increase),
     )
 
-    v6 = window_metrics[6].velocity_per_hour
-    v24 = window_metrics[24].velocity_per_hour
-    v72 = window_metrics[72].velocity_per_hour
-    v7d = window_metrics[168].velocity_per_hour
+    v6 = windows[6].velocity_per_hour
+    v24 = windows[24].velocity_per_hour
+    v72 = windows[72].velocity_per_hour
+    v7d = windows[168].velocity_per_hour
 
     return LiveTrajectoryFeatures(
         feature_version=FEATURE_VERSION,
@@ -299,38 +308,41 @@ def build_live_trajectory_features(
         public_seat_map_size=public_seat_map_size,
         available_pct_of_public_seat_map=(
             _ratio(current_available, public_seat_map_size) * 100.0
-            if public_seat_map_size else None
+            if public_seat_map_size
+            else None
         ),
         net_removed_since_first=first_available - current_available,
         net_removed_since_previous=net_removed_previous,
         velocity_since_previous=velocity_previous,
-        net_removed_6h=window_metrics[6].net_removed,
+        net_removed_6h=windows[6].net_removed,
         velocity_6h=v6,
-        net_removed_24h=window_metrics[24].net_removed,
+        net_removed_24h=windows[24].net_removed,
         velocity_24h=v24,
-        net_removed_72h=window_metrics[72].net_removed,
+        net_removed_72h=windows[72].net_removed,
         velocity_72h=v72,
-        net_removed_7d=window_metrics[168].net_removed,
+        net_removed_7d=windows[168].net_removed,
         velocity_7d=v7d,
-        velocity_6h_pct_of_first_per_hour=window_metrics[6].velocity_pct_of_first_per_hour,
-        velocity_24h_pct_of_first_per_hour=window_metrics[24].velocity_pct_of_first_per_hour,
-        velocity_72h_pct_of_first_per_hour=window_metrics[72].velocity_pct_of_first_per_hour,
-        velocity_7d_pct_of_first_per_hour=window_metrics[168].velocity_pct_of_first_per_hour,
-        velocity_6h_pct_of_capacity_per_hour=window_metrics[6].velocity_pct_of_capacity_per_hour,
-        velocity_24h_pct_of_capacity_per_hour=window_metrics[24].velocity_pct_of_capacity_per_hour,
-        velocity_72h_pct_of_capacity_per_hour=window_metrics[72].velocity_pct_of_capacity_per_hour,
-        velocity_7d_pct_of_capacity_per_hour=window_metrics[168].velocity_pct_of_capacity_per_hour,
+        velocity_6h_pct_of_first_per_hour=windows[6].velocity_pct_of_first_per_hour,
+        velocity_24h_pct_of_first_per_hour=windows[24].velocity_pct_of_first_per_hour,
+        velocity_72h_pct_of_first_per_hour=windows[72].velocity_pct_of_first_per_hour,
+        velocity_7d_pct_of_first_per_hour=windows[168].velocity_pct_of_first_per_hour,
+        velocity_6h_pct_of_capacity_per_hour=windows[6].velocity_pct_of_capacity_per_hour,
+        velocity_24h_pct_of_capacity_per_hour=windows[24].velocity_pct_of_capacity_per_hour,
+        velocity_72h_pct_of_capacity_per_hour=windows[72].velocity_pct_of_capacity_per_hour,
+        velocity_7d_pct_of_capacity_per_hour=windows[168].velocity_pct_of_capacity_per_hour,
         acceleration_6h_vs_24h=_difference(v6, v24),
         acceleration_24h_vs_72h=_difference(v24, v72),
         acceleration_72h_vs_7d=_difference(v72, v7d),
-        matched_sector_count=sector_metrics["matched_sector_count"],
-        entered_sector_count=sector_metrics["entered_sector_count"],
-        left_sector_count=sector_metrics["left_sector_count"],
-        matched_absorption=sector_metrics["matched_absorption"],
-        matched_release=sector_metrics["matched_release"],
-        coverage_inventory_effect=sector_metrics["coverage_inventory_effect"],
-        sector_coverage_change_flag=sector_metrics["sector_coverage_change_flag"],
-        release_activity_flag=sector_metrics["release_activity_flag"],
+        matched_sector_count=_optional_int(sector_metrics["matched_sector_count"]),
+        entered_sector_count=_optional_int(sector_metrics["entered_sector_count"]),
+        left_sector_count=_optional_int(sector_metrics["left_sector_count"]),
+        matched_absorption=_optional_int(sector_metrics["matched_absorption"]),
+        matched_release=_optional_int(sector_metrics["matched_release"]),
+        coverage_inventory_effect=_optional_int(sector_metrics["coverage_inventory_effect"]),
+        sector_coverage_change_flag=_optional_bool(
+            sector_metrics["sector_coverage_change_flag"]
+        ),
+        release_activity_flag=_optional_bool(sector_metrics["release_activity_flag"]),
         unexplained_inventory_increase_flag=unexplained_increase,
         raw_snapshot_count=raw_snapshot_count,
         clean_snapshot_count=len(clean),
@@ -338,7 +350,7 @@ def build_live_trajectory_features(
         duplicate_timestamp_count=duplicate_timestamp_count,
         invalid_snapshot_count=invalid_snapshot_count,
         observation_window_hours=observation_window_hours,
-        max_visible_gap_hours=max_gap,
+        max_visible_gap_hours=max_visible_gap,
         data_gap_detected=data_gap_detected,
     )
 
@@ -352,13 +364,11 @@ def _window_metric(
     stadium_capacity: int | None,
 ) -> WindowMetric:
     cutoff = current.captured_at - timedelta(hours=window_hours)
-    anchors = [s for s in clean if s.captured_at <= cutoff]
+    anchors = [snapshot for snapshot in clean if snapshot.captured_at <= cutoff]
     if not anchors:
         return WindowMetric(window_hours=window_hours)
 
     anchor = anchors[-1]
-    # A stale anchor turns a nominal 6h feature into a 20h feature. Reject it
-    # when it lies too far before the requested cutoff.
     anchor_lag_hours = _hours(cutoff - anchor.captured_at)
     tolerance = max(3.0, window_hours * 0.25)
     if anchor_lag_hours > tolerance:
@@ -378,7 +388,9 @@ def _window_metric(
         net_removed=net_removed,
         velocity_per_hour=velocity,
         velocity_pct_of_first_per_hour=(
-            velocity / first_available_total * 100.0 if first_available_total > 0 else None
+            velocity / first_available_total * 100.0
+            if first_available_total > 0
+            else None
         ),
         velocity_pct_of_capacity_per_hour=(
             velocity / stadium_capacity * 100.0 if stadium_capacity else None
@@ -400,22 +412,25 @@ def _sector_transition_metrics(
             continue
         by_snapshot.setdefault(row.snapshot_id, {})[row.sector] = int(row.available)
 
-    prev = by_snapshot.get(previous.snapshot_id)
-    cur = by_snapshot.get(current.snapshot_id)
-    if not prev or not cur:
+    previous_sectors = by_snapshot.get(previous.snapshot_id)
+    current_sectors = by_snapshot.get(current.snapshot_id)
+    if not previous_sectors or not current_sectors:
         return _empty_sector_metrics()
 
-    prev_keys = set(prev)
-    cur_keys = set(cur)
-    matched = prev_keys & cur_keys
-    entered = cur_keys - prev_keys
-    left = prev_keys - cur_keys
+    previous_keys = set(previous_sectors)
+    current_keys = set(current_sectors)
+    matched = previous_keys & current_keys
+    entered = current_keys - previous_keys
+    left = previous_keys - current_keys
 
-    matched_absorption = sum(max(prev[key] - cur[key], 0) for key in matched)
-    matched_release = sum(max(cur[key] - prev[key], 0) for key in matched)
-    entered_available = sum(cur[key] for key in entered)
-    left_available = sum(prev[key] for key in left)
-    coverage_effect = entered_available - left_available
+    matched_absorption = sum(
+        max(previous_sectors[key] - current_sectors[key], 0) for key in matched
+    )
+    matched_release = sum(
+        max(current_sectors[key] - previous_sectors[key], 0) for key in matched
+    )
+    entered_available = sum(current_sectors[key] for key in entered)
+    left_available = sum(previous_sectors[key] for key in left)
 
     return {
         "sector_data_available": True,
@@ -424,7 +439,7 @@ def _sector_transition_metrics(
         "left_sector_count": len(left),
         "matched_absorption": matched_absorption,
         "matched_release": matched_release,
-        "coverage_inventory_effect": coverage_effect,
+        "coverage_inventory_effect": entered_available - left_available,
         "sector_coverage_change_flag": bool(entered or left),
         "release_activity_flag": bool(matched_release > 0 or entered_available > 0),
     }
@@ -474,7 +489,26 @@ def _checkpoint(hours_to_kickoff: float) -> tuple[str | None, float | None, bool
 def _max_gap_hours(clean: list[SnapshotRecord]) -> float | None:
     if len(clean) < 2:
         return None
-    return max(_hours(b.captured_at - a.captured_at) for a, b in zip(clean, clean[1:]))
+    return max(
+        _hours(current.captured_at - previous.captured_at)
+        for previous, current in zip(clean, clean[1:])
+    )
+
+
+def _recent_max_gap_hours(
+    clean: list[SnapshotRecord],
+    current: SnapshotRecord,
+    window_hours: int,
+) -> float | None:
+    if len(clean) < 2:
+        return None
+    cutoff = current.captured_at - timedelta(hours=window_hours)
+    gaps = [
+        _hours(later.captured_at - earlier.captured_at)
+        for earlier, later in zip(clean, clean[1:])
+        if later.captured_at >= cutoff
+    ]
+    return max(gaps) if gaps else None
 
 
 def _difference(left: float | None, right: float | None) -> float | None:
@@ -487,6 +521,18 @@ def _ratio(numerator: int, denominator: int | None) -> float | None:
     if not denominator:
         return None
     return numerator / denominator
+
+
+def _optional_int(value: int | bool | None) -> int | None:
+    if value is None:
+        return None
+    return int(value)
+
+
+def _optional_bool(value: int | bool | None) -> bool | None:
+    if value is None:
+        return None
+    return bool(value)
 
 
 def _hours(delta: timedelta) -> float:
