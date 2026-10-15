@@ -51,6 +51,7 @@ jobs:
           python -m py_compile ml/demand_engine/t7_state.py
           python -m py_compile ml/demand_engine/storage.py
           python -m py_compile ml/demand_engine/supabase.py
+          python -m py_compile ml/demand_engine/live_trajectory_feature_store.py
           python -m py_compile ml/demand_engine/run_v17_t7_shadow.py
           python -m py_compile ml/recovered/v17/reconstruct_t30_v17.py
           python -m py_compile ml/recovered/v17/reconstruct_t7_v17.py

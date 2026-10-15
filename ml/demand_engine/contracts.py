@@ -59,20 +59,66 @@ class QuantileForecast:
 class LiveFeatures:
     feature_version: str
     signal_readiness: SignalReadiness
+
+    feature_quality: str | None = None
+    point_in_time_validated: bool | None = None
+    hours_to_kickoff: float | None = None
+    days_to_kickoff: float | None = None
+    snapshot_age_minutes: float | None = None
+    checkpoint_label: str | None = None
+    checkpoint_distance_hours: float | None = None
+    checkpoint_ready: bool | None = None
+
     available_total: int | None = None
     first_available_total: int | None = None
     available_index: float | None = None
+    available_share_of_capacity: float | None = None
+    public_seat_map_size: int | None = None
+    available_pct_of_public_seat_map: float | None = None
+
     net_removed_since_first: int | None = None
     net_removed_since_previous: int | None = None
     velocity_since_previous: float | None = None
+
     net_removed_6h: int | None = None
     velocity_6h: float | None = None
     net_removed_24h: int | None = None
     velocity_24h: float | None = None
+    net_removed_72h: int | None = None
+    velocity_72h: float | None = None
+    net_removed_7d: int | None = None
+    velocity_7d: float | None = None
+
+    velocity_6h_pct_of_first_per_hour: float | None = None
+    velocity_24h_pct_of_first_per_hour: float | None = None
+    velocity_72h_pct_of_first_per_hour: float | None = None
+    velocity_7d_pct_of_first_per_hour: float | None = None
+    velocity_6h_pct_of_capacity_per_hour: float | None = None
+    velocity_24h_pct_of_capacity_per_hour: float | None = None
+    velocity_72h_pct_of_capacity_per_hour: float | None = None
+    velocity_7d_pct_of_capacity_per_hour: float | None = None
+
     acceleration_6h_vs_24h: float | None = None
+    acceleration_24h_vs_72h: float | None = None
+    acceleration_72h_vs_7d: float | None = None
+
+    matched_sector_count: int | None = None
+    entered_sector_count: int | None = None
+    left_sector_count: int | None = None
+    matched_absorption: int | None = None
+    matched_release: int | None = None
+    coverage_inventory_effect: int | None = None
+    sector_coverage_change_flag: bool | None = None
+    release_activity_flag: bool | None = None
+    unexplained_inventory_increase_flag: bool | None = None
+
     raw_snapshot_count: int | None = None
     clean_snapshot_count: int | None = None
     excluded_anomaly_count: int | None = None
+    duplicate_timestamp_count: int | None = None
+    invalid_snapshot_count: int | None = None
+    observation_window_hours: float | None = None
+    max_visible_gap_hours: float | None = None
     data_gap_detected: bool | None = None
 
 
