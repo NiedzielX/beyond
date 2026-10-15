@@ -1,6 +1,16 @@
 {
-  "artifact_version": "structural-prior-runtime-v1-frozen-2026-10-15-t3",
+  "artifact_version": "structural-prior-runtime-v1-frozen-2026-10-15-t1",
   "artifacts": {
+    "T-1": {
+      "bytes": 230690,
+      "feature_contract": "structural-prior-pit-v1+verified-capacity-v1",
+      "filename": "structural_prior_t1_v1.joblib",
+      "model_family": "HistGradientBoostingRegressor",
+      "model_spec_id": "structural-prior-runtime-v1-t1-hist-full",
+      "numeric_feature_count": 80,
+      "sha256": "f67ee9bf6853a01245de5406861b59e491b86a01a8120023868ad54b19f0ebfa",
+      "training_rows": 1448
+    },
     "T-14": {
       "bytes": 175534,
       "feature_contract": "structural-prior-pit-v1+verified-capacity-v1",
@@ -43,6 +53,10 @@
     }
   },
   "benchmark_reproduction": {
+    "T-1": {
+      "2024/2025": 1651.733625020056,
+      "2025/2026": 1742.835142803119
+    },
     "T-14": {
       "2024/2025": 1748.4970512511325,
       "2025/2026": 1870.393553818474
@@ -52,7 +66,7 @@
       "2025/2026": 1775.069078799718
     },
     "T-30": {
-      "2024/2025": 1889.3672272292854,
+      "2024/2025": 1889.3672272292858,
       "2025/2026": 1846.2792557036205
     },
     "T-7": {
@@ -61,6 +75,9 @@
     }
   },
   "development_verification": {
+    "T-1": {
+      "2023/2024": 2347.9931110468183
+    },
     "T-3": {
       "2023/2024": 2311.6246893162593
     },
@@ -76,7 +93,7 @@
   "historical_runtime": {
     "filename": "historical_runtime_v1.csv.gz",
     "matches": 1530,
-    "sha256": "02d0bbf98f83deb3e5bd771f7e800d9e25e4d5a8bfaf2d5ac3349ab49f642232"
+    "sha256": "3c6b35142c6bd20a484f2aa758cd41284fd6f4c6db1353b138f81cf321161569"
   },
   "libraries": {
     "joblib": "1.5.3",
