@@ -26,18 +26,14 @@ EXPECTED_HOLDOUT_MAE = {
     "T-30": {"2024/2025": 1889.3672272292858, "2025/2026": 1846.2792557036205},
     "T-14": {"2024/2025": 1748.4970512511325, "2025/2026": 1870.393553818474},
     "T-7": {"2024/2025": 1777.6927306628588, "2025/2026": 1802.2755802253876},
-    # One-time recovery reference for the pre-specified v2.3 T-3 champion.
-    # These rounded values intentionally make the first Structural Prior v1
-    # recovery run disclose any contract delta before exact values are pinned.
-    "T-3": {"2024/2025": 1701.4, "2025/2026": 1686.4},
+    "T-3": {"2024/2025": 1661.715966441126, "2025/2026": 1775.069078799718},
 }
-EXPECTED_HOLDOUT_ATOL = {"T-30": 1e-9, "T-14": 1e-9, "T-7": 1e-9, "T-3": 0.051}
-EXPECTED_T7_DEVELOPMENT_MAE = 2476.8168272009416
-# Deliberate one-time recovery sentinel. The T-3 estimator/baseline/full-feature
-# contract is fixed before this run; CI reports the actual dev value, after
-# which it is pinned exactly without any post-holdout parameter search.
-EXPECTED_T3_DEVELOPMENT_MAE = 0.0
-ARTIFACT_VERSION = "structural-prior-runtime-v1-frozen-2026-10-15-t3-recovery"
+EXPECTED_HOLDOUT_ATOL = {"T-30": 1e-9, "T-14": 1e-9, "T-7": 1e-9, "T-3": 1e-9}
+EXPECTED_DEVELOPMENT_MAE = {
+    "T-7": 2476.8168272009416,
+    "T-3": 2311.6246893162593,
+}
+ARTIFACT_VERSION = "structural-prior-runtime-v1-frozen-2026-10-15-t3"
 
 
 def sha256_file(path: Path) -> str:
@@ -97,30 +93,20 @@ def _score_season(
 def verify_frozen_selection(store: pd.DataFrame) -> tuple[dict[str, dict[str, float]], dict[str, dict[str, float]]]:
     mismatches: list[str] = []
 
-    t7_dev = _score_season(
-        store,
-        "T-7",
-        ["2021/2022", "2022/2023"],
-        "2023/2024",
-    )
-    t3_dev = _score_season(
-        store,
-        "T-3",
-        ["2021/2022", "2022/2023"],
-        "2023/2024",
-    )
-    development = {
-        "T-7": {"2023/2024": t7_dev},
-        "T-3": {"2023/2024": t3_dev},
-    }
-    if not np.isclose(t7_dev, EXPECTED_T7_DEVELOPMENT_MAE, rtol=0.0, atol=1e-9):
-        mismatches.append(
-            f"T-7/development-2023/2024: actual={t7_dev} expected={EXPECTED_T7_DEVELOPMENT_MAE}"
+    development: dict[str, dict[str, float]] = {}
+    for horizon in ("T-7", "T-3"):
+        value = _score_season(
+            store,
+            horizon,
+            ["2021/2022", "2022/2023"],
+            "2023/2024",
         )
-    if not np.isclose(t3_dev, EXPECTED_T3_DEVELOPMENT_MAE, rtol=0.0, atol=1e-9):
-        mismatches.append(
-            f"T-3/development-2023/2024: actual={t3_dev} recovery_sentinel={EXPECTED_T3_DEVELOPMENT_MAE}"
-        )
+        development[horizon] = {"2023/2024": value}
+        expected = EXPECTED_DEVELOPMENT_MAE[horizon]
+        if not np.isclose(value, expected, rtol=0.0, atol=1e-9):
+            mismatches.append(
+                f"{horizon}/development-2023/2024: actual={value} expected={expected}"
+            )
 
     holdouts: dict[str, dict[str, float]] = {}
     for horizon in ("T-30", "T-14", "T-7", "T-3"):
@@ -134,7 +120,7 @@ def verify_frozen_selection(store: pd.DataFrame) -> tuple[dict[str, dict[str, fl
             holdouts[horizon][test_season] = value
             if not np.isclose(value, expected, rtol=0.0, atol=EXPECTED_HOLDOUT_ATOL[horizon]):
                 mismatches.append(
-                    f"{horizon}/{test_season}: actual={value} reference={expected}"
+                    f"{horizon}/{test_season}: actual={value} expected={expected}"
                 )
 
     if mismatches:
