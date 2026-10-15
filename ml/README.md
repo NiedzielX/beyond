@@ -1,6 +1,8 @@
 # Beyond ML Benchmark Harness
 
-> **Current model source of truth:** [`CURRENT_MODEL.md`](./CURRENT_MODEL.md) — current dataset, winner per horizon, MAE, accepted/rejected challengers and next modelling experiments.
+> **New session / agent:** read [`../AI_BOOTSTRAP.md`](../AI_BOOTSTRAP.md) first. Do not rerun frozen historical benchmarks merely to recover context.
+>
+> **Current model source of truth:** [`CURRENT_MODEL.md`](./CURRENT_MODEL.md) — current dataset, winner per horizon, MAE, accepted/rejected challengers and current Demand Engine state.
 >
 > **Core architecture / governance:** [`CORE_PRODUCT_STATUS.md`](./CORE_PRODUCT_STATUS.md) — forecasting-core architecture, evidence gates, canonical ML questions and implementation gaps.
 
@@ -12,7 +14,7 @@ A challenger is not promoted because it is newer or more complex. It must improv
 
 ## Current global benchmark
 
-The active historical research benchmark is now multi-club:
+The active historical research benchmark is multi-club:
 
 - five Ekstraklasa seasons: 2021/22–2025/26;
 - 1,530 matches;
@@ -24,8 +26,22 @@ The active historical research benchmark is now multi-club:
 See:
 
 - [`CURRENT_MODEL.md`](./CURRENT_MODEL.md)
-- [`results/BEYOND_GLOBAL_FORECAST_V2_BENCHMARK_2026-10-14.md`](./results/BEYOND_GLOBAL_FORECAST_V2_BENCHMARK_2026-10-14.md)
-- [`results/BEYOND_GLOBAL_FORECAST_V2_1_CHALLENGERS_2026-10-14.md`](./results/BEYOND_GLOBAL_FORECAST_V2_1_CHALLENGERS_2026-10-14.md)
+- [`results/STRUCTURAL_PRIOR_RUNTIME_V1_2026-10-15.md`](./results/STRUCTURAL_PRIOR_RUNTIME_V1_2026-10-15.md)
+- [`LIVE_DEMAND_ENGINE_V1_PLAN.md`](./LIVE_DEMAND_ENGINE_V1_PLAN.md)
+
+## Re-run rule
+
+Do not rebuild the feature store or rerun historical benchmarks to rediscover the current state. Trust persisted results unless a trigger in [`../AI_BOOTSTRAP.md`](../AI_BOOTSTRAP.md) applies.
+
+Typical valid triggers are:
+
+- model implementation/hyperparameter change;
+- feature-contract change;
+- historical input/hash change;
+- source-data correction;
+- benchmark-protocol change;
+- intentional challenger evaluation;
+- explicit reproduction request.
 
 ## Historical benchmark v0.1 — retained for lineage
 
@@ -52,7 +68,7 @@ The original benchmark was Lech-only and is retained as model lineage, not as th
 
 CatBoost was **not promoted**. On the untouched 32-match holdout it reached MAE `5,918` vs `5,318` for the incumbent and had a much larger negative bias (`-4,867` vs `-2,338`).
 
-That result remains useful historical lineage, but it has been superseded by the five-season Global Forecast v2 benchmark.
+That result remains useful historical lineage, but it has been superseded by the five-season Global Forecast / Structural Prior benchmark.
 
 ## Promotion criteria
 
