@@ -4,6 +4,13 @@ on:
   workflow_dispatch:
   schedule:
     - cron: "7,22,37,52 * * * *"
+  push:
+    branches:
+      - main
+    paths:
+      - "supabase/functions/live_forecast_orchestrator_v1/**"
+      - "supabase/sql/live_forecast_orchestrator_v1.sql"
+      - ".github/workflows/live-forecast-orchestrator.yml"
 
 permissions:
   contents: read
