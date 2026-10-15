@@ -8,12 +8,16 @@ on:
     paths:
       - "ml/demand_engine/freeze_structural_prior_artifacts.py"
       - "ml/demand_engine/structural_prior_runtime.py"
+      - "ml/demand_engine/current_structural_prior_features.py"
+      - "ml/demand_engine/test_current_structural_prior_features.py"
       - "ml/features/structural_prior_feature_store_v1.py"
       - ".github/workflows/structural-prior-artifacts.yml"
   pull_request:
     paths:
       - "ml/demand_engine/freeze_structural_prior_artifacts.py"
       - "ml/demand_engine/structural_prior_runtime.py"
+      - "ml/demand_engine/current_structural_prior_features.py"
+      - "ml/demand_engine/test_current_structural_prior_features.py"
       - "ml/features/structural_prior_feature_store_v1.py"
       - ".github/workflows/structural-prior-artifacts.yml"
 
@@ -47,11 +51,13 @@ jobs:
         run: |
           python -m py_compile ml/demand_engine/freeze_structural_prior_artifacts.py
           python -m py_compile ml/demand_engine/structural_prior_runtime.py
+          python -m py_compile ml/demand_engine/current_structural_prior_features.py
           python -m py_compile ml/features/structural_prior_feature_store_v1.py
 
       - name: Run Structural Prior runtime contract tests
         run: |
           python -m unittest ml.demand_engine.test_structural_prior_runtime
+          python -m unittest ml.demand_engine.test_current_structural_prior_features
 
       - name: Reproduce frozen benchmark from committed canonical history
         if: github.event_name == 'pull_request'
