@@ -10,6 +10,8 @@ on:
     paths:
       - "ml/artifacts/structural_prior_runtime_v1/**"
       - "ml/demand_engine/materialize_structural_priors.py"
+      - "ml/demand_engine/current_structural_prior_features.py"
+      - "ml/demand_engine/test_current_structural_prior_features.py"
       - "supabase/functions/structural_prior_materializer_v1/**"
       - "supabase/sql/structural_prior_materializer_v1.sql"
       - "supabase/sql/structural_prior_t7_runtime_v1.sql"
@@ -18,6 +20,8 @@ on:
   pull_request:
     paths:
       - "ml/demand_engine/materialize_structural_priors.py"
+      - "ml/demand_engine/current_structural_prior_features.py"
+      - "ml/demand_engine/test_current_structural_prior_features.py"
       - "supabase/functions/structural_prior_materializer_v1/**"
       - "supabase/sql/structural_prior_materializer_v1.sql"
       - "supabase/sql/structural_prior_t7_runtime_v1.sql"
@@ -58,7 +62,9 @@ jobs:
       - name: Validate materializer code
         run: |
           python -m py_compile ml/demand_engine/materialize_structural_priors.py
+          python -m py_compile ml/demand_engine/current_structural_prior_features.py
           python -m unittest ml.demand_engine.test_structural_prior_materializer
+          python -m unittest ml.demand_engine.test_current_structural_prior_features
           deno check supabase/functions/structural_prior_materializer_v1/index.ts
 
   materialize:
