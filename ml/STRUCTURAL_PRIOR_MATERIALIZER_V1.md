@@ -1,59 +1,80 @@
 # Beyond — Structural Prior Materializer v1
 
-Last updated: **2026-10-15**
+Last verified: **2026-10-15**
 
-## Purpose
+## Status
 
-Automatically create genuine point-in-time Structural Prior P50 forecasts for current Ekstraklasa events without retraining the historical model on every scheduler run.
+**DONE / DEPLOYED / LIVE for T-30 and T-14**
+
+The materializer automatically creates genuine point-in-time Structural Prior P50 forecasts for current Ekstraklasa events without retraining the historical model on scheduler runs.
 
 ## Scope
 
-v1 supports only the two horizons with a frozen executable current-event runtime:
+v1 supports only the horizons with a frozen executable current-event runtime:
 
 - **T-30** — `structural-prior-runtime-v1-t30-extra-full`;
 - **T-14** — `structural-prior-runtime-v1-t14-hist-base`.
 
-T-7 / T-3 / T-1 remain fail-closed until their own current-event executable runtimes are frozen. There is no fallback to legacy Lech models.
+T-7 / T-3 / T-1 remain fail-closed until their own executable current-event runtimes are frozen. There is no fallback to legacy Lech models.
 
 ## Architecture
 
-Build time:
+One-time build:
 
-`canonical 1,530-match DB export -> five-season PIT feature store -> frozen benchmark reproduction -> final fit on five completed seasons -> joblib artifacts + SHA manifest`
+`exact canonical 1,530-match DB export -> five-season PIT feature store -> approved benchmark reproduction gate -> final fit on five completed seasons -> frozen joblib artifacts + SHA manifest`
 
 Scheduled runtime:
 
 `due T-30/T-14 event -> canonical PIT inputs -> frozen artifact load -> current-event PIT row -> predict P50 -> validated DB insert -> Live Forecast Orchestrator`
 
-The scheduled runtime contains no `fit()` path.
+**The scheduled runtime contains no `fit()` path.**
 
-## Frozen artifact build gate
+## Frozen artifact gate — PASSED
 
-`ml/demand_engine/freeze_structural_prior_artifacts.py`
-
-The build is allowed only if it reproduces the already-approved untouched holdouts exactly:
+The freeze completed successfully on 2026-10-15 after reproducing the approved untouched holdouts exactly:
 
 | Horizon | 2024/25 MAE | 2025/26 MAE |
 |---|---:|---:|
 | T-30 | 1889.3672272292858 | 1846.2792557036205 |
 | T-14 | 1748.4970512511325 | 1870.393553818474 |
 
-After the gate passes, the production runtime is fit once on all five completed seasons:
+Production runtimes were then fit once on all five completed seasons:
 
 `2021/2022 .. 2025/2026`
 
-Artifacts live under:
+Frozen artifact version:
 
-`ml/artifacts/structural_prior_runtime_v1/`
+`structural-prior-runtime-v1-frozen-2026-10-15`
 
-Expected files:
+Artifacts under `ml/artifacts/structural_prior_runtime_v1/`:
 
-- `structural_prior_t30_v1.joblib`;
-- `structural_prior_t14_v1.joblib`;
-- `historical_runtime_v1.csv.gz`;
+- T-30 `structural_prior_t30_v1.joblib`
+  - SHA-256 `33e32a8b2f0c617c5adde5cdba592151bb25651ef00fc60aa2e5c090adb51da7`;
+- T-14 `structural_prior_t14_v1.joblib`
+  - SHA-256 `8d2dbb6ce48ae48fe2e5b7f4340c9e2dfadd38c6e23cc7b123c6f1d2303cdc20`;
+- `historical_runtime_v1.csv.gz`
+  - SHA-256 `345bbf72c702fc4356b2ccfe998b5c3c121adea5fef32d34bb9daa9aae10b89d`;
 - `manifest.json`.
 
-The manifest pins SHA-256, library versions, training seasons, feature contract and benchmark reproduction.
+Freeze commit:
+
+`4a8f066742faa24508b733175f7366b4ccaabe2e`
+
+## Reproducibility rule discovered during freeze
+
+Historical training data must preserve the **pinned source keys exactly**.
+
+The first freeze attempt exposed that `public.export_historical_runtime_v1()` had normalized historical `radomiak -> radomiak_radom`. The pinned 2025/26 dataset uses `radomiak` on the away side and `radomiak_radom` on the home side. Applying a current-event alias to historical rows changed PIT history and changed the holdout result.
+
+The export was corrected so:
+
+- historical training bytes/semantics remain frozen;
+- current-event aliases are applied only in the inference adapter;
+- approved benchmark values remain the gate and were **not** changed to accept a different result.
+
+Versioned SQL:
+
+`supabase/sql/structural_prior_training_export_v1.sql`
 
 ## Current-event PIT inputs
 
@@ -81,27 +102,23 @@ Verified current capacity:
 
 `private.structural_prior_capacity_registry_v1`
 
-## Sporting PIT rule
-
-The current sporting raw table presently stores `event_date` but not exact historical kickoff time.
-
-To avoid same-day future leakage, v1 uses a deliberately conservative rule:
-
-- only a completed fixture whose local `event_date` is **strictly before** the Structural Prior cutoff local date may enter state;
-- same-day fixtures are excluded even if the source already marks them completed;
-- for rest/congestion calculations, an included fixture uses local noon as a versioned representative timestamp.
-
-This rule is recorded in each prior's `input_lineage` and should be replaced when exact historic kickoff timestamps are available.
-
-## Capacity / domain safety
-
-The model domain is canonical `Ekstraklasa`.
-
-Known competition aliases are normalized explicitly, e.g.:
+Known competition alias:
 
 `PKO BP Ekstraklasa -> Ekstraklasa`
 
-Capacity is not taken from the public seat-map size. It must come from the verified capacity registry with source/version lineage.
+Capacity is never substituted with public seat-map size.
+
+## Sporting PIT rule
+
+The current sporting raw table stores `event_date` rather than exact historical kickoff time.
+
+To avoid same-day future leakage, v1 uses a conservative rule:
+
+- only completed fixtures whose local `event_date` is **strictly before** the Structural Prior cutoff local date enter state;
+- same-day fixtures are excluded even if the source already marks them completed;
+- included fixtures use local noon as a versioned representative timestamp for rest/congestion features.
+
+This rule is persisted in each prior's `input_lineage`.
 
 ## Persistence
 
@@ -120,11 +137,15 @@ It validates:
 - P50 inside `[0, capacity]`;
 - idempotency on event + horizon + cutoff + model spec.
 
-P10/P90 stay NULL until probabilistic calibration exists.
+The writer is `SECURITY INVOKER`; `service_role` has the minimal model-spec read permission required to validate lineage. Versioned permission fix:
+
+`supabase/sql/structural_prior_materializer_permissions_v1.sql`
+
+P10/P90 remain NULL until probabilistic calibration exists.
 
 ## Automation
 
-Artifact build workflow:
+Artifact build:
 
 `.github/workflows/structural-prior-artifacts.yml`
 
@@ -132,32 +153,54 @@ Scheduled materialization:
 
 `.github/workflows/structural-prior-materializer.yml`
 
-Materializer cadence:
+Cadence:
 
 `5,20,35,50 * * * *`
 
-It intentionally runs shortly before the Live Forecast Orchestrator (`7,22,37,52`). After inserting a new prior it also invokes the orchestrator immediately.
-
-## Security
+It runs shortly before Live Forecast Orchestrator (`7,22,37,52`). After persisting new priors it invokes the orchestrator immediately.
 
 Supabase Edge Function:
 
 `supabase/functions/structural_prior_materializer_v1/index.ts`
 
-GitHub OIDC audience:
+Auth:
 
-`beyond-structural-prior-materializer`
+- GitHub OIDC audience `beyond-structural-prior-materializer`;
+- repository `NiedzielX/beyond`;
+- ref `refs/heads/main`;
+- service-role credential remains only inside Supabase Edge Function environment.
 
-Only `NiedzielX/beyond` on `refs/heads/main` is accepted. The service-role credential remains only inside the Supabase Edge Function environment.
+## First automatic production-style materialization — PASSED
 
-## Current implementation gate
+Five due T-14 priors were scored from the frozen artifact and persisted successfully:
 
-The first due-input verification identifies five ready T-14 events for automatic materialization:
+| Prior ID | Event | P50 | Capacity | Expected occupancy |
+|---:|---|---:|---:|---:|
+| 2 | Pogoń Szczecin — Radomiak Radom | 16,226.996 | 21,163 | 76.68% |
+| 3 | Wisła Kraków — Raków Częstochowa | 17,350.596 | 33,130 | 52.37% |
+| 4 | Śląsk Wrocław — Wieczysta Kraków | 19,552.562 | 43,708 | 44.73% |
+| 5 | Jagiellonia Białystok — Wisła Płock | 15,635.204 | 22,372 | 69.89% |
+| 6 | Legia Warszawa — Lech Poznań | 29,635.741 | 31,006 | 95.58% |
 
-- Pogoń Szczecin — Radomiak Radom;
-- Wisła Kraków — Raków Częstochowa;
-- Śląsk Wrocław — Wieczysta Kraków;
-- Jagiellonia Białystok — Wisła Płock;
-- Legia Warszawa — Lech Poznań.
+All five use frozen T-14 artifact SHA:
 
-After deployment, all five must resolve from `missing_prior` to `ready` before v1 is marked operationally complete.
+`8d2dbb6ce48ae48fe2e5b7f4340c9e2dfadd38c6e23cc7b123c6f1d2303cdc20`
+
+Immediately afterward Live Forecast Orchestrator run `id=3` completed with:
+
+- active events: **13**;
+- processed end-to-end: **6**;
+- remaining `missing_prior`: **6**;
+- event errors: **0**;
+- canonical checkpoints materialized: **34**.
+
+The remaining six `missing_prior` rows are T-7/T-3 events and are therefore expected under v1 scope.
+
+## Plan position
+
+- Phase A — Foundation: **DONE**
+- Phase B — Shadow Forecasting: **DONE**
+- Live Forecast Orchestrator v1: **DONE / LIVE**
+- Automatic Structural Prior Materializer T-30/T-14: **DONE / LIVE**
+- Executable current-event Structural Prior runtimes T-7/T-3/T-1: **NEXT**
+- Phase C learned live correction: **BLOCKED ON EVIDENCE**
