@@ -1,11 +1,12 @@
 # Beyond Ticketing — Live Demand Engine v1 Plan
 
-Last updated: **2026-10-15**
+Last updated: **2026-10-15 20:30 UTC**
 
 ## Current position
 
 > **Phase A — Foundation: DONE**  
 > **Phase B — Shadow Forecasting: DONE**  
+> **Five-horizon Structural Prior materialization: DONE / LIVE**  
 > **Phase C — Learned Live Correction: BLOCKED ON EVIDENCE**
 
 | Phase | Step | Scope | Status |
@@ -16,7 +17,7 @@ Last updated: **2026-10-15**
 | A — Foundation | 4 | Append-only PIT live feature evidence store | **DONE** |
 | A — Foundation | 5 | Versioned live contract registry | **DONE** |
 | B — Shadow Forecasting | 6a | StructuralPrior adapter + model-domain guard | **DONE** |
-| B — Shadow Forecasting | 6b | Executable Structural Prior runtime + genuine P50 materialization | **DONE** |
+| B — Shadow Forecasting | 6b | Executable Structural Prior runtime + genuine P50 materialization at T-30/T-14/T-7/T-3/T-1 | **DONE** |
 | B — Shadow Forecasting | 7 | Expected trajectory / trajectory gap | **DONE** |
 | B — Shadow Forecasting | 8 | Persist Structural Prior shadow revisions | **DONE** |
 | B — Shadow Forecasting | 9 | First detection + revision audit | **DONE** |
@@ -78,26 +79,33 @@ Canonical evidence store:
 
 `private.live_trajectory_feature_snapshots_v1`
 
-Current training-eligible checkpoint evidence:
+Current evidence:
 
-| Horizon | Eligible |
-|---|---:|
-| T-30 | **0** |
-| T-14 | **3** |
-| T-7 | **3** |
-| T-3 | **2** |
-| T-1 | **5** |
+| Horizon | Training-eligible | Total stored |
+|---|---:|---:|
+| T-30 | **0** | 1 |
+| T-14 | **3** | 5 |
+| T-7 | **3** | 9 |
+| T-3 | **4** | 9 |
+| T-1 | **5** | 10 |
 
-This is enough for infrastructure, not for promotion of a learned correction.
+This is enough for infrastructure validation, not for promotion of a learned correction.
 
 ## Phase B — Shadow Forecasting — DONE
 
-### Step 6 — genuine Structural Prior
+### Step 6 — genuine Structural Prior — DONE across all five horizons
 
-Current early-horizon model specs:
+Current executable model specs:
 
 - T-30: `structural-prior-runtime-v1-t30-extra-full`;
-- T-14: `structural-prior-runtime-v1-t14-hist-base`.
+- T-14: `structural-prior-runtime-v1-t14-hist-base`;
+- T-7: `structural-prior-runtime-v1-t7-gbr-base`;
+- T-3: `structural-prior-runtime-v1-t3-hist-full`;
+- T-1: `structural-prior-runtime-v1-t1-hist-full`.
+
+Frozen bundle:
+
+`structural-prior-runtime-v1-frozen-2026-10-15-t1`
 
 Five-season validated historical input:
 
@@ -106,16 +114,22 @@ Five-season validated historical input:
 - DB-native backfill complete;
 - current validated domain: **Ekstraklasa**.
 
-First genuine current prior:
+The automatic materializer, registry, resolver and gateway support all five checkpoints. No silent fallback to old Lech v1.3/v0.3 is allowed.
 
-- event `6`, Lech Poznań vs Wisła Kraków;
-- T-30 P50 **31,832.41**;
-- persisted as `private.structural_prior_forecasts_v1.id=1`;
-- resolver status `ready`.
+Latest verified orchestrator run after the five-horizon rollout:
 
-No silent fallback to old Lech v1.3/v0.3 is allowed.
+`private.live_forecast_orchestrator_runs_v1.id = 18`
 
-### Step 7 — expected trajectory / trajectory gap
+- active events: **12**;
+- processed: **12**;
+- `missing_prior`: **0**;
+- skipped: **0**;
+- errors: **0**;
+- checkpoint rows materialized: **34**.
+
+T-1 is deployed but the first current T-1 cutoff is not naturally due until **2026-10-16 15:30 UTC**. Do not pre-materialize future PIT evidence.
+
+### Step 7 — expected trajectory / trajectory gap — DONE
 
 Implementation:
 
@@ -136,9 +150,7 @@ Initial v1 is intentionally descriptive:
 - status: `UNDERPERFORMING / ON_TRACK / OUTPERFORMING / INSUFFICIENT_SIGNAL`;
 - confidence is explicit.
 
-Current T-14 reference pool is just sufficient for descriptive use: **3 events / 2 clubs**, so confidence remains **LOW**.
-
-### Step 8 — shadow revisions
+### Step 8 — shadow revisions — DONE
 
 Implementation:
 
@@ -154,11 +166,7 @@ New-stack rows use:
 - `trajectory-gap-v1` lineage and reason codes;
 - source Structural Prior horizon rather than the legacy nearest-checkpoint labeler.
 
-First new-stack revision:
-
-`public.forecast_observations.id=1208`
-
-### Step 9 — first detection / revision history
+### Step 9 — first detection / revision history — DONE
 
 DB:
 
@@ -175,7 +183,7 @@ After outcome arrival each revision is scored as:
 - `UNCHANGED`;
 - or `PENDING_OUTCOME` before the match is resolved.
 
-### Step 10 — promotion gate
+### Step 10 — promotion gate — DONE as governance
 
 Single source of truth:
 
@@ -245,8 +253,8 @@ Later layer:
 
 ## Immediate sequence
 
-1. **Collect prospective evidence on the completed Phase-B stack.**
-2. Evaluate event 6 automatically when it enters the frozen T-14 reference window, without changing trajectory-gap rules.
+1. **Verify the first naturally due T-1 production materialization after 2026-10-16 15:30 UTC.**
+2. Continue prospective evidence collection on the completed five-horizon Phase-B stack.
 3. Continue T-30 Structural Prior R&D toward **<1,700 MAE** in parallel.
 4. Start Phase C training only when evidence governance permits it.
 5. Phase D calibration after point-model stability.
@@ -255,7 +263,11 @@ Later layer:
 
 Key files:
 
+- `AI_BOOTSTRAP.md`;
 - `ml/CURRENT_MODEL.md`;
+- `ml/STRUCTURAL_PRIOR_MATERIALIZER_V1.md`;
+- `ml/LIVE_FORECAST_ORCHESTRATOR_V1.md`;
+- `ml/results/STRUCTURAL_PRIOR_RUNTIME_V1_2026-10-15.md`;
 - `ml/results/LIVE_DEMAND_ENGINE_PHASE_B_2026-10-15.md`;
 - `ml/demand_engine/live_trajectory_feature_store.py`;
 - `ml/demand_engine/current_structural_prior_features.py`;
