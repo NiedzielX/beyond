@@ -1,7 +1,8 @@
 -- Structural Prior Runtime v1 — enable frozen T-7 current-event inference.
 --
 -- Apply only after the T-7 artifact freeze has reproduced the approved
--- verified-capacity holdouts. T-3/T-1 intentionally remain fail-closed.
+-- development + untouched holdout values. T-3/T-1 intentionally remain
+-- fail-closed.
 
 begin;
 
@@ -32,7 +33,7 @@ insert into private.structural_prior_model_specs_v1(
   'historical_champion_candidate',
   true,
   now(),
-  'Executable Structural Prior Runtime v1. Frozen T-7 verified-capacity occupancy spec.',
+  'Executable Structural Prior Runtime v1. Frozen T-7 spec; MAE dev 2476.8, holdouts 1777.7 / 1802.3.',
   array['Ekstraklasa']::text[]
 )
 on conflict(horizon,model_spec_id) do update set
