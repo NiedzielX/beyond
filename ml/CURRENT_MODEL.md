@@ -2,17 +2,19 @@
 
 Last verified: **2026-10-15**
 
-This file is the canonical short-form source of truth for the current forecasting model. Update it whenever a challenger becomes the new historical champion candidate, the training/evaluation dataset changes materially, or a live-model contract becomes canonical.
+This file is the canonical short-form source of truth for the current forecasting model and Live Demand Engine implementation state.
 
 ## North star
 
-Build the best possible leakage-safe **live forecasting system** for final attendance / ticket demand and its evolution toward kickoff, with explicit priority on early actionable horizons where clubs still have time to react.
+Build the best possible leakage-safe **live forecasting system** for final attendance / ticket demand and its evolution toward kickoff.
 
-The product must combine:
+The product combines:
 
-- a structural historical prior — what this match should do;
-- live ticketing trajectory — what it is actually doing now;
-- trajectory correction — what the difference implies for the final outcome.
+- **Structural Prior** — what this match should do from historical/context evidence;
+- **Live Ticketing Trajectory** — what the current match is actually doing;
+- **Live Correction** — what the divergence implies for the final outcome.
+
+Early actionability is first-class. Model development must not optimise T-1/T-3 at the expense of T-30/T-14.
 
 ## Business horizon priority
 
@@ -22,140 +24,174 @@ The product must combine:
 4. **T-3** — late adjustment;
 5. **T-1** — final forecast / calibration checkpoint.
 
-T-3/T-1 remain important accuracy checkpoints, but the system must not optimise them at the expense of T-30/T-14 actionability.
-
 ## Current historical dataset
 
 - seasons: **2021/22–2025/26**;
 - matches: **1,530**;
-- clubs: multi-club Ekstraklasa population across five seasons;
-- point-in-time horizons: **T-30 / T-14 / T-7 / T-3 / T-1**;
-- historical feature snapshots: **7,650**;
-- verified stadium-capacity coverage: **100%**;
-- development model selection: **2023/24**;
+- competition used for current historical validation: **Ekstraklasa**;
+- PIT horizons: **T-30 / T-14 / T-7 / T-3 / T-1**;
+- PIT feature snapshots: **7,650**;
+- verified historical stadium-capacity coverage: **100%**;
+- model selection: **2023/24 only** after training on 2021/22–2022/23;
 - untouched holdouts: **2024/25 + 2025/26**;
-- one known closed-doors match remains valid historical data but is excluded from demand-model training.
+- one verified closed-door zero-attendance match remains historical truth but is excluded from normal demand-model training.
+
+Exact Structural Prior Runtime v1 input hashes are pinned in:
+
+`ml/data/STRUCTURAL_PRIOR_RUNTIME_V1_INPUT_MANIFEST.md`
 
 ## Current best validated historical specification by horizon
 
 | Horizon | Current best spec | 2024/25 MAE | 2025/26 MAE |
 |---|---|---:|---:|
-| T-30 | Global v2 verified-capacity occupancy | **1,998.7** | **1,994.6** |
-| T-14 | Global v2 verified-capacity occupancy | **1,869.8** | **1,960.3** |
+| **T-30** | **Structural Prior Runtime v1 — ExtraTrees + full PIT + verified-capacity occupancy residual** | **1,889.4** | **1,846.3** |
+| **T-14** | **Structural Prior Runtime v1 — HistGBR + base PIT + verified-capacity occupancy residual** | **1,748.5** | **1,870.4** |
 | T-7 | Global v2 verified-capacity occupancy | **1,799.2** | **1,848.0** |
 | T-3 | Global v2.3 verified-capacity + match-importance | **1,701.4** | **1,686.4** |
 | T-1 | Global v2.3 verified-capacity + match-importance | **1,684.3** | **1,682.0** |
 
-Current combined two-season MAE:
+Combined two-holdout MAE for the new early-horizon runtime candidates:
 
-- T-3: **~1,693.9**;
-- T-1: **~1,683.1**.
+- T-30: **~1,867.8**;
+- T-14: **~1,809.4**.
 
-Current single lowest holdout MAE: **T-1 = ~1,682.0 on 2025/26**.
+Current single lowest holdout MAE remains **T-1 = ~1,682.0 on 2025/26**.
+
+## Structural Prior Runtime v1 — early-horizon decision
+
+### T-30
+
+Frozen spec:
+
+- model spec ID: `structural-prior-runtime-v1-t30-extra-full`;
+- estimator: `ExtraTreesRegressor`;
+- 500 trees;
+- `min_samples_leaf=3`;
+- `max_features=0.8`;
+- baseline: current-season home attendance mean with PIT fallback (`baseline_season`);
+- feature mode: full PIT including validated importance interactions;
+- target: verified-capacity occupancy residual;
+- final P50 clipped to `[0, verified_capacity]`.
+
+Development 2023/24 MAE: **2,559.7**.
+
+Holdouts:
+
+- 2024/25: **1,889.4** MAE;
+- 2025/26: **1,846.3** MAE.
+
+This cleanly improves the previous v2.2 T-30 result (`1,998.7 / 1,994.6`) but remains above the strategic **<1,700 MAE** target. T-30 R&D therefore continues.
+
+### T-14
+
+Frozen spec:
+
+- model spec ID: `structural-prior-runtime-v1-t14-hist-base`;
+- estimator: `HistGradientBoostingRegressor` with absolute-error loss;
+- `learning_rate=0.05`, `max_iter=180`, `max_leaf_nodes=15`, `min_samples_leaf=10`, `l2_regularization=1`;
+- baseline: PIT home rolling-3 attendance (`baseline_r3`);
+- feature mode: base PIT without the importance-interaction family;
+- target: verified-capacity occupancy residual;
+- final P50 clipped to `[0, verified_capacity]`.
+
+Development 2023/24 MAE: **2,340.0**.
+
+Holdouts:
+
+- 2024/25: **1,748.5** MAE;
+- 2025/26: **1,870.4** MAE.
+
+This improves the previous v2.2 T-14 result (`1,869.8 / 1,960.3`) on both untouched seasons and becomes the preferred T-14 historical champion candidate.
 
 ## Current historical model families
 
-- T-30: Gradient Boosting occupancy-residual model with verified historical stadium capacity;
-- T-14: HistGradientBoosting occupancy-residual model with verified historical stadium capacity;
-- T-7: Gradient Boosting occupancy-residual model with verified historical stadium capacity;
-- T-3: HistGradientBoosting occupancy-residual model with verified capacity + match-importance interactions;
-- T-1: HistGradientBoosting occupancy-residual model with verified capacity + match-importance interactions.
+- T-30: ExtraTrees verified-capacity occupancy-residual model with full PIT demand/context features;
+- T-14: HistGradientBoosting verified-capacity occupancy-residual model with base PIT features;
+- T-7: Gradient Boosting verified-capacity occupancy-residual model;
+- T-3: HistGradientBoosting verified-capacity occupancy residual + match-importance interactions;
+- T-1: HistGradientBoosting verified-capacity occupancy residual + match-importance interactions.
 
-These remain **historical champion candidates**, not automatically promoted production models.
+Horizon-specific contracts remain intentional. A feature family or model that helps one horizon is not assumed to help another.
 
-## Historical predictive feature families that currently matter
+## Structural Prior feature semantics
 
-Group-permutation evidence on 2025/26 shows useful signal from:
+`ml/features/structural_prior_feature_store_v1.py` rebuilds the five-season PIT layer with these rules:
 
-1. timing / seasonality;
-2. opponent demand / opponent draw;
-3. historical home attendance;
-4. sporting state / form / table context;
-5. verified stadium capacity / occupancy;
-6. club identity, with smaller incremental importance than the families above.
+- historical attendance can carry across seasons;
+- current-season attendance state is separate from long-run history;
+- sporting state, form and table state reset each season;
+- a completed match enters state only after `kickoff + 3h`;
+- exact home/opponent pair history is PIT-only;
+- opponent-draw history is PIT-only;
+- verified historical capacity uses season-specific venue maps and explicit mid-season venue switches;
+- every target has T-30/T-14/T-7/T-3/T-1 snapshots before kickoff;
+- the target match never enters its own feature state.
 
-Verified capacity is a first-class predictive data layer. Match-importance interactions add further value close to kickoff, but they are horizon-dependent and fail the development gate at T-30/T-14/T-7.
+The current builder produces:
 
-## Current historical promotion / rejection decisions
+- **1,530 matches**;
+- **7,650 snapshots**;
+- **7,198 training-eligible snapshots**;
+- **0 missing verified capacities**;
+- **0 as-of-at / kickoff violations**.
 
-- verified capacity: **promote as historical challenger spec at T-30, T-14, T-7**;
-- verified capacity + match-importance: **promote at T-3 and T-1**;
-- verified capacity + match-importance: **reject at T-30, T-14 and T-7 because it fails the development gate**;
-- horizon-specific contracts remain the preferred approach.
+## Live Demand Engine — implementation status
 
-## Live Demand Engine — Foundation status
+### Phase A — Foundation: **DONE**
 
-**Phase A — Foundation is implementation-complete pending the registry PR merge.**
+Completed:
 
-Completed foundation contracts:
+1. canonical `LiveTrajectoryFeatureStore`;
+2. exact-cutoff readiness;
+3. calibrated release / anomaly semantics;
+4. append-only PIT live-feature evidence store;
+5. explicit live contract registry.
 
-1. canonical point-in-time `LiveTrajectoryFeatureStore`;
-2. exact-cutoff horizon readiness;
-3. empirically calibrated release / anomaly semantics;
-4. append-only point-in-time feature evidence materialization;
-5. explicit version registry for current live contracts.
-
-### Canonical live contracts
-
-Human-readable registry:
+Current canonical live contracts are documented in:
 
 `ml/demand_engine/LIVE_CONTRACT_REGISTRY.md`
 
-Current versions:
+### Phase B — Shadow Forecasting: **ACTIVE**
 
-| Contract | Current version / object |
-|---|---|
-| Live trajectory feature semantics | `live-trajectory-v1.1` |
-| DB live feature function | `public.get_live_trajectory_features_v1_1_asof` |
-| Horizon readiness | `private.ticketing_horizon_readiness_v2_1` |
-| Feature evidence store | `private.live_trajectory_feature_snapshots_v1` |
-| Current evidence projection | `private.current_live_trajectory_feature_snapshots_v1` |
-| Single feature materializer | `private.materialize_live_trajectory_feature_snapshot_v1` |
-| Due-checkpoint materializer | `private.materialize_due_live_trajectory_checkpoints_v1` |
-| DB contract registry | `private.current_live_model_contracts_v1` |
+**Step 6 — Structural Prior**
 
-Legacy `private.ticketing_horizon_checkpoint_readiness_v1` is **not canonical** for new modelling because nearest-snapshot semantics can select evidence captured after the intended business checkpoint. It remains available only for reproducibility.
+- **6a adapter / model-domain guard: DONE**;
+- **6b executable runtime: ACTIVE**.
 
-## Live feature semantics
+Completed in 6b:
 
-Current `live-trajectory-v1.1` includes:
+- reproducible five-season PIT historical feature builder;
+- exact canonical input hashes;
+- executable T-30/T-14 runtime implementation;
+- frozen season-blocked benchmark;
+- T-30/T-14 historical champion candidates improved on both holdouts.
 
-- point-in-time snapshot cutoff;
-- inventory level / index;
-- optional capacity normalization;
-- public-seat-map normalization;
-- 6h / 24h / 72h / 7d net movement and velocity;
-- velocity acceleration / deceleration;
-- sector absorption and re-availability;
-- sector entry / exit coverage changes;
-- raw / clean snapshot counts;
-- stale / duplicate / invalid-snapshot protection;
-- recent-7d data-gap readiness;
-- calibrated material release detection.
+Remaining before Step 6 is closed:
 
-Material matched-sector release threshold:
+1. connect the runtime to a current-event PIT feature-row builder;
+2. fit on the approved historical seasons and generate a genuine current P50 for an eligible future Ekstraklasa event;
+3. persist that P50 in `private.structural_prior_forecasts_v1` with exact model/feature/input lineage;
+4. update current DB Structural Prior specs to the new T-30/T-14 model IDs;
+5. finish the missing 2021/22–2024/25 Supabase historical backfill for DB-native rebuilds.
 
-`max(50 seats, 0.5% of first observed inventory)`
+**Do not start Step 7 trajectory-gap logic by pretending a prior exists.** Step 7 consumes only a genuine current Structural Prior row.
 
-This threshold was calibrated from observed multi-club transitions rather than chosen only by intuition. Small seat re-availability/toggle noise remains distinct from material release activity. Sector coverage changes remain a separate signal.
+## Structural Prior domain guard
 
-Public ticket inventory is treated as a **demand proxy, not confirmed paid ticket sales**.
+Current five-season historical champions are validated on **Ekstraklasa**.
 
-## Point-in-time live evidence store
+The resolver returns:
 
-Current append-only evidence table:
+- `not_due` before T-30;
+- `out_of_domain` for competitions outside the validated scope;
+- `missing_prior` when a current spec is due but no genuine materialized P50 exists;
+- `ready` only when the exact current model/feature/checkpoint lineage exists.
 
-`private.live_trajectory_feature_snapshots_v1`
+No silent fallback to Lech v1.3/v0.3 is allowed.
 
-Initial exact-checkpoint materialization produced **31 evidence rows** with:
+## Live evidence maturity
 
-- **0** source-snapshot leakage violations;
-- **0** `as_of_at >= kickoff_at` violations;
-- **0** point-in-time validation failures;
-- **0** feature-version mismatches;
-- idempotent replay preserving the same row count.
-
-Current evidence maturity:
+Current append-only live feature evidence:
 
 | Horizon | Materialized rows | Training-eligible |
 |---|---:|---:|
@@ -165,71 +201,49 @@ Current evidence maturity:
 | T-3 | 6 | **2** |
 | T-1 | 10 | **5** |
 
-This means the **infrastructure is ready, but the learned live correction is not**. In particular:
+This is enough to build infrastructure but **not** enough to promote a learned live correction.
 
-- T-30 has no training-eligible exact-checkpoint evidence yet;
-- T-14 has only 3 training-eligible exact-checkpoint rows;
-- no early-horizon live model should be promoted from such small samples.
+A first genuine T-30+ collection case is active for Jagiellonia Białystok vs Crystal Palace, but that UEFA event is currently `out_of_domain` for the Ekstraklasa Structural Prior. It remains useful for live-trajectory evidence collection, not for pretending the current historical champion has been validated on UEFA matches.
 
-Prospective collection therefore continues while the live architecture progresses in shadow mode.
+## Next implementation sequence
 
-## First early-horizon prospective case
-
-Jagiellonia Białystok vs Crystal Palace:
-
-- kickoff: **2026-12-10**;
-- RoboTicket candidate: `5190`;
-- mapped `ticket_event_id=24`;
-- collection activated approximately 56 days before kickoff;
-- formal T-30 cutoff is still in the future, so T-30 remains correctly `not_due` until that point.
-
-## Next implementation phase
-
-After Phase A is merged, move to **Phase B — Shadow Forecasting**.
-
-Next concrete step:
-
-**Phase B / Step 6 — StructuralPrior adapter**
-
-The adapter must expose the current horizon-specific historical champion through one stable interface without retraining or redefining the prior inside the live engine.
-
-Then:
-
-7. initial expected-trajectory / trajectory-gap references;
-8. shadow forecast persistence on eligible snapshots;
-9. first-detection and revision persistence;
-10. keep live correction shadow-only until sufficient completed evidence exists.
-
-## Parallel modelling priorities
-
-1. Continue improving the **T-30 / T-14 structural historical prior** under the frozen chronological dev/holdout protocol.
-2. Continue collecting T-30/T-14 proprietary live trajectory evidence.
-3. Build the live trajectory correction only when completed evidence supports credible evaluation.
-4. Add calibrated P10/P50/P90 after point and trajectory contracts are stable.
-5. Weather / Hype remain challengers only if they add point-in-time-safe out-of-sample uplift.
+1. **NOW — finish Phase B / Step 6b current-event Structural Prior runtime + P50 materialization.**
+2. Continue T-30 historical R&D toward **<1,700 MAE** in parallel; do not block runtime integration on that research goal.
+3. Step 7 — expected trajectory / trajectory gap against the genuine Structural Prior.
+4. Step 8 — persist shadow live forecasts.
+5. Step 9 — first-detection and forecast-revision history.
+6. Step 10 — keep live correction shadow-only until completed-event evidence is sufficient.
+7. Phase C — learned live residual correction.
+8. Phase D — calibrated P10/P50/P90.
+9. Phase E — recommendations / intervention learning.
 
 ## Evaluation rule
 
-Every challenger must use the same point-in-time contract and must not use 2024/25 or 2025/26 to choose its model family or hyperparameters.
+Every historical challenger must preserve the same chronological contract:
 
-For live models, the same completed event/checkpoint must be used to compare:
+- selection on 2023/24 only;
+- 2024/25 and 2025/26 are untouched holdouts;
+- all features are point-in-time;
+- no target outcome in its own state;
+- same completed event/checkpoint for baseline-vs-model comparison.
 
-1. structural historical prior error;
-2. structural prior + live correction error.
+Every future live challenger must compare, on the same event/checkpoint:
 
-A more complex model is not better unless it reduces unseen-match error or improves earlier reliable detection under the same protocol.
+1. Structural Prior error;
+2. Structural Prior + live correction error.
 
-No inference should be made from tiny live-event samples simply because a signal looks intuitive.
+No model is promoted because it looks intuitive or wins on a tiny prospective sample.
 
 ## Evidence files
 
+- `ml/results/STRUCTURAL_PRIOR_RUNTIME_V1_2026-10-15.md`
+- `ml/data/STRUCTURAL_PRIOR_RUNTIME_V1_INPUT_MANIFEST.md`
+- `ml/features/structural_prior_feature_store_v1.py`
+- `ml/structural_prior_runtime_benchmark_v1.py`
 - `ml/results/BEYOND_GLOBAL_FORECAST_V2_BENCHMARK_2026-10-14.md`
-- `ml/results/beyond_global_forecast_v2_benchmark.json`
-- `ml/results/BEYOND_GLOBAL_FORECAST_V2_1_CHALLENGERS_2026-10-14.md`
 - `ml/results/BEYOND_GLOBAL_FORECAST_V2_2_VERIFIED_CAPACITY_2026-10-14.md`
 - `ml/results/BEYOND_GLOBAL_FORECAST_V2_3_CAPACITY_IMPORTANCE_COMBO_2026-10-15.md`
 - `ml/data/STADIUM_CAPACITY_HISTORY_V1.md`
 - `ml/NORTH_STAR.md`
 - `ml/LIVE_DEMAND_ENGINE_V1_PLAN.md`
 - `ml/demand_engine/LIVE_CONTRACT_REGISTRY.md`
-- `ml/CORE_PRODUCT_STATUS.md`

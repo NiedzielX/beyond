@@ -4,6 +4,8 @@ on:
   push:
     paths:
       - 'ml/demand_engine/**'
+      - 'ml/features/structural_prior_feature_store_v1.py'
+      - 'ml/structural_prior_runtime_benchmark_v1.py'
       - 'ml/recovered/v17/**'
       - 'ml/live_benchmark_v02.py'
       - 'ml/live_benchmark_v03.py'
@@ -12,10 +14,13 @@ on:
   pull_request:
     paths:
       - 'ml/demand_engine/**'
+      - 'ml/features/structural_prior_feature_store_v1.py'
+      - 'ml/structural_prior_runtime_benchmark_v1.py'
       - 'ml/recovered/v17/**'
       - 'ml/live_benchmark_v02.py'
       - 'ml/live_benchmark_v03.py'
       - 'ml/export_v13_predictions.py'
+      - '.github/workflows/demand-engine-smoke.yml'
 
 jobs:
   test:
@@ -52,7 +57,10 @@ jobs:
           python -m py_compile ml/demand_engine/storage.py
           python -m py_compile ml/demand_engine/supabase.py
           python -m py_compile ml/demand_engine/live_trajectory_feature_store.py
+          python -m py_compile ml/demand_engine/structural_prior_runtime.py
           python -m py_compile ml/demand_engine/run_v17_t7_shadow.py
+          python -m py_compile ml/features/structural_prior_feature_store_v1.py
+          python -m py_compile ml/structural_prior_runtime_benchmark_v1.py
           python -m py_compile ml/recovered/v17/reconstruct_t30_v17.py
           python -m py_compile ml/recovered/v17/reconstruct_t7_v17.py
           python -m py_compile ml/recovered/v17/t7_bundle.py
