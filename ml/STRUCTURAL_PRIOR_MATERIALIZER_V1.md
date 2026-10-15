@@ -1,21 +1,24 @@
 # Beyond — Structural Prior Materializer v1
 
-Last verified: **2026-10-15**
+Last verified: **2026-10-15 20:30 UTC**
 
 ## Status
 
-**DONE / DEPLOYED / LIVE for T-30 and T-14**
+**DONE / DEPLOYED / LIVE for T-30 / T-14 / T-7 / T-3 / T-1**
 
 The materializer automatically creates genuine point-in-time Structural Prior P50 forecasts for current Ekstraklasa events without retraining the historical model on scheduler runs.
 
-## Scope
+There is no fallback to legacy Lech models.
 
-v1 supports only the horizons with a frozen executable current-event runtime:
+## Executable horizon scope
 
-- **T-30** — `structural-prior-runtime-v1-t30-extra-full`;
-- **T-14** — `structural-prior-runtime-v1-t14-hist-base`.
-
-T-7 / T-3 / T-1 remain fail-closed until their own executable current-event runtimes are frozen. There is no fallback to legacy Lech models.
+| Horizon | Model spec |
+|---|---|
+| T-30 | `structural-prior-runtime-v1-t30-extra-full` |
+| T-14 | `structural-prior-runtime-v1-t14-hist-base` |
+| T-7 | `structural-prior-runtime-v1-t7-gbr-base` |
+| T-3 | `structural-prior-runtime-v1-t3-hist-full` |
+| T-1 | `structural-prior-runtime-v1-t1-hist-full` |
 
 ## Architecture
 
@@ -25,26 +28,19 @@ One-time build:
 
 Scheduled runtime:
 
-`due T-30/T-14 event -> canonical PIT inputs -> frozen artifact load -> current-event PIT row -> predict P50 -> validated DB insert -> Live Forecast Orchestrator`
+`due event/checkpoint -> canonical PIT inputs -> frozen artifact load -> current-event PIT row -> predict P50 -> validated DB insert -> Live Forecast Orchestrator`
 
 **The scheduled runtime contains no `fit()` path.**
 
 ## Frozen artifact gate — PASSED
 
-The freeze completed successfully on 2026-10-15 after reproducing the approved untouched holdouts exactly:
+Artifact version:
 
-| Horizon | 2024/25 MAE | 2025/26 MAE |
-|---|---:|---:|
-| T-30 | 1889.3672272292858 | 1846.2792557036205 |
-| T-14 | 1748.4970512511325 | 1870.393553818474 |
+`structural-prior-runtime-v1-frozen-2026-10-15-t1`
 
-Production runtimes were then fit once on all five completed seasons:
+Freeze commit:
 
-`2021/2022 .. 2025/2026`
-
-Frozen artifact version:
-
-`structural-prior-runtime-v1-frozen-2026-10-15`
+`4d6fbae1ab16bfa7b432a012c889c451ab9161ff`
 
 Artifacts under `ml/artifacts/structural_prior_runtime_v1/`:
 
@@ -52,25 +48,34 @@ Artifacts under `ml/artifacts/structural_prior_runtime_v1/`:
   - SHA-256 `33e32a8b2f0c617c5adde5cdba592151bb25651ef00fc60aa2e5c090adb51da7`;
 - T-14 `structural_prior_t14_v1.joblib`
   - SHA-256 `8d2dbb6ce48ae48fe2e5b7f4340c9e2dfadd38c6e23cc7b123c6f1d2303cdc20`;
+- T-7 `structural_prior_t7_v1.joblib`
+  - SHA-256 `97e712245d6539396030e88ea450809f4265bd7538aa90b29e234420231ac927`;
+- T-3 `structural_prior_t3_v1.joblib`
+  - SHA-256 `33f83899a86b8ebbc61ff5cfb2a3ccb2f09d708d41730136f136bda31d374f30`;
+- T-1 `structural_prior_t1_v1.joblib`
+  - SHA-256 `f67ee9bf6853a01245de5406861b59e491b86a01a8120023868ad54b19f0ebfa`;
 - `historical_runtime_v1.csv.gz`
-  - SHA-256 `345bbf72c702fc4356b2ccfe998b5c3c121adea5fef32d34bb9daa9aae10b89d`;
+  - SHA-256 `3c6b35142c6bd20a484f2aa758cd41284fd6f4c6db1353b138f81cf321161569`;
 - `manifest.json`.
 
-Freeze commit:
+Freeze quality gate:
 
-`4a8f066742faa24508b733175f7366b4ccaabe2e`
+- 1,530 matches;
+- 7,650 horizon snapshots;
+- 7,198 training-eligible rows;
+- missing capacity: 0;
+- invalid as-of rows: 0;
+- status: PASS.
 
-## Reproducibility rule discovered during freeze
+Detailed runtime metrics and recovery provenance:
+
+`ml/results/STRUCTURAL_PRIOR_RUNTIME_V1_2026-10-15.md`
+
+## Reproducibility rule
 
 Historical training data must preserve the **pinned source keys exactly**.
 
-The first freeze attempt exposed that `public.export_historical_runtime_v1()` had normalized historical `radomiak -> radomiak_radom`. The pinned 2025/26 dataset uses `radomiak` on the away side and `radomiak_radom` on the home side. Applying a current-event alias to historical rows changed PIT history and changed the holdout result.
-
-The export was corrected so:
-
-- historical training bytes/semantics remain frozen;
-- current-event aliases are applied only in the inference adapter;
-- approved benchmark values remain the gate and were **not** changed to accept a different result.
+Current-event aliases are applied only in the inference adapter. Historical export semantics must not be rewritten to match current aliases.
 
 Versioned SQL:
 
@@ -102,11 +107,11 @@ Verified current capacity:
 
 `private.structural_prior_capacity_registry_v1`
 
-Known competition alias:
-
-`PKO BP Ekstraklasa -> Ekstraklasa`
-
 Capacity is never substituted with public seat-map size.
+
+Current-capacity evidence added for the live runtime is versioned in:
+
+`supabase/sql/structural_prior_current_capacities_2026_v1.sql`
 
 ## Sporting PIT rule
 
@@ -128,7 +133,7 @@ Writer RPC:
 
 It validates:
 
-- T-30/T-14 only;
+- horizon in T-30/T-14/T-7/T-3/T-1;
 - exact ticket event and kickoff;
 - exact target cutoff;
 - current model spec/family/feature contract;
@@ -137,11 +142,17 @@ It validates:
 - P50 inside `[0, capacity]`;
 - idempotency on event + horizon + cutoff + model spec.
 
-The writer is `SECURITY INVOKER`; `service_role` has the minimal model-spec read permission required to validate lineage. Versioned permission fix:
-
-`supabase/sql/structural_prior_materializer_permissions_v1.sql`
+The writer is `SECURITY INVOKER`; `service_role` has the minimal model-spec read permission required to validate lineage.
 
 P10/P90 remain NULL until probabilistic calibration exists.
+
+## Versioned horizon activations
+
+- `supabase/sql/structural_prior_t7_runtime_v1.sql`;
+- `supabase/sql/structural_prior_t3_runtime_v1.sql`;
+- `supabase/sql/structural_prior_t1_runtime_v1.sql`.
+
+All three migrations have been applied to production.
 
 ## Automation
 
@@ -157,11 +168,13 @@ Cadence:
 
 `5,20,35,50 * * * *`
 
-It runs shortly before Live Forecast Orchestrator (`7,22,37,52`). After persisting new priors it invokes the orchestrator immediately.
+After persisting new priors the materializer invokes Live Forecast Orchestrator immediately.
 
 Supabase Edge Function:
 
 `supabase/functions/structural_prior_materializer_v1/index.ts`
+
+Production Edge Function version at last verification: **10**.
 
 Auth:
 
@@ -170,37 +183,49 @@ Auth:
 - ref `refs/heads/main`;
 - service-role credential remains only inside Supabase Edge Function environment.
 
-## First automatic production-style materialization — PASSED
+## Current production proof
 
-Five due T-14 priors were scored from the frozen artifact and persisted successfully:
+Persisted prior counts at last verification:
 
-| Prior ID | Event | P50 | Capacity | Expected occupancy |
-|---:|---|---:|---:|---:|
-| 2 | Pogoń Szczecin — Radomiak Radom | 16,226.996 | 21,163 | 76.68% |
-| 3 | Wisła Kraków — Raków Częstochowa | 17,350.596 | 33,130 | 52.37% |
-| 4 | Śląsk Wrocław — Wieczysta Kraków | 19,552.562 | 43,708 | 44.73% |
-| 5 | Jagiellonia Białystok — Wisła Płock | 15,635.204 | 22,372 | 69.89% |
-| 6 | Legia Warszawa — Lech Poznań | 29,635.741 | 31,006 | 95.58% |
+| Horizon | Priors |
+|---|---:|
+| T-30 | 1 |
+| T-14 | 5 |
+| T-7 | 1 |
+| T-3 | 5 |
+| T-1 | 0 — not yet naturally due |
 
-All five use frozen T-14 artifact SHA:
+T-3 automatic materialization completed for five current events, including Lech Poznań — Korona Kielce, Górnik Zabrze — Piast Gliwice, GKS Katowice — Pogoń Szczecin, Cracovia — Legia Warszawa and KGHM Zagłębie Lubin — Jagiellonia Białystok.
 
-`8d2dbb6ce48ae48fe2e5b7f4340c9e2dfadd38c6e23cc7b123c6f1d2303cdc20`
+Latest verified Live Forecast Orchestrator run:
 
-Immediately afterward Live Forecast Orchestrator run `id=3` completed with:
+`private.live_forecast_orchestrator_runs_v1.id = 18`
 
-- active events: **13**;
-- processed end-to-end: **6**;
-- remaining `missing_prior`: **6**;
+- active events: **12**;
+- processed end-to-end: **12**;
+- `missing_prior`: **0**;
+- skipped: **0**;
 - event errors: **0**;
 - canonical checkpoints materialized: **34**.
 
-The remaining six `missing_prior` rows are T-7/T-3 events and are therefore expected under v1 scope.
+## T-1 rollout invariant
+
+T-1 runtime, registry, resolver, gateway and artifact are deployed.
+
+A read-only future-time resolver check confirms current events switch to:
+
+- horizon `T-1`;
+- status `missing_prior` until the prior exists;
+- model `structural-prior-runtime-v1-t1-hist-full`;
+- exact target cutoff = kickoff minus 1 day.
+
+The first current T-1 cutoff is **2026-10-16 15:30 UTC**. T-1 must **not** be pre-materialized before that time because the system is point-in-time by design.
 
 ## Plan position
 
 - Phase A — Foundation: **DONE**
 - Phase B — Shadow Forecasting: **DONE**
 - Live Forecast Orchestrator v1: **DONE / LIVE**
-- Automatic Structural Prior Materializer T-30/T-14: **DONE / LIVE**
-- Executable current-event Structural Prior runtimes T-7/T-3/T-1: **NEXT**
+- Automatic Structural Prior Materializer all five horizons: **DONE / LIVE**
+- First naturally due T-1 production materialization: **NEXT operational checkpoint**
 - Phase C learned live correction: **BLOCKED ON EVIDENCE**
