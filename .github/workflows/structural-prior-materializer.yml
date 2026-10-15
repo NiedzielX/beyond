@@ -116,7 +116,7 @@ jobs:
       - name: Score due T-30/T-14 priors from frozen artifacts
         if: steps.artifacts.outputs.ready == 'true'
         run: |
-          python ml/demand_engine/materialize_structural_priors.py \
+          python -m ml.demand_engine.materialize_structural_priors \
             --input /tmp/structural-prior-due.json \
             --artifact-dir ml/artifacts/structural_prior_runtime_v1 \
             --output /tmp/structural-prior-predictions.json
