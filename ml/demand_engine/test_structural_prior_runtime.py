@@ -14,6 +14,7 @@ class StructuralPriorRuntimeContractTest(unittest.TestCase):
         t30 = CURRENT_EARLY_RUNTIME_SPECS["T-30"]
         t14 = CURRENT_EARLY_RUNTIME_SPECS["T-14"]
         t7 = CURRENT_EARLY_RUNTIME_SPECS["T-7"]
+        t3 = CURRENT_EARLY_RUNTIME_SPECS["T-3"]
         self.assertEqual(t30.model_spec_id, "structural-prior-runtime-v1-t30-extra-full")
         self.assertEqual(t30.baseline_column, "baseline_season")
         self.assertEqual(t30.feature_mode, "full")
@@ -26,6 +27,10 @@ class StructuralPriorRuntimeContractTest(unittest.TestCase):
         self.assertEqual(t7.baseline_column, "baseline_season")
         self.assertEqual(t7.feature_mode, "base")
         self.assertEqual(t7.estimator_name, "gbr_huber")
+        self.assertEqual(t3.model_spec_id, "structural-prior-runtime-v1-t3-hist-full")
+        self.assertEqual(t3.baseline_column, "baseline_season")
+        self.assertEqual(t3.feature_mode, "full")
+        self.assertEqual(t3.estimator_name, "hist250")
 
     def test_base_feature_contract_excludes_importance_interactions(self) -> None:
         frame = pd.DataFrame({
