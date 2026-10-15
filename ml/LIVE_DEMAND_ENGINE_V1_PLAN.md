@@ -2,6 +2,33 @@
 
 Last updated: **2026-10-15**
 
+## Implementation status
+
+Current position:
+
+> **Phase A — Foundation: COMPLETE after registry PR merge**  
+> **Next: Phase B / Step 6 — StructuralPrior adapter**
+
+| Phase | Step | Scope | Status |
+|---|---:|---|---|
+| A — Foundation | 1 | Canonical LiveTrajectoryFeatureStore | **DONE** |
+| A — Foundation | 2 | Exact-cutoff checkpoint/readiness integration | **DONE** |
+| A — Foundation | 3 | Robust anomaly / release detection | **DONE** |
+| A — Foundation | 4 | Append-only PIT feature evidence store | **DONE** |
+| A — Foundation | 5 | Version all live feature contracts | **DONE after registry merge** |
+| B — Shadow Forecasting | 6 | StructuralPrior adapter | **NEXT** |
+| B — Shadow Forecasting | 7 | Expected trajectory / trajectory gap references | TODO |
+| B — Shadow Forecasting | 8 | Persist shadow live forecasts | TODO |
+| B — Shadow Forecasting | 9 | Persist first detection + forecast revisions | TODO |
+| B — Shadow Forecasting | 10 | Keep live correction shadow-only until evidence is sufficient | TODO |
+| C — Learned Correction | 11–14 | Train / evaluate residual live correction | BLOCKED ON EVIDENCE |
+| D — Probabilistic | 15–17 | Calibrated P10/P50/P90 live trajectories | TODO |
+| E — Recommendations | 18–20 | Action recommendations / intervention learning | LATER |
+
+Canonical live contract registry:
+
+`ml/demand_engine/LIVE_CONTRACT_REGISTRY.md`
+
 ## Purpose
 
 Build the live forecasting core that combines historical match evidence with current ticketing behaviour to answer two questions continuously before kickoff:
@@ -64,85 +91,84 @@ Historical prior inputs currently include validated families such as:
 
 The live engine must not retrain or redefine the Structural Prior ad hoc. It consumes a versioned historical forecast.
 
-## 2. Live Trajectory Feature Store
+### 2. Live Trajectory Feature Store
 
-Build one canonical point-in-time feature layer from raw ticketing snapshots.
+**Foundation implementation: DONE.**
 
-For every usable snapshot, calculate features relative to kickoff and to prior snapshots for the same event.
+Current feature contract:
 
-### Core identity / timing
+`live-trajectory-v1.1`
 
-- `ticket_event_id`;
-- `snapshot_id`;
-- `captured_at`;
-- `kickoff_at`;
-- `days_to_kickoff`;
-- `hours_to_kickoff`;
-- nearest business checkpoint: T-30 / T-14 / T-7 / T-3 / T-1;
-- checkpoint distance / readiness.
+Canonical implementations:
 
-### Inventory level
+- Python: `ml/demand_engine/live_trajectory_feature_store.py`;
+- DB: `public.get_live_trajectory_features_v1_1_asof`.
+
+For each usable snapshot the store exposes point-in-time features relative to kickoff and prior snapshots for the same event.
+
+#### Core identity / timing
+
+- ticket event / snapshot identity;
+- `captured_at` / `as_of_at` / `kickoff_at`;
+- days / hours to kickoff;
+- T-30 / T-14 / T-7 / T-3 / T-1 checkpoint state.
+
+#### Inventory level
 
 - `available_total`;
-- `available_share_of_capacity`;
-- `inventory_index_vs_first_reliable_snapshot`;
-- `net_removed_since_first`;
-- `estimated_public_occupancy_proxy` where defensible;
-- scarcity / near-sellout indicators.
+- inventory relative to first reliable snapshot;
+- public-seat-map normalization;
+- optional verified-capacity normalization when capacity is known and appropriate;
+- net movement since first observation.
 
-### Velocity
+#### Velocity / acceleration
 
-At minimum:
-
-- net removed over 6h;
-- net removed over 24h;
-- net removed over 72h;
-- net removed over 7d;
-- velocity over 6h / 24h / 72h / 7d;
-- rolling velocity stability.
-
-### Acceleration / deceleration
-
+- net movement and velocity over 6h / 24h / 72h / 7d;
+- normalized velocity;
 - 6h vs 24h acceleration;
 - 24h vs 72h acceleration;
-- 72h vs 7d acceleration;
-- sustained acceleration / slowdown flags.
+- 72h vs 7d acceleration.
 
-### Sector movement
+#### Sector movement
 
-Where sector-level data is available:
+- matched / entered / left sectors;
+- matched absorption;
+- matched re-availability;
+- coverage inventory effect;
+- coverage-change flag.
 
-- active sector count;
-- sector coverage ratio;
-- sector additions / removals;
-- concentration of remaining inventory;
-- sector sellout sequence;
-- sudden sector reopenings;
-- sector-level velocity.
+#### Release / anomaly semantics
 
-### Release / replenishment behaviour
+Current material matched-sector release threshold:
 
-- release activity flag;
-- replenishment magnitude;
-- sector coverage change flag;
-- newly exposed inventory;
-- temporary inventory spikes;
-- suspected operational release vs real demand movement.
+`max(50 seats, 0.5% of first observed inventory)`
 
-### Quality / anomaly controls
+Empirical calibration from the live multi-club sample showed approximately:
 
-- raw snapshot count;
-- clean snapshot count;
-- anomaly count;
-- gap since previous snapshot;
-- source quality / readiness;
-- duplicated / stale snapshot protection;
-- abnormal inventory increase flags;
-- whether velocity features are trustworthy at the current point.
+- matched-sector release P95 = 18 seats;
+- P99 ≈ 40 seats;
+- entered-sector inventory P95 = 28 seats;
+- positive raw inventory increase P95 = 30 seats.
 
-No live feature may use information captured after its `as_of_at`.
+Therefore tiny returns / toggles are not treated as material releases.
 
-## 3. Expected Trajectory Model
+Sector entry / exit is a separate coverage signal and is not conflated with release activity.
+
+A material raw inventory increase without a material matched-sector release or coverage explanation is treated as an anomaly and can downgrade readiness.
+
+#### Quality controls
+
+- raw / clean snapshot count;
+- invalid / duplicate snapshot telemetry;
+- snapshot age;
+- all-history max gap telemetry;
+- recent 7-day gap for current-signal readiness;
+- stale anchor rejection for short-window velocity;
+- explicit point-in-time validation.
+
+Public ticket inventory remains a **demand proxy, not confirmed paid ticket sales**.
+
+### 3. Expected Trajectory Model
 
 Learn the expected sales / inventory curve for a match with a given structural profile.
 
@@ -152,9 +178,7 @@ The five-season historical attendance dataset contains final attendance and hist
 
 Therefore the first trajectory model must be trained only on events for which real historical/prospective ticketing snapshots exist. Do not fabricate historical sales curves from final attendance.
 
-### Expected output
-
-For a match and timestamp, estimate:
+Expected output:
 
 - expected inventory position;
 - expected normalized demand progress;
@@ -162,15 +186,11 @@ For a match and timestamp, estimate:
 - expected acceleration range;
 - expected final attendance conditional on trajectory if useful.
 
-The expected curve should be normalized where possible so it can generalise across stadium sizes and clubs, for example using:
+The expected curve should be normalized where possible so it can generalise across stadium sizes and clubs.
 
-- capacity / occupancy;
-- inventory relative to first reliable snapshot;
-- percentage of expected demand captured by each horizon.
+### 4. Trajectory Gap Engine
 
-## 4. Trajectory Gap Engine
-
-Compare actual live behaviour with the expected trajectory.
+Compare actual live behaviour with expected behaviour.
 
 Core outputs:
 
@@ -178,21 +198,13 @@ Core outputs:
 - `trajectory_gap_pct`;
 - `velocity_gap`;
 - `acceleration_gap`;
-- `sector_gap`;
+- sector / coverage context;
 - direction: `UNDERPERFORMING / ON_TRACK / OUTPERFORMING`;
 - confidence / signal quality.
 
-Example interpretation:
-
-- historical model expects a final attendance around 24,500;
-- comparable matches normally show a stronger trajectory at T-30;
-- current event is materially behind that trajectory;
-- current velocity is also below expectation;
-- estimated final demand is revised downward.
-
 Do not classify underperformance from inventory level alone. Velocity, acceleration, releases, sector changes and source quality must be considered to avoid false alerts.
 
-## 5. Live Correction Model
+### 5. Live Correction Model
 
 Train the live model to predict the residual error of the Structural Prior.
 
@@ -200,7 +212,7 @@ Primary target:
 
 `live_target_residual = actual_attendance - historical_prior_p50`
 
-Candidate live predictors:
+Candidate predictors:
 
 - trajectory gap;
 - normalized inventory position;
@@ -208,10 +220,10 @@ Candidate live predictors:
 - acceleration;
 - sector movement;
 - scarcity;
-- release / replenishment flags;
+- release / coverage / anomaly flags;
 - signal quality;
 - days to kickoff;
-- selected interaction terms between structural prior and live evidence.
+- selected interactions between structural prior and live evidence.
 
 Core output:
 
@@ -223,26 +235,22 @@ Later probabilistic output:
 - `live_p50`;
 - `live_p90`.
 
-The historical prior and live correction must be evaluated separately so the incremental value of proprietary live ticketing data is measurable.
+The historical prior and live correction must remain separable so the incremental value of proprietary live ticketing data is measurable.
 
-## 6. Early Warning Engine
+### 6. Early Warning Engine
 
-The live forecast alone is not enough. The system must also determine whether a club should care now.
-
-### States
+States:
 
 - `ON_TRACK`;
 - `UNDERPERFORMING`;
 - `OUTPERFORMING`;
 - `INSUFFICIENT_SIGNAL`.
 
-### Alert payload
-
-At minimum:
+Alert payload should include:
 
 - event / match;
 - first detected timestamp;
-- first detected horizon / days-to-kickoff;
+- first detected horizon / days to kickoff;
 - current state;
 - trajectory gap magnitude;
 - expected final impact;
@@ -253,13 +261,11 @@ At minimum:
 - reason codes;
 - signal-quality state.
 
-The system should preserve **first detection**, not only the current status. Lead time is a core KPI.
+The system must preserve **first detection**, not only the current state. Lead time is a core KPI.
 
-## 7. Evaluation Framework
+## Evaluation Framework
 
 ### Final forecast quality
-
-Continue measuring:
 
 - MAE;
 - median absolute error;
@@ -280,41 +286,31 @@ Report:
 - MAE uplift;
 - WAPE uplift;
 - bias change;
-- number / percentage of events improved;
+- percentage of events improved;
 - performance by club and horizon.
 
 ### Trajectory quality
 
-Measure:
-
-- trajectory gap prediction error;
+- trajectory-gap prediction error;
 - forecast revision quality over time;
-- whether additional snapshots improve the final forecast;
-- stability of forecast revisions;
-- false correction rate caused by releases or source anomalies.
+- whether additional snapshots improve final forecast;
+- stability of revisions;
+- false correction rate caused by releases / anomalies.
 
 ### Early-warning quality
 
-For materially underperforming / outperforming events measure:
-
 - precision;
 - recall;
-- false-positive rate;
-- false-negative rate;
-- average first-detection lead time;
-- median first-detection lead time;
-- percentage correctly detected by T-30;
-- percentage correctly detected by T-14;
-- percentage correctly detected by T-7;
+- false-positive / false-negative rate;
+- average / median first-detection lead time;
+- percentage correctly detected by T-30 / T-14 / T-7;
 - final outcome miss avoided after detection.
 
-Target product KPI concept:
+Target product KPI:
 
 `Actionable Detection = correct direction + material gap + sufficient lead time`
 
-## 8. Horizon Priorities
-
-Business priority is not identical to forecast-error priority.
+## Horizon priorities
 
 1. **T-30** — primary planning / intervention horizon;
 2. **T-14** — strong intervention / correction horizon;
@@ -324,56 +320,68 @@ Business priority is not identical to forecast-error priority.
 
 Model development must not optimise T-1 at the expense of earlier actionable horizons.
 
-## 9. Current Evidence Constraint
-
-As of 2026-10-15, the live dataset is still small at early horizons.
+## Current live evidence constraint
 
 Canonical readiness source:
 
-`private.ticketing_horizon_checkpoint_readiness_v1`
+`private.ticketing_horizon_readiness_v2_1`
 
-Current coverage across tracked events:
+Canonical append-only evidence source:
 
-| Horizon | Ready events | Completed ready events |
+`private.live_trajectory_feature_snapshots_v1`
+
+After initial exact-cutoff materialization:
+
+| Horizon | Materialized rows | Training-eligible |
 |---|---:|---:|
-| T-30 | 1 | 0 |
-| T-14 | 7 | 3 |
-| T-7 | 9 | 3 |
-| T-3 | 11 | 5 |
-| T-1 | 10 | 9 |
+| T-30 | 1 | **0** |
+| T-14 | 5 | **3** |
+| T-7 | 9 | **3** |
+| T-3 | 6 | **2** |
+| T-1 | 10 | **5** |
+
+Evidence QA:
+
+- 31 materialized rows;
+- 0 post-cutoff source-snapshot leakage violations;
+- 0 invalid `as_of_at >= kickoff_at` rows;
+- 0 PIT-validation failures;
+- 0 feature-version mismatches;
+- idempotent replay leaves the evidence row count unchanged.
 
 Consequences:
 
-- T-30 live model training is not yet statistically credible;
-- T-14 has retrospective signal but only 3 completed events with usable checkpoint + outcome;
-- no model should be promoted from these tiny samples;
-- collection must continue prospectively while the architecture and feature computation are implemented now.
+- T-30 live model training is not statistically credible yet;
+- T-14 has only 3 training-eligible exact-checkpoint rows;
+- no early-horizon live correction should be promoted from this sample;
+- collection continues prospectively while Phase B is built in shadow mode.
 
-A first genuine T-30+ collection case is already active:
+A first genuine T-30+ collection case is active:
 
 - Jagiellonia Białystok vs Crystal Palace;
 - kickoff: 2026-12-10;
 - RoboTicket candidate `5190`;
-- mapped ticket event ID `24`;
-- collection activated well before T-30.
+- mapped `ticket_event_id=24`;
+- collection started well before T-30;
+- formal T-30 checkpoint remains `not_due` until the exact cutoff.
 
-## 10. Implementation Sequence
+## Implementation sequence
 
-### Phase A — Foundation
+### Phase A — Foundation — COMPLETE
 
-1. Implement canonical `LiveTrajectoryFeatureStore`.
-2. Reuse / integrate `private.ticketing_horizon_checkpoint_readiness_v1`.
-3. Add robust anomaly / release detection.
-4. Create deterministic point-in-time feature snapshots suitable for both training and inference.
-5. Version all live feature contracts.
+1. **DONE** — canonical LiveTrajectoryFeatureStore.
+2. **DONE** — exact-cutoff horizon readiness; legacy nearest-snapshot v1 is not used for new modelling.
+3. **DONE** — robust empirically calibrated anomaly / release semantics.
+4. **DONE** — append-only deterministic point-in-time feature evidence store for training and inference lineage.
+5. **DONE after registry merge** — version registry for all current live contracts.
 
-### Phase B — Shadow Forecasting
+### Phase B — Shadow Forecasting — NEXT
 
-6. Add `StructuralPrior` adapter exposing the current historical champion forecast per horizon.
+6. **NEXT** — add `StructuralPrior` adapter exposing the current historical champion per horizon.
 7. Add initial trajectory-gap calculations using descriptive / rule-based expected references where ML evidence is insufficient.
 8. Persist shadow live forecasts on every eligible snapshot.
 9. Persist first-detection events and forecast revisions.
-10. Never auto-promote the live correction from a tiny sample.
+10. Never auto-promote live correction from a tiny sample.
 
 ### Phase C — Learned Trajectory Correction
 
@@ -391,46 +399,42 @@ A first genuine T-30+ collection case is already active:
 ### Phase E — Recommendations
 
 18. Only after forecasting and early-warning reliability are proven, connect detection state to recommendations.
-19. Recommendations must remain separate from the forecasting truth layer.
+19. Recommendations remain separate from the forecasting truth layer.
 20. Eventually learn intervention effectiveness from observed club actions and post-intervention trajectory changes.
 
-## 11. Immediate Coding Backlog
+## Immediate coding backlog
 
-Highest-priority code now:
+Current code lives under `ml/demand_engine/`; do not create a duplicate parallel engine unless architecture changes explicitly require it.
 
-1. `ml/live/live_trajectory_feature_store.py`
-   - deterministic snapshot-to-features transformation;
-   - multi-window velocity / acceleration;
-   - capacity-normalized inventory;
-   - sector / release / quality features.
+1. **NEXT — `StructuralPrior` adapter**
+   - wrap the current horizon-specific historical champions;
+   - expose one stable request/response contract;
+   - persist exact model / feature lineage;
+   - no retraining inside the live engine.
 
-2. `ml/live/structural_prior.py`
-   - adapter around the current historical champion contracts;
-   - standard output schema for live consumption.
-
-3. `ml/live/trajectory_gap.py`
+2. `trajectory_gap`
    - expected-vs-observed representation;
-   - initially support non-ML references if evidence is insufficient;
+   - initially permit descriptive / rule-based references when ML evidence is insufficient;
    - versioned gap schema.
 
-4. `ml/live/shadow_forecast.py`
+3. `shadow_forecast`
    - combine prior + current live evidence;
    - persist shadow predictions and revision history;
    - no production promotion.
 
-5. `ml/live/early_warning.py`
+4. `early_warning`
    - state classification;
-   - first detection persistence;
+   - first-detection persistence;
    - lead-time measurement;
-   - reason codes and confidence.
+   - reason codes / confidence.
 
-6. `ml/live/evaluate_live_engine.py`
+5. `evaluate_live_engine`
    - historical prior vs live-corrected comparison;
    - horizon-specific MAE / WAPE / bias;
    - early-warning precision / recall / lead time;
    - leave-event-out evaluation when the sample permits.
 
-## 12. Definition of v1 Success
+## Definition of v1 success
 
 Live Demand Engine v1 is successful when it can, on completed unseen events:
 
