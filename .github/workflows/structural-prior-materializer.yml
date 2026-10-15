@@ -2,6 +2,11 @@ name: Structural Prior Materializer
 
 on:
   workflow_dispatch:
+  workflow_run:
+    workflows:
+      - "Structural Prior Artifact Freeze"
+    types:
+      - completed
   schedule:
     - cron: "5,20,35,50 * * * *"
   push:
@@ -68,7 +73,7 @@ jobs:
           deno check supabase/functions/structural_prior_materializer_v1/index.ts
 
   materialize:
-    if: github.event_name != 'pull_request'
+    if: github.event_name != 'pull_request' && (github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success')
     needs: validate
     runs-on: ubuntu-latest
     timeout-minutes: 10
