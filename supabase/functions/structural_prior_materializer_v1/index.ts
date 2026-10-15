@@ -45,6 +45,17 @@ async function db(path: string, options: RequestInit = {}) {
   return text ? JSON.parse(text) : null;
 }
 
+async function trainingExportPage(start: number, end: number): Promise<any[]> {
+  return await db("rpc/export_historical_runtime_v1", {
+    method: "POST",
+    headers: {
+      Range: `${start}-${end}`,
+      "Range-Unit": "items",
+    },
+    body: JSON.stringify({}),
+  }) || [];
+}
+
 function parseRecentIso(value: string, label: string, nowMs: number, maxAgeMs: number) {
   const time = Date.parse(value);
   if (!Number.isFinite(time)) throw new Error(`invalid ${label}`);
@@ -70,12 +81,16 @@ Deno.serve(async (req: Request) => {
     const mode = url.searchParams.get("mode") || "";
 
     if (req.method === "GET" && mode === "training") {
-      const rows = await db("rpc/export_historical_runtime_v1", {
-        method: "POST",
-        body: JSON.stringify({}),
-      }) || [];
-      if (rows.length !== 1530) {
-        throw new Error(`canonical training export expected 1530 rows, got ${rows.length}`);
+      // Supabase Data API applies the project max-rows limit to table-valued
+      // RPCs, so the canonical 1,530-match export must be paged explicitly.
+      const first = await trainingExportPage(0, 999);
+      const second = await trainingExportPage(1000, 1999);
+      const rows = [...first, ...second];
+      const matchKeys = new Set(rows.map((row: any) => String(row.match_key || "")));
+      if (rows.length !== 1530 || matchKeys.size !== 1530) {
+        throw new Error(
+          `canonical training export expected 1530 unique rows, got rows=${rows.length} unique=${matchKeys.size}`,
+        );
       }
       return json({
         ok: true,
