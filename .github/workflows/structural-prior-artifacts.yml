@@ -95,7 +95,7 @@ jobs:
       - name: Freeze verified production artifacts
         run: |
           rm -rf ml/artifacts/structural_prior_runtime_v1
-          python ml/demand_engine/freeze_structural_prior_artifacts.py \
+          python -m ml.demand_engine.freeze_structural_prior_artifacts \
             --input /tmp/structural-prior-training.json \
             --output-dir ml/artifacts/structural_prior_runtime_v1
           cat ml/artifacts/structural_prior_runtime_v1/manifest.json
