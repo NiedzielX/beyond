@@ -4,7 +4,7 @@ Last verified: **2026-10-15**
 
 ## Status
 
-**DEPLOYED / SHADOW**
+**DONE / DEPLOYED / SHADOW**
 
 The orchestrator automates the completed Phase-B stack. It does not retrain historical models and it does not apply a learned live correction.
 
@@ -31,7 +31,9 @@ GitHub Actions workflow:
 
 Cadence:
 
-`7,22,37,52 * * * *` — every 15 minutes, deliberately offset from the media-attention collector.
+`7,22,37,52 * * * *` — every 15 minutes.
+
+The automatic Structural Prior Materializer runs shortly before it at `5,20,35,50` and invokes the orchestrator immediately after persisting new T-30/T-14 priors.
 
 The workflow uses GitHub OIDC. No Supabase service-role secret is stored in the workflow.
 
@@ -46,7 +48,6 @@ Security:
 - accepted audience: `beyond-live-forecast-orchestrator`;
 - accepted repository: `NiedzielX/beyond`;
 - accepted ref: `refs/heads/main`;
-- Edge Function platform JWT verification is disabled only because the function performs this explicit external OIDC verification;
 - privileged DB work stays inside the Edge Function environment.
 
 ## Database contract
@@ -71,49 +72,58 @@ Run audit table:
 
 The orchestrator uses the latest source snapshot timestamp as the live `as_of`.
 
-Re-running the scheduler without a newer snapshot:
+Re-running without a newer snapshot:
 
 - reuses/upserts the same trajectory-gap observation key;
-- `insert_demand_engine_shadow_forecast_v1` returns the existing forecast revision for the same event + source snapshot + model version;
-- does not create a fake new forecast timestamp merely because the scheduler ran again.
+- `insert_demand_engine_shadow_forecast_v1` returns the existing revision for the same event + source snapshot + model version;
+- does not create a fake forecast timestamp merely because the scheduler ran again.
 
-## First production-shadow verification
+## Latest production-shadow verification
 
-Direct DB verification on 2026-10-15 returned:
+After automatic T-14 Structural Prior materialization, orchestrator run `private.live_forecast_orchestrator_runs_v1.id = 3` completed successfully:
 
 - active events: **13**;
-- processed end-to-end: **1**;
-- missing Structural Prior: **9**;
-- out of current model domain: **3**;
+- processed end-to-end: **6**;
+- remaining `missing_prior`: **6**;
+- skipped/out-of-domain: **1**;
 - event errors: **0**;
-- canonical checkpoint rows materialized in that run: **33**.
+- canonical checkpoint rows materialized: **34**.
 
-Processed event:
+Processed with genuine priors:
 
-**Lech Poznań vs Wisła Kraków — event 6**
+| Event ID | Structural Prior | P50 | Shadow observation |
+|---:|---:|---:|---:|
+| 10 | 2 | 16,227 | 1211 |
+| 16 | 3 | 17,351 | 1212 |
+| 23 | 4 | 19,553 | 1213 |
+| 21 | 5 | 15,635 | 1214 |
+| 22 | 6 | 29,636 | 1215 |
+| 6 | 1 | 31,832 | 1216 |
 
-- Structural Prior P50: **31,832**;
-- new orchestrated shadow revision: `forecast_observations.id = 1209`;
-- trajectory status: `INSUFFICIENT_SIGNAL`;
-- reason: `outside_reference_checkpoint_window`;
-- this is correct fail-closed behaviour before the frozen T-14 window.
+Current trajectory results remain shadow/descriptive. At that run:
 
-## Newly exposed bottleneck
+- events 10, 23, 21, 22 and 6: `INSUFFICIENT_SIGNAL / outside_reference_checkpoint_window`;
+- event 16: `INSUFFICIENT_SIGNAL / live_signal_partial`.
 
-The live loop itself is no longer the main blocker.
+No live correction was applied; `live_adjustment = 0` remains the enforced behavior until the learned correction evidence gate passes.
 
-The first run showed **9 Ekstraklasa events with `missing_prior`**. That means the next development target is:
+## Current operational bottleneck
 
-> **Automatic Structural Prior Materializer / Scheduler**
+Automatic T-30/T-14 Structural Prior materialization is no longer a blocker.
 
-It must generate genuine T-30/T-14 current-event priors from the frozen runtime specs without retraining/reproducing the historical benchmark on every run.
+The six remaining `missing_prior` events are at **T-7/T-3**. The current resolver already knows the approved historical specs, but those horizons do not yet have a frozen executable current-event runtime/materializer contract.
 
-Until that exists, Live Forecast Orchestrator v1 processes every event that already has a genuine ready prior and explicitly records `missing_prior` for the others. It never falls back to legacy Lech models.
+Next development target:
+
+> **Freeze and deploy executable current-event Structural Prior runtimes for T-7 / T-3 / T-1.**
+
+This is needed so the live loop keeps a genuine historical anchor after a tracked event leaves the T-14 window. Until then later horizons intentionally remain fail-closed; no legacy fallback is allowed.
 
 ## Plan position
 
 - Phase A — Foundation: **DONE**
 - Phase B — Shadow Forecasting contracts: **DONE**
-- Operational automation — Live Forecast Orchestrator v1: **DONE / DEPLOYED**
-- Automatic Structural Prior materialization across current events: **NEXT**
+- Live Forecast Orchestrator v1: **DONE / LIVE**
+- Automatic Structural Prior materialization T-30/T-14: **DONE / LIVE**
+- Executable T-7/T-3/T-1 current-event runtimes: **NEXT**
 - Phase C learned live correction: **BLOCKED ON EVIDENCE**
