@@ -3,8 +3,8 @@
 
 This is deliberately a build-time operation, not a scheduled inference step.
 It reconstructs the canonical five-season PIT feature store, verifies the
-approved holdout metrics, fits the production runtimes on all five completed
-seasons, and writes joblib artifacts plus a hash manifest.
+approved development/holdout metrics, fits the production runtimes on all five
+completed seasons, and writes joblib artifacts plus a hash manifest.
 """
 from __future__ import annotations
 
@@ -25,13 +25,14 @@ TRAINING_SEASONS = ["2021/2022", "2022/2023", "2023/2024", "2024/2025", "2025/20
 EXPECTED_HOLDOUT_MAE = {
     "T-30": {"2024/2025": 1889.3672272292858, "2025/2026": 1846.2792557036205},
     "T-14": {"2024/2025": 1748.4970512511325, "2025/2026": 1870.393553818474},
-    # The approved v2.2 T-7 result was persisted historically to one decimal.
-    # The first executable T-7 freeze therefore starts from that published
-    # benchmark. The PR reproduction gate prints the exact executable-runtime
-    # values before production activation, after which they are pinned exactly.
+    # Temporary v2.2 reference values. The PR recovery gate intentionally
+    # reports the exact Structural Prior v1 T-7 runtime values before they are
+    # pinned for production artifact freeze.
     "T-7": {"2024/2025": 1799.2, "2025/2026": 1848.0},
 }
 EXPECTED_HOLDOUT_ATOL = {"T-30": 1e-9, "T-14": 1e-9, "T-7": 0.051}
+T7_REFERENCE_DEVELOPMENT_MAE = 2504.0
+T7_REFERENCE_DEVELOPMENT_ATOL = 0.51
 ARTIFACT_VERSION = "structural-prior-runtime-v1-frozen-2026-10-15-t7"
 
 
@@ -72,30 +73,63 @@ def _mae(actual, predicted) -> float:
     return float(np.mean(np.abs(np.asarray(actual, dtype=float) - np.asarray(predicted, dtype=float))))
 
 
+def _score_season(
+    store: pd.DataFrame,
+    horizon: str,
+    training_seasons: list[str],
+    test_season: str,
+) -> float:
+    runtime = fit_structural_prior_runtime(store, horizon, training_seasons)
+    spec = runtime.spec
+    test = store[
+        (store["horizon"].astype(str) == horizon)
+        & store["training_eligible"].astype(bool)
+        & (store["season"] == test_season)
+        & store[spec.baseline_column].notna()
+    ].copy()
+    return _mae(test["target_attendance"], runtime.predict(test))
+
+
 def verify_frozen_selection(store: pd.DataFrame) -> dict:
-    report: dict[str, dict[str, float]] = {}
+    report: dict[str, object] = {"holdouts": {}, "development": {}}
     mismatches: list[str] = []
+
+    # T-7 runtime recovery is evaluated against the original v2.2 development
+    # season as well as both untouched holdouts. The estimator/baseline contract
+    # was selected before this gate; these rows are verification, not a search.
+    t7_dev = _score_season(
+        store,
+        "T-7",
+        ["2021/2022", "2022/2023"],
+        "2023/2024",
+    )
+    report["development"] = {"T-7": {"2023/2024": t7_dev}}
+    if not np.isclose(
+        t7_dev,
+        T7_REFERENCE_DEVELOPMENT_MAE,
+        rtol=0.0,
+        atol=T7_REFERENCE_DEVELOPMENT_ATOL,
+    ):
+        mismatches.append(
+            f"T-7/development-2023/2024: actual={t7_dev} expected_reference={T7_REFERENCE_DEVELOPMENT_MAE}"
+        )
+
+    holdouts: dict[str, dict[str, float]] = {}
     for horizon in ("T-30", "T-14", "T-7"):
-        report[horizon] = {}
+        holdouts[horizon] = {}
         for test_season, training_seasons in (
             ("2024/2025", ["2021/2022", "2022/2023", "2023/2024"]),
             ("2025/2026", ["2021/2022", "2022/2023", "2023/2024", "2024/2025"]),
         ):
-            runtime = fit_structural_prior_runtime(store, horizon, training_seasons)
-            spec = runtime.spec
-            test = store[
-                (store["horizon"].astype(str) == horizon)
-                & store["training_eligible"].astype(bool)
-                & (store["season"] == test_season)
-                & store[spec.baseline_column].notna()
-            ].copy()
-            value = _mae(test["target_attendance"], runtime.predict(test))
+            value = _score_season(store, horizon, training_seasons, test_season)
             expected = EXPECTED_HOLDOUT_MAE[horizon][test_season]
-            report[horizon][test_season] = value
+            holdouts[horizon][test_season] = value
             if not np.isclose(value, expected, rtol=0.0, atol=EXPECTED_HOLDOUT_ATOL[horizon]):
                 mismatches.append(
                     f"{horizon}/{test_season}: actual={value} expected={expected}"
                 )
+    report["holdouts"] = holdouts
+
     if mismatches:
         raise RuntimeError("frozen benchmark mismatch: " + "; ".join(mismatches))
     return report
