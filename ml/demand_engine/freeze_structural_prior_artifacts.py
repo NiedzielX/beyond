@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-"""Freeze the selected Structural Prior Runtime v1 into reusable artifacts.
+"""Freeze selected Structural Prior Runtime v1 models into reusable artifacts.
 
 This is deliberately a build-time operation, not a scheduled inference step.
 It reconstructs the canonical five-season PIT feature store, verifies the
-already-approved holdout metrics exactly, fits the production runtimes on all
-five completed seasons, and writes joblib artifacts plus a hash manifest.
+approved holdout metrics, fits the production runtimes on all five completed
+seasons, and writes joblib artifacts plus a hash manifest.
 """
 from __future__ import annotations
 
@@ -25,8 +25,14 @@ TRAINING_SEASONS = ["2021/2022", "2022/2023", "2023/2024", "2024/2025", "2025/20
 EXPECTED_HOLDOUT_MAE = {
     "T-30": {"2024/2025": 1889.3672272292858, "2025/2026": 1846.2792557036205},
     "T-14": {"2024/2025": 1748.4970512511325, "2025/2026": 1870.393553818474},
+    # The approved v2.2 T-7 result was persisted historically to one decimal.
+    # The first executable T-7 freeze therefore gates to that published value;
+    # its exact reproduced floats are persisted in manifest.json and should be
+    # promoted to exact constants after the first successful canonical freeze.
+    "T-7": {"2024/2025": 1799.2, "2025/2026": 1848.0},
 }
-ARTIFACT_VERSION = "structural-prior-runtime-v1-frozen-2026-10-15"
+EXPECTED_HOLDOUT_ATOL = {"T-30": 1e-9, "T-14": 1e-9, "T-7": 0.051}
+ARTIFACT_VERSION = "structural-prior-runtime-v1-frozen-2026-10-15-t7"
 
 
 def sha256_file(path: Path) -> str:
@@ -68,7 +74,7 @@ def _mae(actual, predicted) -> float:
 
 def verify_frozen_selection(store: pd.DataFrame) -> dict:
     report: dict[str, dict[str, float]] = {}
-    for horizon in ("T-30", "T-14"):
+    for horizon in ("T-30", "T-14", "T-7"):
         report[horizon] = {}
         for test_season, training_seasons in (
             ("2024/2025", ["2021/2022", "2022/2023", "2023/2024"]),
@@ -84,7 +90,7 @@ def verify_frozen_selection(store: pd.DataFrame) -> dict:
             ].copy()
             value = _mae(test["target_attendance"], runtime.predict(test))
             expected = EXPECTED_HOLDOUT_MAE[horizon][test_season]
-            if not np.isclose(value, expected, rtol=0.0, atol=1e-9):
+            if not np.isclose(value, expected, rtol=0.0, atol=EXPECTED_HOLDOUT_ATOL[horizon]):
                 raise RuntimeError(
                     f"frozen benchmark mismatch {horizon}/{test_season}: {value} != {expected}"
                 )
@@ -141,7 +147,12 @@ def main() -> None:
         "artifacts": {},
     }
 
-    for horizon, filename in (("T-30", "structural_prior_t30_v1.joblib"), ("T-14", "structural_prior_t14_v1.joblib")):
+    artifact_files = (
+        ("T-30", "structural_prior_t30_v1.joblib"),
+        ("T-14", "structural_prior_t14_v1.joblib"),
+        ("T-7", "structural_prior_t7_v1.joblib"),
+    )
+    for horizon, filename in artifact_files:
         runtime = fit_structural_prior_runtime(store, horizon, TRAINING_SEASONS)
         path = output / filename
         joblib.dump(runtime, path, compress=3)
