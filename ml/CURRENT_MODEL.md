@@ -1,12 +1,12 @@
 # Beyond Ticketing — Current Model State
 
-Last verified: **2026-10-15**
+Last verified: **2026-10-15 20:30 UTC**
 
-This file is the canonical short-form source of truth for the current forecasting model and Live Demand Engine state.
+This file is the canonical short-form source of truth for the current forecasting model and Live Demand Engine state. For cold-start operational instructions, read `AI_BOOTSTRAP.md` first.
 
 ## North star
 
-Build the best possible leakage-safe **live forecasting system** for final attendance / ticket demand and its evolution toward kickoff.
+Build the best leakage-safe **live forecasting system** for final attendance / ticket demand and its evolution toward kickoff.
 
 The product combines:
 
@@ -31,86 +31,102 @@ Early actionability is first-class. T-30/T-14 must not be sacrificed for late-ho
 - matches: **1,530** = 5 × 306;
 - PIT horizons: **T-30 / T-14 / T-7 / T-3 / T-1**;
 - PIT feature snapshots: **7,650**;
+- training-eligible snapshots: **7,198**;
 - verified historical stadium-capacity coverage: **100%**;
 - model selection: **2023/24 only** after training on 2021/22–2022/23;
 - untouched holdouts: **2024/25 + 2025/26**;
 - one verified closed-door zero-attendance match remains historical truth but is excluded from normal demand training;
-- Supabase historical backfill is complete: **1,224** validated 2021/22–2024/25 rows + **306** 2025/26 rows;
+- Supabase historical backfill is complete;
 - canonical DB export: `public.export_historical_runtime_v1()`.
 
-Exact Structural Prior Runtime v1 input hashes are pinned in:
+Exact input hashes are pinned in `ml/data/STRUCTURAL_PRIOR_RUNTIME_V1_INPUT_MANIFEST.md`.
 
-`ml/data/STRUCTURAL_PRIOR_RUNTIME_V1_INPUT_MANIFEST.md`
+## Current executable Structural Prior by horizon
 
-## Current best validated historical specification by horizon
+All five checkpoints now use a frozen executable current-event runtime.
 
-| Horizon | Current best spec | 2024/25 MAE | 2025/26 MAE |
-|---|---|---:|---:|
-| **T-30** | **Structural Prior Runtime v1 — ExtraTrees + full PIT + verified-capacity occupancy residual** | **1,889.4** | **1,846.3** |
-| **T-14** | **Structural Prior Runtime v1 — HistGBR + base PIT + verified-capacity occupancy residual** | **1,748.5** | **1,870.4** |
-| T-7 | Global v2 verified-capacity occupancy | **1,799.2** | **1,848.0** |
-| T-3 | Global v2.3 verified-capacity + match-importance | **1,701.4** | **1,686.4** |
-| T-1 | Global v2.3 verified-capacity + match-importance | **1,684.3** | **1,682.0** |
+| Horizon | Model spec | 2023/24 dev MAE | 2024/25 MAE | 2025/26 MAE |
+|---|---|---:|---:|---:|
+| **T-30** | `structural-prior-runtime-v1-t30-extra-full` | 2,559.7 | **1,889.4** | **1,846.3** |
+| **T-14** | `structural-prior-runtime-v1-t14-hist-base` | 2,340.0 | **1,748.5** | **1,870.4** |
+| **T-7** | `structural-prior-runtime-v1-t7-gbr-base` | **2,476.8168** | **1,777.6927** | **1,802.2756** |
+| **T-3** | `structural-prior-runtime-v1-t3-hist-full` | **2,311.6247** | **1,661.7160** | **1,775.0691** |
+| **T-1** | `structural-prior-runtime-v1-t1-hist-full` | **2,347.9931** | **1,651.7336** | **1,742.8351** |
 
-Combined two-holdout MAE for the executable early-horizon Runtime v1:
+T-7/T-3/T-1 are executable conversions of pre-specified historical champion lineages. Their exact Structural Prior v1 values were pinned after a one-time leakage-safe verification; there was no post-holdout parameter search.
 
-- T-30: **~1,867.8**;
-- T-14: **~1,809.4**.
+Detailed benchmark provenance: `ml/results/STRUCTURAL_PRIOR_RUNTIME_V1_2026-10-15.md`.
 
-Current single lowest holdout MAE is **T-1 = ~1,682.0 on 2025/26**.
+T-30 remains above the strategic **<1,700 MAE** target, so historical R&D continues in parallel.
 
-### Frozen T-30 runtime
+## Runtime contracts
 
-Model spec ID:
+### T-30
 
-`structural-prior-runtime-v1-t30-extra-full`
-
-- `ExtraTreesRegressor`;
+- estimator: `ExtraTreesRegressor`;
 - 500 trees;
 - `min_samples_leaf=3`;
 - `max_features=0.8`;
 - baseline: `baseline_season`;
-- full PIT feature mode including validated importance interactions;
+- full PIT + importance interactions;
 - target: verified-capacity occupancy residual;
-- output clipped to `[0, verified_capacity]`.
+- final output clipped to `[0, verified_capacity]`.
 
-T-30 remains above the strategic **<1,700 MAE** target, so historical R&D continues in parallel.
+### T-14
 
-### Frozen T-14 runtime
-
-Model spec ID:
-
-`structural-prior-runtime-v1-t14-hist-base`
-
-- `HistGradientBoostingRegressor`, absolute-error loss;
+- estimator: `HistGradientBoostingRegressor` absolute-error;
 - `learning_rate=0.05`;
 - `max_iter=180`;
 - `max_leaf_nodes=15`;
 - `min_samples_leaf=10`;
 - `l2_regularization=1`;
 - baseline: `baseline_r3`;
-- base PIT feature mode;
+- base PIT features;
 - target: verified-capacity occupancy residual.
 
-## Structural Prior Runtime — current event proof
+### T-7
 
-First genuine current Structural Prior:
+- estimator: `GradientBoostingRegressor(loss="huber")`;
+- `n_estimators=180`;
+- `learning_rate=0.03`;
+- `max_depth=2`;
+- `min_samples_leaf=8`;
+- baseline: `baseline_season`;
+- base PIT features;
+- target: verified-capacity occupancy residual.
 
-**Lech Poznań vs Wisła Kraków — 31 October 2026**
+### T-3 / T-1
 
-- ticket event: `6`;
-- horizon: **T-30**;
-- exact PIT cutoff: **2026-10-01 16:30:00 UTC**;
-- model: `structural-prior-runtime-v1-t30-extra-full`;
-- P50: **31,832.41**;
-- verified stadium capacity: **43,269**;
-- expected occupancy: **73.57%**;
-- persisted as `private.structural_prior_forecasts_v1.id=1`;
-- `point_in_time_validated = true`;
-- `public.get_structural_prior_v1(...)` returns `ready` with exact model/feature/checkpoint lineage;
-- P10/P90 remain intentionally `NULL` until probabilistic calibration exists.
+- estimator: `HistGradientBoostingRegressor(loss="absolute_error")`;
+- `learning_rate=0.05`;
+- `max_iter=250`;
+- `max_leaf_nodes=15`;
+- `min_samples_leaf=10`;
+- `l2_regularization=1`;
+- baseline: `baseline_season`;
+- full PIT + importance interactions;
+- target: verified-capacity occupancy residual.
 
-Current DB T-30/T-14 Structural Prior specs point to the Runtime v1 IDs above.
+## Frozen artifact bundle
+
+Artifact version:
+
+`structural-prior-runtime-v1-frozen-2026-10-15-t1`
+
+Freeze commit:
+
+`4d6fbae1ab16bfa7b432a012c889c451ab9161ff`
+
+Artifact hashes:
+
+- T-30: `33e32a8b2f0c617c5adde5cdba592151bb25651ef00fc60aa2e5c090adb51da7`
+- T-14: `8d2dbb6ce48ae48fe2e5b7f4340c9e2dfadd38c6e23cc7b123c6f1d2303cdc20`
+- T-7: `97e712245d6539396030e88ea450809f4265bd7538aa90b29e234420231ac927`
+- T-3: `33f83899a86b8ebbc61ff5cfb2a3ccb2f09d708d41730136f136bda31d374f30`
+- T-1: `f67ee9bf6853a01245de5406861b59e491b86a01a8120023868ad54b19f0ebfa`
+- historical runtime: `3c6b35142c6bd20a484f2aa758cd41284fd6f4c6db1353b138f81cf321161569`
+
+Normal scheduled materialization is **load + predict only**. It must never fit a model.
 
 ## Structural Prior feature semantics
 
@@ -127,45 +143,75 @@ Rules:
 - historical attendance may carry across seasons;
 - current-season attendance is separate from long-run history;
 - sporting/form/table state resets each season;
-- a completed match enters state only after `kickoff + 3h`;
+- historical benchmark state adds a completed match only after `kickoff + 3h`;
+- current-event sporting reconstruction excludes same-local-date fixtures when exact kickoff is unavailable;
 - target never enters its own state;
 - exact home/opponent and opponent-draw history are PIT-only;
-- verified historical capacity is season/venue specific;
-- current-event attendance and sporting inputs after the requested cutoff are rejected.
+- verified capacity is mandatory;
+- current-event inputs after the requested cutoff are rejected.
 
-Historical quality gate:
+## Structural Prior materialization status
 
-- **1,530 matches**;
-- **7,650 snapshots**;
-- **7,198 training-eligible snapshots**;
-- **0 missing verified capacities**;
-- **0 as-of / kickoff violations**.
+**DONE / LIVE for T-30 / T-14 / T-7 / T-3 / T-1.**
+
+Production components:
+
+- artifact freeze: `.github/workflows/structural-prior-artifacts.yml`;
+- materializer: `.github/workflows/structural-prior-materializer.yml`;
+- cadence: `5,20,35,50 * * * *`;
+- Edge Function: `structural_prior_materializer_v1`, production version **10** at last verification;
+- due resolver: `public.get_due_early_structural_prior_inputs_v1(...)`;
+- prior resolver: `public.get_structural_prior_v1(...)`;
+- writer: `public.insert_structural_prior_forecast_v1(jsonb)`;
+- registry: `private.structural_prior_model_specs_v1`.
+
+The T-1 resolver has been verified to return `T-1 / missing_prior` with `structural-prior-runtime-v1-t1-hist-full` once the simulated clock passes each event's true T-1 cutoff. T-1 priors are intentionally **not** generated before those cutoffs.
+
+Current persisted prior counts:
+
+| Horizon | Priors |
+|---|---:|
+| T-30 | 1 |
+| T-14 | 5 |
+| T-7 | 1 |
+| T-3 | 5 |
+| T-1 | 0 — first current cutoff not yet due |
 
 ## Live Demand Engine implementation status
 
 ### Phase A — Foundation: **DONE**
 
-Completed:
+Canonical live feature contract: `live-trajectory-v1.1`.
 
-1. canonical `live-trajectory-v1.1` feature store;
-2. exact-cutoff readiness;
-3. calibrated release/anomaly semantics;
-4. append-only PIT live-feature evidence store;
-5. explicit live contract registry.
+Canonical evidence store: `private.live_trajectory_feature_snapshots_v1`.
 
 ### Phase B — Shadow Forecasting: **DONE**
 
-#### Step 6 — Structural Prior: **DONE**
+Completed:
 
-- 6a adapter / model-domain guard: **DONE**;
-- 6b executable historical runtime + current-event PIT row + genuine P50 materialization: **DONE**;
-- DB-native five-season historical input: **DONE**.
+1. executable Structural Prior at all five horizons;
+2. expected trajectory / trajectory gap;
+3. append-only Structural Prior shadow revisions;
+4. first-detection / revision audit;
+5. promotion governance / shadow-only enforcement;
+6. automatic materializer -> orchestrator hand-off.
 
-#### Step 7 — expected trajectory / trajectory gap: **DONE**
+Latest verified orchestrator run:
 
-Implementation:
+`private.live_forecast_orchestrator_runs_v1.id = 18`
 
-`ml/demand_engine/trajectory_gap.py`
+- active events: **12**;
+- processed end-to-end: **12**;
+- `missing_prior`: **0**;
+- skipped: **0**;
+- event errors: **0**;
+- checkpoint rows materialized: **34**.
+
+No learned live correction is active. `live_adjustment = 0` remains enforced.
+
+## Trajectory gap contract
+
+Implementation: `ml/demand_engine/trajectory_gap.py`.
 
 DB:
 
@@ -176,128 +222,51 @@ Contract:
 
 - public seat-map inventory is a **demand proxy, not confirmed paid sales**;
 - Structural Prior P50 is the mandatory final-demand anchor;
-- there is **no 1:1 conversion** from attendance P50 to public inventory;
-- expected progress is descriptive and comes from other PIT-valid, training-eligible trajectories at the same canonical horizon;
+- no 1:1 conversion from attendance P50 to public inventory;
+- expected progress comes from other PIT-valid, training-eligible trajectories at the same canonical horizon;
 - target event and future reference evidence are excluded;
 - minimum reference diversity: **3 events / 2 clubs**;
 - status: `UNDERPERFORMING / ON_TRACK / OUTPERFORMING / INSUFFICIENT_SIGNAL`;
 - confidence: `NONE / LOW / MEDIUM / HIGH`.
 
-Current T-14 descriptive reference pool:
-
-- **3 events / 2 clubs**;
-- progress Q25 **2.01%**;
-- median **2.23%**;
-- Q75 **6.19%**;
-- confidence: **LOW**.
-
-First event-6 trajectory observation:
-
-- source snapshot `15278`;
-- as-of `2026-10-15 12:31:03 UTC`;
-- `live-trajectory-v1.1`;
-- **754 / 754 clean snapshots**;
-- signal readiness `ready`;
-- first availability **17,683**;
-- current availability **10,534**;
-- normalized net absorption **40.43%**;
-- hours to kickoff **387.98**;
-- status `INSUFFICIENT_SIGNAL`;
-- reason `outside_reference_checkpoint_window`.
-
-This is an intentional fail-closed result. The live signal is healthy; the event has simply not yet entered the frozen T-14 reference window.
-
-#### Step 8 — persist shadow live forecasts: **DONE**
-
-Implementation:
-
-`ml/demand_engine/structural_prior_shadow.py`
-
-First new-stack shadow revision:
-
-- `public.forecast_observations.id=1208`;
-- model version `beyond-demand-engine-v1-structural-prior-shadow`;
-- source Structural Prior `id=1`;
-- historical model `structural-prior-runtime-v1-t30-extra-full`;
-- historical P50 **31,832**;
-- live adjustment **0**;
-- final P50 **31,832**;
-- P10/P90 **NULL**;
-- live feature version `live-trajectory-v1.1`;
-- trajectory gap `INSUFFICIENT_SIGNAL / outside_reference_checkpoint_window`.
-
-The source Structural Prior horizon is retained. The legacy nearest-checkpoint labeler is not used for the new stack.
-
-#### Step 9 — first detection / revisions: **DONE**
-
-DB:
-
-- `private.trajectory_first_detection_v1`;
-- trigger `private.capture_first_trajectory_divergence_v1()`;
-- view `private.structural_shadow_revision_history_v1`.
-
-Rules:
-
-- only PIT-valid `UNDERPERFORMING` or `OUTPERFORMING` observations create first detection;
-- `ON_TRACK` and `INSUFFICIENT_SIGNAL` never create a false alert;
-- out-of-order earlier PIT evidence can replace a later detection timestamp;
-- every new-stack shadow forecast is append-only in `forecast_observations`;
-- after actual attendance is known, each revision is labelled `IMPROVED / WORSENED / UNCHANGED`; before outcome it remains `PENDING_OUTCOME`.
-
-Current event 6:
-
-- first detection: **none** — correct;
-- new-stack revisions: **1**;
-- revision effect: `PENDING_OUTCOME`.
-
-Versioned SQL evidence:
-
-`ml/demand_engine/sql/phase_b_shadow_contracts_v1.sql`
-
-#### Step 10 — promotion gate: **DONE as governance**
-
-Single source of truth:
-
-`ml/MODEL_PROMOTION_GOVERNANCE_V1.md`
-
-Existing Live Ticketing gate remains authoritative:
-
-- **20 independent completed matches**;
-- challenger MAE must beat incumbent MAE;
-- uplift must be positive;
-- frozen candidate package;
-- mandatory human review;
-- `auto_activation_allowed = false` at DB level.
-
-The new live stack does **not** create a second threshold. The Step-8 writer is shadow-only and preserves Structural Prior P50 until a future learned correction passes this governance.
-
 ## Structural Prior domain guard
 
-Current historical champions are validated on **Ekstraklasa**.
+Current Structural Prior runtimes are validated on **Ekstraklasa**.
 
 Resolver states:
 
-- `not_due` before T-30;
+- `not_due` before the next checkpoint;
 - `out_of_domain` outside validated competition scope;
 - `missing_prior` when a due current spec has no genuine materialized P50;
 - `invalid_prior` on lineage/PIT mismatch;
 - `ready` only when exact current model/feature/checkpoint lineage exists.
 
-No silent fallback to Lech v1.3/v0.3 is allowed.
+No silent fallback to legacy Lech models is allowed.
 
 ## Live evidence maturity
 
-Canonical checkpoint evidence remains small:
+Current stored evidence:
 
-| Horizon | Training-eligible |
-|---|---:|
-| T-30 | **0** |
-| T-14 | **3** |
-| T-7 | **3** |
-| T-3 | **2** |
-| T-1 | **5** |
+| Horizon | Training-eligible | Total stored |
+|---|---:|---:|
+| T-30 | **0** | 1 |
+| T-14 | **3** | 5 |
+| T-7 | **3** | 9 |
+| T-3 | **4** | 9 |
+| T-1 | **5** | 10 |
 
-Therefore **no learned live correction is promoted**. Phase B being complete means the leakage-safe observation stack exists; it does not mean live uplift is statistically proven.
+Therefore **no learned live correction is promoted**. Infrastructure is ready; the binding constraint is prospective evidence.
+
+Governance source: `ml/MODEL_PROMOTION_GOVERNANCE_V1.md`.
+
+Promotion requires:
+
+- 20 independent completed matches;
+- challenger MAE below incumbent;
+- positive uplift;
+- frozen candidate/evidence package;
+- mandatory human review;
+- no automatic production activation.
 
 ## Current product stack
 
@@ -305,16 +274,16 @@ Therefore **no learned live correction is promoted**. Phase B being complete mea
 
 ## Next implementation sequence
 
-1. **NOW — prospective evidence collection on the new stack.**
-2. When event 6 enters the frozen T-14 reference window, generate its first descriptive trajectory classification without changing Step-7 rules.
+1. **Verify first naturally due T-1 materialization after 2026-10-16 15:30 UTC.** Do not backfill it early.
+2. Continue prospective evidence collection on the five-horizon live stack.
 3. Continue T-30 historical R&D toward **<1,700 MAE** in parallel.
-4. Phase C — train/evaluate live residual correction only when evidence is sufficient.
+4. Phase C — train/evaluate live residual correction only when evidence governance permits.
 5. Phase D — calibrated P10/P50/P90.
 6. Phase E — recommendations / intervention learning.
 
 ## Evaluation rule
 
-Every historical challenger preserves the same chronological contract:
+Every historical challenger preserves the chronological contract:
 
 - selection on 2023/24 only;
 - 2024/25 and 2025/26 untouched holdouts;
@@ -331,6 +300,7 @@ No model is promoted because it looks intuitive or wins on a tiny prospective sa
 
 ## Key evidence files
 
+- `AI_BOOTSTRAP.md`
 - `ml/results/STRUCTURAL_PRIOR_RUNTIME_V1_2026-10-15.md`
 - `ml/results/LIVE_DEMAND_ENGINE_PHASE_B_2026-10-15.md`
 - `ml/data/STRUCTURAL_PRIOR_RUNTIME_V1_INPUT_MANIFEST.md`
