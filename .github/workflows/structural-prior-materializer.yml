@@ -12,12 +12,14 @@ on:
       - "ml/demand_engine/materialize_structural_priors.py"
       - "supabase/functions/structural_prior_materializer_v1/**"
       - "supabase/sql/structural_prior_materializer_v1.sql"
+      - "supabase/sql/structural_prior_training_export_v1.sql"
       - ".github/workflows/structural-prior-materializer.yml"
   pull_request:
     paths:
       - "ml/demand_engine/materialize_structural_priors.py"
       - "supabase/functions/structural_prior_materializer_v1/**"
       - "supabase/sql/structural_prior_materializer_v1.sql"
+      - "supabase/sql/structural_prior_training_export_v1.sql"
       - ".github/workflows/structural-prior-materializer.yml"
 
 permissions:
