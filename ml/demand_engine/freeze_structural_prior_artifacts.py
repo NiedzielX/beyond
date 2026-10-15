@@ -27,27 +27,21 @@ EXPECTED_HOLDOUT_MAE = {
     "T-14": {"2024/2025": 1748.4970512511325, "2025/2026": 1870.393553818474},
     "T-7": {"2024/2025": 1777.6927306628588, "2025/2026": 1802.2755802253876},
     "T-3": {"2024/2025": 1661.715966441126, "2025/2026": 1775.069078799718},
-    # One-time reference to the published v2.3 T-1 champion. Structural Prior
-    # v1 uses its canonical PIT contract, so the recovery gate intentionally
-    # reports the exact executable-runtime values before they are pinned.
-    "T-1": {"2024/2025": 1684.3, "2025/2026": 1682.0},
+    "T-1": {"2024/2025": 1651.733625020056, "2025/2026": 1742.835142803119},
 }
 EXPECTED_HOLDOUT_ATOL = {
     "T-30": 1e-9,
     "T-14": 1e-9,
     "T-7": 1e-9,
     "T-3": 1e-9,
-    "T-1": 0.051,
+    "T-1": 1e-9,
 }
 EXPECTED_DEVELOPMENT_MAE = {
     "T-7": 2476.8168272009416,
     "T-3": 2311.6246893162593,
-    # Deliberate recovery sentinel for the fixed T-1 hist250/full/baseline_season
-    # contract. CI reports the actual development and both holdout values in one
-    # pass; no parameter search is performed after seeing those results.
-    "T-1": 0.0,
+    "T-1": 2347.9931110468183,
 }
-ARTIFACT_VERSION = "structural-prior-runtime-v1-frozen-2026-10-15-t1-recovery"
+ARTIFACT_VERSION = "structural-prior-runtime-v1-frozen-2026-10-15-t1"
 
 
 def sha256_file(path: Path) -> str:
@@ -119,7 +113,7 @@ def verify_frozen_selection(store: pd.DataFrame) -> tuple[dict[str, dict[str, fl
         expected = EXPECTED_DEVELOPMENT_MAE[horizon]
         if not np.isclose(value, expected, rtol=0.0, atol=1e-9):
             mismatches.append(
-                f"{horizon}/development-2023/2024: actual={value} expected_or_sentinel={expected}"
+                f"{horizon}/development-2023/2024: actual={value} expected={expected}"
             )
 
     holdouts: dict[str, dict[str, float]] = {}
@@ -134,7 +128,7 @@ def verify_frozen_selection(store: pd.DataFrame) -> tuple[dict[str, dict[str, fl
             holdouts[horizon][test_season] = value
             if not np.isclose(value, expected, rtol=0.0, atol=EXPECTED_HOLDOUT_ATOL[horizon]):
                 mismatches.append(
-                    f"{horizon}/{test_season}: actual={value} expected_or_reference={expected}"
+                    f"{horizon}/{test_season}: actual={value} expected={expected}"
                 )
 
     if mismatches:
