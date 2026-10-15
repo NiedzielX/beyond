@@ -1,6 +1,6 @@
 # Beyond — Live Forecast Orchestrator v1
 
-Last verified: **2026-10-15**
+Last verified: **2026-10-15 20:30 UTC**
 
 ## Status
 
@@ -20,7 +20,7 @@ Every scheduler invocation:
 6. for a `ready` prior, calculates `live-trajectory-v1.1`;
 7. calculates `trajectory-gap-v1` against the frozen same-horizon PIT reference pool;
 8. persists/updates the append-only trajectory-gap observation keyed by event + source snapshot time;
-9. persists the P50-only Structural Prior shadow revision with live adjustment = 0;
+9. persists the P50-only Structural Prior shadow revision with `live_adjustment = 0`;
 10. existing first-detection and revision-audit contracts continue to work automatically.
 
 ## Scheduler
@@ -33,7 +33,9 @@ Cadence:
 
 `7,22,37,52 * * * *` — every 15 minutes.
 
-The automatic Structural Prior Materializer runs shortly before it at `5,20,35,50` and invokes the orchestrator immediately after persisting new T-30/T-14 priors.
+The automatic Structural Prior Materializer runs at `5,20,35,50` and invokes the orchestrator immediately after persisting new priors.
+
+All five Structural Prior horizons are now executable: T-30 / T-14 / T-7 / T-3 / T-1.
 
 The workflow uses GitHub OIDC. No Supabase service-role secret is stored in the workflow.
 
@@ -44,10 +46,10 @@ The workflow uses GitHub OIDC. No Supabase service-role secret is stored in the 
 Security:
 
 - custom GitHub OIDC verification;
-- accepted issuer: `https://token.actions.githubusercontent.com`;
-- accepted audience: `beyond-live-forecast-orchestrator`;
-- accepted repository: `NiedzielX/beyond`;
-- accepted ref: `refs/heads/main`;
+- issuer: `https://token.actions.githubusercontent.com`;
+- audience: `beyond-live-forecast-orchestrator`;
+- repository: `NiedzielX/beyond`;
+- ref: `refs/heads/main`;
 - privileged DB work stays inside the Edge Function environment.
 
 ## Database contract
@@ -60,7 +62,7 @@ Main RPC:
 
 `public.run_live_forecast_orchestrator_v1(timestamptz)`
 
-The RPC is `SECURITY INVOKER`, not `SECURITY DEFINER`.
+The RPC is `SECURITY INVOKER`.
 
 Execution is revoked from `PUBLIC`, `anon` and `authenticated`, and granted only to `service_role`.
 
@@ -80,50 +82,76 @@ Re-running without a newer snapshot:
 
 ## Latest production-shadow verification
 
-After automatic T-14 Structural Prior materialization, orchestrator run `private.live_forecast_orchestrator_runs_v1.id = 3` completed successfully:
+Latest verified run:
 
-- active events: **13**;
-- processed end-to-end: **6**;
-- remaining `missing_prior`: **6**;
-- skipped/out-of-domain: **1**;
+`private.live_forecast_orchestrator_runs_v1.id = 18`
+
+Result:
+
+- active events: **12**;
+- processed end-to-end: **12**;
+- `missing_prior`: **0**;
+- skipped/out-of-domain: **0**;
 - event errors: **0**;
 - canonical checkpoint rows materialized: **34**.
 
-Processed with genuine priors:
+This verifies the key operational invariant: every currently active event has a genuine Structural Prior anchor and reaches the shadow pipeline successfully.
 
-| Event ID | Structural Prior | P50 | Shadow observation |
-|---:|---:|---:|---:|
-| 10 | 2 | 16,227 | 1211 |
-| 16 | 3 | 17,351 | 1212 |
-| 23 | 4 | 19,553 | 1213 |
-| 21 | 5 | 15,635 | 1214 |
-| 22 | 6 | 29,636 | 1215 |
-| 6 | 1 | 31,832 | 1216 |
+Current genuine prior set includes:
 
-Current trajectory results remain shadow/descriptive. At that run:
+- one T-30 prior;
+- five T-14 priors;
+- one T-7 prior;
+- five T-3 priors;
+- no T-1 prior yet because the first current T-1 checkpoint is not naturally due until 2026-10-16 15:30 UTC.
 
-- events 10, 23, 21, 22 and 6: `INSUFFICIENT_SIGNAL / outside_reference_checkpoint_window`;
-- event 16: `INSUFFICIENT_SIGNAL / live_signal_partial`.
+T-1 runtime/registry/resolver/gateway are already deployed. A read-only future-time resolver check confirms current events move to `T-1 / missing_prior` with model `structural-prior-runtime-v1-t1-hist-full` at the exact kickoff-minus-one-day cutoff.
 
-No live correction was applied; `live_adjustment = 0` remains the enforced behavior until the learned correction evidence gate passes.
+T-1 must not be materialized early because the stack is point-in-time by design.
+
+No learned live correction is active; `live_adjustment = 0` remains enforced until the learned-correction evidence gate passes.
+
+## Structural Prior dependencies
+
+Canonical materializer doc:
+
+`ml/STRUCTURAL_PRIOR_MATERIALIZER_V1.md`
+
+Current frozen bundle:
+
+`structural-prior-runtime-v1-frozen-2026-10-15-t1`
+
+All five horizon runtimes are registered and executable.
 
 ## Current operational bottleneck
 
-Automatic T-30/T-14 Structural Prior materialization is no longer a blocker.
+Structural Prior coverage is no longer the bottleneck.
 
-The six remaining `missing_prior` events are at **T-7/T-3**. The current resolver already knows the approved historical specs, but those horizons do not yet have a frozen executable current-event runtime/materializer contract.
+The current binding constraint is **prospective governance-eligible live evidence** for Phase C learned correction.
 
-Next development target:
+Current training-eligible evidence:
 
-> **Freeze and deploy executable current-event Structural Prior runtimes for T-7 / T-3 / T-1.**
+| Horizon | Eligible |
+|---|---:|
+| T-30 | 0 |
+| T-14 | 3 |
+| T-7 | 3 |
+| T-3 | 4 |
+| T-1 | 5 |
 
-This is needed so the live loop keeps a genuine historical anchor after a tracked event leaves the T-14 window. Until then later horizons intentionally remain fail-closed; no legacy fallback is allowed.
+Promotion still requires the governance gate in `ml/MODEL_PROMOTION_GOVERNANCE_V1.md`, including 20 independent completed matches, positive uplift, challenger MAE below incumbent, a frozen evidence package and human review.
+
+## Next operational checkpoint
+
+> **Verify the first naturally due T-1 materialization after 2026-10-16 15:30 UTC.**
+
+After that, continue evidence collection and T-30 R&D in parallel. Do not invent or backfill future PIT evidence merely to exercise the pipeline.
 
 ## Plan position
 
 - Phase A — Foundation: **DONE**
 - Phase B — Shadow Forecasting contracts: **DONE**
 - Live Forecast Orchestrator v1: **DONE / LIVE**
-- Automatic Structural Prior materialization T-30/T-14: **DONE / LIVE**
-- Executable T-7/T-3/T-1 current-event runtimes: **NEXT**
+- Automatic Structural Prior materialization all five horizons: **DONE / LIVE**
+- First naturally due T-1 forecast: **NEXT operational checkpoint**
 - Phase C learned live correction: **BLOCKED ON EVIDENCE**
