@@ -1,13 +1,8 @@
 """Versioned Structural Prior adapter for Beyond Live Demand Engine.
 
 The live engine must consume the validated historical champion without silently
-retraining it or falling back to an older Lech-only incumbent. This module
-therefore separates:
-
-1. horizon resolution;
-2. current champion specification;
-3. materialized prior retrieval;
-4. validation of model/feature lineage.
+retraining it, falling back to an older Lech-only incumbent, or applying a model
+outside its validated competition domain.
 
 P10/P90 remain optional at this stage. Structural Prior v1 is primarily a P50
 contract; probabilistic live forecasting is a later phase.
@@ -39,6 +34,10 @@ class StructuralPriorUnavailableError(StructuralPriorError):
     pass
 
 
+class StructuralPriorOutOfDomainError(StructuralPriorError):
+    pass
+
+
 @dataclass(frozen=True)
 class StructuralPriorSpec:
     horizon: Horizon
@@ -47,6 +46,7 @@ class StructuralPriorSpec:
     model_family: str
     feature_contract: str
     validation_report: str
+    validated_competitions: tuple[str, ...]
     status: str = "historical_champion_candidate"
 
 
@@ -58,6 +58,7 @@ CURRENT_STRUCTURAL_PRIOR_SPECS: dict[Horizon, StructuralPriorSpec] = {
         model_family="GradientBoostingRegressor",
         feature_contract="global-pit-v2+verified-capacity-v1",
         validation_report="ml/results/BEYOND_GLOBAL_FORECAST_V2_2_VERIFIED_CAPACITY_2026-10-14.md",
+        validated_competitions=("Ekstraklasa",),
     ),
     "T-14": StructuralPriorSpec(
         horizon="T-14",
@@ -66,6 +67,7 @@ CURRENT_STRUCTURAL_PRIOR_SPECS: dict[Horizon, StructuralPriorSpec] = {
         model_family="HistGradientBoostingRegressor",
         feature_contract="global-pit-v2+verified-capacity-v1",
         validation_report="ml/results/BEYOND_GLOBAL_FORECAST_V2_2_VERIFIED_CAPACITY_2026-10-14.md",
+        validated_competitions=("Ekstraklasa",),
     ),
     "T-7": StructuralPriorSpec(
         horizon="T-7",
@@ -74,6 +76,7 @@ CURRENT_STRUCTURAL_PRIOR_SPECS: dict[Horizon, StructuralPriorSpec] = {
         model_family="GradientBoostingRegressor",
         feature_contract="global-pit-v2+verified-capacity-v1",
         validation_report="ml/results/BEYOND_GLOBAL_FORECAST_V2_2_VERIFIED_CAPACITY_2026-10-14.md",
+        validated_competitions=("Ekstraklasa",),
     ),
     "T-3": StructuralPriorSpec(
         horizon="T-3",
@@ -82,6 +85,7 @@ CURRENT_STRUCTURAL_PRIOR_SPECS: dict[Horizon, StructuralPriorSpec] = {
         model_family="HistGradientBoostingRegressor",
         feature_contract="global-pit-v2+verified-capacity-v1+match-importance-v1",
         validation_report="ml/results/BEYOND_GLOBAL_FORECAST_V2_3_CAPACITY_IMPORTANCE_COMBO_2026-10-15.md",
+        validated_competitions=("Ekstraklasa",),
     ),
     "T-1": StructuralPriorSpec(
         horizon="T-1",
@@ -90,6 +94,7 @@ CURRENT_STRUCTURAL_PRIOR_SPECS: dict[Horizon, StructuralPriorSpec] = {
         model_family="HistGradientBoostingRegressor",
         feature_contract="global-pit-v2+verified-capacity-v1+match-importance-v1",
         validation_report="ml/results/BEYOND_GLOBAL_FORECAST_V2_3_CAPACITY_IMPORTANCE_COMBO_2026-10-15.md",
+        validated_competitions=("Ekstraklasa",),
     ),
 }
 
@@ -125,9 +130,8 @@ class StructuralPrior:
             raise StructuralPriorError("Structural prior P50 cannot be negative")
         if self.stadium_capacity is not None and self.p50 > self.stadium_capacity:
             raise StructuralPriorError("Structural prior P50 exceeds stadium capacity")
-        if self.p10 is not None and self.p90 is not None:
-            if not self.p10 <= self.p50 <= self.p90:
-                raise StructuralPriorError("Structural prior interval is not ordered")
+        if self.p10 is not None and self.p90 is not None and not self.p10 <= self.p50 <= self.p90:
+            raise StructuralPriorError("Structural prior interval is not ordered")
 
 
 def resolve_structural_prior_spec(
@@ -137,8 +141,8 @@ def resolve_structural_prior_spec(
 ) -> tuple[StructuralPriorSpec, datetime]:
     """Resolve the latest already-due validated historical checkpoint.
 
-    Carry-forward is intentionally one-way. Example: at T-10 the system may use
-    the T-14 prior, but never the future T-7 prior.
+    Carry-forward is intentionally one-way. At T-10 the system may use T-14,
+    but never the future T-7 prior.
     """
     _require_aware("kickoff_at", kickoff_at)
     _require_aware("requested_as_of_at", requested_as_of_at)
@@ -167,12 +171,9 @@ def resolve_structural_prior_spec(
 
 
 class RowStructuralPriorAdapter:
-    """Validate and expose a materialized current structural prior row."""
+    """Validate and expose a materialized current Structural Prior row."""
 
-    def __init__(
-        self,
-        fetch_prior: Callable[[int, datetime], Mapping[str, Any] | None],
-    ) -> None:
+    def __init__(self, fetch_prior: Callable[[int, datetime], Mapping[str, Any] | None]) -> None:
         self.fetch_prior = fetch_prior
 
     def prior(self, request: ForecastRequest) -> StructuralPrior:
@@ -180,6 +181,12 @@ class RowStructuralPriorAdapter:
             kickoff_at=request.kickoff_at,
             requested_as_of_at=request.forecast_generated_at,
         )
+        if request.competition not in spec.validated_competitions:
+            raise StructuralPriorOutOfDomainError(
+                f"{spec.model_spec_id} is not validated for competition {request.competition!r}; "
+                f"validated competitions: {', '.join(spec.validated_competitions)}"
+            )
+
         row = self.fetch_prior(request.ticket_event_id, request.forecast_generated_at)
         if not row:
             raise StructuralPriorUnavailableError(
@@ -187,6 +194,10 @@ class RowStructuralPriorAdapter:
             )
 
         status = str(row.get("status") or "ready")
+        if status == "out_of_domain":
+            raise StructuralPriorOutOfDomainError(
+                f"Structural prior is out of domain for event {request.ticket_event_id}"
+            )
         if status != "ready":
             raise StructuralPriorUnavailableError(
                 f"Structural prior status is {status!r} for event {request.ticket_event_id}"
@@ -241,11 +252,7 @@ class RowStructuralPriorAdapter:
 class SupabaseStructuralPriorAdapter(RowStructuralPriorAdapter):
     """Fetch Structural Prior v1 through a versioned Supabase RPC."""
 
-    def __init__(
-        self,
-        supabase_url: str | None = None,
-        service_role_key: str | None = None,
-    ) -> None:
+    def __init__(self, supabase_url: str | None = None, service_role_key: str | None = None) -> None:
         self.supabase_url = (supabase_url or os.environ.get("SUPABASE_URL", "")).rstrip("/")
         self.service_role_key = service_role_key or os.environ.get("SUPABASE_SERVICE_ROLE_KEY", "")
         if not self.supabase_url:
@@ -301,10 +308,7 @@ def _datetime(value: Any, name: str) -> datetime:
 def _datetime_optional(value: Any) -> datetime | None:
     if value is None:
         return None
-    if isinstance(value, datetime):
-        parsed = value
-    else:
-        parsed = datetime.fromisoformat(str(value).replace("Z", "+00:00"))
+    parsed = value if isinstance(value, datetime) else datetime.fromisoformat(str(value).replace("Z", "+00:00"))
     _require_aware("datetime value", parsed)
     return parsed
 
