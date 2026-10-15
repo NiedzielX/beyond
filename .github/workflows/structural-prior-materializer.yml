@@ -1,0 +1,171 @@
+name: Structural Prior Materializer
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "5,20,35,50 * * * *"
+  push:
+    branches:
+      - main
+    paths:
+      - "ml/artifacts/structural_prior_runtime_v1/**"
+      - "ml/demand_engine/materialize_structural_priors.py"
+      - "supabase/functions/structural_prior_materializer_v1/**"
+      - "supabase/sql/structural_prior_materializer_v1.sql"
+      - ".github/workflows/structural-prior-materializer.yml"
+  pull_request:
+    paths:
+      - "ml/demand_engine/materialize_structural_priors.py"
+      - "supabase/functions/structural_prior_materializer_v1/**"
+      - "supabase/sql/structural_prior_materializer_v1.sql"
+      - ".github/workflows/structural-prior-materializer.yml"
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: structural-prior-materializer-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install pinned runtime
+        run: |
+          python -m pip install --upgrade pip
+          pip install numpy==2.3.5 pandas==2.2.3 scikit-learn==1.8.0 joblib==1.5.3
+
+      - name: Setup Deno
+        uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+
+      - name: Validate materializer code
+        run: |
+          python -m py_compile ml/demand_engine/materialize_structural_priors.py
+          deno check supabase/functions/structural_prior_materializer_v1/index.ts
+
+  materialize:
+    if: github.event_name != 'pull_request'
+    needs: validate
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Check frozen artifacts
+        id: artifacts
+        shell: bash
+        run: |
+          if [ -f ml/artifacts/structural_prior_runtime_v1/manifest.json ]; then
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+            echo "Frozen Structural Prior artifacts are not available yet; materialization skipped."
+          fi
+
+      - name: Setup Python
+        if: steps.artifacts.outputs.ready == 'true'
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install pinned runtime
+        if: steps.artifacts.outputs.ready == 'true'
+        run: |
+          python -m pip install --upgrade pip
+          pip install numpy==2.3.5 pandas==2.2.3 scikit-learn==1.8.0 joblib==1.5.3
+
+      - name: Request Structural Prior OIDC token
+        if: steps.artifacts.outputs.ready == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          response=$(curl -fsS -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
+            "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=beyond-structural-prior-materializer")
+          token=$(printf '%s' "$response" | jq -r '.value')
+          test -n "$token"
+          test "$token" != "null"
+          echo "::add-mask::$token"
+          echo "STRUCTURAL_PRIOR_OIDC_TOKEN=$token" >> "$GITHUB_ENV"
+
+      - name: Fetch due PIT inputs
+        if: steps.artifacts.outputs.ready == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -fsS \
+            -H "Authorization: Bearer $STRUCTURAL_PRIOR_OIDC_TOKEN" \
+            'https://adchzwqboeekhokapxqi.supabase.co/functions/v1/structural_prior_materializer_v1?mode=due' \
+            -o /tmp/structural-prior-due.json
+          jq -e '.ok == true' /tmp/structural-prior-due.json >/dev/null
+          jq '{eventCount,events:[.events[]|{ticket_event_id,horizon,input_status,home_team,away_team}]}' /tmp/structural-prior-due.json
+
+      - name: Score due T-30/T-14 priors from frozen artifacts
+        if: steps.artifacts.outputs.ready == 'true'
+        run: |
+          python ml/demand_engine/materialize_structural_priors.py \
+            --input /tmp/structural-prior-due.json \
+            --artifact-dir ml/artifacts/structural_prior_runtime_v1 \
+            --output /tmp/structural-prior-predictions.json
+          jq '{predictionCount,skippedCount,skipped,predictions:[.predictions[]|{ticket_event_id,horizon,p50}]}' /tmp/structural-prior-predictions.json
+
+      - name: Persist genuine Structural Priors
+        if: steps.artifacts.outputs.ready == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          count=$(jq -r '.predictionCount' /tmp/structural-prior-predictions.json)
+          if [ "$count" = "0" ]; then
+            echo "No new T-30/T-14 priors due."
+            exit 0
+          fi
+          curl -fsS \
+            -X POST \
+            -H "Authorization: Bearer $STRUCTURAL_PRIOR_OIDC_TOKEN" \
+            -H 'Content-Type: application/json' \
+            --data-binary @/tmp/structural-prior-predictions.json \
+            'https://adchzwqboeekhokapxqi.supabase.co/functions/v1/structural_prior_materializer_v1' \
+            | tee /tmp/structural-prior-persist.json
+          jq . /tmp/structural-prior-persist.json
+          jq -e '.ok == true' /tmp/structural-prior-persist.json >/dev/null
+
+      - name: Request Live Orchestrator OIDC token
+        if: steps.artifacts.outputs.ready == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          response=$(curl -fsS -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
+            "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=beyond-live-forecast-orchestrator")
+          token=$(printf '%s' "$response" | jq -r '.value')
+          test -n "$token"
+          test "$token" != "null"
+          echo "::add-mask::$token"
+          echo "LIVE_ORCHESTRATOR_OIDC_TOKEN=$token" >> "$GITHUB_ENV"
+
+      - name: Run Live Forecast Orchestrator immediately
+        if: steps.artifacts.outputs.ready == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -fsS \
+            -X POST \
+            -H "Authorization: Bearer $LIVE_ORCHESTRATOR_OIDC_TOKEN" \
+            -H 'Content-Type: application/json' \
+            --data '{}' \
+            'https://adchzwqboeekhokapxqi.supabase.co/functions/v1/live_forecast_orchestrator_v1' \
+            | tee /tmp/live-orchestrator-after-priors.json
+          jq . /tmp/live-orchestrator-after-priors.json
+          jq -e '.ok == true' /tmp/live-orchestrator-after-priors.json >/dev/null
