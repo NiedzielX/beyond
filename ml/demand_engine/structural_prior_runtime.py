@@ -17,7 +17,7 @@ from sklearn.ensemble import ExtraTreesRegressor, GradientBoostingRegressor, His
 from sklearn.impute import SimpleImputer
 from sklearn.preprocessing import OneHotEncoder
 
-Horizon = Literal["T-30", "T-14", "T-7", "T-3"]
+Horizon = Literal["T-30", "T-14", "T-7", "T-3", "T-1"]
 CAT = ["home_club_key", "away_club_key"]
 META = {
     "feature_set_version", "match_key", "season", "horizon", "as_of_at", "kickoff_at",
@@ -67,6 +67,13 @@ CURRENT_EARLY_RUNTIME_SPECS: dict[Horizon, RuntimeSpec] = {
     "T-3": RuntimeSpec(
         horizon="T-3",
         model_spec_id="structural-prior-runtime-v1-t3-hist-full",
+        baseline_column="baseline_season",
+        feature_mode="full",
+        estimator_name="hist250",
+    ),
+    "T-1": RuntimeSpec(
+        horizon="T-1",
+        model_spec_id="structural-prior-runtime-v1-t1-hist-full",
         baseline_column="baseline_season",
         feature_mode="full",
         estimator_name="hist250",

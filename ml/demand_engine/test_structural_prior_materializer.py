@@ -13,8 +13,8 @@ class StructuralPriorMaterializerTest(unittest.TestCase):
         self.assertNotIn("fit_structural_prior_runtime", source)
         self.assertNotIn(".fit(", source)
 
-    def test_materializer_supports_frozen_t3_runtime(self):
-        self.assertEqual(materializer.SUPPORTED, {"T-30", "T-14", "T-7", "T-3"})
+    def test_materializer_supports_all_frozen_horizons(self):
+        self.assertEqual(materializer.SUPPORTED, {"T-30", "T-14", "T-7", "T-3", "T-1"})
 
     def test_sporting_state_excludes_same_day_completed_match(self):
         aliases = {

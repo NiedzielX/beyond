@@ -36,6 +36,7 @@ Final prediction is clipped to `[0, verified_capacity]`.
 | T-14 | rolling-3 home attendance | base PIT | HistGradientBoosting absolute-error | **2,340.0** | **1,748.5** | **1,870.4** |
 | T-7 | current-season home mean with PIT fallback | base PIT | GradientBoosting Huber, 180 trees, depth=2, leaf=8 | **2,476.8** | **1,777.7** | **1,802.3** |
 | T-3 | current-season home mean with PIT fallback | full PIT + importance interactions | HistGradientBoosting absolute-error, 250 iterations | **2,311.6** | **1,661.7** | **1,775.1** |
+| T-1 | current-season home mean with PIT fallback | full PIT + importance interactions | HistGradientBoosting absolute-error, 250 iterations | **2,348.0** | **1,651.7** | **1,742.8** |
 
 T-30 holdout diagnostics:
 
@@ -85,6 +86,25 @@ Exact pinned verification values:
 
 The previous published v2.3 T-3 holdouts were **1,701.4** and **1,686.4**. The executable Structural Prior v1 contract is therefore better on 2024/25 and worse on 2025/26; it is not claimed to dominate the older historical benchmark. It is frozen because it is the pre-specified, leakage-safe executable conversion required to keep a genuine Structural Prior anchor through T-3 without falling back to a legacy model. Any further T-3 model improvement must be evaluated as a separate challenger under the normal governance protocol.
 
+## T-1 executable-runtime recovery
+
+The T-1 runtime contract was fixed before the recovery gate from the same approved Global v2.3 verified-capacity + match-importance champion lineage:
+
+- baseline: `baseline_season`;
+- estimator: `HistGradientBoostingRegressor(loss="absolute_error", learning_rate=0.05, max_iter=250, max_leaf_nodes=15, min_samples_leaf=10, l2_regularization=1.0, random_state=42)`;
+- feature mode: full PIT features including validated importance interactions;
+- target: verified-capacity occupancy residual.
+
+The executable conversion was evaluated once on the canonical `structural-prior-pit-v1+verified-capacity-v1` contract after fixing the estimator, baseline and feature mode. No parameter search was performed after seeing development or holdout results.
+
+Exact pinned verification values:
+
+- development 2023/24: **2,347.9931110468183**;
+- holdout 2024/25: **1,651.733625020056**;
+- holdout 2025/26: **1,742.835142803119**.
+
+The previous published v2.3 T-1 holdouts were **1,684.3** and **1,682.0**. The Structural Prior v1 executable contract is better on 2024/25 and worse on 2025/26. As with T-3, this is a documented contract-conversion result rather than a post-holdout optimisation. The fixed executable T-1 runtime is frozen to maintain a genuine historical Structural Prior anchor through the final pre-kickoff checkpoint; future T-1 improvements must enter as separately governed challengers.
+
 ## Comparison with previous verified-capacity lineage
 
 | Horizon | Previous reference 2024/25 | Previous reference 2025/26 | Runtime v1 2024/25 | Runtime v1 2025/26 |
@@ -92,9 +112,10 @@ The previous published v2.3 T-3 holdouts were **1,701.4** and **1,686.4**. The e
 | T-30 | 1,998.7 | 1,994.6 | **1,889.4** | **1,846.3** |
 | T-14 | 1,869.8 | 1,960.3 | **1,748.5** | **1,870.4** |
 | T-7 | 1,799.2 | 1,848.0 | **1,777.7** | **1,802.3** |
-| T-3 | **1,701.4** | **1,686.4** | **1,661.7** | 1,775.1 |
+| T-3 | 1,701.4 | **1,686.4** | **1,661.7** | 1,775.1 |
+| T-1 | 1,684.3 | **1,682.0** | **1,651.7** | 1,742.8 |
 
-The T-30/T-14/T-7 executable runtimes improve the corresponding previous references on both untouched seasons. T-3 is a mixed contract-conversion result and is documented as such rather than retrospectively tuned against holdouts.
+The T-30/T-14/T-7 executable runtimes improve the corresponding previous references on both untouched seasons. T-3 and T-1 are mixed contract-conversion results and are documented as such rather than retrospectively tuned against holdouts.
 
 ## Development-only search decisions
 
@@ -122,14 +143,20 @@ T-3:
 - the HistGradientBoosting family, parameters, `baseline_season` and full importance feature set were fixed from the accepted v2.3 lineage before recovery verification;
 - the exact Structural Prior v1 development and holdout values were then pinned without post-holdout tuning.
 
+T-1:
+
+- no new estimator search was performed during executable-runtime recovery;
+- the HistGradientBoosting family, parameters, `baseline_season` and full importance feature set were fixed from the accepted v2.3 lineage before recovery verification;
+- the exact Structural Prior v1 development and holdout values were then pinned without post-holdout tuning.
+
 ## Decision
 
 - **T-30:** frozen executable Structural Prior runtime; continue R&D because it remains above the strategic `<1700 MAE` target.
 - **T-14:** frozen executable Structural Prior runtime.
 - **T-7:** frozen executable current-event Structural Prior runtime and automatic materialization.
-- **T-3:** approved for frozen executable current-event runtime and automatic Structural Prior materialization after the versioned DB registry/resolver change is applied.
+- **T-3:** frozen executable current-event Structural Prior runtime and automatic materialization.
+- **T-1:** approved for frozen executable current-event runtime and automatic Structural Prior materialization after the versioned DB registry/resolver change is applied.
 - No live ticketing feature is used in these numbers. This benchmark measures the Structural Prior only.
-- **T-1 remains fail-closed** until its executable runtime is separately frozen and verified.
 
 ## Reproducibility note
 

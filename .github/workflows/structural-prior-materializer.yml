@@ -21,6 +21,7 @@ on:
       - "supabase/sql/structural_prior_materializer_v1.sql"
       - "supabase/sql/structural_prior_t7_runtime_v1.sql"
       - "supabase/sql/structural_prior_t3_runtime_v1.sql"
+      - "supabase/sql/structural_prior_t1_runtime_v1.sql"
       - "supabase/sql/structural_prior_current_capacities_2026_v1.sql"
       - "supabase/sql/structural_prior_training_export_v1.sql"
       - ".github/workflows/structural-prior-materializer.yml"
@@ -33,6 +34,7 @@ on:
       - "supabase/sql/structural_prior_materializer_v1.sql"
       - "supabase/sql/structural_prior_t7_runtime_v1.sql"
       - "supabase/sql/structural_prior_t3_runtime_v1.sql"
+      - "supabase/sql/structural_prior_t1_runtime_v1.sql"
       - "supabase/sql/structural_prior_current_capacities_2026_v1.sql"
       - "supabase/sql/structural_prior_training_export_v1.sql"
       - ".github/workflows/structural-prior-materializer.yml"
@@ -133,7 +135,7 @@ jobs:
           jq -e '.ok == true' /tmp/structural-prior-due.json >/dev/null
           jq '{eventCount,events:[.events[]|{ticket_event_id,horizon,input_status,home_team,away_team}]}' /tmp/structural-prior-due.json
 
-      - name: Score due T-30/T-14/T-7/T-3 priors from frozen artifacts
+      - name: Score due T-30/T-14/T-7/T-3/T-1 priors from frozen artifacts
         if: steps.artifacts.outputs.ready == 'true'
         run: |
           python -m ml.demand_engine.materialize_structural_priors \
@@ -149,7 +151,7 @@ jobs:
           set -euo pipefail
           count=$(jq -r '.predictionCount' /tmp/structural-prior-predictions.json)
           if [ "$count" = "0" ]; then
-            echo "No new T-30/T-14/T-7/T-3 priors due."
+            echo "No new T-30/T-14/T-7/T-3/T-1 priors due."
             exit 0
           fi
           curl -fsS \
