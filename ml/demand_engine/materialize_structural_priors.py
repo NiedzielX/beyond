@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Materialize genuine current-event T-30/T-14 Structural Priors.
+"""Materialize genuine current-event T-30/T-14/T-7 Structural Priors.
 
 Normal scheduled runs never fit a model. They load frozen joblib artifacts,
 build a point-in-time current-event row from canonical DB evidence, predict P50,
@@ -24,7 +24,7 @@ from ml.demand_engine.current_structural_prior_features import (
 )
 
 WARSAW = ZoneInfo("Europe/Warsaw")
-SUPPORTED = {"T-30", "T-14"}
+SUPPORTED = {"T-30", "T-14", "T-7"}
 
 
 def sha256_file(path: Path) -> str:
@@ -45,7 +45,9 @@ def load_frozen_bundle(artifact_dir: Path):
         raise RuntimeError("historical runtime hash mismatch")
     models = {}
     for horizon in SUPPORTED:
-        spec = manifest["artifacts"][horizon]
+        spec = manifest["artifacts"].get(horizon)
+        if not spec:
+            raise RuntimeError(f"frozen Structural Prior artifact missing for {horizon}")
         path = artifact_dir / spec["filename"]
         if sha256_file(path) != spec["sha256"]:
             raise RuntimeError(f"artifact hash mismatch for {horizon}")
