@@ -10,16 +10,18 @@ This file exists to prevent every new AI/chat session from rediscovering the sam
 
 Then read, only as needed:
 
-1. `ml/CURRENT_MODEL.md` — canonical current model / pipeline state;
+1. `ml/CURRENT_MODEL.md` — canonical model / pipeline state;
 2. `ml/LIVE_DEMAND_ENGINE_V1_PLAN.md` — implementation plan and phase status;
-3. `ml/NORTH_STAR.md` — objective and evaluation philosophy;
-4. `ml/MODEL_PROMOTION_GOVERNANCE_V1.md` — promotion / evidence gates.
+3. `ml/LIVE_FORECAST_ORCHESTRATOR_V1.md` — live orchestration state;
+4. `ml/STRUCTURAL_PRIOR_MATERIALIZER_V1.md` — frozen Structural Prior runtime / materialization state;
+5. `ml/NORTH_STAR.md` — objective and evaluation philosophy;
+6. `ml/MODEL_PROMOTION_GOVERNANCE_V1.md` — promotion / evidence gates.
 
 ## Critical rule: do not re-run just to recover context
 
 Do **not** retrain models, rebuild the five-season feature store, rerun historical benchmarks, replay Supabase imports, or reproduce old holdouts merely to understand where the project is.
 
-The frozen results and model IDs below are trusted project state unless one of the explicit re-run triggers fires.
+The frozen results, artifact hashes and model IDs below are trusted project state unless one of the explicit re-run triggers fires.
 
 ### Re-run is justified only when at least one is true
 
@@ -32,7 +34,7 @@ The frozen results and model IDs below are trusted project state unless one of t
 - the user explicitly asks for reproduction / verification;
 - a governance check requires a fresh run.
 
-If none of these is true, **read the persisted result and continue from the next unfinished step.**
+If none of these is true, **read persisted state, query only dynamic rows, and continue from the next unfinished step.**
 
 ## North star
 
@@ -72,6 +74,16 @@ Pinned exact input hashes:
 
 `ml/data/STRUCTURAL_PRIOR_RUNTIME_V1_INPUT_MANIFEST.md`
 
+### Historical-export invariant
+
+Historical training rows must preserve pinned source keys exactly. Current-event alias normalization must **not** rewrite historical training data.
+
+This was explicitly validated during artifact freeze after a `radomiak -> radomiak_radom` export normalization changed the 2025/26 T-30 reproduction. The export was corrected rather than changing the approved benchmark.
+
+Versioned contract:
+
+`supabase/sql/structural_prior_training_export_v1.sql`
+
 ## Current historical champions / candidates
 
 | Horizon | Current best spec | 2024/25 MAE | 2025/26 MAE |
@@ -86,7 +98,7 @@ Do not reproduce these numbers unless a re-run trigger above is true.
 
 Strategic R&D target remains: **T-30 < 1,700 MAE** while preserving true OOS validation.
 
-## Structural Prior Runtime v1
+## Structural Prior Runtime v1 — frozen executable early horizons
 
 ### T-30
 
@@ -126,26 +138,80 @@ Runtime / feature code:
 - `ml/demand_engine/structural_prior_runtime.py`;
 - `ml/structural_prior_runtime_benchmark_v1.py`.
 
-## First genuine current-event prior
+### Frozen artifacts — TRUST WITHOUT REBUILDING
 
-Event:
+Artifact version:
 
-**Lech Poznań vs Wisła Kraków — 31 October 2026**
+`structural-prior-runtime-v1-frozen-2026-10-15`
 
-Trusted persisted state:
+Freeze gate reproduced the approved holdouts exactly before the one-time final fit.
 
-- ticket event ID: `6`;
-- source horizon: **T-30**;
-- PIT cutoff: **2026-10-01 16:30:00 UTC**;
-- model: `structural-prior-runtime-v1-t30-extra-full`;
+- T-30 artifact SHA-256:
+  `33e32a8b2f0c617c5adde5cdba592151bb25651ef00fc60aa2e5c090adb51da7`
+- T-14 artifact SHA-256:
+  `8d2dbb6ce48ae48fe2e5b7f4340c9e2dfadd38c6e23cc7b123c6f1d2303cdc20`
+- historical runtime SHA-256:
+  `345bbf72c702fc4356b2ccfe998b5c3c121adea5fef32d34bb9daa9aae10b89d`
+- artifact commit:
+  `4a8f066742faa24508b733175f7366b4ccaabe2e`
+
+Files:
+
+`ml/artifacts/structural_prior_runtime_v1/`
+
+Normal scheduled materialization does **load + predict only**. It must never call model `fit()`.
+
+## Current genuine Structural Priors
+
+### Original T-30 prior
+
+**Lech Poznań vs Wisła Kraków — event 6**
+
+- horizon: T-30;
+- PIT cutoff: 2026-10-01 16:30 UTC;
 - P50: **31,832.41**;
-- stadium capacity: **43,269**;
-- expected occupancy: **73.57%**;
-- persisted row: `private.structural_prior_forecasts_v1.id = 1`;
-- resolver `public.get_structural_prior_v1(...)` returns `ready`;
-- P10/P90 intentionally remain NULL until probabilistic calibration.
+- capacity: 43,269;
+- expected occupancy: 73.57%;
+- persisted prior id: **1**.
 
-Do not regenerate this prior merely to prove that it exists. Query the persisted row if current confirmation is needed.
+### First automatic T-14 batch
+
+Automatic frozen-artifact materialization passed end-to-end on 2026-10-15:
+
+| Prior ID | Event | P50 | Capacity | Occupancy |
+|---:|---|---:|---:|---:|
+| 2 | Pogoń Szczecin — Radomiak Radom | 16,226.996 | 21,163 | 76.68% |
+| 3 | Wisła Kraków — Raków Częstochowa | 17,350.596 | 33,130 | 52.37% |
+| 4 | Śląsk Wrocław — Wieczysta Kraków | 19,552.562 | 43,708 | 44.73% |
+| 5 | Jagiellonia Białystok — Wisła Płock | 15,635.204 | 22,372 | 69.89% |
+| 6 | Legia Warszawa — Lech Poznań | 29,635.741 | 31,006 | 95.58% |
+
+All automatic T-14 priors use the frozen T-14 artifact SHA above.
+
+Do not regenerate persisted priors merely to prove that they exist. Query them if a latest-state check is needed.
+
+## Automatic Structural Prior Materializer
+
+Status:
+
+**DONE / LIVE for T-30 and T-14**
+
+Canonical doc:
+
+`ml/STRUCTURAL_PRIOR_MATERIALIZER_V1.md`
+
+Automation:
+
+- freeze/build workflow: `.github/workflows/structural-prior-artifacts.yml`;
+- materializer workflow: `.github/workflows/structural-prior-materializer.yml`;
+- materializer cadence: `5,20,35,50 * * * *`;
+- Edge Function: `structural_prior_materializer_v1`;
+- writer: `public.insert_structural_prior_forecast_v1(jsonb)`;
+- due resolver: `public.get_due_early_structural_prior_inputs_v1(...)`.
+
+The materializer invokes Live Forecast Orchestrator immediately after inserting priors.
+
+T-7 / T-3 / T-1 do not yet have a frozen executable current-event runtime and intentionally remain fail-closed.
 
 ## Live Demand Engine status
 
@@ -169,7 +235,35 @@ Completed:
 - Step 9 — first-detection / revision audit;
 - Step 10 — promotion governance / shadow-only enforcement.
 
-### Step 7 contract
+### Operational automation: DONE for T-30/T-14
+
+Live Forecast Orchestrator v1 and automatic T-30/T-14 Structural Prior Materializer are deployed.
+
+Latest verified orchestrator run:
+
+`private.live_forecast_orchestrator_runs_v1.id = 3`
+
+- active events: **13**;
+- processed end-to-end: **6**;
+- remaining `missing_prior`: **6**;
+- skipped/out-of-domain: **1**;
+- event errors: **0**;
+- canonical checkpoint rows materialized: **34**.
+
+The six remaining `missing_prior` events are T-7/T-3 and are expected until later-horizon executable runtimes exist.
+
+Latest shadow observation IDs from the first automatic T-14 batch:
+
+- event 10 -> `forecast_observations.id = 1211`;
+- event 16 -> `1212`;
+- event 23 -> `1213`;
+- event 21 -> `1214`;
+- event 22 -> `1215`;
+- event 6 -> `1216`.
+
+No learned live correction is active. `live_adjustment = 0` remains enforced.
+
+### Trajectory gap contract
 
 Code:
 
@@ -200,27 +294,9 @@ Current T-14 descriptive reference pool at last verification:
 - Q75 6.19%;
 - confidence LOW.
 
-### First new-stack shadow revision
-
-Persisted row:
-
-`public.forecast_observations.id = 1208`
-
-State:
-
-- model version: `beyond-demand-engine-v1-structural-prior-shadow`;
-- Structural Prior source: id 1;
-- historical P50: **31,832**;
-- live adjustment: **0**;
-- final P50: **31,832**;
-- P10/P90: NULL;
-- live features: `live-trajectory-v1.1`;
-- trajectory gap: `trajectory-gap-v1`;
-- correction remains noop until evidence gate passes.
-
 ## Evidence maturity / learned correction
 
-Phase C learned live correction is **blocked on evidence**, not on infrastructure.
+Phase C learned live correction is **blocked on evidence, not on infrastructure**.
 
 Current training-eligible checkpoint evidence at last verification:
 
@@ -247,28 +323,29 @@ Source of truth:
 
 ## Current next actions
 
-When starting a new session, do not reconstruct old work. Start here:
+When starting a new session, do not reconstruct old work. Continue here:
 
-1. collect prospective evidence on the completed Phase-B stack;
-2. when event 6 reaches a canonical reference checkpoint, evaluate trajectory gap using the frozen v1 rules;
-3. continue T-30 historical R&D toward <1,700 MAE in parallel;
+1. **NEXT — freeze executable current-event Structural Prior runtimes for T-7 / T-3 / T-1** and extend automatic materialization so the live loop keeps a genuine historical anchor through kickoff;
+2. keep collecting prospective live evidence on the deployed stack;
+3. continue T-30 historical R&D toward <1,700 MAE in parallel, without blocking live evidence collection;
 4. train Phase C residual correction only when evidence governance permits;
-5. then calibrate P10/P50/P90;
+5. calibrate P10/P50/P90 after the point forecast/revision layer is mature;
 6. recommendations/intervention learning comes later.
 
 ## What may need a live check in a new session
 
 The following are dynamic and may legitimately require a quick DB/GitHub read:
 
-- whether a new snapshot/checkpoint has arrived;
-- whether event 6 or other events now have a new trajectory classification;
+- new snapshots/checkpoints;
+- current trajectory classifications;
 - completed-event outcomes;
 - evidence counts by horizon;
+- newly materialized prior rows;
+- latest orchestrator run;
 - current branch / latest merged commit;
-- newly merged challenger results;
-- current Supabase rows if the user asks for latest state.
+- newly merged challenger results.
 
-A **quick read/query is fine**. A full historical rerun is not.
+A **small targeted read/query is fine**. A historical rerun is not.
 
 ## What should never be stored here
 
@@ -280,4 +357,4 @@ A **quick read/query is fine**. A full historical rerun is not.
 
 ## One-line cold-start instruction for an AI agent
 
-> Read `AI_BOOTSTRAP.md` and `ml/CURRENT_MODEL.md`; trust persisted frozen benchmark/model state unless an explicit re-run trigger is present; query only dynamic state; continue from the first unfinished action instead of reproducing prior work.
+> Read `AI_BOOTSTRAP.md` and current-state docs; trust frozen benchmark/artifact/prior state unless an explicit re-run trigger exists; query only dynamic state; continue from the first unfinished action instead of reproducing prior work.
