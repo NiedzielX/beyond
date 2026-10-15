@@ -46,19 +46,19 @@ class RowLiveFeatureProvider:
             capacity_share = available_total / request.stadium_capacity
 
         return LiveFeatures(
-            feature_version=str(row.get("feature_version") or self.feature_version),
+            feature_version=str(_first(row.get("feature_version"), self.feature_version)),
             signal_readiness=readiness,
             feature_quality=_str(row.get("feature_quality")),
             point_in_time_validated=_bool(row.get("point_in_time_validated")),
             hours_to_kickoff=_float(row.get("hours_to_kickoff")),
             days_to_kickoff=_float(row.get("days_to_kickoff")),
             snapshot_age_minutes=_float(row.get("snapshot_age_minutes")),
-            checkpoint_label=_str(row.get("checkpoint_label") or row.get("horizon")),
+            checkpoint_label=_str(_first(row.get("checkpoint_label"), row.get("horizon"))),
             checkpoint_distance_hours=_float(row.get("checkpoint_distance_hours")),
             checkpoint_ready=_bool(row.get("checkpoint_ready")),
             available_total=available_total,
             first_available_total=_int(
-                row.get("first_available_total") or row.get("first_observed_available_total")
+                _first(row.get("first_available_total"), row.get("first_observed_available_total"))
             ),
             available_index=_float(row.get("available_index")),
             available_share_of_capacity=capacity_share,
@@ -67,31 +67,38 @@ class RowLiveFeatureProvider:
                 row.get("available_pct_of_public_seat_map")
             ),
             net_removed_since_first=_int(
-                row.get("net_removed_since_first") or row.get("raw_net_removed_since_first")
+                _first(row.get("net_removed_since_first"), row.get("raw_net_removed_since_first"))
             ),
             net_removed_since_previous=_int(
-                row.get("net_removed_since_previous") or row.get("raw_net_removed_since_previous")
+                _first(
+                    row.get("net_removed_since_previous"),
+                    row.get("raw_net_removed_since_previous"),
+                )
             ),
             velocity_since_previous=_float(
-                row.get("velocity_since_previous") or row.get("raw_velocity_since_previous")
+                _first(row.get("velocity_since_previous"), row.get("raw_velocity_since_previous"))
             ),
-            net_removed_6h=_int(row.get("net_removed_6h") or row.get("raw_net_removed_6h")),
-            velocity_6h=_float(row.get("velocity_6h") or row.get("raw_velocity_6h")),
+            net_removed_6h=_int(_first(row.get("net_removed_6h"), row.get("raw_net_removed_6h"))),
+            velocity_6h=_float(_first(row.get("velocity_6h"), row.get("raw_velocity_6h"))),
             net_removed_24h=_int(
-                row.get("net_removed_24h") or row.get("raw_net_removed_24h")
+                _first(row.get("net_removed_24h"), row.get("raw_net_removed_24h"))
             ),
-            velocity_24h=_float(row.get("velocity_24h") or row.get("raw_velocity_24h")),
+            velocity_24h=_float(_first(row.get("velocity_24h"), row.get("raw_velocity_24h"))),
             net_removed_72h=_int(row.get("net_removed_72h")),
             velocity_72h=_float(row.get("velocity_72h")),
             net_removed_7d=_int(row.get("net_removed_7d")),
             velocity_7d=_float(row.get("velocity_7d")),
             velocity_6h_pct_of_first_per_hour=_float(
-                row.get("velocity_6h_pct_of_first_per_hour")
-                or row.get("raw_velocity_6h_pct_of_first_per_hour")
+                _first(
+                    row.get("velocity_6h_pct_of_first_per_hour"),
+                    row.get("raw_velocity_6h_pct_of_first_per_hour"),
+                )
             ),
             velocity_24h_pct_of_first_per_hour=_float(
-                row.get("velocity_24h_pct_of_first_per_hour")
-                or row.get("raw_velocity_24h_pct_of_first_per_hour")
+                _first(
+                    row.get("velocity_24h_pct_of_first_per_hour"),
+                    row.get("raw_velocity_24h_pct_of_first_per_hour"),
+                )
             ),
             velocity_72h_pct_of_first_per_hour=_float(
                 row.get("velocity_72h_pct_of_first_per_hour")
@@ -112,7 +119,10 @@ class RowLiveFeatureProvider:
                 row.get("velocity_7d_pct_of_capacity_per_hour")
             ),
             acceleration_6h_vs_24h=_float(
-                row.get("acceleration_6h_vs_24h") or row.get("raw_acceleration_6h_vs_24h")
+                _first(
+                    row.get("acceleration_6h_vs_24h"),
+                    row.get("raw_acceleration_6h_vs_24h"),
+                )
             ),
             acceleration_24h_vs_72h=_float(row.get("acceleration_24h_vs_72h")),
             acceleration_72h_vs_7d=_float(row.get("acceleration_72h_vs_7d")),
@@ -127,7 +137,9 @@ class RowLiveFeatureProvider:
             unexplained_inventory_increase_flag=_bool(
                 row.get("unexplained_inventory_increase_flag")
             ),
-            raw_snapshot_count=_int(row.get("raw_snapshot_count") or row.get("snapshots_visible")),
+            raw_snapshot_count=_int(
+                _first(row.get("raw_snapshot_count"), row.get("snapshots_visible"))
+            ),
             clean_snapshot_count=_int(row.get("clean_snapshot_count")),
             excluded_anomaly_count=_int(row.get("excluded_anomaly_count")),
             duplicate_timestamp_count=_int(row.get("duplicate_timestamp_count")),
@@ -136,6 +148,13 @@ class RowLiveFeatureProvider:
             max_visible_gap_hours=_float(row.get("max_visible_gap_hours")),
             data_gap_detected=_bool(row.get("data_gap_detected")),
         )
+
+
+def _first(*values: Any) -> Any:
+    for value in values:
+        if value is not None:
+            return value
+    return None
 
 
 def _readiness(value: Any) -> SignalReadiness | None:
