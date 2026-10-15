@@ -1,0 +1,105 @@
+{
+  "artifact_version": "structural-prior-runtime-v1-frozen-2026-10-15",
+  "artifacts": {
+    "T-14": {
+      "bytes": 175534,
+      "feature_contract": "structural-prior-pit-v1+verified-capacity-v1",
+      "filename": "structural_prior_t14_v1.joblib",
+      "model_family": "HistGradientBoostingRegressor",
+      "model_spec_id": "structural-prior-runtime-v1-t14-hist-base",
+      "numeric_feature_count": 65,
+      "sha256": "8d2dbb6ce48ae48fe2e5b7f4340c9e2dfadd38c6e23cc7b123c6f1d2303cdc20",
+      "training_rows": 1442
+    },
+    "T-30": {
+      "bytes": 10543764,
+      "feature_contract": "structural-prior-pit-v1+verified-capacity-v1",
+      "filename": "structural_prior_t30_v1.joblib",
+      "model_family": "ExtraTreesRegressor",
+      "model_spec_id": "structural-prior-runtime-v1-t30-extra-full",
+      "numeric_feature_count": 80,
+      "sha256": "33e32a8b2f0c617c5adde5cdba592151bb25651ef00fc60aa2e5c090adb51da7",
+      "training_rows": 1414
+    }
+  },
+  "benchmark_reproduction": {
+    "T-14": {
+      "2024/2025": 1748.4970512511325,
+      "2025/2026": 1870.393553818474
+    },
+    "T-30": {
+      "2024/2025": 1889.3672272292858,
+      "2025/2026": 1846.2792557036205
+    }
+  },
+  "feature_contract": "structural-prior-pit-v1+verified-capacity-v1",
+  "historical_dataset_versions": [
+    "historical-multiclub-2021-25-v2.1",
+    "historical-multiclub-2025-26-v1"
+  ],
+  "historical_runtime": {
+    "filename": "historical_runtime_v1.csv.gz",
+    "matches": 1530,
+    "sha256": "345bbf72c702fc4356b2ccfe998b5c3c121adea5fef32d34bb9daa9aae10b89d"
+  },
+  "libraries": {
+    "joblib": "1.5.3",
+    "numpy": "2.3.5",
+    "pandas": "2.2.3",
+    "scikit_learn": "1.8.0"
+  },
+  "quality": {
+    "capacity_missing": 0,
+    "failures": [],
+    "feature_set_version": "structural-prior-pit-v1",
+    "invalid_time_rows": 0,
+    "matches": 1530,
+    "rows": 7650,
+    "rows_by_season_horizon": {
+      "2021/2022": {
+        "T-1": 306,
+        "T-14": 306,
+        "T-3": 306,
+        "T-30": 306,
+        "T-7": 306
+      },
+      "2022/2023": {
+        "T-1": 306,
+        "T-14": 306,
+        "T-3": 306,
+        "T-30": 306,
+        "T-7": 306
+      },
+      "2023/2024": {
+        "T-1": 306,
+        "T-14": 306,
+        "T-3": 306,
+        "T-30": 306,
+        "T-7": 306
+      },
+      "2024/2025": {
+        "T-1": 306,
+        "T-14": 306,
+        "T-3": 306,
+        "T-30": 306,
+        "T-7": 306
+      },
+      "2025/2026": {
+        "T-1": 306,
+        "T-14": 306,
+        "T-3": 306,
+        "T-30": 306,
+        "T-7": 306
+      }
+    },
+    "status": "PASS",
+    "training_eligible_rows": 7198
+  },
+  "training_seasons": [
+    "2021/2022",
+    "2022/2023",
+    "2023/2024",
+    "2024/2025",
+    "2025/2026"
+  ]
+}
