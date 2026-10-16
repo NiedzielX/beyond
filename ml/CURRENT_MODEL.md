@@ -1,313 +1,229 @@
-# Beyond Ticketing — Current Model State
+# Beyond Ticketing — Current Model & Product State
 
-Last verified: **2026-10-15 20:30 UTC**
+Last product-direction update: **2026-10-16**
 
-This file is the canonical short-form source of truth for the current forecasting model and Live Demand Engine state. For cold-start operational instructions, read `AI_BOOTSTRAP.md` first.
+This is the canonical short-form state. For cold-start instructions read `AI_BOOTSTRAP.md`. For sector/pricing product behaviour read `ml/SECTOR_DECISION_PRICING_V1.md`.
 
-## North star
+## Current north star
 
-Build the best leakage-safe **live forecasting system** for final attendance / ticket demand and its evolution toward kickoff.
+Beyond is a **live demand decision system**, not only an attendance model.
 
-The product combines:
+It must answer:
 
-- **Structural Prior** — what this match should do from historical/context evidence;
-- **Live Ticketing Trajectory** — what the current match is actually doing;
-- **Live Correction** — what the divergence implies for the final outcome.
+- where the event is likely to finish;
+- which sector is underperforming / outperforming;
+- what happens if the current trajectory continues;
+- what price action is worth testing;
+- what happened after the club acted.
 
-Early actionability is first-class. T-30/T-14 must not be sacrificed for late-horizon accuracy.
+Primary decision flow:
 
-## Business horizon priority
+`Structural Prior -> Live Trajectory -> Sector Gap -> No-action Projection -> Pricing Scenario -> Recommendation -> Execution -> Outcome`
 
-1. **T-30** — planning / major intervention;
-2. **T-14** — strong intervention / correction;
-3. **T-7** — tactical optimisation;
-4. **T-3** — late adjustment;
-5. **T-1** — final forecast / calibration checkpoint.
+## Structural Prior runtime
 
-## Canonical historical dataset
+All five horizons are executable and frozen:
 
-- seasons: **2021/22–2025/26**;
-- competition: **Ekstraklasa**;
-- matches: **1,530** = 5 × 306;
-- PIT horizons: **T-30 / T-14 / T-7 / T-3 / T-1**;
-- PIT feature snapshots: **7,650**;
-- training-eligible snapshots: **7,198**;
-- verified historical stadium-capacity coverage: **100%**;
-- model selection: **2023/24 only** after training on 2021/22–2022/23;
-- untouched holdouts: **2024/25 + 2025/26**;
-- one verified closed-door zero-attendance match remains historical truth but is excluded from normal demand training;
-- Supabase historical backfill is complete;
-- canonical DB export: `public.export_historical_runtime_v1()`.
-
-Exact input hashes are pinned in `ml/data/STRUCTURAL_PRIOR_RUNTIME_V1_INPUT_MANIFEST.md`.
-
-## Current executable Structural Prior by horizon
-
-All five checkpoints now use a frozen executable current-event runtime.
-
-| Horizon | Model spec | 2023/24 dev MAE | 2024/25 MAE | 2025/26 MAE |
+| Horizon | Model spec | 2023/24 dev MAE | 2024/25 historical MAE | 2025/26 historical MAE |
 |---|---|---:|---:|---:|
-| **T-30** | `structural-prior-runtime-v1-t30-extra-full` | 2,559.7 | **1,889.4** | **1,846.3** |
-| **T-14** | `structural-prior-runtime-v1-t14-hist-base` | 2,340.0 | **1,748.5** | **1,870.4** |
-| **T-7** | `structural-prior-runtime-v1-t7-gbr-base` | **2,476.8168** | **1,777.6927** | **1,802.2756** |
-| **T-3** | `structural-prior-runtime-v1-t3-hist-full` | **2,311.6247** | **1,661.7160** | **1,775.0691** |
-| **T-1** | `structural-prior-runtime-v1-t1-hist-full` | **2,347.9931** | **1,651.7336** | **1,742.8351** |
+| T-30 | `structural-prior-runtime-v1-t30-extra-full` | 2,559.7 | 1,889.4 | 1,846.3 |
+| T-14 | `structural-prior-runtime-v1-t14-hist-base` | 2,340.0 | 1,748.5 | 1,870.4 |
+| T-7 | `structural-prior-runtime-v1-t7-gbr-base` | 2,476.8168 | 1,777.6927 | 1,802.2756 |
+| T-3 | `structural-prior-runtime-v1-t3-hist-full` | 2,311.6247 | 1,661.7160 | 1,775.0691 |
+| T-1 | `structural-prior-runtime-v1-t1-hist-full` | 2,347.9931 | 1,651.7336 | 1,742.8351 |
 
-T-7/T-3/T-1 are executable conversions of pre-specified historical champion lineages. Their exact Structural Prior v1 values were pinned after a one-time leakage-safe verification; there was no post-holdout parameter search.
-
-Detailed benchmark provenance: `ml/results/STRUCTURAL_PRIOR_RUNTIME_V1_2026-10-15.md`.
-
-T-30 remains above the strategic **<1,700 MAE** target, so historical R&D continues in parallel.
-
-## Runtime contracts
-
-### T-30
-
-- estimator: `ExtraTreesRegressor`;
-- 500 trees;
-- `min_samples_leaf=3`;
-- `max_features=0.8`;
-- baseline: `baseline_season`;
-- full PIT + importance interactions;
-- target: verified-capacity occupancy residual;
-- final output clipped to `[0, verified_capacity]`.
-
-### T-14
-
-- estimator: `HistGradientBoostingRegressor` absolute-error;
-- `learning_rate=0.05`;
-- `max_iter=180`;
-- `max_leaf_nodes=15`;
-- `min_samples_leaf=10`;
-- `l2_regularization=1`;
-- baseline: `baseline_r3`;
-- base PIT features;
-- target: verified-capacity occupancy residual.
-
-### T-7
-
-- estimator: `GradientBoostingRegressor(loss="huber")`;
-- `n_estimators=180`;
-- `learning_rate=0.03`;
-- `max_depth=2`;
-- `min_samples_leaf=8`;
-- baseline: `baseline_season`;
-- base PIT features;
-- target: verified-capacity occupancy residual.
-
-### T-3 / T-1
-
-- estimator: `HistGradientBoostingRegressor(loss="absolute_error")`;
-- `learning_rate=0.05`;
-- `max_iter=250`;
-- `max_leaf_nodes=15`;
-- `min_samples_leaf=10`;
-- `l2_regularization=1`;
-- baseline: `baseline_season`;
-- full PIT + importance interactions;
-- target: verified-capacity occupancy residual.
-
-## Frozen artifact bundle
-
-Artifact version:
+Frozen bundle:
 
 `structural-prior-runtime-v1-frozen-2026-10-15-t1`
 
-Freeze commit:
+Normal scheduled inference is load + predict only. It must not fit a model.
 
-`4d6fbae1ab16bfa7b432a012c889c451ab9161ff`
+## Historical validation status
 
-Artifact hashes:
+The canonical five-season dataset remains:
 
-- T-30: `33e32a8b2f0c617c5adde5cdba592151bb25651ef00fc60aa2e5c090adb51da7`
-- T-14: `8d2dbb6ce48ae48fe2e5b7f4340c9e2dfadd38c6e23cc7b123c6f1d2303cdc20`
-- T-7: `97e712245d6539396030e88ea450809f4265bd7538aa90b29e234420231ac927`
-- T-3: `33f83899a86b8ebbc61ff5cfb2a3ccb2f09d708d41730136f136bda31d374f30`
-- T-1: `f67ee9bf6853a01245de5406861b59e491b86a01a8120023868ad54b19f0ebfa`
-- historical runtime: `3c6b35142c6bd20a484f2aa758cd41284fd6f4c6db1353b138f81cf321161569`
+- 2021/22–2025/26;
+- 1,530 Ekstraklasa matches;
+- 7,650 horizon snapshots;
+- verified historical capacity coverage 100%.
 
-Normal scheduled materialization is **load + predict only**. It must never fit a model.
+Important governance update:
 
-## Structural Prior feature semantics
+**2024/25 and 2025/26 are no longer pristine untouched T-30 holdouts for new R&D cycles.**
 
-Historical builder:
+They were opened during controlled T-30 challenger verification on 2026-10-16. They may be used as fixed historical regression evidence, but must not be repeatedly tuned against or relabeled as untouched.
 
-`ml/features/structural_prior_feature_store_v1.py`
+Fresh validation for new learned live/pricing decisions comes primarily from prospective **2026/27** evidence.
 
-Current-event builder:
+T-30 governance:
 
-`ml/demand_engine/current_structural_prior_features.py`
+`ml/T30_RND_GOVERNANCE_V2.md`
 
-Rules:
+## T-30 R&D state
 
-- historical attendance may carry across seasons;
-- current-season attendance is separate from long-run history;
-- sporting/form/table state resets each season;
-- historical benchmark state adds a completed match only after `kickoff + 3h`;
-- current-event sporting reconstruction excludes same-local-date fixtures when exact kickoff is unavailable;
-- target never enters its own state;
-- exact home/opponent and opponent-draw history are PIT-only;
-- verified capacity is mandatory;
-- current-event inputs after the requested cutoff are rejected.
+Current production T-30 remains:
 
-## Structural Prior materialization status
+`structural-prior-runtime-v1-t30-extra-full`
 
-**DONE / LIVE for T-30 / T-14 / T-7 / T-3 / T-1.**
+Recent controlled challengers did not justify promotion:
 
-Production components:
+- v2 ExtraTrees regularization: rejected;
+- v3 raw historical baseline smoothing: research signal only, not robust enough;
+- v4 occupancy-normalized anchor: rejected;
+- v5 cold-start-only anchoring: stopped at pre-validation;
+- v6 explicit baseline occupancy feature: did not pass the rolling-origin gate.
 
-- artifact freeze: `.github/workflows/structural-prior-artifacts.yml`;
-- materializer: `.github/workflows/structural-prior-materializer.yml`;
-- cadence: `5,20,35,50 * * * *`;
-- Edge Function: `structural_prior_materializer_v1`, production version **10** at last verification;
-- due resolver: `public.get_due_early_structural_prior_inputs_v1(...)`;
-- prior resolver: `public.get_structural_prior_v1(...)`;
-- writer: `public.insert_structural_prior_forecast_v1(jsonb)`;
-- registry: `private.structural_prior_model_specs_v1`.
+Merged error audit:
 
-The T-1 resolver has been verified to return `T-1 / missing_prior` with `structural-prior-runtime-v1-t1-hist-full` once the simulated clock passes each event's true T-1 cutoff. T-1 priors are intentionally **not** generated before those cutoffs.
+`ml/results/T30_PREVALIDATION_ERROR_AUDIT_V1_2026-10-16.md`
 
-Current persisted prior counts:
+T-30 improvement continues in parallel and is **not** the product critical path.
 
-| Horizon | Priors |
-|---|---:|
-| T-30 | 1 |
-| T-14 | 5 |
-| T-7 | 1 |
-| T-3 | 5 |
-| T-1 | 0 — first current cutoff not yet due |
+## Live trajectory state
 
-## Live Demand Engine implementation status
+Canonical contract:
 
-### Phase A — Foundation: **DONE**
+`live-trajectory-v1.1`
 
-Canonical live feature contract: `live-trajectory-v1.1`.
+Trajectory gap:
 
-Canonical evidence store: `private.live_trajectory_feature_snapshots_v1`.
+`trajectory-gap-v1`
 
-### Phase B — Shadow Forecasting: **DONE**
+Statuses:
 
-Completed:
+- `UNDERPERFORMING`;
+- `ON_TRACK`;
+- `OUTPERFORMING`;
+- `INSUFFICIENT_SIGNAL`.
 
-1. executable Structural Prior at all five horizons;
-2. expected trajectory / trajectory gap;
-3. append-only Structural Prior shadow revisions;
-4. first-detection / revision audit;
-5. promotion governance / shadow-only enforcement;
-6. automatic materializer -> orchestrator hand-off.
+Confidence:
 
-Latest verified orchestrator run:
+- `NONE`;
+- `LOW`;
+- `MEDIUM`;
+- `HIGH`.
 
-`private.live_forecast_orchestrator_runs_v1.id = 18`
+Public seat-map inventory is a **demand proxy, not confirmed paid sales**.
 
-- active events: **12**;
-- processed end-to-end: **12**;
-- `missing_prior`: **0**;
-- skipped: **0**;
-- event errors: **0**;
-- checkpoint rows materialized: **34**.
+## Phase C — updated interpretation
 
-No learned live correction is active. `live_adjustment = 0` remains enforced.
+### C0 — Provisional live decision layer — ACTIVE DEVELOPMENT
 
-## Trajectory gap contract
+We do not wait for the learned-correction evidence gate to make the product useful.
 
-Implementation: `ml/demand_engine/trajectory_gap.py`.
+C0 may provide:
 
-DB:
+- no-action continuation projections;
+- explicitly provisional / bounded live revision logic;
+- sector diagnosis;
+- reason codes;
+- dashboard decision support.
 
-- `private.trajectory_gap_observations_v1`;
-- `private.trajectory_gap_reference_pool_v1`.
+It must be labeled provisional/scenario-based and must not claim learned uplift.
 
-Contract:
+### C1 — Learned Live Correction — EVIDENCE-GATED
 
-- public seat-map inventory is a **demand proxy, not confirmed paid sales**;
-- Structural Prior P50 is the mandatory final-demand anchor;
-- no 1:1 conversion from attendance P50 to public inventory;
-- expected progress comes from other PIT-valid, training-eligible trajectories at the same canonical horizon;
-- target event and future reference evidence are excluded;
-- minimum reference diversity: **3 events / 2 clubs**;
-- status: `UNDERPERFORMING / ON_TRACK / OUTPERFORMING / INSUFFICIENT_SIGNAL`;
-- confidence: `NONE / LOW / MEDIUM / HIGH`.
+The 20-independent-completed-match rule remains a **promotion gate** for a learned live correction.
 
-## Structural Prior domain guard
+It is not a blocker for C0 or E0.
 
-Current Structural Prior runtimes are validated on **Ekstraklasa**.
+Promotion still requires:
 
-Resolver states:
+- enough independent completed events;
+- positive uplift vs Structural Prior;
+- lower error than incumbent;
+- frozen evidence package;
+- human review;
+- no automatic activation.
 
-- `not_due` before the next checkpoint;
-- `out_of_domain` outside validated competition scope;
-- `missing_prior` when a due current spec has no genuine materialized P50;
-- `invalid_prior` on lineage/PIT mismatch;
-- `ready` only when exact current model/feature/checkpoint lineage exists.
+## Phase E — now split into E0 and E1
 
-No silent fallback to legacy Lech models is allowed.
+### E0 — Sector Decision & Dynamic Pricing MVP — START NOW
 
-## Live evidence maturity
+Canonical spec:
 
-Current stored evidence:
+`ml/SECTOR_DECISION_PRICING_V1.md`
 
-| Horizon | Training-eligible | Total stored |
-|---|---:|---:|
-| T-30 | **0** | 1 |
-| T-14 | **3** | 5 |
-| T-7 | **3** | 9 |
-| T-3 | **4** | 9 |
-| T-1 | **5** | 10 |
+Required outputs:
 
-Therefore **no learned live correction is promoted**. Infrastructure is ready; the binding constraint is prospective evidence.
+1. sector underperformance / outperformance;
+2. sector trajectory gap;
+3. projected final public sell-through / remaining availability if current trajectory continues;
+4. event projected outcome if current trajectory continues;
+5. current sector price where available;
+6. pricing recommendation: `HOLD / INCREASE / DECREASE`;
+7. configurable price scenarios;
+8. projected sell-through / revenue proxy under each scenario;
+9. confidence / assumptions / reason codes;
+10. recommendation decision / execution tracking.
 
-Governance source: `ml/MODEL_PROMOTION_GOVERNANCE_V1.md`.
+No automatic price execution:
 
-Promotion requires:
+`auto_price_change_allowed = false`
 
-- 20 independent completed matches;
-- challenger MAE below incumbent;
-- positive uplift;
-- frozen candidate/evidence package;
-- mandatory human review;
-- no automatic production activation.
+Before learned elasticity exists, pricing scenarios are explicitly assumption-based.
 
-## Current product stack
+### E1 — Learned Pricing / Intervention Engine — EVIDENCE-GATED
 
-`Structural Prior -> live-trajectory-v1.1 -> trajectory-gap-v1 -> P50-only shadow revision -> first-detection/revision audit -> Promotion Governance`
+Later learn:
 
-## Next implementation sequence
+- sector/context-specific price elasticity;
+- intervention uplift;
+- incremental tickets;
+- incremental revenue / contribution;
+- action expected value;
+- uncertainty.
 
-1. **Verify first naturally due T-1 materialization after 2026-10-16 15:30 UTC.** Do not backfill it early.
-2. Continue prospective evidence collection on the five-horizon live stack.
-3. Continue T-30 historical R&D toward **<1,700 MAE** in parallel.
-4. Phase C — train/evaluate live residual correction only when evidence governance permits.
-5. Phase D — calibrated P10/P50/P90.
-6. Phase E — recommendations / intervention learning.
+## Growth relationship
 
-## Evaluation rule
+Existing Growth measurement remains the outcome/ROI framework:
 
-Every historical challenger preserves the chronological contract:
+`Demand signal -> recommendation -> experiment -> execution -> outcome -> incremental tickets/revenue -> ROI`
 
-- selection on 2023/24 only;
-- 2024/25 and 2025/26 untouched holdouts;
-- all features point-in-time;
-- no target outcome in its own state;
-- same completed event/checkpoint for baseline-vs-model comparison.
+Pricing is a first-class intervention family.
 
-Every future live challenger must compare, on identical completed events/checkpoints:
+Relevant docs:
 
-1. Structural Prior error;
-2. Structural Prior + live correction error.
+- `growth/GROWTH_MEASUREMENT_V1.md`;
+- `growth/GROWTH_EXECUTION_DATA_V2.md`.
 
-No model is promoted because it looks intuitive or wins on a tiny prospective sample.
+## Dashboard target
 
-## Key evidence files
+Repository:
 
-- `AI_BOOTSTRAP.md`
-- `ml/results/STRUCTURAL_PRIOR_RUNTIME_V1_2026-10-15.md`
-- `ml/results/LIVE_DEMAND_ENGINE_PHASE_B_2026-10-15.md`
-- `ml/data/STRUCTURAL_PRIOR_RUNTIME_V1_INPUT_MANIFEST.md`
-- `ml/features/structural_prior_feature_store_v1.py`
-- `ml/demand_engine/current_structural_prior_features.py`
-- `ml/demand_engine/trajectory_gap.py`
-- `ml/demand_engine/structural_prior_shadow.py`
-- `ml/demand_engine/sql/phase_b_shadow_contracts_v1.sql`
-- `ml/MODEL_PROMOTION_GOVERNANCE_V1.md`
-- `ml/NORTH_STAR.md`
+`NiedzielX/BeyondTicketingPanel`
+
+Primary page:
+
+`src/pages/EventDetailPage.tsx`
+
+Near-term product block:
+
+**Sector Performance & Pricing**
+
+Minimum table fields:
+
+`Sector | Current price | Availability | Velocity | Expected progress | Actual progress | Gap | No-action final | Status | Price recommendation | Scenario impact | Confidence`
+
+## Immediate implementation sequence
+
+1. keep five-horizon Structural Prior / orchestrator healthy;
+2. implement sector-level trajectory gap/status;
+3. implement sector no-action projection;
+4. define price data contract / ingest;
+5. implement assumption-based dynamic-pricing E0 scenarios;
+6. persist recommendation / club decision / execution history;
+7. expose Sector Performance & Pricing in Event Detail;
+8. collect prospective 2026/27 evidence for learned C1/E1;
+9. continue T-30 R&D in parallel;
+10. calibrate P10/P50/P90 when evidence supports it.
+
+## Non-negotiable product labels
+
+Until learned/validated:
+
+- use `PROVISIONAL`, `SCENARIO`, or `ASSUMPTION-BASED`;
+- never call scenario uplift causal;
+- never equate public inventory with paid sales;
+- never change production prices automatically;
+- persist source, timestamp, assumption/model version and reason codes behind every recommendation.
