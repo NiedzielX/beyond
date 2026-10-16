@@ -1,0 +1,100 @@
+name: C1 Alpha T1 Tournament v2
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - "ml/c1_alpha_t1_tournament_v2.py"
+      - ".github/workflows/c1-alpha-t1-tournament-v2.yml"
+  pull_request:
+    paths:
+      - "ml/c1_alpha_t1_tournament_v2.py"
+      - ".github/workflows/c1-alpha-t1-tournament-v2.yml"
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install pinned runtime
+        run: |
+          python -m pip install --upgrade pip
+          pip install numpy==2.3.5 pandas==2.2.3 scikit-learn==1.8.0 joblib==1.5.3
+
+      - name: Validate code
+        run: python -m py_compile ml/c1_alpha_t1_tournament_v2.py
+
+  tournament:
+    if: github.event_name != 'pull_request'
+    needs: validate
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install pinned runtime
+        run: |
+          python -m pip install --upgrade pip
+          pip install numpy==2.3.5 pandas==2.2.3 scikit-learn==1.8.0 joblib==1.5.3
+
+      - name: Request C1 training OIDC token
+        shell: bash
+        run: |
+          set -euo pipefail
+          response=$(curl -fsS -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
+            "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=beyond-c1-alpha-training")
+          token=$(printf '%s' "$response" | jq -r '.value')
+          test -n "$token"
+          test "$token" != "null"
+          echo "::add-mask::$token"
+          echo "C1_ALPHA_OIDC_TOKEN=$token" >> "$GITHUB_ENV"
+
+      - name: Fetch versioned C1 training payload
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -fsS \
+            -H "Authorization: Bearer $C1_ALPHA_OIDC_TOKEN" \
+            'https://adchzwqboeekhokapxqi.supabase.co/functions/v1/c1_alpha_training_export_v1' \
+            -o /tmp/c1-alpha-training.json
+          jq -e '.ok == true' /tmp/c1-alpha-training.json >/dev/null
+
+      - name: Run T1 final-24h LOEO tournament
+        run: |
+          python -m ml.c1_alpha_t1_tournament_v2 \
+            --input /tmp/c1-alpha-training.json \
+            --artifact-dir ml/artifacts/structural_prior_runtime_v1 \
+            --output /tmp/c1-alpha-t1-tournament-v2.json
+
+      - name: Print leaderboard summary
+        run: |
+          jq '{experiment,event_count,row_count,incumbent,best,goal,top_10:[.leaderboard[:10][]|{candidate,target_mode,live_window_mae,absolute_uplift,relative_improvement,event_improvement_rate,worst_event_degradation,live_first_row_mae,live_latest_row_mae}]}' \
+            /tmp/c1-alpha-t1-tournament-v2.json
+
+      - name: Upload full evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: c1-alpha-t1-tournament-v2-${{ github.run_id }}
+          path: /tmp/c1-alpha-t1-tournament-v2.json
+          if-no-files-found: error
+          retention-days: 30
