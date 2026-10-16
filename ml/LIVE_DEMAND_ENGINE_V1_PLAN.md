@@ -7,7 +7,7 @@ Last updated: **2026-10-16**
 > **Phase A — Foundation: DONE**  
 > **Phase B — Shadow Forecasting: DONE**  
 > **Five-horizon Structural Prior materialization: DONE / LIVE**  
-> **Phase C1-alpha — Live expert reliability R&D: ACTIVE NOW**  
+> **Phase C1-alpha — v8 prospective shadow package: NEXT**  
 > **Phase C1 promotion — EVIDENCE-GATED**  
 > **Phase E0 — Sector Decision & Dynamic Pricing MVP: START NOW**
 
@@ -16,8 +16,8 @@ Last updated: **2026-10-16**
 | A — Foundation | Canonical live trajectory / PIT evidence / registry | **DONE** |
 | B — Shadow Forecasting | Structural Prior, trajectory gap, shadow revisions, audit | **DONE** |
 | C0 — Provisional live decision layer | Bounded / versioned continuation logic, not promoted ML | **START NOW** |
-| C1-alpha | Learn when to trust Structural Prior vs final-24h live expert | **ACTIVE NOW** |
-| C1 — Promoted Learned Live Correction | Production promotion after sufficient evidence | **EVIDENCE-GATED** |
+| C1-alpha | Frozen v2+v8 expert-reliability package, prospective evidence | **ACTIVE NOW** |
+| C1 — Promoted Learned Live Correction | Production promotion after sufficient fresh evidence | **EVIDENCE-GATED** |
 | D — Probabilistic | Calibrated P10/P50/P90 | TODO |
 | E0 — Sector Decision & Dynamic Pricing | Sector diagnosis, no-action projection, pricing scenarios, dashboard | **START NOW** |
 | E1 — Learned Pricing / Intervention | Learned elasticity and intervention uplift | **EVIDENCE-GATED** |
@@ -34,24 +34,25 @@ Canonical state:
 Beyond must continuously answer:
 
 1. where the event is likely to finish;
-2. which sector is underperforming / outperforming;
-3. what happens if the current trajectory continues;
-4. what pricing action should be considered;
-5. what happened after the club acted.
+2. whether the live evidence is strong enough to revise the Structural Prior;
+3. which sector is underperforming / outperforming;
+4. what happens if the current trajectory continues;
+5. what pricing action should be considered;
+6. what happened after the club acted.
 
 Primary decision unit:
 
-`event -> sector -> trajectory -> no-action projection -> pricing scenario -> recommendation`
+`event -> sector -> trajectory -> expert reliability -> no-action projection -> pricing scenario -> recommendation`
 
-## Current forecasting stack
+## Production forecasting stack
 
-`Structural Prior -> live-trajectory-v1.1 -> trajectory-gap-v1 -> live evidence -> decision layer`
+`Structural Prior -> live-trajectory-v1.1 -> trajectory-gap-v1 -> decision layer`
 
 Current promoted learned correction:
 
 `live_adjustment = 0`
 
-No C1-alpha challenger has been frozen for production/shadow correction yet.
+v8 must run in a separate `EXPERIMENTAL_SHADOW` path until promotion criteria are satisfied.
 
 ## Structural Prior
 
@@ -74,120 +75,158 @@ Scheduled inference is load + predict only.
 Current-domain completed evidence:
 
 - 9 Ekstraklasa events;
-- 206 PIT-valid trajectory rows at regularized 6h cadence;
-- 8/9 events with PIT-safe T-24 `hybrid_v6`;
-- 7 distinct current home clubs in the event-level dataset.
-
-Versioned exports:
-
-- full trajectory `c1-alpha-training-export-v1`;
-- full trajectory + hybrid `c1-alpha-training-export-v2`;
-- lightweight event payload `c1-alpha-event-training-export-v1`.
+- 206 PIT-valid full-trajectory rows;
+- 30 regularized PIT-valid final-24h rows;
+- 8/9 events with PIT-safe T-24 `hybrid_v6`.
 
 The 20-independent-match rule is **not a training-start gate**. It remains a later promotion/validation gate.
 
-## C1-alpha completed experiments
+## C1-alpha completed work
 
-| Version | Formulation | MAE | Main conclusion |
+| Version | Formulation | Main result | Status |
 |---|---|---:|---|
-| v1 | all-phase trajectory | ~3,685 incumbent remained best | mixed phase coverage is wrong formulation |
-| v2 | final-24h live expert | **2,929.3** | strongest aggregate challenger, but unstable |
-| v3 | nested threshold/blend gate | 3,054.3 | safer tail risk, too conservative |
-| v4 | stacked/meta gate | 3,106.8 | more stacking did not solve selection |
-| v5 | stacked gate + `hybrid_v6` | 3,073.8 | hybrid helps, still unstable |
-| v6 | one-row T-24 challenger | 3,873.2 LOEO / 3,989.8 LOCO | T-24-only discards useful trajectory signal |
+| v1 | mixed all-phase trajectory | incumbent remained best | reject |
+| v2 | final-24h live expert | **2,929.3 MAE** | retain expert |
+| v3 | nested threshold/blend gate | 3,054.3 | reject |
+| v4 | stacked/meta gate | 3,106.8 | reject |
+| v5 | stacked gate + hybrid | 3,073.8 | reject |
+| v6 | one-row T-24 | 3,873.2 LOEO / 3,989.8 LOCO | reject |
+| v7 | reliability diagnostic | large disagreement + live direction useful | diagnostic complete |
+| v8 | fixed PIT-safe expert switch | **2,713.3 window / 1,998.1 latest-row** | prospective shadow candidate |
 
-Canonical evidence files:
+Evidence:
 
 - `ml/results/C1_ALPHA_MODEL_TOURNAMENT_V1_2026-10-16.md`;
 - `ml/results/C1_ALPHA_T1_TOURNAMENT_V2_2026-10-16.md`;
 - `ml/results/C1_ALPHA_T1_GATED_V3_2026-10-16.md`;
 - `ml/results/C1_ALPHA_T1_STACKED_V4_2026-10-16.md`;
 - `ml/results/C1_ALPHA_T1_HYBRID_GATE_V5_2026-10-16.md`;
-- `ml/results/C1_ALPHA_T24_RESIDUAL_V6_2026-10-16.md`.
+- `ml/results/C1_ALPHA_T24_RESIDUAL_V6_2026-10-16.md`;
+- `ml/results/C1_ALPHA_V2_EXPERT_RELIABILITY_V7_2026-10-16.md`;
+- `ml/results/C1_ALPHA_RELIABILITY_POLICY_V8_2026-10-16.md`.
 
-## Most important C1 finding
+## v2 expert
 
-The best honest aggregate live challenger is the v2 final-24h expert:
+Exact expert:
 
 `ridge_directocc_compact_generic_a10`
 
-- Structural Prior T-1: **3,968.7 MAE**;
-- v2 live expert: **2,929.3 MAE**;
-- relative improvement: **26.19%**;
-- improvement rate: **4/9**;
-- worst-event degradation: **4,748.6**.
+Development LOEO:
 
-The pair has a non-deployable outcome-aware oracle switch around:
+- Prior: **3,968.7 MAE**;
+- v2 Live: **2,929.3 MAE**;
+- oracle Prior-or-Live: **1,867.9 MAE**.
 
-**1,867.9 MAE**
+Do not use v2 unconditionally in production.
 
-That is the key opportunity. The next problem is **expert reliability / expert selection**, not another generic learner tournament.
+## v8 reliability policy
 
-Do not present the oracle as deployable.
+Policy ID:
 
-## C1-alpha v7 — Expert Reliability Diagnostic — NEXT
+`c1-alpha-reliability-policy-v8-fixed-10pp-positive-slope-20pp-single`
 
-Build one diagnostic row per completed event for the existing Structural Prior + v2 live pair.
+At each PIT point:
 
-### Required PIT-safe features
+### One live observation
 
-Structural Prior context:
+Use LIVE only if:
 
-- P50;
-- expected occupancy;
-- round number;
-- current-season completed home evidence available before T-1.
+`abs(prior occupancy - live occupancy) >= 0.20`
 
-Final-24h live expert behaviour:
+### Two or more live observations
 
-- earliest v2 estimate;
-- latest v2 estimate;
-- prior-vs-live disagreement at earliest/latest observation;
-- prediction range;
-- standard deviation;
-- slope / direction across the final 24h;
-- number of live observations;
-- observation-window duration.
+Use LIVE only if:
 
-Evidence quality:
+- absolute disagreement >= `0.10`; and
+- live prediction slope computed from observations available up to the current row is `> 0`.
 
-- signal readiness;
-- feature quality;
-- matched-sector vs raw-only regime;
-- release activity;
-- sector-coverage change;
-- data-gap flags where available.
+Otherwise use PRIOR.
 
-Evaluation-only labels:
+No future row is used in an earlier decision.
 
-- actual attendance;
-- Structural Prior error;
-- v2 error;
-- oracle winner (`PRIOR` / `LIVE`).
+Development replay:
 
-These evaluation labels must never enter the PIT feature matrix.
+- Prior **3,968.7**;
+- v2 Live **2,929.3**;
+- v8 **2,713.3** window MAE;
+- v8 **1,998.1** latest-row MAE;
+- worst event degradation only **203.3**;
+- oracle **1,867.9**.
 
-### Purpose
+Governance:
 
-Answer:
+- thresholds were chosen after v7 analysis of the same 9 events;
+- therefore replay is development evidence only;
+- do not retune 10 pp / 20 pp / positive-slope rule on these 9 events;
+- future 2026/27 outcomes provide the valid prospective test.
 
-> What observable reliability pattern separates the events where Structural Prior is already excellent from the events where the final-24h live expert repairs a large miss?
+## C1-alpha next implementation — frozen prospective shadow package
 
-Do not start v7 with another broad model/hyperparameter sweep.
+### A. Freeze the v2 live expert
 
-After diagnosis, define one small predeclared reliability policy and validate it by whole-event holdout.
+Fit exact v2 winner on all currently completed in-domain training events.
+
+Freeze:
+
+- estimator/preprocessor artifact;
+- exact feature list and ordering;
+- package/model ID;
+- training event IDs;
+- training payload/hash;
+- dependency/runtime versions;
+- generated-at timestamp;
+- Structural Prior bundle dependency;
+- v8 policy ID and thresholds.
+
+### B. Shadow inference must not fit
+
+Scheduled runtime:
+
+`load frozen v2 artifact -> predict live P50 -> calculate PIT disagreement/slope -> apply frozen v8 policy -> persist EXPERIMENTAL_SHADOW evidence`
+
+Never call `.fit()` in scheduled inference.
+
+### C. Persist pre-outcome evidence
+
+For every eligible prospective row persist at minimum:
+
+- `ticket_event_id`;
+- `as_of_at`;
+- `structural_prior_id/model_version`;
+- `structural_prior_p50`;
+- `v2_live_p50`;
+- `abs_disagreement_occupancy`;
+- `live_observation_count_to_date`;
+- `live_slope_occupancy_per_hour_to_date`;
+- `selected_expert`;
+- `policy_prediction`;
+- `reason_code`;
+- `shadow_package_version`;
+- `created_at`.
+
+Rows must be written before outcome is known and never rewritten after the fact except explicit correction/audit flow.
+
+### D. Post-outcome scoring
+
+After attendance is known, score the frozen pre-outcome rows against:
+
+- Structural Prior;
+- v2 Live;
+- v8 selected policy;
+- latest-row and event-window MAE;
+- event-level degradation/tail risk.
+
+Do not regenerate historical decisions using new outcomes and call them prospective.
 
 ## C0 — Provisional decision layer
 
-C0 can continue in parallel with C1 R&D.
+C0 can continue in parallel with C1 shadow validation.
 
 Allowed:
 
 - continuation/no-action event projection;
-- explicitly provisional bounded live revision logic;
 - sector diagnosis;
-- reason codes;
+- explicit provisional reason codes;
 - dashboard decision support.
 
 Required labels:
@@ -198,12 +237,12 @@ Required labels:
 
 ## C1 promotion
 
-Promotion still requires:
+Promotion requires:
 
-- enough independent completed events;
+- enough genuinely prospective independent completed events;
 - positive uplift vs Structural Prior;
 - acceptable tail risk;
-- frozen model/data/feature package;
+- frozen model/data/feature/package contract;
 - human review;
 - no automatic activation.
 
@@ -220,7 +259,7 @@ Do not fabricate confidence intervals before calibration.
 
 ## E0 — Sector Decision & Dynamic Pricing MVP
 
-This remains part of the near-term product and does not wait for C1 promotion.
+This remains a near-term product priority and does not wait for C1 promotion.
 
 ### Sector trajectory
 
@@ -253,7 +292,7 @@ Per sector / price band evaluate configurable scenarios such as:
 - `+5%`;
 - `+10%`.
 
-Before learned elasticity exists, label the output as assumption-based scenario analysis.
+Before learned elasticity exists, label output as assumption-based scenario analysis.
 
 No automatic production price changes:
 
@@ -269,21 +308,23 @@ Persist recommendation, rationale, assumption/model version, club decision, exec
 - all rows from one event stay together in a validation fold;
 - snapshot counts are evidence density, not independent match count;
 - actual attendance and oracle winner are evaluation labels only;
-- do not tune a selector to its outer held-out event;
+- do not retune v8 on the original 9 events;
+- do not label the v8 development replay as prospective validation;
+- scheduled v2+v8 inference must load frozen artifacts, never fit;
 - 2024/25 and 2025/26 are not pristine untouched T-30 holdouts for future T-30 R&D.
 
 ## Immediate implementation sequence
 
-1. build and persist **v7 expert reliability diagnostic**;
-2. define one small predeclared reliability policy from v7 PIT semantics;
-3. validate that policy with whole-event holdout;
-4. keep Structural Prior/orchestrator healthy and `live_adjustment=0`;
-5. continue sector gap/status and no-action projection;
-6. continue price-data ingest and E0 pricing scenarios;
-7. persist recommendation/decision/execution history;
-8. keep collecting prospective 2026/27 evidence;
+1. freeze/version exact **v2+v8 prospective shadow package**;
+2. add load+predict-only shadow inference;
+3. persist pre-outcome v8 evidence and reason codes;
+4. keep production Structural Prior/orchestrator unchanged with `live_adjustment=0`;
+5. score each genuinely new completed event against the frozen package;
+6. continue sector gap/status and no-action projection;
+7. continue price-data ingest and E0 pricing scenarios;
+8. persist recommendation/decision/execution history;
 9. continue T-30 R&D in parallel.
 
 ## Product target
 
-> **Beyond should tell the club where the event is going, whether the live evidence is strong enough to revise the Structural Prior, which sectors are falling behind, what is likely to remain unsold if nothing changes, and what price action is worth testing — while learning from every real decision and outcome.**
+> **Beyond should tell the club where the event is going, whether the live trajectory is strong enough to override the Structural Prior, which sectors are falling behind, what is likely to remain unsold if nothing changes, and what price action is worth testing — while learning prospectively from every frozen pre-outcome decision.**
