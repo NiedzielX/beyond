@@ -9,225 +9,189 @@ This file exists so a new AI/chat session continues the actual Beyond plan inste
 Before doing Beyond forecasting, ML, dashboard, Growth or recommendation work, read in this order:
 
 1. `ml/CURRENT_MODEL.md` — canonical current model/product state;
-2. `ml/LIVE_DEMAND_ENGINE_V1_PLAN.md` — implementation roadmap;
-3. `ml/C1_MODEL_TOURNAMENT_V1.md` — C1-alpha validation rules;
-4. latest `ml/results/C1_ALPHA_*.md` evidence — current experiment state;
-5. `ml/SECTOR_DECISION_PRICING_V1.md` — sector/no-action/pricing contract;
-6. `ml/NORTH_STAR.md`;
-7. `ml/LIVE_FORECAST_ORCHESTRATOR_V1.md`;
-8. `ml/STRUCTURAL_PRIOR_MATERIALIZER_V1.md`;
-9. `ml/MODEL_PROMOTION_GOVERNANCE_V1.md`;
-10. `growth/GROWTH_EXECUTION_DATA_V2.md`.
+2. `ml/C1_V8_PROSPECTIVE_SHADOW_V1.md` — current C1 prospective runtime/governance;
+3. `ml/LIVE_DEMAND_ENGINE_V1_PLAN.md` — implementation roadmap;
+4. `ml/C1_MODEL_TOURNAMENT_V1.md` — C1-alpha validation rules;
+5. latest `ml/results/C1_ALPHA_*.md` evidence;
+6. `ml/SECTOR_DECISION_PRICING_V1.md`;
+7. `ml/NORTH_STAR.md`;
+8. `ml/LIVE_FORECAST_ORCHESTRATOR_V1.md`;
+9. `ml/STRUCTURAL_PRIOR_MATERIALIZER_V1.md`;
+10. `ml/MODEL_PROMOTION_GOVERNANCE_V1.md`.
 
-## Critical product direction — DO NOT LOSE THIS
+## Critical product direction
 
-Beyond is **not** primarily a generic campaign recommendation tool.
+Beyond is a **live demand decision system**, not primarily a campaign tool or a single attendance model.
 
-Primary output:
+Primary flow:
 
-`event -> sector -> trajectory -> expert reliability -> no-action projection -> pricing scenario -> recommendation`
-
-For an active event the product should tell the club where the event is going, whether the live evidence is strong enough to revise the Structural Prior, which sector is behind/ahead, what happens if the trajectory continues, what price action is worth testing, and what happened after the club acted.
+`Structural Prior -> Live Trajectory -> Expert Reliability -> Sector Gap -> No-action Projection -> Pricing Scenario -> Recommendation -> Execution -> Outcome`
 
 Public seat-map inventory is a **demand proxy, not confirmed paid sales**.
 
-## Structural Prior state
-
-All five current-event horizons are executable and frozen:
-
-- T-30 `structural-prior-runtime-v1-t30-extra-full`;
-- T-14 `structural-prior-runtime-v1-t14-hist-base`;
-- T-7 `structural-prior-runtime-v1-t7-gbr-base`;
-- T-3 `structural-prior-runtime-v1-t3-hist-full`;
-- T-1 `structural-prior-runtime-v1-t1-hist-full`.
-
-Frozen bundle:
-
-`structural-prior-runtime-v1-frozen-2026-10-15-t1`
-
-Scheduled Structural Prior inference is load + predict only.
-
-## C1-alpha evidence base
-
-The 20-independent-match rule is a **later promotion gate**, not a training-start gate.
-
-Current-domain completed evidence:
-
-- 9 Ekstraklasa events;
-- 206 PIT-valid full-trajectory rows;
-- 30 regularized PIT-valid final-24h rows;
-- 8/9 events with PIT-safe T-24 `hybrid_v6`.
-
-Never treat multiple snapshots from one event as independent matches.
-
-## C1-alpha result ladder — canonical state
-
-### v1 — mixed all-phase tournament
-
-`ml/results/C1_ALPHA_MODEL_TOURNAMENT_V1_2026-10-16.md`
-
-Result: no improvement. Mixed T-14/T-7/T-3/T-1 phase coverage is the wrong first formulation.
-
-### v2 — final-24h live expert
-
-`ml/results/C1_ALPHA_T1_TOURNAMENT_V2_2026-10-16.md`
-
-Winner:
-
-`ridge_directocc_compact_generic_a10`
-
-- Structural Prior: **3,968.7 MAE**;
-- live expert: **2,929.3 MAE**;
-- improvement: **26.19%**;
-- complementary but unstable.
-
-### v3–v5 — gating / stacking attempts
-
-- v3: **3,054.3 MAE**;
-- v4: **3,106.8 MAE**;
-- v5: **3,073.8 MAE**.
-
-Conclusion: more stacking did not solve expert selection.
-
-### v6 — T-24-only challenger
-
-`ml/results/C1_ALPHA_T24_RESIDUAL_V6_2026-10-16.md`
-
-- LOEO **3,873.2 MAE**;
-- LOCO **3,989.8 MAE**.
-
-Reject T-24-only as the primary direction.
-
-### v7 — expert reliability diagnostic
-
-`ml/results/C1_ALPHA_V2_EXPERT_RELIABILITY_V7_2026-10-16.md`
-
-Exact v2 reproduction:
-
-- Prior **3,968.7**;
-- Live **2,929.3**;
-- oracle **1,867.9**.
-
-Useful PIT pattern:
-
-- large prior/live disagreement is associated with LIVE wins;
-- positive live-expert trajectory direction helps distinguish real disagreement from a decaying live estimate;
-- generic `signal_ready`, feature quality and raw-vs-matched labels are not safe standalone gates.
-
-### v8 — fixed PIT-safe reliability policy — **current prospective shadow candidate**
-
-`ml/results/C1_ALPHA_RELIABILITY_POLICY_V8_2026-10-16.md`
-
-Policy ID:
-
-`c1-alpha-reliability-policy-v8-fixed-10pp-positive-slope-20pp-single`
-
-Rule:
-
-- 1 observation: LIVE only if disagreement >= **20 pp capacity**;
-- >=2 observations: LIVE only if disagreement >= **10 pp** and live slope to date > 0;
-- otherwise PRIOR.
-
-No threshold grid or selector model was fitted in v8.
-
-Development replay:
-
-- Prior: **3,968.7 MAE**;
-- v2 Live: **2,929.3 MAE**;
-- **v8 window MAE: 2,713.3**;
-- **v8 latest-row MAE: 1,998.1**;
-- worst event degradation vs Prior: **203.3**;
-- oracle: **1,867.9**.
-
-This is the strongest current decision policy result, but it is **NOT fresh validation** because the v8 thresholds were designed after inspecting v7 labels on these same 9 events.
-
-Do not retune v8 on the original 9 events.
-
 ## Production state
+
+All Structural Prior horizons T-30/T-14/T-7/T-3/T-1 are executable and frozen.
 
 Production remains:
 
 `live_adjustment = 0`
 
-Do **not** write v8 decisions into production forecast values yet.
+Do not write C1 v8 into production forecast values without an explicit promotion decision.
 
-v8 status:
+## C1-alpha development state
+
+Development evidence:
+
+- 9 completed in-domain Ekstraklasa events;
+- 206 PIT-valid full-trajectory rows;
+- 30 regularized PIT-valid final-24h rows.
+
+Key results:
+
+- v2 final-24h live expert: **2,929.3 MAE** vs Prior **3,968.7**;
+- non-deployable Prior/Live oracle: **1,867.9 MAE**;
+- v3-v5 gating/stacking stayed around 3.05k–3.11k;
+- v6 T-24-only was rejected;
+- v7 showed that large prior/live disagreement plus live-trajectory direction is the useful reliability pattern;
+- v8 fixed PIT-safe policy produced **2,713.3 window MAE** and **1,998.1 latest-row MAE** in development replay.
+
+v8 is not independently validated because its fixed thresholds were designed after v7 on those same 9 events.
+
+## Frozen C1 v8 package — already done
+
+Package:
+
+`c1-shadow-v8-frozen-2026-10-16-n9`
+
+Status:
 
 `EXPERIMENTAL_SHADOW`
 
-## Immediate C1-alpha next action — prospective shadow package
+Frozen v2 expert:
 
-Freeze one reproducible v2+v8 package for future events:
+`c1-v2-live-ridge-directocc-compact-generic-a10`
 
-1. fit the exact v2 live expert on all currently completed in-domain training events;
-2. freeze artifact + training event IDs + training/export hashes + feature contract + package version;
-3. freeze the v8 thresholds exactly at **10 pp / positive slope / 20 pp single-observation**;
-4. scheduled shadow inference must load the artifact and predict only — never fit;
-5. persist pre-outcome shadow decisions with:
-   - event ID;
-   - timestamp;
-   - Structural Prior;
-   - v2 live estimate;
-   - disagreement;
-   - observation count;
-   - live slope to date;
-   - selected expert;
-   - reason code;
-   - model/package version;
-6. score those frozen decisions only after outcomes arrive;
-7. use future 2026/27 completed events as genuinely prospective validation.
+Frozen policy:
+
+`c1-alpha-reliability-policy-v8-fixed-10pp-positive-slope-20pp-single`
+
+Policy:
+
+- 1 observation: LIVE only if prior/live disagreement >= **20 pp capacity**;
+- >=2 observations: LIVE only if disagreement >= **10 pp** and live slope to date > 0;
+- otherwise PRIOR.
+
+Artifact SHA256:
+
+`df31af5effcda2d2f1e58265c7e954cc04edf0e90b48501403eb4e4afd94edf2`
+
+Training-contract SHA256:
+
+`0a3edde223d8b6e64652f3fc8f79228998ac0d93a90fdaa9fc48311f98dee304`
+
+Artifact commit:
+
+`9bcf8fe83f85ee7e47a555e975352b8438ea4e3d`
+
+Frozen training events:
+
+`[1, 3, 4, 8, 9, 12, 13, 14, 17]`
+
+Do not retune or automatically retrain this package during prospective validation.
+
+## Prospective shadow pipeline — already live
+
+Operational spec:
+
+`ml/C1_V8_PROSPECTIVE_SHADOW_V1.md`
+
+Scheduler:
+
+`.github/workflows/c1-shadow-v8-inference.yml`
+
+Cadence:
+
+`9,24,39,54 * * * *`
+
+The runtime:
+
+- authenticates through main-only GitHub OIDC;
+- accepts only naturally due, PIT-valid `T-1` Structural Prior candidates inside final 24h;
+- reconstructs at most four 6h representatives from snapshots already available at run time;
+- loads the frozen v2 artifact and never fits;
+- applies frozen v8;
+- writes append-only pre-outcome decisions;
+- scores only decisions that already existed before an outcome was known.
+
+Pre-outcome evidence:
+
+`private.c1_shadow_v8_predictions_v1`
+
+Post-outcome scores:
+
+`private.c1_shadow_v8_event_scores_v1`
+
+The scorer never reconstructs a missed historical decision after the result arrives.
+
+## Current prospective evidence
+
+Initial live state on 2026-10-16:
+
+- prospective prediction rows: **0**;
+- prospective scored events: **0**;
+- inference + persistence + scorer main workflow: **green**;
+- zero evidence is intentional because the next matches were still T-3 during deployment.
+
+No original development events were backfilled.
+
+The next meaningful C1 checkpoint is the first non-zero pre-outcome decision created after a genuine T-1 prior becomes naturally due. The next one after that is its score once actual attendance is confirmed.
+
+## C1 promotion governance
+
+The 20-independent-completed-match rule is a later promotion gate, not a training-start gate.
+
+During prospective validation do not:
+
+- change 10 pp / 20 pp / positive-slope thresholds;
+- automatically retrain the v2 expert;
+- add new completed events into the frozen package silently;
+- backfill missed decisions after outcomes;
+- use future timestamps to force T-1;
+- overwrite prior prospective evidence;
+- call the original v8 replay fresh validation.
+
+Any retrain requires an explicit new package version, artifact, event set and governance decision.
 
 ## Dynamic pricing / E0 — continue in parallel
 
-Pricing is a first-class intervention.
+Pricing remains a first-class intervention.
 
-MVP sector output:
+MVP output should include:
 
 - `HOLD / INCREASE / DECREASE`;
 - proposed price/scenario;
-- projected sell-through/availability impact;
+- projected availability/sell-through impact;
 - projected revenue proxy;
 - confidence;
 - reason codes;
 - assumption/model version.
 
-Before learned elasticity exists, label the output as assumption-based scenario analysis.
+Before learned elasticity exists, label this as assumption-based scenario analysis.
 
 Never change a club's production price automatically:
 
 `auto_price_change_allowed = false`
 
-## Historical governance
-
-Canonical history:
-
-- Ekstraklasa 2021/22–2025/26;
-- 1,530 matches;
-- 7,650 horizon rows;
-- verified capacity coverage 100%.
-
-2024/25 and 2025/26 are not pristine untouched T-30 holdouts for new R&D.
-
-## Critical rules
-
-- do not retrain/replay just to recover context;
-- do not present oracle metrics as deployable;
-- do not call public inventory paid sales;
-- do not retune v8 thresholds on the original 9 events;
-- do not report v8's 1,998 latest-row MAE as independently validated;
-- scheduled inference loads frozen artifacts, never fits;
-- keep `live_adjustment=0` until prospective evidence and promotion review justify otherwise.
-
 ## Immediate work order
 
-1. freeze/version the **v2+v8 prospective shadow package**;
-2. implement load+predict shadow inference and pre-outcome evidence persistence;
-3. keep Structural Prior/orchestrator production output unchanged;
-4. score each genuinely new completed event against frozen v8;
-5. continue sector trajectory gap/status and no-action projection;
-6. continue price-data and E0 pricing scenarios;
-7. continue T-30 R&D in parallel.
+1. keep the frozen v2+v8 package unchanged and collect the first genuine T-1 prospective evidence;
+2. expose read-only shadow status/evidence for operations/dashboard;
+3. score each prospective event only from already-persisted decisions;
+4. keep production Structural Prior/orchestrator unchanged with `live_adjustment=0`;
+5. continue sector trajectory/no-action and E0 pricing work in parallel;
+6. continue T-30 R&D separately.
 
 ## One-line cold-start instruction
 
-> **The current C1-alpha candidate is v8: a frozen PIT-safe expert switch around the v2 live expert. Development replay is 2,713 MAE and 1,998 latest-row MAE, but it is not fresh validation. Do not tune it again — freeze a shadow-only v2+v8 package, persist decisions before outcomes, and validate prospectively while production stays `live_adjustment=0`.**
+> **Do not start another C1 tournament and do not retrain v8. The v2+v8 package is already frozen and running as `EXPERIMENTAL_SHADOW`; prediction and post-outcome scoring paths are live, current prospective evidence count is 0, and the next valid action is to collect the first naturally due T-1 decision while production remains `live_adjustment=0`.**
