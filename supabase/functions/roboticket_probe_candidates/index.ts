@@ -33,6 +33,26 @@ async function roboJson(base:string,pageUrl:string,cookie:string,path:string){
   return {status:res.status,location:res.headers.get('location'),json,length:text.length,excerpt:json?null:text.slice(0,180)};
 }
 
+function primitiveProjection(value:any){
+  if(!value || typeof value!=='object') return value;
+  const out:Record<string,unknown>={};
+  for(const [key,item] of Object.entries(value)){
+    if(item===null || ['string','number','boolean'].includes(typeof item)) out[key]=item;
+  }
+  return out;
+}
+
+function priceAreaDiagnostic(infoSectors:any[]){
+  const areas=infoSectors.flatMap((sector:any)=>Array.isArray(sector?.freeSeatsByPriceArea)?sector.freeSeatsByPriceArea:[]);
+  const keys=[...new Set(areas.flatMap((area:any)=>area&&typeof area==='object'?Object.keys(area):[]))].sort();
+  const primitiveSamples=areas.slice(0,5).map(primitiveProjection);
+  return {
+    areaCount:areas.length,
+    objectKeys:keys,
+    primitiveSamples
+  };
+}
+
 async function probe(c:{slug:string;base:string;id:string;label:string}){
   const pageUrl=`${c.base}/Stadium/Index?eventId=${c.id}`;
   const page=await fetch(pageUrl,{headers:{'User-Agent':'Mozilla/5.0','Accept-Language':'pl-PL,pl;q=0.9,en;q=0.8'},redirect:'follow'});
@@ -55,6 +75,7 @@ async function probe(c:{slug:string;base:string;id:string;label:string}){
     sectorShapeCount:Array.isArray(sectors.json?.sectors)?sectors.json.sectors.length:null,
     availableTotal,
     sourceTimestamp:info.json?.timestamp||null,
+    priceAreaDiagnostic:priceAreaDiagnostic(infoSectors),
     redirects:{info:info.location,sectors:sectors.location,seats:seats.location},
     debug:{infoLength:info.length,sectorsLength:sectors.length,seatsLength:seats.length,infoExcerpt:info.excerpt,sectorsExcerpt:sectors.excerpt}
   };
