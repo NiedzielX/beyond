@@ -10,13 +10,14 @@ Before doing any Beyond forecasting, ML, dashboard, Growth or recommendation wor
 
 1. `ml/CURRENT_MODEL.md` — canonical current model/product state;
 2. `ml/LIVE_DEMAND_ENGINE_V1_PLAN.md` — implementation roadmap;
-3. `ml/SECTOR_DECISION_PRICING_V1.md` — canonical sector + no-action + dynamic-pricing product contract;
-4. `ml/NORTH_STAR.md` — product/ML objective;
-5. `ml/LIVE_FORECAST_ORCHESTRATOR_V1.md` — orchestration state;
-6. `ml/STRUCTURAL_PRIOR_MATERIALIZER_V1.md` — frozen Structural Prior runtime;
-7. `ml/MODEL_PROMOTION_GOVERNANCE_V1.md` — learned-model promotion gates;
-8. `ml/T30_RND_GOVERNANCE_V2.md` — T-30 R&D validation rules;
-9. `growth/GROWTH_EXECUTION_DATA_V2.md` — intervention execution/outcome measurement.
+3. `ml/C1_MODEL_TOURNAMENT_V1.md` — canonical C1-alpha small-N/full-trajectory training plan;
+4. `ml/SECTOR_DECISION_PRICING_V1.md` — canonical sector + no-action + dynamic-pricing product contract;
+5. `ml/NORTH_STAR.md` — product/ML objective;
+6. `ml/LIVE_FORECAST_ORCHESTRATOR_V1.md` — orchestration state;
+7. `ml/STRUCTURAL_PRIOR_MATERIALIZER_V1.md` — frozen Structural Prior runtime;
+8. `ml/MODEL_PROMOTION_GOVERNANCE_V1.md` — learned-model promotion gates;
+9. `ml/T30_RND_GOVERNANCE_V2.md` — T-30 R&D validation rules;
+10. `growth/GROWTH_EXECUTION_DATA_V2.md` — intervention execution/outcome measurement.
 
 ## Critical product direction — DO NOT LOSE THIS
 
@@ -39,6 +40,34 @@ Generic CRM / paid-media / partner activation can be secondary suggestions. They
 Canonical spec:
 
 `ml/SECTOR_DECISION_PRICING_V1.md`
+
+## C1-alpha — train now on existing completed events
+
+Do **not** tell the user that Beyond must wait for 20 completed matches before it can train a live-correction model.
+
+Canonical plan:
+
+`ml/C1_MODEL_TOURNAMENT_V1.md`
+
+Current decision:
+
+- use the completed Ekstraklasa events already present in Supabase;
+- use their full timestamped pre-kickoff trajectories, regularized to avoid one event dominating by snapshot count;
+- reconstruct the current frozen Structural Prior at historical checkpoints;
+- train residual correction rather than predicting attendance from zero;
+- validate only with whole-event holdouts (`Leave-One-Event-Out`);
+- compare Ridge / ElasticNet / Huber / HistGBR / constrained trees / shallow XGBoost / LightGBM and simple baselines;
+- choose the lowest stable MAE, not a preferred model family;
+- use all PIT-valid observations but never treat snapshots from one match as independent matches.
+
+Current verified training export on 2026-10-16:
+
+- **9 completed Ekstraklasa events** compatible with the current Structural Prior domain;
+- **206 PIT-valid trajectory rows** at a regularized 6h cadence;
+- one additional completed Lech Europa League event is kept outside the primary leaderboard as a possible transfer test;
+- raw database contains substantially more snapshots/sector rows, which may be used in later tournament iterations.
+
+The 20-independent-match rule remains a **later promotion/validation gate**, not a training-start gate.
 
 ## Dynamic pricing — product rule
 
@@ -90,14 +119,13 @@ The existing 20-independent-completed-match rule is a **promotion gate for C1 le
 
 It does not block:
 
+- C1-alpha training/tournament on existing completed events;
 - C0 provisional/scenario decision support;
 - sector underperformance detection;
 - no-action continuation projections;
 - E0 pricing scenarios;
 - recommendation display;
 - recommendation / execution logging.
-
-Do not tell the user the product must wait for 20 matches before it can work.
 
 ## Phase E — starts now
 
@@ -171,7 +199,7 @@ Important governance update:
 
 They were exposed during controlled T-30 challenger verification on 2026-10-16. Do not relabel them as untouched or repeatedly tune against them.
 
-Use rolling-origin pre-validation and prospective 2026/27 as the critical fresh evidence source.
+Use rolling-origin pre-validation and prospective 2026/27 as the critical fresh evidence source for T-30 R&D. This does not prevent grouped C1-alpha training on the already completed live-ticketing events.
 
 ## T-30 R&D state
 
@@ -179,7 +207,7 @@ Production remains:
 
 `structural-prior-runtime-v1-t30-extra-full`
 
-Controlled v2-v6 challenger work did not justify promotion. T-30 R&D continues in parallel, but it is **not the product critical path**.
+Controlled v2-v6 challenger work did not justify promotion. T-30 R&D continues in parallel, but it is **not** the product critical path.
 
 Merged diagnostic evidence:
 
@@ -216,17 +244,17 @@ Otherwise read persisted state and query only dynamic rows.
 
 When a new session starts, continue here:
 
-1. keep Structural Prior / orchestrator healthy;
-2. implement sector-level trajectory gap/status;
-3. implement sector no-action projection;
-4. define price data contract / ingest;
-5. implement E0 assumption-based dynamic-pricing scenarios;
-6. persist recommendation / club decision / execution history;
-7. show Sector Performance & Pricing in Event Detail;
-8. collect prospective 2026/27 evidence for learned C1/E1;
+1. finish/run `C1 Model Tournament v1` and record the LOEO leaderboard against the current Structural Prior;
+2. keep Structural Prior / orchestrator healthy;
+3. implement sector-level trajectory gap/status;
+4. implement sector no-action projection;
+5. define price data contract / ingest;
+6. implement E0 assumption-based dynamic-pricing scenarios;
+7. persist recommendation / club decision / execution history;
+8. show Sector Performance & Pricing in Event Detail;
 9. continue T-30 R&D in parallel;
 10. probabilistic calibration later when evidence supports it.
 
 ## One-line cold-start instruction
 
-> **Do not wait for 20 matches to make Beyond useful: show sector underperformance, project the no-action outcome, recommend a pricing scenario with explicit assumptions, log what the club does, and use prospective outcomes to learn the next generation.**
+> **Do not wait for 20 matches: train C1-alpha now on the existing full trajectories with whole-event validation; simultaneously show sector underperformance, project the no-action outcome, recommend pricing scenarios with explicit assumptions, and learn from every real decision.**
