@@ -60,10 +60,12 @@ Deno.serve(async (req: Request) => {
 
   try {
     const url = new URL(req.url);
-    const requestedVersion = url.searchParams.get("version") === "v2" ? "v2" : "v1";
-    const rpcName = requestedVersion === "v2"
-      ? "export_c1_alpha_training_payload_v2"
-      : "export_c1_alpha_training_payload_v1";
+    const requestedVersion = url.searchParams.get("version") || "v1";
+    const rpcName = requestedVersion === "event-v1"
+      ? "export_c1_alpha_event_training_payload_v1"
+      : requestedVersion === "v2"
+        ? "export_c1_alpha_training_payload_v2"
+        : "export_c1_alpha_training_payload_v1";
 
     const raw = await db(`rpc/${rpcName}`, {
       method: "POST",
@@ -74,16 +76,23 @@ Deno.serve(async (req: Request) => {
       : raw;
 
     const eventCount = Number(payload?.eventCount ?? 0);
-    const liveRowCount = Number(payload?.liveRowCount ?? 0);
-    if (eventCount < 2 || liveRowCount < eventCount) {
-      throw new Error(`invalid C1 training payload events=${eventCount} liveRows=${liveRowCount}`);
+    if (eventCount < 2) {
+      throw new Error(`invalid C1 training payload events=${eventCount}`);
     }
-    if (requestedVersion === "v2") {
+
+    if (requestedVersion !== "event-v1") {
+      const liveRowCount = Number(payload?.liveRowCount ?? 0);
+      if (liveRowCount < eventCount) {
+        throw new Error(`invalid C1 training payload events=${eventCount} liveRows=${liveRowCount}`);
+      }
+    }
+
+    if (requestedVersion === "v2" || requestedVersion === "event-v1") {
       const hybridRows = Array.isArray(payload?.ticketingChallengerRows)
         ? payload.ticketingChallengerRows.length
         : 0;
       if (hybridRows < 1) {
-        throw new Error("C1 v2 payload missing ticketing challenger rows");
+        throw new Error("C1 payload missing ticketing challenger rows");
       }
     }
 
@@ -96,7 +105,7 @@ Deno.serve(async (req: Request) => {
   } catch (error) {
     return json({
       ok: false,
-      version: "c1-alpha-training-export-gateway-v2",
+      version: "c1-alpha-training-export-gateway-v3",
       error: String(error),
       repository: claims.repository,
       sha: claims.sha || null,
