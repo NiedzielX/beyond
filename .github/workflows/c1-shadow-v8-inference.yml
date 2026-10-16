@@ -1,0 +1,122 @@
+name: C1 v8 Prospective Shadow Inference
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "9,24,39,54 * * * *"
+  push:
+    branches:
+      - main
+    paths:
+      - "ml/demand_engine/c1_shadow_runtime_v8.py"
+      - "ml/demand_engine/run_c1_shadow_v8.py"
+      - "supabase/sql/c1_shadow_v8_prospective_evidence_v1.sql"
+      - "supabase/functions/c1_shadow_v8_gateway_v1/**"
+      - ".github/workflows/c1-shadow-v8-inference.yml"
+  pull_request:
+    paths:
+      - "ml/demand_engine/c1_shadow_runtime_v8.py"
+      - "ml/demand_engine/run_c1_shadow_v8.py"
+      - "supabase/sql/c1_shadow_v8_prospective_evidence_v1.sql"
+      - "supabase/functions/c1_shadow_v8_gateway_v1/**"
+      - ".github/workflows/c1-shadow-v8-inference.yml"
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: c1-v8-prospective-shadow
+  cancel-in-progress: false
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install pinned runtime
+        run: |
+          python -m pip install --upgrade pip
+          pip install numpy==2.3.5 pandas==2.2.3 scikit-learn==1.8.0 joblib==1.5.3
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+      - name: Validate inference-only runtime
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m py_compile ml/demand_engine/run_c1_shadow_v8.py
+          python -m unittest ml.demand_engine.test_c1_shadow_runtime_v8
+          deno check supabase/functions/c1_shadow_v8_gateway_v1/index.ts
+          if grep -nE '\.fit\(' ml/demand_engine/run_c1_shadow_v8.py; then
+            echo 'Scheduled C1 shadow inference must not fit models.' >&2
+            exit 1
+          fi
+
+  shadow:
+    if: github.event_name != 'pull_request'
+    needs: validate
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install pinned runtime
+        run: |
+          python -m pip install --upgrade pip
+          pip install numpy==2.3.5 pandas==2.2.3 scikit-learn==1.8.0 joblib==1.5.3
+      - name: Request C1 shadow OIDC token
+        shell: bash
+        run: |
+          set -euo pipefail
+          response=$(curl -fsS -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
+            "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=beyond-c1-shadow-v8")
+          token=$(printf '%s' "$response" | jq -r '.value')
+          test -n "$token"
+          test "$token" != "null"
+          echo "::add-mask::$token"
+          echo "C1_SHADOW_OIDC_TOKEN=$token" >> "$GITHUB_ENV"
+      - name: Fetch forward-only T-1 shadow inputs
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -fsS \
+            -H "Authorization: Bearer $C1_SHADOW_OIDC_TOKEN" \
+            'https://adchzwqboeekhokapxqi.supabase.co/functions/v1/c1_shadow_v8_gateway_v1' \
+            -o /tmp/c1-shadow-input.json
+          jq -e '.ok == true and .version == "c1-shadow-v8-inputs-v1" and .status == "EXPERIMENTAL_SHADOW"' \
+            /tmp/c1-shadow-input.json >/dev/null
+          jq '{requested_at,candidate_count,package_version,candidates:[.candidates[]?|{ticket_event_id,home_team,away_team,kickoff_at,prior_horizon:.prior.horizon,representatives:(.representatives|length)}]}' \
+            /tmp/c1-shadow-input.json
+      - name: Run frozen load-only shadow inference
+        run: |
+          python -m ml.demand_engine.run_c1_shadow_v8 \
+            --input /tmp/c1-shadow-input.json \
+            --artifact-dir ml/artifacts/c1_shadow_v8 \
+            --output /tmp/c1-shadow-predictions.json
+      - name: Persist pre-outcome evidence
+        shell: bash
+        run: |
+          set -euo pipefail
+          count=$(jq -r '.prediction_count' /tmp/c1-shadow-predictions.json)
+          if [ "$count" -eq 0 ]; then
+            echo 'No naturally due PIT-valid T-1 candidates; nothing to persist.'
+            exit 0
+          fi
+          jq -c '{requested_at,predictions}' /tmp/c1-shadow-predictions.json > /tmp/c1-shadow-write.json
+          curl -fsS \
+            -H "Authorization: Bearer $C1_SHADOW_OIDC_TOKEN" \
+            -H 'Content-Type: application/json' \
+            --data-binary @/tmp/c1-shadow-write.json \
+            'https://adchzwqboeekhokapxqi.supabase.co/functions/v1/c1_shadow_v8_gateway_v1' \
+            -o /tmp/c1-shadow-write-result.json
+          jq -e --argjson expected "$count" \
+            '.ok == true and ((.inserted_count + .duplicate_count) == $expected)' \
+            /tmp/c1-shadow-write-result.json >/dev/null
+          jq '{requested_at,inserted_count,duplicate_count,results}' /tmp/c1-shadow-write-result.json
