@@ -1,0 +1,114 @@
+name: C1 Alpha v2 Reliability Diagnostic v7
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - "ml/c1_alpha_v2_expert_reliability_diagnostic_v7.py"
+      - "supabase/sql/c1_alpha_v7_final24_export_v1.sql"
+      - "supabase/functions/c1_alpha_training_export_v1/**"
+      - ".github/workflows/c1-alpha-v2-reliability-v7.yml"
+  pull_request:
+    paths:
+      - "ml/c1_alpha_v2_expert_reliability_diagnostic_v7.py"
+      - "supabase/sql/c1_alpha_v7_final24_export_v1.sql"
+      - "supabase/functions/c1_alpha_training_export_v1/**"
+      - ".github/workflows/c1-alpha-v2-reliability-v7.yml"
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install pinned runtime
+        run: |
+          python -m pip install --upgrade pip
+          pip install numpy==2.3.5 pandas==2.2.3 scikit-learn==1.8.0 joblib==1.5.3
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+      - name: Validate code
+        run: |
+          python -m py_compile ml/c1_alpha_v2_expert_reliability_diagnostic_v7.py
+          deno check supabase/functions/c1_alpha_training_export_v1/index.ts
+
+  diagnostic:
+    if: github.event_name != 'pull_request'
+    needs: validate
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install pinned runtime
+        run: |
+          python -m pip install --upgrade pip
+          pip install numpy==2.3.5 pandas==2.2.3 scikit-learn==1.8.0 joblib==1.5.3
+      - name: Request C1 training OIDC token
+        shell: bash
+        run: |
+          set -euo pipefail
+          response=$(curl -fsS -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
+            "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=beyond-c1-alpha-training")
+          token=$(printf '%s' "$response" | jq -r '.value')
+          test -n "$token"
+          test "$token" != "null"
+          echo "::add-mask::$token"
+          echo "C1_ALPHA_OIDC_TOKEN=$token" >> "$GITHUB_ENV"
+      - name: Fetch static event context
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -fsS \
+            -H "Authorization: Bearer $C1_ALPHA_OIDC_TOKEN" \
+            'https://adchzwqboeekhokapxqi.supabase.co/functions/v1/c1_alpha_training_export_v1?version=event-v1' \
+            -o /tmp/c1-event.json
+          jq -e '.ok == true and .version == "c1-alpha-event-training-export-v1"' /tmp/c1-event.json >/dev/null
+      - name: Fetch regularized final-24h rows
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -fsS \
+            -H "Authorization: Bearer $C1_ALPHA_OIDC_TOKEN" \
+            'https://adchzwqboeekhokapxqi.supabase.co/functions/v1/c1_alpha_training_export_v1?version=v7-final24' \
+            -o /tmp/c1-final24.json
+          jq -e '.ok == true and .version == "c1-alpha-v7-final24-rows-v1" and .eventCount == 9 and .liveRowCount == 30' \
+            /tmp/c1-final24.json >/dev/null
+      - name: Compose v7 diagnostic payload
+        shell: bash
+        run: |
+          jq -n \
+            --slurpfile static /tmp/c1-event.json \
+            --slurpfile live /tmp/c1-final24.json \
+            '$static[0] + {version:"c1-alpha-v7-diagnostic-payload-v1",liveRows:$live[0].liveRows,liveRowCount:$live[0].liveRowCount,sampling:$live[0].sampling}' \
+            > /tmp/c1-v7.json
+          jq '{version,eventCount,liveRowCount,hybridRows:(.ticketingChallengerRows|length),sampling}' /tmp/c1-v7.json
+      - name: Run v2 expert reliability diagnostic
+        run: |
+          python -m ml.c1_alpha_v2_expert_reliability_diagnostic_v7 \
+            --input /tmp/c1-v7.json \
+            --artifact-dir ml/artifacts/structural_prior_runtime_v1 \
+            --output /tmp/c1-alpha-v2-reliability-v7.json
+      - name: Print diagnostic
+        run: |
+          jq '{experiment,event_count,v2_reproduction,events,top_feature_contrasts_diagnostic_only:(.feature_contrasts_diagnostic_only[:12])}' \
+            /tmp/c1-alpha-v2-reliability-v7.json
+      - name: Upload evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: c1-alpha-v2-reliability-v7-${{ github.run_id }}
+          path: /tmp/c1-alpha-v2-reliability-v7.json
+          if-no-files-found: error
+          retention-days: 30

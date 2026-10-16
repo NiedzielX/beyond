@@ -63,9 +63,11 @@ Deno.serve(async (req: Request) => {
     const requestedVersion = url.searchParams.get("version") || "v1";
     const rpcName = requestedVersion === "event-v1"
       ? "export_c1_alpha_event_training_payload_v1"
-      : requestedVersion === "v2"
-        ? "export_c1_alpha_training_payload_v2"
-        : "export_c1_alpha_training_payload_v1";
+      : requestedVersion === "v7-final24"
+        ? "export_c1_alpha_v7_final24_rows_v1"
+        : requestedVersion === "v2"
+          ? "export_c1_alpha_training_payload_v2"
+          : "export_c1_alpha_training_payload_v1";
 
     const raw = await db(`rpc/${rpcName}`, {
       method: "POST",
@@ -105,7 +107,7 @@ Deno.serve(async (req: Request) => {
   } catch (error) {
     return json({
       ok: false,
-      version: "c1-alpha-training-export-gateway-v3",
+      version: "c1-alpha-training-export-gateway-v4",
       error: String(error),
       repository: claims.repository,
       sha: claims.sha || null,
