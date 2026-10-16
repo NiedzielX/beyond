@@ -70,9 +70,22 @@ Deno.serve(async (req: Request) => {
 
     if (req.method === "POST") {
       const body = await req.json();
+      const requestedAt = body?.requested_at || new Date().toISOString();
+
+      if (body?.action === "score") {
+        const result = await rpc("score_c1_shadow_v8_completed_events_v1", {
+          p_requested_at: requestedAt,
+        });
+        return json({
+          ok: true,
+          ...result,
+          repository: claims.repository,
+          sha: claims.sha || null,
+        });
+      }
+
       const predictions = Array.isArray(body?.predictions) ? body.predictions : null;
-      const requestedAt = body?.requested_at;
-      if (!predictions || !requestedAt) {
+      if (!predictions || !body?.requested_at) {
         return json({ ok: false, error: "predictions array and requested_at are required" }, 400);
       }
       const result = await rpc("insert_c1_shadow_v8_predictions_v1", {
@@ -91,7 +104,7 @@ Deno.serve(async (req: Request) => {
   } catch (error) {
     return json({
       ok: false,
-      version: "c1-shadow-v8-gateway-v1",
+      version: "c1-shadow-v8-gateway-v2",
       error: String(error),
       repository: claims.repository,
       sha: claims.sha || null,
