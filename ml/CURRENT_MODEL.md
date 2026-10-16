@@ -2,7 +2,7 @@
 
 Last product-direction update: **2026-10-16**
 
-This is the canonical short-form state. For cold-start instructions read `AI_BOOTSTRAP.md`. For sector/pricing product behaviour read `ml/SECTOR_DECISION_PRICING_V1.md`.
+This is the canonical short-form state. For cold-start instructions read `AI_BOOTSTRAP.md`. For C1-alpha training read `ml/C1_MODEL_TOURNAMENT_V1.md`. For sector/pricing product behaviour read `ml/SECTOR_DECISION_PRICING_V1.md`.
 
 ## Current north star
 
@@ -121,11 +121,62 @@ C0 may provide:
 
 It must be labeled provisional/scenario-based and must not claim learned uplift.
 
-### C1 — Learned Live Correction — EVIDENCE-GATED
+### C1-alpha — Full-trajectory model tournament — ACTIVE NOW
 
-The 20-independent-completed-match rule remains a **promotion gate** for a learned live correction.
+Canonical plan:
 
-It is not a blocker for C0 or E0.
+`ml/C1_MODEL_TOURNAMENT_V1.md`
+
+Decision: **train now on the completed events already collected. Do not wait for 20 matches to begin modelling.**
+
+Current verified versioned export:
+
+- 9 completed Ekstraklasa events compatible with the current Structural Prior domain;
+- 206 PIT-valid full-trajectory samples at a regularized 6h cadence;
+- current-season attendance/sporting inputs needed to replay frozen Structural Prior checkpoints;
+- one completed Lech Europa League event excluded from the primary leaderboard and reserved as a possible transfer test.
+
+Implementation now on `main`:
+
+- `supabase/sql/c1_alpha_training_export_v1.sql`;
+- `supabase/functions/c1_alpha_training_export_v1/index.ts`;
+- `ml/c1_alpha_model_tournament_v1.py`;
+- `.github/workflows/c1-alpha-model-tournament-v1.yml`.
+
+Validation:
+
+- **Leave-One-Event-Out** only;
+- all rows from one match stay in one fold;
+- equal event weighting;
+- no random snapshot split;
+- current Structural Prior is the incumbent;
+- target is live residual (attendance and occupancy variants are compared).
+
+Tournament families:
+
+- zero correction / bias baselines;
+- Ridge;
+- ElasticNet;
+- Huber;
+- HistGradientBoosting;
+- constrained ExtraTrees / RandomForest;
+- shallow XGBoost;
+- shallow LightGBM.
+
+Primary objective:
+
+**lowest stable event-level MAE vs Structural Prior.**
+
+R&D target:
+
+- <1700 MAE;
+- stretch <1500 MAE.
+
+### C1 — Learned Live Correction promotion — EVIDENCE-GATED
+
+The 20-independent-completed-match rule remains a **later promotion/validation gate**, not a training-start gate.
+
+It is not a blocker for C1-alpha, C0 or E0.
 
 Promotion still requires:
 
@@ -185,7 +236,8 @@ Pricing is a first-class intervention family.
 Relevant docs:
 
 - `growth/GROWTH_MEASUREMENT_V1.md`;
-- `growth/GROWTH_EXECUTION_DATA_V2.md`.
+- `growth/GROWTH_EXECUTION_DATA_V2.md`;
+- `growth/DYNAMIC_PRICING_MEASUREMENT_V1.md`.
 
 ## Dashboard target
 
@@ -207,23 +259,25 @@ Minimum table fields:
 
 ## Immediate implementation sequence
 
-1. keep five-horizon Structural Prior / orchestrator healthy;
-2. implement sector-level trajectory gap/status;
-3. implement sector no-action projection;
-4. define price data contract / ingest;
-5. implement assumption-based dynamic-pricing E0 scenarios;
-6. persist recommendation / club decision / execution history;
-7. expose Sector Performance & Pricing in Event Detail;
-8. collect prospective 2026/27 evidence for learned C1/E1;
-9. continue T-30 R&D in parallel;
-10. calibrate P10/P50/P90 when evidence supports it.
+1. run and record `C1-alpha Model Tournament v1` leaderboard against current Structural Prior;
+2. freeze the simplest stable winner if it beats the incumbent and run it in experimental/shadow mode;
+3. keep five-horizon Structural Prior / orchestrator healthy;
+4. implement sector-level trajectory gap/status;
+5. implement sector no-action projection;
+6. define price data contract / ingest;
+7. implement assumption-based dynamic-pricing E0 scenarios;
+8. persist recommendation / club decision / execution history;
+9. expose Sector Performance & Pricing in Event Detail;
+10. continue T-30 R&D in parallel;
+11. calibrate P10/P50/P90 when evidence supports it.
 
-## Non-negotiable product labels
+## Non-negotiable product/model labels
 
 Until learned/validated:
 
-- use `PROVISIONAL`, `SCENARIO`, or `ASSUMPTION-BASED`;
+- use `EXPERIMENTAL`, `PROVISIONAL`, `SCENARIO`, or `ASSUMPTION-BASED` where appropriate;
 - never call scenario uplift causal;
 - never equate public inventory with paid sales;
 - never change production prices automatically;
-- persist source, timestamp, assumption/model version and reason codes behind every recommendation.
+- never report snapshot-row cross-validation as independent-match validation;
+- persist source, timestamp, dataset/model version and reason codes behind every recommendation/model result.
