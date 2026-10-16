@@ -1,0 +1,43 @@
+name: T30 Seat Aligned Loss v7
+
+on:
+  pull_request:
+    paths:
+      - "ml/t30_seat_aligned_loss_v7.py"
+      - ".github/workflows/t30-seat-aligned-loss-v7.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  rolling-origin-development:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install pinned runtime
+        run: |
+          python -m pip install --upgrade pip
+          pip install numpy==2.3.5 pandas==2.2.3 scikit-learn==1.8.0 joblib==1.5.3
+
+      - name: Compile v7 experiment
+        run: python -m py_compile ml/t30_seat_aligned_loss_v7.py
+
+      - name: Run rolling-origin pre-validation gate
+        run: |
+          python -m ml.t30_seat_aligned_loss_v7 \
+            --historical-runtime ml/artifacts/structural_prior_runtime_v1/historical_runtime_v1.csv.gz \
+            --output /tmp/t30-seat-aligned-loss-v7.json
+
+      - name: Print decision summary
+        run: |
+          jq '{experiment,candidate_model_id,hypothesis,frozen_candidate,governance,folds,combined,decision}' \
+            /tmp/t30-seat-aligned-loss-v7.json
