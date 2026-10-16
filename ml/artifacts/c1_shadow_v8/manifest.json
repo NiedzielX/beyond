@@ -1,0 +1,93 @@
+{
+  "artifact": {
+    "bytes": 3237,
+    "filename": "c1_v2_live_expert_v1.joblib",
+    "sha256": "df31af5effcda2d2f1e58265c7e954cc04edf0e90b48501403eb4e4afd94edf2"
+  },
+  "feature_contract": "live-trajectory-v1.1+c1-v2-compact-direct-occupancy",
+  "governance": {
+    "do_not_retune_on_original_9_events": true,
+    "prospective_validation_required": true,
+    "scheduled_inference_must_not_fit": true,
+    "thresholds_frozen_after_v7": true
+  },
+  "libraries": {
+    "joblib": "1.5.3",
+    "numpy": "2.3.5",
+    "pandas": "2.2.3",
+    "scikit_learn": "1.8.0"
+  },
+  "live_adjustment": 0,
+  "live_model_id": "c1-v2-live-ridge-directocc-compact-generic-a10",
+  "model": {
+    "alpha": 10.0,
+    "club_aware": false,
+    "family": "Ridge",
+    "feature_count": 30,
+    "features": [
+      "prior_p50",
+      "prior_expected_occupancy",
+      "stadium_capacity",
+      "hours_to_kickoff",
+      "available_total",
+      "first_available_total",
+      "available_index",
+      "available_share_of_capacity",
+      "net_removed_since_first",
+      "net_removed_since_previous",
+      "velocity_since_previous",
+      "net_removed_6h",
+      "velocity_6h",
+      "net_removed_24h",
+      "velocity_24h",
+      "acceleration_6h_vs_24h",
+      "matched_sector_count",
+      "matched_absorption",
+      "matched_release",
+      "coverage_inventory_effect",
+      "raw_snapshot_count",
+      "clean_snapshot_count",
+      "observation_window_hours",
+      "max_visible_gap_hours",
+      "signal_ready",
+      "feature_quality_good",
+      "release_activity_flag",
+      "sector_coverage_change_flag",
+      "unexplained_inventory_increase_flag",
+      "data_gap_detected"
+    ],
+    "scaled": true
+  },
+  "package_version": "c1-shadow-v8-frozen-2026-10-16-n9",
+  "policy": {
+    "fallback": "PRIOR",
+    "multi_observation_abs_disagreement_threshold": 0.1,
+    "multi_observation_live_slope_gt": 0.0,
+    "pit_rule": "use only live observations available up to the current row",
+    "single_observation_abs_disagreement_threshold": 0.2
+  },
+  "policy_id": "c1-alpha-reliability-policy-v8-fixed-10pp-positive-slope-20pp-single",
+  "production_activation": false,
+  "source_sha": "c1e07132defe21f5359f3c09f0f85bdd91a604a4",
+  "status": "EXPERIMENTAL_SHADOW",
+  "structural_prior_dependency": "structural-prior-runtime-v1-frozen-2026-10-15-t1",
+  "training": {
+    "event_balanced_weights": true,
+    "event_count": 9,
+    "event_ids": [
+      1,
+      3,
+      4,
+      8,
+      9,
+      12,
+      13,
+      14,
+      17
+    ],
+    "row_count": 30,
+    "target": "direct_occupancy",
+    "training_contract_filename": "training_contract_v1.json",
+    "training_contract_sha256": "0a3edde223d8b6e64652f3fc8f79228998ac0d93a90fdaa9fc48311f98dee304"
+  }
+}
