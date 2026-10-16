@@ -59,18 +59,32 @@ Deno.serve(async (req: Request) => {
   }
 
   try {
-    const raw = await db("rpc/export_c1_alpha_training_payload_v1", {
+    const url = new URL(req.url);
+    const requestedVersion = url.searchParams.get("version") === "v2" ? "v2" : "v1";
+    const rpcName = requestedVersion === "v2"
+      ? "export_c1_alpha_training_payload_v2"
+      : "export_c1_alpha_training_payload_v1";
+
+    const raw = await db(`rpc/${rpcName}`, {
       method: "POST",
       body: JSON.stringify({}),
     });
     const payload = Array.isArray(raw)
-      ? (raw[0]?.export_c1_alpha_training_payload_v1 ?? raw[0]?.payload ?? raw[0])
+      ? (raw[0]?.[rpcName] ?? raw[0]?.payload ?? raw[0])
       : raw;
 
     const eventCount = Number(payload?.eventCount ?? 0);
     const liveRowCount = Number(payload?.liveRowCount ?? 0);
     if (eventCount < 2 || liveRowCount < eventCount) {
       throw new Error(`invalid C1 training payload events=${eventCount} liveRows=${liveRowCount}`);
+    }
+    if (requestedVersion === "v2") {
+      const hybridRows = Array.isArray(payload?.ticketingChallengerRows)
+        ? payload.ticketingChallengerRows.length
+        : 0;
+      if (hybridRows < 1) {
+        throw new Error("C1 v2 payload missing ticketing challenger rows");
+      }
     }
 
     return json({
@@ -82,7 +96,7 @@ Deno.serve(async (req: Request) => {
   } catch (error) {
     return json({
       ok: false,
-      version: "c1-alpha-training-export-gateway-v1",
+      version: "c1-alpha-training-export-gateway-v2",
       error: String(error),
       repository: claims.repository,
       sha: claims.sha || null,
