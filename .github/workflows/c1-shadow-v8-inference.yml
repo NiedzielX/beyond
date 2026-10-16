@@ -11,6 +11,7 @@ on:
       - "ml/demand_engine/c1_shadow_runtime_v8.py"
       - "ml/demand_engine/run_c1_shadow_v8.py"
       - "supabase/sql/c1_shadow_v8_prospective_evidence_v1.sql"
+      - "supabase/sql/c1_shadow_v8_scoring_v1.sql"
       - "supabase/functions/c1_shadow_v8_gateway_v1/**"
       - ".github/workflows/c1-shadow-v8-inference.yml"
   pull_request:
@@ -18,6 +19,7 @@ on:
       - "ml/demand_engine/c1_shadow_runtime_v8.py"
       - "ml/demand_engine/run_c1_shadow_v8.py"
       - "supabase/sql/c1_shadow_v8_prospective_evidence_v1.sql"
+      - "supabase/sql/c1_shadow_v8_scoring_v1.sql"
       - "supabase/functions/c1_shadow_v8_gateway_v1/**"
       - ".github/workflows/c1-shadow-v8-inference.yml"
 
@@ -120,3 +122,19 @@ jobs:
             '.ok == true and ((.inserted_count + .duplicate_count) == $expected)' \
             /tmp/c1-shadow-write-result.json >/dev/null
           jq '{requested_at,inserted_count,duplicate_count,results}' /tmp/c1-shadow-write-result.json
+      - name: Score completed prospective events
+        shell: bash
+        run: |
+          set -euo pipefail
+          requested_at=$(jq -r '.requested_at' /tmp/c1-shadow-predictions.json)
+          jq -nc --arg requested_at "$requested_at" '{action:"score",requested_at:$requested_at}' > /tmp/c1-shadow-score-request.json
+          curl -fsS \
+            -H "Authorization: Bearer $C1_SHADOW_OIDC_TOKEN" \
+            -H 'Content-Type: application/json' \
+            --data-binary @/tmp/c1-shadow-score-request.json \
+            'https://adchzwqboeekhokapxqi.supabase.co/functions/v1/c1_shadow_v8_gateway_v1' \
+            -o /tmp/c1-shadow-score-result.json
+          jq -e '.ok == true and .version == "c1-shadow-v8-scoring-v1" and .status == "EXPERIMENTAL_SHADOW"' \
+            /tmp/c1-shadow-score-result.json >/dev/null
+          jq '{inserted_score_count,prospective_scored_event_count,latest_row_metrics,representative_window_metrics}' \
+            /tmp/c1-shadow-score-result.json
