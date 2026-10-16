@@ -10,14 +10,15 @@ Before doing Beyond forecasting, ML, dashboard, Growth or recommendation work, r
 
 1. `ml/CURRENT_MODEL.md` — canonical current model/product state;
 2. `ml/C1_V8_PROSPECTIVE_SHADOW_V1.md` — current C1 prospective runtime/governance;
-3. `ml/LIVE_DEMAND_ENGINE_V1_PLAN.md` — implementation roadmap;
-4. `ml/C1_MODEL_TOURNAMENT_V1.md` — C1-alpha validation rules;
-5. latest `ml/results/C1_ALPHA_*.md` evidence;
-6. `ml/SECTOR_DECISION_PRICING_V1.md`;
-7. `ml/NORTH_STAR.md`;
-8. `ml/LIVE_FORECAST_ORCHESTRATOR_V1.md`;
-9. `ml/STRUCTURAL_PRIOR_MATERIALIZER_V1.md`;
-10. `ml/MODEL_PROMOTION_GOVERNANCE_V1.md`.
+3. `ml/E0_SECTOR_TRAJECTORY_IMPLEMENTATION_V1.md` — current E0 implementation state and exact next steps;
+4. `ml/LIVE_DEMAND_ENGINE_V1_PLAN.md` — implementation roadmap;
+5. `ml/C1_MODEL_TOURNAMENT_V1.md` — C1-alpha validation rules;
+6. latest `ml/results/C1_ALPHA_*.md` evidence;
+7. `ml/SECTOR_DECISION_PRICING_V1.md` — canonical E0 product contract;
+8. `ml/NORTH_STAR.md`;
+9. `ml/LIVE_FORECAST_ORCHESTRATOR_V1.md`;
+10. `ml/STRUCTURAL_PRIOR_MATERIALIZER_V1.md`;
+11. `ml/MODEL_PROMOTION_GOVERNANCE_V1.md`.
 
 ## Critical product direction
 
@@ -132,6 +133,11 @@ Post-outcome scores:
 
 `private.c1_shadow_v8_event_scores_v1`
 
+Read-only operational surfaces:
+
+- `public.dashboard_c1_shadow_v8_status_v1`;
+- `public.dashboard_c1_shadow_v8_events_v1`.
+
 The scorer never reconstructs a missed historical decision after the result arrives.
 
 ## Current prospective evidence
@@ -163,35 +169,62 @@ During prospective validation do not:
 
 Any retrain requires an explicit new package version, artifact, event set and governance decision.
 
-## Dynamic pricing / E0 — continue in parallel
+## E0 — current implementation state
 
-Pricing remains a first-class intervention.
+E0 is now the active product-development path while C1 collects prospective evidence automatically.
 
-MVP output should include:
+Canonical implementation plan:
 
-- `HOLD / INCREASE / DECREASE`;
-- proposed price/scenario;
-- projected availability/sell-through impact;
-- projected revenue proxy;
-- confidence;
-- reason codes;
-- assumption/model version.
+`ml/E0_SECTOR_TRAJECTORY_IMPLEMENTATION_V1.md`
 
-Before learned elasticity exists, label this as assumption-based scenario analysis.
+Important discovery:
 
-Never change a club's production price automatically:
+`public.sector_inventory` is already populated for active events.
+
+The canonical relation is:
+
+`sector_inventory.snapshot_id -> snapshots.id -> snapshots.ticket_event_id`
+
+Do **not** use `sector_inventory.event_id` as the ownership key; it is nullable and caused the initial false zero-sector result.
+
+Verified active-event sector coverage at the implementation checkpoint included approximately:
+
+- Lech: 151 sectors;
+- Pogoń: 42;
+- GKS Katowice: 23;
+- Wisła Płock: 17;
+- Zagłębie Lubin: 14.
+
+Therefore E0 can be built from real sector trajectories now; it does not need synthetic sector data or the C1 20-match gate.
+
+## E0 exact next steps
+
+1. implement `sector-trajectory-v1` using `snapshots.ticket_event_id` as canonical ownership;
+2. materialize reference availability, sell-through/absorption proxy, 6h/24h/72h/7d velocity and acceleration;
+3. implement release/coverage-change/data-gap flags before status classification;
+4. derive provisional event-relative expected sector progress and continuous trajectory gap;
+5. inspect real gap distributions/stability and then freeze a small versioned status policy;
+6. implement bounded **Projected outcome if current trajectory continues** per sector;
+7. expose read-only E0 data for the dashboard;
+8. audit/implement the price data contract and `PRICE_DATA_MISSING` semantics;
+9. add assumption-based `HOLD / INCREASE / DECREASE` scenario pricing;
+10. persist recommendation/decision/execution outcomes for future E1 learning.
+
+Pricing remains decision support:
 
 `auto_price_change_allowed = false`
 
+Do not claim learned elasticity or causal uplift in E0.
+
 ## Immediate work order
 
-1. keep the frozen v2+v8 package unchanged and collect the first genuine T-1 prospective evidence;
-2. expose read-only shadow status/evidence for operations/dashboard;
-3. score each prospective event only from already-persisted decisions;
-4. keep production Structural Prior/orchestrator unchanged with `live_adjustment=0`;
-5. continue sector trajectory/no-action and E0 pricing work in parallel;
-6. continue T-30 R&D separately.
+1. **Implement Step 1 of E0: `sector-trajectory-v1`.**
+2. Keep the frozen C1 v8 package unchanged and let prospective evidence accumulate automatically.
+3. Build release-aware continuous sector movement/gap features before introducing threshold labels.
+4. Build the provisional no-action sector projection.
+5. Then add price ingest/scenario logic and dashboard recommendations.
+6. Continue T-30 R&D separately; it is not the E0 critical path.
 
 ## One-line cold-start instruction
 
-> **Do not start another C1 tournament and do not retrain v8. The v2+v8 package is already frozen and running as `EXPERIMENTAL_SHADOW`; prediction and post-outcome scoring paths are live, current prospective evidence count is 0, and the next valid action is to collect the first naturally due T-1 decision while production remains `live_adjustment=0`.**
+> **Do not start another C1 tournament and do not retrain v8. C1 v8 is frozen and running prospectively. The active implementation task is E0 Step 1: build `sector-trajectory-v1` from the real `sector_inventory` history using `sector_inventory.snapshot_id -> snapshots.ticket_event_id`, then add release-aware sector gaps and no-action projections before dynamic pricing.**
