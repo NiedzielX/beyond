@@ -1,0 +1,115 @@
+name: C1 Alpha Reliability Policy v8
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - "ml/c1_alpha_reliability_policy_v8.py"
+      - ".github/workflows/c1-alpha-reliability-policy-v8.yml"
+  pull_request:
+    paths:
+      - "ml/c1_alpha_reliability_policy_v8.py"
+      - ".github/workflows/c1-alpha-reliability-policy-v8.yml"
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install pinned runtime
+        run: |
+          python -m pip install --upgrade pip
+          pip install numpy==2.3.5 pandas==2.2.3 scikit-learn==1.8.0 joblib==1.5.3
+      - name: Validate code
+        run: python -m py_compile ml/c1_alpha_reliability_policy_v8.py
+
+  evaluate:
+    if: github.event_name != 'pull_request'
+    needs: validate
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install pinned runtime
+        run: |
+          python -m pip install --upgrade pip
+          pip install numpy==2.3.5 pandas==2.2.3 scikit-learn==1.8.0 joblib==1.5.3
+      - name: Request C1 training OIDC token
+        shell: bash
+        run: |
+          set -euo pipefail
+          response=$(curl -fsS -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
+            "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=beyond-c1-alpha-training")
+          token=$(printf '%s' "$response" | jq -r '.value')
+          test -n "$token"
+          test "$token" != "null"
+          echo "::add-mask::$token"
+          echo "C1_ALPHA_OIDC_TOKEN=$token" >> "$GITHUB_ENV"
+      - name: Fetch split v7 context
+        shell: bash
+        run: |
+          set -euo pipefail
+          base='https://adchzwqboeekhokapxqi.supabase.co/functions/v1/c1_alpha_training_export_v1'
+          for part in events attendance sporting aliases hybrid; do
+            curl -fsS -H "Authorization: Bearer $C1_ALPHA_OIDC_TOKEN" \
+              "$base?version=v7-$part" -o "/tmp/c1-$part.json"
+            jq -e '.ok == true' "/tmp/c1-$part.json" >/dev/null
+          done
+          jq -e '.version == "c1-alpha-v7-events-v1" and .eventCount == 9' /tmp/c1-events.json >/dev/null
+          jq -e '.version == "c1-alpha-v7-attendance-v1" and .rowCount > 0' /tmp/c1-attendance.json >/dev/null
+          jq -e '.version == "c1-alpha-v7-sporting-v1" and .rowCount > 0' /tmp/c1-sporting.json >/dev/null
+          jq -e '.version == "c1-alpha-v7-aliases-v1" and .rowCount > 0' /tmp/c1-aliases.json >/dev/null
+          jq -e '.version == "c1-alpha-v7-hybrid-v1" and .rowCount == 8' /tmp/c1-hybrid.json >/dev/null
+      - name: Fetch regularized final-24h rows
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -fsS \
+            -H "Authorization: Bearer $C1_ALPHA_OIDC_TOKEN" \
+            'https://adchzwqboeekhokapxqi.supabase.co/functions/v1/c1_alpha_training_export_v1?version=v7-final24' \
+            -o /tmp/c1-final24.json
+          jq -e '.ok == true and .version == "c1-alpha-v7-final24-rows-v1" and .eventCount == 9 and .liveRowCount == 30' \
+            /tmp/c1-final24.json >/dev/null
+      - name: Compose v8 payload
+        shell: bash
+        run: |
+          jq -n \
+            --slurpfile events /tmp/c1-events.json \
+            --slurpfile attendance /tmp/c1-attendance.json \
+            --slurpfile sporting /tmp/c1-sporting.json \
+            --slurpfile aliases /tmp/c1-aliases.json \
+            --slurpfile hybrid /tmp/c1-hybrid.json \
+            --slurpfile live /tmp/c1-final24.json \
+            '{version:"c1-alpha-v8-policy-payload-v1",eventCount:$events[0].eventCount,events:$events[0].events,attendance:$attendance[0].attendance,sportingMatches:$sporting[0].sportingMatches,aliases:$aliases[0].aliases,ticketingChallengerRows:$hybrid[0].ticketingChallengerRows,ticketingChallengerContract:$hybrid[0].ticketingChallengerContract,liveRows:$live[0].liveRows,liveRowCount:$live[0].liveRowCount,sampling:$live[0].sampling}' \
+            > /tmp/c1-v8.json
+          jq '{version,eventCount,liveRowCount,hybridRows:(.ticketingChallengerRows|length)}' /tmp/c1-v8.json
+      - name: Evaluate fixed PIT-safe v8 policy
+        run: |
+          python -m ml.c1_alpha_reliability_policy_v8 \
+            --input /tmp/c1-v8.json \
+            --artifact-dir ml/artifacts/structural_prior_runtime_v1 \
+            --output /tmp/c1-alpha-reliability-policy-v8.json
+      - name: Print result
+        run: |
+          jq '{experiment,policy_id,event_count,row_count,metrics,events,latest_decisions:[.rows|sort_by(.as_of_at)|group_by(.ticket_event_id)|map(.[-1])|.[]|{ticket_event_id,home_team,away_team,hours_to_kickoff,abs_disagreement_occupancy,live_observation_count_to_date,live_slope_occupancy_per_hour_to_date,selected_expert,reason_code,prior_error,live_error,policy_error}]}' \
+            /tmp/c1-alpha-reliability-policy-v8.json
+      - name: Upload evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: c1-alpha-reliability-policy-v8-${{ github.run_id }}
+          path: /tmp/c1-alpha-reliability-policy-v8.json
+          if-no-files-found: error
+          retention-days: 30
