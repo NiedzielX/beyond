@@ -42,15 +42,18 @@ function primitiveProjection(value:any){
   return out;
 }
 
+function arrayDiagnostic(items:any[],limit=5){
+  const keys=[...new Set(items.flatMap((item:any)=>item&&typeof item==='object'?Object.keys(item):[]))].sort();
+  return {
+    count:items.length,
+    objectKeys:keys,
+    primitiveSamples:items.slice(0,limit).map(primitiveProjection)
+  };
+}
+
 function priceAreaDiagnostic(infoSectors:any[]){
   const areas=infoSectors.flatMap((sector:any)=>Array.isArray(sector?.freeSeatsByPriceArea)?sector.freeSeatsByPriceArea:[]);
-  const keys=[...new Set(areas.flatMap((area:any)=>area&&typeof area==='object'?Object.keys(area):[]))].sort();
-  const primitiveSamples=areas.slice(0,5).map(primitiveProjection);
-  return {
-    areaCount:areas.length,
-    objectKeys:keys,
-    primitiveSamples
-  };
+  return arrayDiagnostic(areas);
 }
 
 async function probe(c:{slug:string;base:string;id:string;label:string}){
@@ -66,16 +69,22 @@ async function probe(c:{slug:string;base:string;id:string;label:string}){
     roboJson(c.base,pageUrl,cookie,`/Stadium/GetWGLSeats?eventId=${c.id}`)
   ]);
   const infoSectors=Array.isArray(info.json?.sectors)?info.json.sectors:[];
+  const sectorShapes=Array.isArray(sectors.json?.sectors)?sectors.json.sectors:[];
+  const seatRows=Array.isArray(seats.json?.seats)?seats.json.seats:[];
   const availableTotal=infoSectors.reduce((sum:number,s:any)=>sum+(s.freeSeatsByPriceArea||[]).reduce((a:number,p:any)=>a+Number(p.freeSeatsNo||0),0),0);
+  const htmlPriceTokens=[...new Set((html.match(/.{0,35}(?:priceArea|price|cena|currency).{0,80}/gi)||[]).slice(0,20))];
   return {
     slug:c.slug,eventId:c.id,label:c.label,pageStatus:page.status,finalPageUrl:page.url,title,
     infoStatus:info.status,sectorsStatus:sectors.status,seatsStatus:seats.status,
-    seatsCount:Array.isArray(seats.json?.seats)?seats.json.seats.length:null,
+    seatsCount:seatRows.length,
     sectorInfoCount:infoSectors.length,
-    sectorShapeCount:Array.isArray(sectors.json?.sectors)?sectors.json.sectors.length:null,
+    sectorShapeCount:sectorShapes.length,
     availableTotal,
     sourceTimestamp:info.json?.timestamp||null,
     priceAreaDiagnostic:priceAreaDiagnostic(infoSectors),
+    sectorShapeDiagnostic:arrayDiagnostic(sectorShapes,3),
+    seatDiagnostic:arrayDiagnostic(seatRows,3),
+    htmlPriceTokens,
     redirects:{info:info.location,sectors:sectors.location,seats:seats.location},
     debug:{infoLength:info.length,sectorsLength:sectors.length,seatsLength:seats.length,infoExcerpt:info.excerpt,sectorsExcerpt:sectors.excerpt}
   };
