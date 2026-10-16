@@ -76,17 +76,17 @@ with gap as (
         c.*,
         case
             when not c.gap_usable_for_status then 'INSUFFICIENT_SIGNAL'
-            when c.sector_gap_ratio>=c.threshold_value then 'UNDERPERFORMING'
-            when c.sector_gap_ratio<=-c.threshold_value then 'OUTPERFORMING'
+            when c.sector_gap_ratio>=c.threshold_value and c.sector_gap_available>=5 then 'UNDERPERFORMING'
+            when c.sector_gap_ratio<=-c.threshold_value and c.sector_gap_available<=-5 then 'OUTPERFORMING'
             else 'ON_TRACK'
         end::text as sector_status_value,
         case
             when not c.gap_usable_for_status and c.potential_release_activity_flag then 'MATERIAL_AVAILABILITY_RELEASE_RISK'
             when not c.gap_usable_for_status and not c.coverage_stable_flag then 'COVERAGE_UNSTABLE'
             when not c.gap_usable_for_status then 'INSUFFICIENT_TRAJECTORY_SIGNAL'
-            when c.sector_gap_ratio>=c.threshold_value then 'POSITIVE_GAP_ABOVE_HORIZON_THRESHOLD'
-            when c.sector_gap_ratio<=-c.threshold_value then 'NEGATIVE_GAP_BELOW_HORIZON_THRESHOLD'
-            else 'GAP_WITHIN_HORIZON_THRESHOLD'
+            when c.sector_gap_ratio>=c.threshold_value and c.sector_gap_available>=5 then 'POSITIVE_GAP_ABOVE_HORIZON_AND_MIN5_THRESHOLD'
+            when c.sector_gap_ratio<=-c.threshold_value and c.sector_gap_available<=-5 then 'NEGATIVE_GAP_BELOW_HORIZON_AND_MIN5_THRESHOLD'
+            else 'GAP_WITHIN_MATERIALITY_THRESHOLD'
         end::text as status_reason
     from classified c
 ), projection_input as (
@@ -132,7 +132,7 @@ with gap as (
 )
 select
     'sector-decision-v1'::text,
-    'SECTOR_STATUS_V1_HORIZON_10_15_20'::text,
+    'SECTOR_STATUS_V1_HORIZON_10_15_20_MIN5'::text,
     'SECTOR_NO_ACTION_PROJECTION_V1_BOUNDED_VELOCITY_BLEND'::text,
     p.ticket_event_id,
     p.sector,
@@ -182,4 +182,4 @@ revoke all on function public.get_sector_decision_v1_asof(bigint,timestamptz) fr
 grant execute on function public.get_sector_decision_v1_asof(bigint,timestamptz) to service_role;
 
 comment on function public.get_sector_decision_v1_asof(bigint,timestamptz) is
-'E0 sector status plus bounded public-inventory continuation projection. Decision support only; not paid sales, not causal uplift, not automatic pricing.';
+'E0 sector status plus bounded public-inventory continuation projection. Status requires both proportional and >=5-seat materiality. Decision support only; not paid sales, not causal uplift, not automatic pricing.';
