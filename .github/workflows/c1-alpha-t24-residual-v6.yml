@@ -76,9 +76,11 @@ jobs:
             'https://adchzwqboeekhokapxqi.supabase.co/functions/v1/c1_alpha_training_export_v1?version=event-v1' \
             -o /tmp/c1-alpha-event-v1.json
           jq -e '.ok == true and .version == "c1-alpha-event-training-export-v1"' /tmp/c1-alpha-event-v1.json >/dev/null
-          jq '{eventExportVersion:.version,version:"c1-alpha-training-export-v2"} + .' \
+          jq '{eventExportVersion:.version} + . + {version:"c1-alpha-training-export-v2"}' \
             /tmp/c1-alpha-event-v1.json > /tmp/c1-alpha-training-v2.json
-          jq '{eventExportVersion,eventCount,hybridRows:(.ticketingChallengerRows|length)}' /tmp/c1-alpha-training-v2.json
+          jq -e '.version == "c1-alpha-training-export-v2" and .eventExportVersion == "c1-alpha-event-training-export-v1"' \
+            /tmp/c1-alpha-training-v2.json >/dev/null
+          jq '{eventExportVersion,version,eventCount,hybridRows:(.ticketingChallengerRows|length)}' /tmp/c1-alpha-training-v2.json
       - name: Run event-level T24 residual tournament
         run: |
           python -m ml.c1_alpha_t24_residual_v6 \
