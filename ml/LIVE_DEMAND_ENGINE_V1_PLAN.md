@@ -7,7 +7,8 @@ Last updated: **2026-10-16**
 > **Phase A — Foundation: DONE**  
 > **Phase B — Shadow Forecasting: DONE**  
 > **Five-horizon Structural Prior materialization: DONE / LIVE**  
-> **Phase C1 — Learned Live Correction: EVIDENCE-GATED**  
+> **Phase C1-alpha — Learned Live Correction Tournament: ACTIVE NOW**  
+> **Phase C1 promotion — EVIDENCE-GATED**  
 > **Phase E0 — Sector Decision & Dynamic Pricing MVP: START NOW**
 
 | Phase | Scope | Status |
@@ -15,10 +16,15 @@ Last updated: **2026-10-16**
 | A — Foundation | Canonical live trajectory / PIT evidence / registry | **DONE** |
 | B — Shadow Forecasting | Structural Prior, trajectory gap, shadow revisions, audit | **DONE** |
 | C0 — Provisional live decision layer | Bounded / versioned continuation logic, not promoted ML | **START NOW** |
-| C1 — Learned Live Correction | Train / evaluate live residual correction | **EVIDENCE-GATED** |
+| C1-alpha | Train/evaluate residual live correction on existing completed full trajectories | **ACTIVE NOW** |
+| C1 — Promoted Learned Live Correction | Production promotion after sufficient evidence | **EVIDENCE-GATED** |
 | D — Probabilistic | Calibrated P10/P50/P90 | TODO |
 | E0 — Sector Decision & Dynamic Pricing | Sector diagnosis, no-action projection, pricing scenarios, dashboard | **START NOW** |
 | E1 — Learned Pricing / Intervention | Learned elasticity and intervention uplift | **EVIDENCE-GATED** |
+
+Canonical C1-alpha training plan:
+
+`ml/C1_MODEL_TOURNAMENT_V1.md`
 
 Canonical product direction:
 
@@ -42,13 +48,11 @@ Generic marketing recommendations are secondary. The primary decision unit is:
 
 `Structural Prior -> live-trajectory-v1.1 -> trajectory-gap-v1 -> shadow revision -> first-detection/revision audit`
 
-Current production still has:
+Current promoted production learned correction still has:
 
 `live_adjustment = 0`
 
-for the promoted learned layer.
-
-This does **not** prevent an explicitly labeled provisional decision-support layer from showing continuation scenarios and pricing recommendations.
+C1-alpha now trains a challenger correction layer against the frozen Structural Prior. It must remain experimental/shadow until promotion governance is satisfied.
 
 ## Business horizon priority
 
@@ -64,7 +68,7 @@ Canonical feature contract:
 
 `live-trajectory-v1.1`
 
-Already includes the building blocks needed for sector decisions:
+Already includes the building blocks needed for C1 and sector decisions:
 
 - point-in-time public inventory;
 - multi-window velocity;
@@ -78,6 +82,8 @@ Already includes the building blocks needed for sector decisions:
 Canonical evidence store:
 
 `private.live_trajectory_feature_snapshots_v1`
+
+Raw historical live evidence also exists in `public.snapshots` and `public.sector_inventory` and is now used for C1-alpha full-trajectory replay.
 
 ## Phase B — DONE
 
@@ -105,11 +111,11 @@ Confidence:
 
 Public inventory remains a **demand proxy, not confirmed paid sales**.
 
-## Phase C — split into C0 and C1
+## Phase C — split into C0, C1-alpha and C1 promotion
 
 ### C0 — Provisional live decision layer — START NOW
 
-Purpose: make the product operational before the learned-correction evidence gate is met.
+Purpose: make the product operational before a learned correction is promoted.
 
 Allowed:
 
@@ -127,22 +133,74 @@ Required labels:
 
 C0 must not claim that a learned live model has proven uplift.
 
-### C1 — Learned Live Correction — EVIDENCE-GATED
+### C1-alpha — model tournament on existing completed trajectories — ACTIVE NOW
 
-Target:
+Do **not** wait for 20 matches to begin modelling.
+
+Current verified versioned export on 2026-10-16:
+
+- 9 completed Ekstraklasa events compatible with the current Structural Prior domain;
+- 206 PIT-valid live-trajectory samples at a regularized 6h cadence;
+- full current-season sporting and attendance inputs needed to replay the current frozen Structural Prior;
+- one additional Lech Europa League outcome outside the primary Structural Prior domain, reserved as a possible transfer test.
+
+Primary target:
 
 `live_target_residual = actual_attendance - structural_prior_p50`
 
-The existing 20-independent-completed-match rule remains a **promotion gate** for C1.
+Normalized target challenger:
 
-It is no longer a blocker for operating C0 or E0.
+`actual_attendance / capacity - structural_prior_p50 / capacity`
+
+Validation:
+
+- Leave-One-Event-Out only;
+- all snapshots from a match remain in one fold;
+- equal event weighting;
+- no random snapshot split;
+- missing-aware features;
+- current Structural Prior is always the incumbent benchmark.
+
+Model tournament:
+
+- zero correction / bias baselines;
+- Ridge;
+- ElasticNet;
+- Huber;
+- HistGradientBoosting;
+- constrained ExtraTrees / RandomForest;
+- shallow XGBoost;
+- shallow LightGBM.
+
+Primary selection metric:
+
+**lowest stable event-level MAE of final attendance under LOEO.**
+
+R&D targets:
+
+- `<1700 MAE`;
+- stretch `<1500 MAE`.
+
+Implementation:
+
+- `supabase/sql/c1_alpha_training_export_v1.sql`;
+- `supabase/functions/c1_alpha_training_export_v1/index.ts`;
+- `ml/c1_alpha_model_tournament_v1.py`;
+- `.github/workflows/c1-alpha-model-tournament-v1.yml`.
+
+### C1 — learned correction promotion — EVIDENCE-GATED
+
+The existing 20-independent-completed-match rule remains a **promotion/validation gate**, not a training-start gate.
+
+A C1-alpha winner can be trained and run experimentally/shadow before the gate is met.
 
 Promotion still requires:
 
 - sufficient independent completed matches;
 - challenger MAE below incumbent;
 - positive uplift;
-- frozen evidence package;
+- acceptable worst-event degradation;
+- frozen model/data/feature package;
 - mandatory human review;
 - no automatic activation.
 
@@ -278,7 +336,8 @@ Growth does not replace sector diagnosis or dynamic-pricing decision support. It
 Relevant docs:
 
 - `growth/GROWTH_MEASUREMENT_V1.md`;
-- `growth/GROWTH_EXECUTION_DATA_V2.md`.
+- `growth/GROWTH_EXECUTION_DATA_V2.md`;
+- `growth/DYNAMIC_PRICING_MEASUREMENT_V1.md`.
 
 ## Dashboard target
 
@@ -305,16 +364,18 @@ Expandable sector detail:
 
 ## Immediate implementation sequence
 
-1. verify first naturally due T-1 and keep five-horizon production healthy;
-2. implement sector-level trajectory-gap/status contract;
-3. implement sector no-action projection;
-4. define price data contract / ingest and `PRICE_DATA_MISSING` semantics;
-5. implement assumption-based dynamic-pricing E0 scenarios;
-6. persist recommendation / club decision / execution history;
-7. expose Sector Performance & Pricing in Event Detail dashboard;
-8. continue prospective evidence collection for learned C1/E1;
-9. continue T-30 R&D in parallel — not as the product critical path;
-10. calibrate probabilistic outputs when enough evidence exists.
+1. complete `C1-alpha Model Tournament v1` and persist the LOEO leaderboard;
+2. if a stable challenger beats Structural Prior, freeze its exact spec and run it in experimental/shadow mode;
+3. keep the five-horizon Structural Prior and orchestrator healthy;
+4. implement sector-level trajectory-gap/status contract;
+5. implement sector no-action projection;
+6. define price data contract / ingest and `PRICE_DATA_MISSING` semantics;
+7. implement assumption-based dynamic-pricing E0 scenarios;
+8. persist recommendation / club decision / execution history;
+9. expose Sector Performance & Pricing in Event Detail dashboard;
+10. continue prospective evidence collection for C1 promotion / learned E1;
+11. continue T-30 R&D in parallel — not as the product critical path;
+12. calibrate probabilistic outputs when enough evidence exists.
 
 ## Validation rule after 2026-10-16
 
@@ -322,14 +383,17 @@ Expandable sector detail:
 
 Use:
 
-- rolling-origin pre-validation for structural R&D;
+- rolling-origin pre-validation for Structural Prior T-30 R&D;
+- grouped whole-event validation for C1-alpha live trajectory modelling;
 - exposed historical seasons only as fixed regression evidence where appropriate;
-- prospective 2026/27 as critical fresh OOS evidence for new learned live / pricing decisions.
+- prospective 2026/27 as critical fresh OOS evidence for promotion decisions.
 
 Governance:
 
-`ml/T30_RND_GOVERNANCE_V2.md`
+- `ml/T30_RND_GOVERNANCE_V2.md`;
+- `ml/C1_MODEL_TOURNAMENT_V1.md`;
+- `ml/MODEL_PROMOTION_GOVERNANCE_V1.md`.
 
 ## Product target
 
-> **Beyond should tell the club which sector is falling behind, what is likely to remain unsold if nothing changes, and what price action is worth testing — while learning from every real decision and outcome.**
+> **Beyond should tell the club which sector is falling behind, what is likely to remain unsold if nothing changes, what live correction is supported by the observed trajectory, and what price action is worth testing — while learning from every real decision and outcome.**
