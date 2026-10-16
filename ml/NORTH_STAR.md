@@ -1,177 +1,234 @@
-# Beyond Ticketing — ML North Star
+# Beyond Ticketing — Product & ML North Star
 
-Last updated: **2026-10-15**
+Last updated: **2026-10-16**
 
 ## Single objective
 
-Build the **best possible live forecasting system** for football ticket demand / final attendance and its evolution over time.
+Build the best possible **live demand decision system** for football ticketing.
 
-The model must use both:
+Beyond must not only forecast final attendance. It must tell the club:
 
-- historical evidence from past matches;
-- current point-in-time evidence from the match being sold now.
+1. where the event is likely to finish;
+2. which sector is underperforming or outperforming;
+3. what is likely to remain unsold if the current trajectory continues;
+4. which commercial action is worth testing — especially price;
+5. what happened after the club acted.
 
-Everything else is secondary.
+The forecasting layer remains the analytical foundation. The product value is created when that forecast becomes a sector-level decision before kickoff.
 
-## What Beyond must predict
+## Core product question
 
-For every active match and every point in time before kickoff, Beyond should estimate:
+For every active event and every point in time before kickoff:
 
-1. **Final demand / attendance** — where this match is currently expected to finish.
-2. **Expected demand trajectory** — how sales / public inventory should evolve from now until kickoff if the match behaves normally given its historical and contextual profile.
-3. **Observed trajectory** — what is actually happening now in the live ticketing signal.
-4. **Trajectory gap** — whether the match is selling materially better or worse than it should at this point in time.
-5. **Future trajectory** — how the gap is expected to evolve if nothing changes.
-6. **Calibrated uncertainty** — P10 / P50 / P90 or equivalent quantiles around the final outcome and trajectory.
-7. **Reason codes / drivers** — which evidence moved the forecast or caused the match to be classified as above / below expectation.
+> **What is happening, where is the problem/opportunity, what happens if nothing changes, and what should the club test now?**
 
-The core question is not only:
+## What Beyond must estimate
 
-> How many people will attend?
+### Event level
 
-It is also:
+1. final demand / attendance;
+2. Structural Prior;
+3. current live / provisional P50;
+4. expected demand trajectory;
+5. observed live trajectory;
+6. trajectory gap;
+7. projected outcome if the current trajectory continues;
+8. calibrated uncertainty when available;
+9. reason codes / drivers.
 
-> Given what similar matches historically did and what this match is doing right now, is demand evolving as expected — and where is it heading?
+### Sector level
 
-## Product value
+For every observable sector:
 
-Beyond should detect a meaningful demand problem or opportunity **early enough for the club to act**.
+1. current public availability;
+2. sell-through / absorption proxy;
+3. short- and medium-window velocity;
+4. acceleration / deceleration;
+5. expected progress at this point before kickoff;
+6. observed progress;
+7. trajectory gap;
+8. underperforming / on-track / outperforming status;
+9. projected final public sell-through / remaining availability if the trajectory continues;
+10. confidence and data-quality flags.
 
-Examples:
+Public seat-map inventory is a **demand proxy, not confirmed paid sales**. Sector projections and event attendance must not be forced into a false 1:1 mapping.
 
-- a match is selling materially slower than comparable matches should at T-30;
-- demand was healthy at T-30 but deteriorates relative to expectation at T-14;
-- a campaign changes ticketing velocity and moves the forecast upward;
-- a match is outperforming its historical potential, creating a pricing / inventory / communication opportunity.
+## Dynamic pricing is a first-class product capability
 
-Therefore **T-30 and T-14 are primary business horizons**, even if T-3 or T-1 eventually achieve lower absolute error.
+The primary intervention Beyond should support is **sector-level dynamic pricing decision support**.
 
-## Model architecture target
+For a sector, Beyond should eventually answer:
 
-The intended forecasting stack is:
+> Should the club HOLD, INCREASE or DECREASE the price, what price scenario should it test, and what could that imply for sell-through and revenue?
 
-### 1. Structural historical prior
+Before learned elasticity exists, Beyond may use explicitly versioned, assumption-based pricing scenarios. They must be labeled as provisional scenarios, not causal uplift.
 
-Estimate expected final demand and expected trajectory from information available before live sales evidence is considered, including:
+Automatic production price changes are not allowed in the MVP:
 
-- home-club demand history;
-- opponent draw / attractiveness;
-- stadium capacity / expected occupancy;
-- seasonality and kickoff timing;
-- sporting state and match importance;
-- competition / event context;
-- other validated point-in-time context features.
+`auto_price_change_allowed = false`
 
-### 2. Live trajectory model
+Canonical product specification:
 
-Continuously interpret current ticketing evidence, including where available:
+`ml/SECTOR_DECISION_PRICING_V1.md`
 
-- public inventory level;
-- inventory index relative to the event's starting state / comparable events;
-- velocity over multiple windows;
-- acceleration / deceleration;
-- sector-level movement;
-- scarcity / sell-out pressure;
+## Model architecture
+
+### 1. Structural Prior
+
+Estimate expected final demand from historical and contextual point-in-time evidence.
+
+### 2. Live Trajectory
+
+Interpret current ticketing evidence:
+
+- public inventory;
+- velocity;
+- acceleration;
+- sector movement;
+- scarcity;
 - release / replenishment activity;
-- anomalies and source-quality flags.
+- anomalies;
+- source quality.
 
-### 3. Residual / trajectory correction
+### 3. Live Correction
 
-Compare observed live behaviour with the expected historical trajectory and estimate the correction to the structural prior.
+Estimate how current live behaviour should revise the Structural Prior.
 
 Conceptually:
 
-`live forecast = historical prior + trajectory correction`
+`Live Forecast = Structural Prior + Live Correction`
 
-The correction should answer:
+### 4. Sector Decision Layer
 
-> Is this match currently performing better or worse than its expected demand curve, by how much, and what does that imply for final attendance?
+Turn live evidence into:
 
-## Optimisation target
+`sector diagnosis -> no-action projection -> pricing scenario -> recommendation`
 
-Primary goal: minimise true out-of-sample error on unseen future matches **while maximising useful lead time**.
+### 5. Intervention Measurement
 
-Predictive quality and early actionability are both first-class objectives.
+Persist:
 
-A model that reaches 1,000 MAE at T-1 but cannot identify a demand problem until the final day may be less valuable than a model with 1,400 MAE at T-30 that reliably identifies the problem four weeks earlier.
+`recommendation -> club decision -> execution -> subsequent trajectory -> final outcome -> revenue outcome`
 
-## Primary evaluation dimensions
+This evidence becomes the training set for learned pricing and intervention models.
 
-### Final-outcome accuracy
+## Phase C governance: 20 matches are not a product blocker
+
+The existing 20-independent-completed-match rule remains a **promotion gate for learned live correction**.
+
+It does **not** block:
+
+- sector-level diagnosis;
+- provisional / bounded live correction where explicitly labeled;
+- no-action continuation projections;
+- assumption-based pricing scenarios;
+- recommendation display;
+- recommendation / execution logging.
+
+It does block claims that a learned correction or learned pricing model is proven better until enough prospective evidence exists.
+
+## Phase E split
+
+### E0 — Decision Support MVP — START NOW
+
+- sector underperformance detection;
+- sector no-action projection;
+- event no-action projection;
+- dynamic-pricing scenario engine;
+- dashboard recommendation cards;
+- club decision / execution capture;
+- no automatic execution.
+
+### E1 — Learned Pricing / Intervention Engine — EVIDENCE-DRIVEN
+
+- learned elasticity;
+- intervention uplift estimation;
+- expected-value ranking;
+- calibrated uncertainty;
+- human/commercial guardrails.
+
+## Business horizon priority
+
+1. **T-30** — planning / major intervention;
+2. **T-14** — strong pricing / demand intervention window;
+3. **T-7** — tactical optimisation;
+4. **T-3** — late adjustment;
+5. **T-1** — final estimate / calibration.
+
+Early actionability remains first-class.
+
+## Evaluation dimensions
+
+### Forecast quality
 
 - MAE;
-- WAPE / MAPE where appropriate;
+- WAPE;
 - median absolute error;
-- directional bias;
-- stability across clubs, seasons and horizons.
-
-### Probabilistic quality
-
-- quantile / pinball loss;
-- P10-P90 empirical coverage;
-- interval width and calibration.
+- bias;
+- stability across clubs / seasons / horizons.
 
 ### Live trajectory quality
 
-- forecast error of the expected trajectory at each horizon;
-- error in predicted final demand after each live update;
-- stability / revision quality between successive forecasts;
-- incremental uplift from live signals over the historical prior.
+- trajectory-gap accuracy;
+- forecast revision quality;
+- incremental uplift over Structural Prior;
+- first-detection lead time.
 
-### Early-warning quality
+### Sector decision quality
 
-For materially underperforming / outperforming matches:
+- correctness of sector underperformance direction;
+- sector no-action projection error;
+- false alarm rate;
+- time-to-action;
+- stability under release / coverage changes.
 
-- detection precision;
-- detection recall;
-- false-alarm rate;
-- average first-detection lead time;
-- percentage detected by T-30 / T-14 / T-7;
-- magnitude of final miss avoided by the alert.
+### Pricing / intervention quality
 
-The system should eventually support an explicit metric such as:
+Before learned pricing:
 
-`actionable detection = correct direction + material gap + sufficient lead time`
+- scenario calibration;
+- recommendation consistency;
+- commercial guardrail adherence;
+- club acceptance / rejection;
+- outcome tracking completeness.
 
-## Horizon priority
+After evidence matures:
 
-Business priority:
+- incremental tickets;
+- incremental revenue / contribution;
+- ROI;
+- price elasticity calibration;
+- uplift uncertainty;
+- recommendation expected value.
 
-1. **T-30** — planning and major intervention window;
-2. **T-14** — strong intervention / correction window;
-3. **T-7** — tactical optimisation;
-4. **T-3** — late adjustment;
-5. **T-1** — final forecast / calibration checkpoint.
-
-All horizons matter, but model R&D must not optimise T-1 at the expense of T-30 / T-14 usefulness.
-
-## Non-negotiable methodology
+## Validation methodology
 
 - strict point-in-time features;
 - no future leakage;
-- chronological / walk-forward validation;
-- untouched holdout data;
-- cross-club validation;
-- reproducible feature and model versions;
-- one canonical Feature Store for training and inference;
-- challenger vs champion comparisons under the same protocol;
-- ablation of feature families;
-- historical and live-signal contributions measured separately;
-- no feature or model is kept because it sounds plausible — only because it improves out-of-sample forecasting or earlier reliable detection.
+- chronological / rolling-origin evaluation;
+- frozen candidate specifications;
+- cross-club evaluation;
+- reproducible model / assumption versions;
+- no hidden post-validation tuning;
+- historical validation seasons that have already been inspected must not be relabeled as pristine untouched holdouts;
+- prospective 2026/27 evidence is the critical fresh validation source for new learned live / pricing decisions.
 
-## Priority order
+T-30 R&D governance:
 
-1. Improve T-30 / T-14 historical prior accuracy.
-2. Build and validate the live trajectory / expected-vs-observed gap model.
-3. Improve later-horizon point accuracy where it also supports calibration and final outcome quality.
-4. Build calibrated P10 / P50 / P90 trajectories.
-5. Learn which interventions actually improve demand only after the forecast and early-warning layer is trustworthy.
-6. Product presentation, recommendation UI and Growth are downstream of the predictive core.
+`ml/T30_RND_GOVERNANCE_V2.md`
 
-## Current strategic rule
+## Priority order now
 
-Do not wait for new matches when usable historical data already exists.
+1. keep the five-horizon Structural Prior and live pipeline healthy;
+2. build sector-level trajectory diagnosis;
+3. build no-action sector/event projections;
+4. add price data contract and dynamic-pricing E0 scenarios;
+5. show sector/pricing decisions in Event Detail dashboard;
+6. log recommendations and real club actions from day one;
+7. collect prospective evidence for learned C1 / E1;
+8. improve T-30 historical prior in parallel, not as the product critical path;
+9. calibrate P10/P50/P90 as evidence supports it.
 
-Use historical data aggressively for structural-model R&D now. Use future matches for evidence that genuinely requires prospective observation, especially live ticketing trajectories and intervention-response evidence.
+## Product value statement
 
-**The north star is not simply the lowest MAE. It is the earliest reliable prediction of where demand is heading and whether the current match is performing better or worse than it should.**
+**Beyond should tell the club which sector is falling behind, what is likely to remain unsold if nothing changes, and what price action is worth testing — early enough to change the outcome.**
