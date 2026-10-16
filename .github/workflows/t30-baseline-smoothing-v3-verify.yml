@@ -1,0 +1,55 @@
+name: T30 Baseline Smoothing v3 Regression Validation
+
+on:
+  pull_request:
+    paths:
+      - "ml/t30_baseline_smoothing_v3_verify.py"
+      - "ml/results/T30_BASELINE_SMOOTHING_V3_FROZEN_SPEC_2026-10-16.md"
+      - ".github/workflows/t30-baseline-smoothing-v3-verify.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify-frozen-v3:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install pinned runtime
+        run: |
+          python -m pip install --upgrade pip
+          pip install numpy==2.3.5 pandas==2.2.3 scikit-learn==1.8.0 joblib==1.5.3
+
+      - name: Verify frozen v3 spec predates validation
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch --no-tags origin exp/t30-baseline-smoothing-v3
+          git merge-base --is-ancestor \
+            d37647ace1947eec2227be80c38b3c66db108aea \
+            origin/exp/t30-baseline-smoothing-v3
+
+      - name: Compile verifier
+        run: python -m py_compile ml/t30_baseline_smoothing_v3_verify.py
+
+      - name: Run fixed historical regression validation
+        run: |
+          python -m ml.t30_baseline_smoothing_v3_verify \
+            --historical-runtime ml/artifacts/structural_prior_runtime_v1/historical_runtime_v1.csv.gz \
+            --output /tmp/t30-baseline-smoothing-v3-validation.json
+
+      - name: Print validation summary
+        run: |
+          jq '{experiment,model_id,frozen_spec_commit,validation_status,combined,seasons:{"2024/2025":.seasons["2024/2025"]|del(.clubs),"2025/2026":.seasons["2025/2026"]|del(.clubs)},decision}' \
+            /tmp/t30-baseline-smoothing-v3-validation.json
