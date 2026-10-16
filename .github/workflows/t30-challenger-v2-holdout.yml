@@ -18,6 +18,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Setup Python
         uses: actions/setup-python@v5
@@ -29,12 +31,14 @@ jobs:
           python -m pip install --upgrade pip
           pip install numpy==2.3.5 pandas==2.2.3 scikit-learn==1.8.0 joblib==1.5.3
 
-      - name: Verify frozen spec commit exists in PR history
+      - name: Verify frozen spec commit exists in experiment history
         shell: bash
         run: |
           set -euo pipefail
-          git fetch --no-tags origin exp/t30-dev-challenger-v2 --depth=20
-          git merge-base --is-ancestor 2d02f247e151dc191d4af8790b87288fd5aaa68c HEAD
+          git fetch --no-tags origin exp/t30-dev-challenger-v2
+          git merge-base --is-ancestor \
+            2d02f247e151dc191d4af8790b87288fd5aaa68c \
+            origin/exp/t30-dev-challenger-v2
 
       - name: Compile verifier
         run: python -m py_compile ml/t30_challenger_v2_holdout_verify.py
