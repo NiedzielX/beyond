@@ -1,0 +1,152 @@
+name: C1 v8 Shadow Package Freeze
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - "ml/demand_engine/c1_shadow_runtime_v8.py"
+      - "ml/demand_engine/freeze_c1_shadow_package_v8.py"
+      - "ml/demand_engine/test_c1_shadow_runtime_v8.py"
+      - ".github/workflows/c1-shadow-v8-artifacts.yml"
+  pull_request:
+    paths:
+      - "ml/demand_engine/c1_shadow_runtime_v8.py"
+      - "ml/demand_engine/freeze_c1_shadow_package_v8.py"
+      - "ml/demand_engine/test_c1_shadow_runtime_v8.py"
+      - ".github/workflows/c1-shadow-v8-artifacts.yml"
+
+permissions:
+  contents: write
+  id-token: write
+
+concurrency:
+  group: c1-v8-shadow-package-freeze-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install pinned runtime
+        run: |
+          python -m pip install --upgrade pip
+          pip install numpy==2.3.5 pandas==2.2.3 scikit-learn==1.8.0 joblib==1.5.3
+      - name: Compile build/runtime entrypoints
+        run: |
+          python -m py_compile ml/demand_engine/c1_shadow_runtime_v8.py
+          python -m py_compile ml/demand_engine/freeze_c1_shadow_package_v8.py
+      - name: Run frozen policy/runtime tests
+        run: python -m unittest ml.demand_engine.test_c1_shadow_runtime_v8
+
+  freeze:
+    if: github.event_name != 'pull_request'
+    needs: validate
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install pinned runtime
+        run: |
+          python -m pip install --upgrade pip
+          pip install numpy==2.3.5 pandas==2.2.3 scikit-learn==1.8.0 joblib==1.5.3
+      - name: Request C1 training OIDC token
+        shell: bash
+        run: |
+          set -euo pipefail
+          response=$(curl -fsS -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
+            "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=beyond-c1-alpha-training")
+          token=$(printf '%s' "$response" | jq -r '.value')
+          test -n "$token"
+          test "$token" != "null"
+          echo "::add-mask::$token"
+          echo "C1_ALPHA_OIDC_TOKEN=$token" >> "$GITHUB_ENV"
+      - name: Fetch frozen C1 context components
+        shell: bash
+        run: |
+          set -euo pipefail
+          base='https://adchzwqboeekhokapxqi.supabase.co/functions/v1/c1_alpha_training_export_v1'
+          for part in events attendance sporting aliases hybrid; do
+            curl -fsS -H "Authorization: Bearer $C1_ALPHA_OIDC_TOKEN" \
+              "$base?version=v7-$part" -o "/tmp/c1-$part.json"
+            jq -e '.ok == true' "/tmp/c1-$part.json" >/dev/null
+          done
+          jq -e '.version == "c1-alpha-v7-events-v1" and .eventCount == 9' /tmp/c1-events.json >/dev/null
+          jq -e '.version == "c1-alpha-v7-hybrid-v1" and .rowCount == 8' /tmp/c1-hybrid.json >/dev/null
+      - name: Fetch regularized final-24h rows
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -fsS \
+            -H "Authorization: Bearer $C1_ALPHA_OIDC_TOKEN" \
+            'https://adchzwqboeekhokapxqi.supabase.co/functions/v1/c1_alpha_training_export_v1?version=v7-final24' \
+            -o /tmp/c1-final24.json
+          jq -e '.ok == true and .version == "c1-alpha-v7-final24-rows-v1" and .eventCount == 9 and .liveRowCount == 30' \
+            /tmp/c1-final24.json >/dev/null
+      - name: Compose frozen shadow-training payload
+        shell: bash
+        run: |
+          jq -n \
+            --slurpfile events /tmp/c1-events.json \
+            --slurpfile attendance /tmp/c1-attendance.json \
+            --slurpfile sporting /tmp/c1-sporting.json \
+            --slurpfile aliases /tmp/c1-aliases.json \
+            --slurpfile hybrid /tmp/c1-hybrid.json \
+            --slurpfile live /tmp/c1-final24.json \
+            '{version:"c1-shadow-v8-freeze-payload-v1",eventCount:$events[0].eventCount,events:$events[0].events,attendance:$attendance[0].attendance,sportingMatches:$sporting[0].sportingMatches,aliases:$aliases[0].aliases,ticketingChallengerRows:$hybrid[0].ticketingChallengerRows,ticketingChallengerContract:$hybrid[0].ticketingChallengerContract,liveRows:$live[0].liveRows,liveRowCount:$live[0].liveRowCount,sampling:$live[0].sampling}' \
+            > /tmp/c1-shadow-v8-freeze.json
+          jq '{version,eventCount,liveRowCount,eventIds:(.events|map(.ticket_event_id)|sort)}' /tmp/c1-shadow-v8-freeze.json
+      - name: Reproduce v8 development gate before freezing
+        run: |
+          python -m ml.c1_alpha_reliability_policy_v8 \
+            --input /tmp/c1-shadow-v8-freeze.json \
+            --artifact-dir ml/artifacts/structural_prior_runtime_v1 \
+            --output /tmp/c1-shadow-v8-reproduction.json
+          jq -e '.metrics.prior_mae > 3968 and .metrics.prior_mae < 3969 and .metrics.live_mae > 2929 and .metrics.live_mae < 2930 and .metrics.policy_mae > 2713 and .metrics.policy_mae < 2714' \
+            /tmp/c1-shadow-v8-reproduction.json >/dev/null
+      - name: Freeze v2+v8 prospective shadow package
+        run: |
+          rm -rf ml/artifacts/c1_shadow_v8
+          python -m ml.demand_engine.freeze_c1_shadow_package_v8 \
+            --input /tmp/c1-shadow-v8-freeze.json \
+            --output-dir ml/artifacts/c1_shadow_v8 \
+            --source-sha "$GITHUB_SHA"
+          cat ml/artifacts/c1_shadow_v8/manifest.json
+      - name: Verify frozen runtime contains no scheduled fit dependency
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import joblib
+          import pandas as pd
+          runtime = joblib.load('ml/artifacts/c1_shadow_v8/c1_v2_live_expert_v1.joblib')
+          assert runtime.package_version == 'c1-shadow-v8-frozen-2026-10-16-n9'
+          assert runtime.training_event_ids == (1,3,4,8,9,12,13,14,17)
+          assert runtime.training_rows == 30
+          assert len(runtime.features) > 0
+          print({'package': runtime.package_version, 'events': runtime.training_event_ids, 'features': len(runtime.features)})
+          PY
+      - name: Commit changed frozen package
+        shell: bash
+        run: |
+          set -euo pipefail
+          git add ml/artifacts/c1_shadow_v8
+          if git diff --cached --quiet; then
+            echo "Frozen C1 v8 package already matches the canonical build."
+            exit 0
+          fi
+          git config user.name "beyond-model-freezer[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "Freeze C1 v8 prospective shadow package"
+          git push origin HEAD:main
