@@ -8,12 +8,14 @@ on:
     paths:
       - "ml/c1_alpha_v2_expert_reliability_diagnostic_v7.py"
       - "supabase/sql/c1_alpha_v7_final24_export_v1.sql"
+      - "supabase/sql/c1_alpha_v7_split_context_v1.sql"
       - "supabase/functions/c1_alpha_training_export_v1/**"
       - ".github/workflows/c1-alpha-v2-reliability-v7.yml"
   pull_request:
     paths:
       - "ml/c1_alpha_v2_expert_reliability_diagnostic_v7.py"
       - "supabase/sql/c1_alpha_v7_final24_export_v1.sql"
+      - "supabase/sql/c1_alpha_v7_split_context_v1.sql"
       - "supabase/functions/c1_alpha_training_export_v1/**"
       - ".github/workflows/c1-alpha-v2-reliability-v7.yml"
 
@@ -67,15 +69,21 @@ jobs:
           test "$token" != "null"
           echo "::add-mask::$token"
           echo "C1_ALPHA_OIDC_TOKEN=$token" >> "$GITHUB_ENV"
-      - name: Fetch static event context
+      - name: Fetch split v7 context
         shell: bash
         run: |
           set -euo pipefail
-          curl -fsS \
-            -H "Authorization: Bearer $C1_ALPHA_OIDC_TOKEN" \
-            'https://adchzwqboeekhokapxqi.supabase.co/functions/v1/c1_alpha_training_export_v1?version=event-v1' \
-            -o /tmp/c1-event.json
-          jq -e '.ok == true and .version == "c1-alpha-event-training-export-v1"' /tmp/c1-event.json >/dev/null
+          base='https://adchzwqboeekhokapxqi.supabase.co/functions/v1/c1_alpha_training_export_v1'
+          for part in events attendance sporting aliases hybrid; do
+            curl -fsS -H "Authorization: Bearer $C1_ALPHA_OIDC_TOKEN" \
+              "$base?version=v7-$part" -o "/tmp/c1-$part.json"
+            jq -e '.ok == true' "/tmp/c1-$part.json" >/dev/null
+          done
+          jq -e '.version == "c1-alpha-v7-events-v1" and .eventCount == 9' /tmp/c1-events.json >/dev/null
+          jq -e '.version == "c1-alpha-v7-attendance-v1" and .rowCount > 0' /tmp/c1-attendance.json >/dev/null
+          jq -e '.version == "c1-alpha-v7-sporting-v1" and .rowCount > 0' /tmp/c1-sporting.json >/dev/null
+          jq -e '.version == "c1-alpha-v7-aliases-v1" and .rowCount > 0' /tmp/c1-aliases.json >/dev/null
+          jq -e '.version == "c1-alpha-v7-hybrid-v1" and .rowCount == 8' /tmp/c1-hybrid.json >/dev/null
       - name: Fetch regularized final-24h rows
         shell: bash
         run: |
@@ -90,11 +98,15 @@ jobs:
         shell: bash
         run: |
           jq -n \
-            --slurpfile static /tmp/c1-event.json \
+            --slurpfile events /tmp/c1-events.json \
+            --slurpfile attendance /tmp/c1-attendance.json \
+            --slurpfile sporting /tmp/c1-sporting.json \
+            --slurpfile aliases /tmp/c1-aliases.json \
+            --slurpfile hybrid /tmp/c1-hybrid.json \
             --slurpfile live /tmp/c1-final24.json \
-            '$static[0] + {version:"c1-alpha-v7-diagnostic-payload-v1",liveRows:$live[0].liveRows,liveRowCount:$live[0].liveRowCount,sampling:$live[0].sampling}' \
+            '{version:"c1-alpha-v7-diagnostic-payload-v1",eventCount:$events[0].eventCount,events:$events[0].events,attendance:$attendance[0].attendance,sportingMatches:$sporting[0].sportingMatches,aliases:$aliases[0].aliases,ticketingChallengerRows:$hybrid[0].ticketingChallengerRows,ticketingChallengerContract:$hybrid[0].ticketingChallengerContract,liveRows:$live[0].liveRows,liveRowCount:$live[0].liveRowCount,sampling:$live[0].sampling}' \
             > /tmp/c1-v7.json
-          jq '{version,eventCount,liveRowCount,hybridRows:(.ticketingChallengerRows|length),sampling}' /tmp/c1-v7.json
+          jq '{version,eventCount,liveRowCount,hybridRows:(.ticketingChallengerRows|length),attendanceRows:(.attendance|length),sportingRows:(.sportingMatches|length),aliasRows:(.aliases|length),sampling}' /tmp/c1-v7.json
       - name: Run v2 expert reliability diagnostic
         run: |
           python -m ml.c1_alpha_v2_expert_reliability_diagnostic_v7 \
