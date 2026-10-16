@@ -9,7 +9,7 @@ Last updated: **2026-10-16**
 > **Five-horizon Structural Prior materialization: DONE / LIVE**  
 > **Phase C1-alpha — frozen v2+v8 prospective shadow validation: LIVE**  
 > **Phase C1 promotion — EVIDENCE-GATED**  
-> **Phase E0 — Sector Decision & Dynamic Pricing MVP: ACTIVE IN PARALLEL**
+> **Phase E0 — Sector Decision & Dynamic Pricing MVP: ACTIVE IMPLEMENTATION**
 
 | Phase | Scope | Status |
 |---|---|---|
@@ -19,7 +19,7 @@ Last updated: **2026-10-16**
 | C1-alpha | Frozen v2+v8 package + prospective pre-outcome evidence + scoring | **LIVE** |
 | C1 — Promoted Learned Live Correction | Production promotion after sufficient fresh evidence | **EVIDENCE-GATED** |
 | D — Probabilistic | Calibrated P10/P50/P90 | TODO |
-| E0 — Sector Decision & Dynamic Pricing | Sector diagnosis, no-action projection, pricing scenarios, dashboard | **ACTIVE** |
+| E0 — Sector Decision & Dynamic Pricing | Sector trajectory, no-action projection, pricing scenarios, dashboard | **ACTIVE — CURRENT BUILD PATH** |
 | E1 — Learned Pricing / Intervention | Learned elasticity / intervention uplift | **EVIDENCE-GATED** |
 
 Canonical state:
@@ -27,6 +27,7 @@ Canonical state:
 - `ml/CURRENT_MODEL.md`;
 - `AI_BOOTSTRAP.md`;
 - `ml/C1_V8_PROSPECTIVE_SHADOW_V1.md`;
+- `ml/E0_SECTOR_TRAJECTORY_IMPLEMENTATION_V1.md`;
 - `ml/C1_MODEL_TOURNAMENT_V1.md`;
 - latest `ml/results/C1_ALPHA_*.md`.
 
@@ -140,67 +141,18 @@ Cadence:
 
 `9,24,39,54 * * * *`
 
-The live shadow path now:
+The live shadow path accepts only naturally due PIT-valid T-1 events, loads the frozen v2 expert, applies frozen v8, persists append-only pre-outcome evidence and scores only previously persisted decisions after outcomes.
 
-1. accepts only naturally due, PIT-valid T-1 events inside final 24h;
-2. reconstructs at most four representative 6h observations available by run time;
-3. loads the frozen v2 artifact;
-4. predicts without fitting;
-5. applies the frozen v8 rule;
-6. persists an append-only pre-outcome decision;
-7. scores completed events only from decisions that were already persisted before outcome.
+Read-only operational surfaces:
 
-Pre-outcome store:
+- `public.dashboard_c1_shadow_v8_status_v1`;
+- `public.dashboard_c1_shadow_v8_events_v1`.
 
-`private.c1_shadow_v8_predictions_v1`
-
-Post-outcome score store:
-
-`private.c1_shadow_v8_event_scores_v1`
-
-Input RPC:
-
-`public.get_c1_shadow_v8_inputs_v1(timestamptz)`
-
-Writer RPC:
-
-`public.insert_c1_shadow_v8_predictions_v1(jsonb,timestamptz)`
-
-Scorer RPC:
-
-`public.score_c1_shadow_v8_completed_events_v1(timestamptz)`
-
-Main-only GitHub OIDC gateway:
-
-`c1_shadow_v8_gateway_v1`
-
-## Current prospective state
-
-Initial production-shadow verification on 2026-10-16 is green end-to-end:
-
-- input candidate count: **0**;
-- prediction rows persisted: **0**;
-- prospective scored events: **0**;
-- scorer metrics: null until first prospective completed event.
-
-This is the correct state. The next events were still T-3 during deployment, so no T-1 decision was fabricated and no development event was backfilled.
-
-Next valid checkpoints:
-
-1. first non-zero pre-outcome v8 decision after a genuine T-1 prior becomes naturally due;
-2. first post-outcome score after that event completes and attendance is confirmed.
+Current prospective evidence is intentionally zero until the first naturally due T-1 decision.
 
 ## Prospective validation governance
 
-Do not:
-
-- retune v8 thresholds;
-- auto-retrain the frozen v2 expert;
-- silently expand the training set;
-- backfill missed decisions after outcomes;
-- use future timestamps to generate evidence early;
-- overwrite existing prospective decisions;
-- relabel development replay as prospective evidence.
+Do not retune v8 thresholds, auto-retrain the frozen v2 expert, silently expand the training set, backfill missed decisions after outcomes, force T-1 using future timestamps, or relabel development replay as prospective evidence.
 
 Any retrain requires an explicit new package version and governance decision.
 
@@ -208,65 +160,160 @@ Any retrain requires an explicit new package version and governance decision.
 
 The 20-independent-completed-match rule remains a later promotion gate.
 
-Promotion requires:
-
-- enough genuinely prospective independent completed events;
-- positive policy uplift vs Structural Prior;
-- acceptable degradation/tail risk;
-- frozen reproducible package and immutable evidence;
-- human review;
-- explicit promotion decision.
+Promotion requires enough genuinely prospective independent completed events, positive policy uplift vs Structural Prior, acceptable degradation/tail risk, frozen reproducible package and immutable evidence, human review and explicit promotion.
 
 No automatic production promotion exists.
 
-## C0 — Provisional decision layer
+## E0 — Sector Decision & Dynamic Pricing MVP — ACTIVE IMPLEMENTATION
 
-Continue in parallel:
+Canonical product specification:
 
-- continuation/no-action event projection;
-- sector diagnosis;
-- explicit provisional reason codes;
-- dashboard decision support.
+`ml/SECTOR_DECISION_PRICING_V1.md`
 
-Required labels:
+Canonical implementation state/roadmap:
 
-- `PROVISIONAL`;
-- `SCENARIO`;
-- `CURRENT TRAJECTORY CONTINUES`.
+`ml/E0_SECTOR_TRAJECTORY_IMPLEMENTATION_V1.md`
 
-## E0 — Sector Decision & Dynamic Pricing MVP
+### Confirmed live sector data
 
-Continue in parallel with prospective C1 collection.
+Real `public.sector_inventory` data is already available on active events.
 
-Per sector track:
+Canonical event ownership is:
 
-- current availability;
-- absorption/sell-through proxy;
-- velocity/acceleration;
-- expected vs observed progress;
-- trajectory gap;
-- status/confidence;
-- release/coverage/data-quality flags.
+`sector_inventory.snapshot_id -> snapshots.id -> snapshots.ticket_event_id`
 
-Preferred no-action wording:
+`sector_inventory.event_id` is nullable and must not be used as the E0 ownership key.
+
+Verified runtime coverage at the implementation checkpoint included approximately:
+
+- Lech: 151 sectors;
+- Pogoń: 42;
+- GKS Katowice: 23;
+- Wisła Płock: 17;
+- Zagłębie Lubin: 14.
+
+Therefore E0 can operate on real sector histories now.
+
+### E0.1 — Sector trajectory contract — CURRENT NEXT BUILD
+
+Create versioned:
+
+`sector-trajectory-v1`
+
+One PIT-safe row per:
+
+`ticket_event_id + sector + as_of_at`
+
+Required features:
+
+- current/reference/max availability;
+- public absorption / sell-through proxy;
+- 6h / 24h / 72h / 7d velocity;
+- acceleration/deceleration;
+- hours to kickoff;
+- observation density;
+- release / inventory increase / sector appearance/disappearance / coverage-change / data-gap flags.
+
+Every row must trace back to source snapshots.
+
+### E0.2 — Provisional continuous sector gap
+
+Initial expected-progress baseline is relative to the event's stable public-inventory trajectory.
+
+Label:
+
+`PROVISIONAL_RELATIVE_EVENT_BASELINE`
+
+Conceptually:
+
+`expected sector remaining = sector reference availability × event remaining ratio`
+
+`sector gap = observed remaining - expected remaining`
+
+Do not claim a learned sector-specific demand curve yet.
+
+### E0.3 — Status policy
+
+Statuses:
+
+- `UNDERPERFORMING`;
+- `ON_TRACK`;
+- `OUTPERFORMING`;
+- `INSUFFICIENT_SIGNAL`.
+
+Do not freeze thresholds before continuous gap distributions/stability are observed on real current events.
+
+Threshold policy must be small, deterministic and versioned.
+
+### E0.4 — Sector no-action projection
+
+Preferred wording:
 
 **Projected outcome if current trajectory continues**
 
-Dynamic pricing scenarios may compare `-10%`, `-5%`, `HOLD`, `+5%`, `+10%`, but before learned elasticity exists they are assumption-based scenario analysis.
+Estimate projected public availability at kickoff from stable recent sector velocity, bounded to a valid range and with conservative anomaly handling.
+
+This remains a continuation scenario, not a causal counterfactual.
+
+### E0.5 — Dashboard data surface
+
+Expose read-only event/sector summary and trajectory history for:
+
+`NiedzielX/BeyondTicketingPanel`
+
+Target block:
+
+`Event Detail -> Sector Performance & Pricing`
+
+### E0.6 — Price data contract
+
+Audit whether existing collectors provide current price / currency / price history / category mapping.
+
+If not available, implement explicit POC/MVP configured/imported price source with timestamp/source.
+
+Missing data semantics:
+
+`PRICE_DATA_MISSING`
+
+Never fabricate price.
+
+### E0.7 — Assumption-based pricing scenarios
+
+Initial configurable scenario grid may include:
+
+- `-10%`;
+- `-5%`;
+- `HOLD`;
+- `+5%`;
+- `+10%`.
+
+Required maturity label:
+
+`ASSUMPTION_BASED_SCENARIO`
 
 No automatic price changes:
 
 `auto_price_change_allowed = false`
 
+### E0.8 — Recommendation evidence loop
+
+Persist recommendation, no-action state, price/action, assumption version, confidence, reason codes, club decision, execution and subsequent outcome from day one.
+
+This becomes the training/evaluation base for E1 learned elasticity/intervention models.
+
 ## Immediate implementation sequence
 
-1. collect first naturally due prospective T-1 v8 evidence without modifying the package;
-2. expose read-only prospective status/evidence for operations/dashboard;
-3. score every newly completed prospective event automatically;
-4. keep production `live_adjustment=0`;
-5. continue sector/no-action projection and E0 pricing work;
-6. continue T-30 R&D separately.
+1. **Implement `sector-trajectory-v1` from `snapshots -> sector_inventory`.**
+2. Add release-aware continuous movement/gap features.
+3. Inspect gap stability and freeze versioned status thresholds.
+4. Implement bounded sector no-action projection.
+5. Expose read-only E0 dashboard data.
+6. Audit and implement price-data contract.
+7. Add assumption-based pricing scenarios.
+8. Add recommendation/decision/execution persistence.
+9. Keep C1 v8 frozen and let prospective evidence accumulate automatically.
+10. Keep production `live_adjustment=0`; continue T-30 R&D separately.
 
 ## Product target
 
-> **Beyond should tell the club where the event is going, whether the live trajectory is strong enough to override the Structural Prior, which sectors are falling behind, what is likely to remain unsold if nothing changes, and what price action is worth testing — while learning prospectively from frozen pre-outcome decisions.**
+> **Beyond should tell the club where the event is going, whether the live trajectory is strong enough to override the Structural Prior, which sectors are falling behind, what is likely to remain publicly available if nothing changes, and what price action is worth testing — while learning prospectively from every frozen decision and real intervention.**
