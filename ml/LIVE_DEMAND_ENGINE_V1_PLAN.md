@@ -1,101 +1,87 @@
 # Beyond Ticketing — Live Demand Engine v1 Plan
 
-Last updated: **2026-10-15 20:30 UTC**
+Last updated: **2026-10-16**
 
 ## Current position
 
 > **Phase A — Foundation: DONE**  
 > **Phase B — Shadow Forecasting: DONE**  
 > **Five-horizon Structural Prior materialization: DONE / LIVE**  
-> **Phase C — Learned Live Correction: BLOCKED ON EVIDENCE**
+> **Phase C1 — Learned Live Correction: EVIDENCE-GATED**  
+> **Phase E0 — Sector Decision & Dynamic Pricing MVP: START NOW**
 
-| Phase | Step | Scope | Status |
-|---|---:|---|---|
-| A — Foundation | 1 | Canonical LiveTrajectoryFeatureStore | **DONE** |
-| A — Foundation | 2 | Exact-cutoff checkpoint/readiness integration | **DONE** |
-| A — Foundation | 3 | Robust release / anomaly semantics | **DONE** |
-| A — Foundation | 4 | Append-only PIT live feature evidence store | **DONE** |
-| A — Foundation | 5 | Versioned live contract registry | **DONE** |
-| B — Shadow Forecasting | 6a | StructuralPrior adapter + model-domain guard | **DONE** |
-| B — Shadow Forecasting | 6b | Executable Structural Prior runtime + genuine P50 materialization at T-30/T-14/T-7/T-3/T-1 | **DONE** |
-| B — Shadow Forecasting | 7 | Expected trajectory / trajectory gap | **DONE** |
-| B — Shadow Forecasting | 8 | Persist Structural Prior shadow revisions | **DONE** |
-| B — Shadow Forecasting | 9 | First detection + revision audit | **DONE** |
-| B — Shadow Forecasting | 10 | Promotion gate / shadow-only enforcement | **DONE** |
-| C — Learned Correction | 11–14 | Train / evaluate residual live correction | **BLOCKED ON EVIDENCE** |
-| D — Probabilistic | 15–17 | Calibrated P10/P50/P90 | TODO |
-| E — Recommendations | 18–20 | Recommendation / intervention layer | LATER |
+| Phase | Scope | Status |
+|---|---|---|
+| A — Foundation | Canonical live trajectory / PIT evidence / registry | **DONE** |
+| B — Shadow Forecasting | Structural Prior, trajectory gap, shadow revisions, audit | **DONE** |
+| C0 — Provisional live decision layer | Bounded / versioned continuation logic, not promoted ML | **START NOW** |
+| C1 — Learned Live Correction | Train / evaluate live residual correction | **EVIDENCE-GATED** |
+| D — Probabilistic | Calibrated P10/P50/P90 | TODO |
+| E0 — Sector Decision & Dynamic Pricing | Sector diagnosis, no-action projection, pricing scenarios, dashboard | **START NOW** |
+| E1 — Learned Pricing / Intervention | Learned elasticity and intervention uplift | **EVIDENCE-GATED** |
 
-## Purpose
+Canonical product direction:
 
-Continuously answer:
+`ml/SECTOR_DECISION_PRICING_V1.md`
 
-1. **Where is this match expected to finish?**
-2. **Is current demand evolving better or worse than it should?**
-3. **Did we detect the divergence early enough for the club to act?**
+## Product purpose
 
-Core product equation:
+Beyond must continuously answer:
 
-`Live Forecast(t) = Structural Prior(t) + Live Trajectory Correction(t)`
+1. **Where is the event likely to finish?**
+2. **Which sector is underperforming or outperforming?**
+3. **What happens if the current trajectory continues and the club does nothing new?**
+4. **What pricing action should the club consider for that sector?**
+5. **What happened after the club acted?**
 
-Current Phase-B implementation keeps:
+Generic marketing recommendations are secondary. The primary decision unit is:
 
-`Live Trajectory Correction(t) = 0`
+`event -> sector -> trajectory -> no-action projection -> pricing scenario -> recommendation`
 
-until the learned correction passes evidence and governance gates.
+## Current forecasting stack
 
-Trajectory observation equation:
+`Structural Prior -> live-trajectory-v1.1 -> trajectory-gap-v1 -> shadow revision -> first-detection/revision audit`
 
-`Trajectory Gap(t) = Observed normalized public-inventory progress - Expected reference progress`
+Current production still has:
 
-Public ticket inventory remains a **demand proxy, not confirmed paid sales**.
+`live_adjustment = 0`
+
+for the promoted learned layer.
+
+This does **not** prevent an explicitly labeled provisional decision-support layer from showing continuation scenarios and pricing recommendations.
 
 ## Business horizon priority
 
 1. **T-30** — planning / major intervention;
-2. **T-14** — strong intervention / correction;
+2. **T-14** — strong pricing / demand intervention;
 3. **T-7** — tactical optimisation;
 4. **T-3** — late adjustment;
 5. **T-1** — final forecast / calibration.
 
-## Phase A — Foundation — DONE
+## Phase A — DONE
 
-Canonical live contract:
+Canonical feature contract:
 
 `live-trajectory-v1.1`
 
-Includes:
+Already includes the building blocks needed for sector decisions:
 
 - point-in-time public inventory;
-- 6h / 24h / 72h / 7d velocity;
+- multi-window velocity;
 - acceleration;
-- inventory/capacity normalization where valid;
-- sector absorption/release and coverage changes;
-- snapshot quality and gap telemetry;
-- release/anomaly semantics;
-- exact-cutoff checkpoint readiness.
+- sector absorption / release / coverage changes;
+- inventory normalization;
+- quality and gap telemetry;
+- anomaly semantics;
+- exact checkpoint readiness.
 
 Canonical evidence store:
 
 `private.live_trajectory_feature_snapshots_v1`
 
-Current evidence:
+## Phase B — DONE
 
-| Horizon | Training-eligible | Total stored |
-|---|---:|---:|
-| T-30 | **0** | 1 |
-| T-14 | **3** | 5 |
-| T-7 | **3** | 9 |
-| T-3 | **4** | 9 |
-| T-1 | **5** | 10 |
-
-This is enough for infrastructure validation, not for promotion of a learned correction.
-
-## Phase B — Shadow Forecasting — DONE
-
-### Step 6 — genuine Structural Prior — DONE across all five horizons
-
-Current executable model specs:
+All five Structural Prior checkpoints are executable:
 
 - T-30: `structural-prior-runtime-v1-t30-extra-full`;
 - T-14: `structural-prior-runtime-v1-t14-hist-base`;
@@ -103,175 +89,247 @@ Current executable model specs:
 - T-3: `structural-prior-runtime-v1-t3-hist-full`;
 - T-1: `structural-prior-runtime-v1-t1-hist-full`.
 
-Frozen bundle:
+Trajectory gap statuses:
 
-`structural-prior-runtime-v1-frozen-2026-10-15-t1`
+- `UNDERPERFORMING`;
+- `ON_TRACK`;
+- `OUTPERFORMING`;
+- `INSUFFICIENT_SIGNAL`.
 
-Five-season validated historical input:
+Confidence:
 
-- **1,530 matches**;
-- **7,650 PIT snapshots**;
-- DB-native backfill complete;
-- current validated domain: **Ekstraklasa**.
+- `NONE`;
+- `LOW`;
+- `MEDIUM`;
+- `HIGH`.
 
-The automatic materializer, registry, resolver and gateway support all five checkpoints. No silent fallback to old Lech v1.3/v0.3 is allowed.
+Public inventory remains a **demand proxy, not confirmed paid sales**.
 
-Latest verified orchestrator run after the five-horizon rollout:
+## Phase C — split into C0 and C1
 
-`private.live_forecast_orchestrator_runs_v1.id = 18`
+### C0 — Provisional live decision layer — START NOW
 
-- active events: **12**;
-- processed: **12**;
-- `missing_prior`: **0**;
-- skipped: **0**;
-- errors: **0**;
-- checkpoint rows materialized: **34**.
+Purpose: make the product operational before the learned-correction evidence gate is met.
 
-T-1 is deployed but the first current T-1 cutoff is not naturally due until **2026-10-16 15:30 UTC**. Do not pre-materialize future PIT evidence.
+Allowed:
 
-### Step 7 — expected trajectory / trajectory gap — DONE
+- continuation / no-action event projection;
+- explicitly bounded and versioned provisional live adjustment if needed;
+- sector trajectory diagnosis;
+- reason codes;
+- dashboard display.
 
-Implementation:
+Required labels:
 
-`ml/demand_engine/trajectory_gap.py`
+- `PROVISIONAL`;
+- `SCENARIO`;
+- `CURRENT TRAJECTORY CONTINUES`.
 
-DB:
+C0 must not claim that a learned live model has proven uplift.
 
-- `private.trajectory_gap_observations_v1`;
-- `private.trajectory_gap_reference_pool_v1`.
+### C1 — Learned Live Correction — EVIDENCE-GATED
 
-Initial v1 is intentionally descriptive:
-
-- Structural Prior is the mandatory final-demand anchor;
-- attendance P50 is not converted 1:1 to public inventory;
-- expected progress comes from other PIT-valid live trajectories at the same canonical horizon;
-- target event and future evidence are excluded;
-- minimum reference pool: **3 events / 2 clubs**;
-- status: `UNDERPERFORMING / ON_TRACK / OUTPERFORMING / INSUFFICIENT_SIGNAL`;
-- confidence is explicit.
-
-### Step 8 — shadow revisions — DONE
-
-Implementation:
-
-`ml/demand_engine/structural_prior_shadow.py`
-
-New-stack rows use:
-
-- Structural Prior P50 as historical P50;
-- live adjustment **0**;
-- final P50 = Structural Prior P50;
-- P10/P90 `NULL` until calibration;
-- `live-trajectory-v1.1` lineage;
-- `trajectory-gap-v1` lineage and reason codes;
-- source Structural Prior horizon rather than the legacy nearest-checkpoint labeler.
-
-### Step 9 — first detection / revision history — DONE
-
-DB:
-
-- `private.trajectory_first_detection_v1`;
-- trigger `private.capture_first_trajectory_divergence_v1()`;
-- view `private.structural_shadow_revision_history_v1`.
-
-Only PIT-valid `UNDERPERFORMING` or `OUTPERFORMING` states create first detection.
-
-After outcome arrival each revision is scored as:
-
-- `IMPROVED`;
-- `WORSENED`;
-- `UNCHANGED`;
-- or `PENDING_OUTCOME` before the match is resolved.
-
-### Step 10 — promotion gate — DONE as governance
-
-Single source of truth:
-
-`ml/MODEL_PROMOTION_GOVERNANCE_V1.md`
-
-Live Ticketing evidence gate remains:
-
-- **20 independent completed matches**;
-- positive uplift;
-- challenger MAE below incumbent;
-- frozen evidence package;
-- mandatory human review;
-- `auto_activation_allowed = false`.
-
-Crossing the gate never changes production P50 automatically.
-
-## Phase C — Learned Live Correction — BLOCKED ON EVIDENCE
-
-Future target:
+Target:
 
 `live_target_residual = actual_attendance - structural_prior_p50`
 
-Candidate predictors may include:
+The existing 20-independent-completed-match rule remains a **promotion gate** for C1.
 
-- trajectory level gap;
-- normalized inventory position;
-- 6h / 24h / 72h / 7d velocity;
-- acceleration;
-- release/coverage-change signals;
-- signal quality and source coverage;
-- horizon interactions;
-- Structural Prior occupancy/context.
+It is no longer a blocker for operating C0 or E0.
 
-Every challenger must compare on the **same completed event/checkpoint**:
+Promotion still requires:
 
-1. Structural Prior error;
-2. Structural Prior + live correction error.
-
-Primary metrics:
-
-- MAE;
-- WAPE;
-- bias;
-- event-improvement rate;
-- early-warning lead time.
-
-No learned correction is promoted while the completed-event evidence base remains too small.
+- sufficient independent completed matches;
+- challenger MAE below incumbent;
+- positive uplift;
+- frozen evidence package;
+- mandatory human review;
+- no automatic activation.
 
 ## Phase D — Probabilistic
 
-Only after the point forecast stack is stable:
+Later:
 
-- calibrated P10/P50/P90;
+- P10/P50/P90;
 - pinball loss;
-- P10–P90 coverage;
-- horizon-specific calibration;
-- no fake intervals in Phase B.
+- empirical coverage;
+- horizon-specific calibration.
 
-## Phase E — Recommendations
+Do not fabricate confidence intervals before calibration.
 
-Later layer:
+## Phase E — split into E0 and E1
 
-- translate validated trajectory divergence into intervention options;
-- persist intervention timing;
-- measure whether actions changed the subsequent trajectory;
-- never infer causal uplift from an unobserved counterfactual.
+### E0 — Sector Decision & Dynamic Pricing MVP — START NOW
 
-## Immediate sequence
+This is now part of the near-term product, not a distant downstream layer.
 
-1. **Verify the first naturally due T-1 production materialization after 2026-10-16 15:30 UTC.**
-2. Continue prospective evidence collection on the completed five-horizon Phase-B stack.
-3. Continue T-30 Structural Prior R&D toward **<1,700 MAE** in parallel.
-4. Start Phase C training only when evidence governance permits it.
-5. Phase D calibration after point-model stability.
+#### E0.1 Sector-level trajectory
 
-## Reproducibility
+For every observable sector:
 
-Key files:
+- current availability;
+- absorption / sell-through proxy;
+- velocity / acceleration;
+- expected progress;
+- observed progress;
+- trajectory gap;
+- status / confidence;
+- release / coverage / data-quality flags.
 
-- `AI_BOOTSTRAP.md`;
-- `ml/CURRENT_MODEL.md`;
-- `ml/STRUCTURAL_PRIOR_MATERIALIZER_V1.md`;
-- `ml/LIVE_FORECAST_ORCHESTRATOR_V1.md`;
-- `ml/results/STRUCTURAL_PRIOR_RUNTIME_V1_2026-10-15.md`;
-- `ml/results/LIVE_DEMAND_ENGINE_PHASE_B_2026-10-15.md`;
-- `ml/demand_engine/live_trajectory_feature_store.py`;
-- `ml/demand_engine/current_structural_prior_features.py`;
-- `ml/demand_engine/trajectory_gap.py`;
-- `ml/demand_engine/structural_prior_shadow.py`;
-- `ml/demand_engine/sql/phase_b_shadow_contracts_v1.sql`;
-- `ml/MODEL_PROMOTION_GOVERNANCE_V1.md`.
+#### E0.2 Sector no-action projection
+
+Estimate:
+
+- projected final public sell-through proxy;
+- projected public seats remaining at kickoff;
+- confidence / assumptions.
+
+Preferred product wording:
+
+**Projected outcome if current trajectory continues**
+
+Do not call this a causal counterfactual.
+
+#### E0.3 Event no-action projection
+
+Display:
+
+- Structural Prior P50;
+- current live/provisional P50;
+- delta vs Structural Prior;
+- projected final event demand / attendance if current trajectory continues;
+- latest evidence timestamp.
+
+Sector public-inventory projection and event attendance P50 are different quantities and must not be forced to sum 1:1.
+
+#### E0.4 Dynamic pricing scenario engine
+
+Pricing is a first-class recommendation.
+
+Per sector / price band, where price data exists, evaluate configurable scenarios such as:
+
+- `-10%`;
+- `-5%`;
+- `HOLD`;
+- `+5%`;
+- `+10%`.
+
+For each scenario show:
+
+- proposed price;
+- elasticity / demand-response assumption;
+- projected sell-through / remaining inventory proxy;
+- projected revenue proxy;
+- delta vs no-action;
+- confidence / maturity;
+- assumption-set version.
+
+Before learned elasticity exists, label the result:
+
+**Scenario estimate based on current demand signal and provisional elasticity assumptions**
+
+No automatic production price changes:
+
+`auto_price_change_allowed = false`
+
+#### E0.5 Recommendation tracking
+
+Persist from day one:
+
+- event / sector;
+- recommendation time;
+- no-action projection;
+- current price;
+- recommended action / price;
+- reason codes;
+- assumption/model version;
+- club decision;
+- execution time;
+- actual executed price/action;
+- later sector trajectory;
+- final outcome;
+- revenue outcome where available.
+
+This creates the training evidence for E1.
+
+### E1 — Learned Pricing / Intervention Engine — EVIDENCE-GATED
+
+Later, learn:
+
+- price elasticity;
+- context-specific intervention response;
+- expected incremental sell-through;
+- incremental revenue / contribution;
+- uncertainty;
+- ranking of actions by expected value.
+
+Where possible, use randomized holdouts. Otherwise explicitly label quasi-experimental / non-causal designs.
+
+## Relationship to Growth
+
+Existing Growth measurement remains valid:
+
+`Demand signal -> recommendation -> experiment -> treatment/holdout -> outcome -> incremental tickets/revenue -> ROI`
+
+Pricing becomes a measurable intervention family.
+
+Growth does not replace sector diagnosis or dynamic-pricing decision support. It measures what happened after an intervention.
+
+Relevant docs:
+
+- `growth/GROWTH_MEASUREMENT_V1.md`;
+- `growth/GROWTH_EXECUTION_DATA_V2.md`.
+
+## Dashboard target
+
+Primary surface:
+
+`NiedzielX/BeyondTicketingPanel -> EventDetailPage`
+
+Add a **Sector Performance & Pricing** block.
+
+Minimum sector table:
+
+| Sector | Current price | Availability | Velocity | Expected progress | Actual progress | Gap | No-action final | Status | Price recommendation | Scenario impact | Confidence |
+|---|---:|---:|---:|---:|---:|---:|---:|---|---|---|---|
+
+Expandable sector detail:
+
+- trajectory chart;
+- price history;
+- release history;
+- no-action projection;
+- price scenarios;
+- rationale;
+- data quality.
+
+## Immediate implementation sequence
+
+1. verify first naturally due T-1 and keep five-horizon production healthy;
+2. implement sector-level trajectory-gap/status contract;
+3. implement sector no-action projection;
+4. define price data contract / ingest and `PRICE_DATA_MISSING` semantics;
+5. implement assumption-based dynamic-pricing E0 scenarios;
+6. persist recommendation / club decision / execution history;
+7. expose Sector Performance & Pricing in Event Detail dashboard;
+8. continue prospective evidence collection for learned C1/E1;
+9. continue T-30 R&D in parallel — not as the product critical path;
+10. calibrate probabilistic outputs when enough evidence exists.
+
+## Validation rule after 2026-10-16
+
+2024/25 and 2025/26 have been inspected in T-30 R&D and must not be described as pristine untouched holdouts for future T-30 challenger cycles.
+
+Use:
+
+- rolling-origin pre-validation for structural R&D;
+- exposed historical seasons only as fixed regression evidence where appropriate;
+- prospective 2026/27 as critical fresh OOS evidence for new learned live / pricing decisions.
+
+Governance:
+
+`ml/T30_RND_GOVERNANCE_V2.md`
+
+## Product target
+
+> **Beyond should tell the club which sector is falling behind, what is likely to remain unsold if nothing changes, and what price action is worth testing — while learning from every real decision and outcome.**
