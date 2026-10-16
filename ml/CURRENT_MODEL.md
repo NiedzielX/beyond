@@ -2,23 +2,17 @@
 
 Last product-direction update: **2026-10-16**
 
-This is the canonical short-form state. For cold-start instructions read `AI_BOOTSTRAP.md`. For C1-alpha training read `ml/C1_MODEL_TOURNAMENT_V1.md`. For sector/pricing product behaviour read `ml/SECTOR_DECISION_PRICING_V1.md`.
+This is the canonical short-form state. For cold-start instructions read `AI_BOOTSTRAP.md`. For C1-alpha governance read `ml/C1_MODEL_TOURNAMENT_V1.md`. For sector/pricing product behaviour read `ml/SECTOR_DECISION_PRICING_V1.md`.
 
 ## Current north star
 
 Beyond is a **live demand decision system**, not only an attendance model.
 
-It must answer:
-
-- where the event is likely to finish;
-- which sector is underperforming / outperforming;
-- what happens if the current trajectory continues;
-- what price action is worth testing;
-- what happened after the club acted.
-
 Primary decision flow:
 
 `Structural Prior -> Live Trajectory -> Sector Gap -> No-action Projection -> Pricing Scenario -> Recommendation -> Execution -> Outcome`
+
+The product must answer where the event is likely to finish, which sectors are behind/ahead, what happens if the current trajectory continues, what price action is worth testing, and what happened after execution.
 
 ## Structural Prior runtime
 
@@ -36,48 +30,18 @@ Frozen bundle:
 
 `structural-prior-runtime-v1-frozen-2026-10-15-t1`
 
-Normal scheduled inference is load + predict only. It must not fit a model.
+Scheduled inference is load + predict only. It must never fit a model.
 
 ## Historical validation status
 
-The canonical five-season dataset remains:
+Canonical history:
 
-- 2021/22–2025/26;
-- 1,530 Ekstraklasa matches;
-- 7,650 horizon snapshots;
+- Ekstraklasa 2021/22–2025/26;
+- 1,530 matches;
+- 7,650 horizon rows;
 - verified historical capacity coverage 100%.
 
-Important governance update:
-
-**2024/25 and 2025/26 are no longer pristine untouched T-30 holdouts for new R&D cycles.**
-
-They were opened during controlled T-30 challenger verification on 2026-10-16. They may be used as fixed historical regression evidence, but must not be repeatedly tuned against or relabeled as untouched.
-
-Fresh validation for new learned live/pricing decisions comes primarily from prospective **2026/27** evidence.
-
-T-30 governance:
-
-`ml/T30_RND_GOVERNANCE_V2.md`
-
-## T-30 R&D state
-
-Current production T-30 remains:
-
-`structural-prior-runtime-v1-t30-extra-full`
-
-Recent controlled challengers did not justify promotion:
-
-- v2 ExtraTrees regularization: rejected;
-- v3 raw historical baseline smoothing: research signal only, not robust enough;
-- v4 occupancy-normalized anchor: rejected;
-- v5 cold-start-only anchoring: stopped at pre-validation;
-- v6 explicit baseline occupancy feature: did not pass the rolling-origin gate.
-
-Merged error audit:
-
-`ml/results/T30_PREVALIDATION_ERROR_AUDIT_V1_2026-10-16.md`
-
-T-30 improvement continues in parallel and is **not** the product critical path.
+2024/25 and 2025/26 are **not pristine untouched T-30 holdouts** for new R&D. They were exposed during controlled challenger work on 2026-10-16. New T-30 research uses rolling-origin pre-validation and prospective 2026/27 as critical fresh evidence.
 
 ## Live trajectory state
 
@@ -96,148 +60,179 @@ Statuses:
 - `OUTPERFORMING`;
 - `INSUFFICIENT_SIGNAL`.
 
-Confidence:
-
-- `NONE`;
-- `LOW`;
-- `MEDIUM`;
-- `HIGH`.
-
 Public seat-map inventory is a **demand proxy, not confirmed paid sales**.
 
-## Phase C — updated interpretation
+## C1-alpha — current evidence
 
-### C0 — Provisional live decision layer — ACTIVE DEVELOPMENT
+Do **not** wait for 20 completed matches before doing C1-alpha R&D. The 20-match rule is a later promotion gate only.
 
-We do not wait for the learned-correction evidence gate to make the product useful.
+Current verified current-domain evidence:
 
-C0 may provide:
+- **9 completed Ekstraklasa events**;
+- **206 PIT-valid trajectory rows** at regularized 6h cadence;
+- **8/9 events** with PIT-safe T-24 `hybrid_v6`;
+- one additional completed Lech Europa League event kept outside the primary Structural Prior domain.
 
-- no-action continuation projections;
-- explicitly provisional / bounded live revision logic;
-- sector diagnosis;
-- reason codes;
-- dashboard decision support.
+Versioned exports:
 
-It must be labeled provisional/scenario-based and must not claim learned uplift.
+- `c1-alpha-training-export-v1` — full trajectory;
+- `c1-alpha-training-export-v2` — full trajectory + T-24 hybrid ticketing signal;
+- `c1-alpha-event-training-export-v1` — lightweight one-event payload for event-level diagnostics.
 
-### C1-alpha — Full-trajectory model tournament — ACTIVE NOW
+## C1-alpha R&D ladder — canonical results
 
-Canonical plan:
+### v1 — all-phase full-trajectory tournament
 
-`ml/C1_MODEL_TOURNAMENT_V1.md`
+Evidence:
 
-Decision: **train now on the completed events already collected. Do not wait for 20 matches to begin modelling.**
+`ml/results/C1_ALPHA_MODEL_TOURNAMENT_V1_2026-10-16.md`
 
-Current verified versioned export:
+Mixing sparse T-14/T-7 evidence with final-24h evidence did not improve the Structural Prior. Conclusion: a single continuous correction across heterogeneous phases is the wrong first formulation.
 
-- 9 completed Ekstraklasa events compatible with the current Structural Prior domain;
-- 206 PIT-valid full-trajectory samples at a regularized 6h cadence;
-- current-season attendance/sporting inputs needed to replay frozen Structural Prior checkpoints;
-- one completed Lech Europa League event excluded from the primary leaderboard and reserved as a possible transfer test.
+### v2 — final-24h T-1 live expert — **best aggregate challenger so far**
 
-Implementation now on `main`:
+Evidence:
 
-- `supabase/sql/c1_alpha_training_export_v1.sql`;
-- `supabase/functions/c1_alpha_training_export_v1/index.ts`;
-- `ml/c1_alpha_model_tournament_v1.py`;
-- `.github/workflows/c1-alpha-model-tournament-v1.yml`.
+`ml/results/C1_ALPHA_T1_TOURNAMENT_V2_2026-10-16.md`
 
-Validation:
+Winner:
 
-- **Leave-One-Event-Out** only;
-- all rows from one match stay in one fold;
-- equal event weighting;
-- no random snapshot split;
-- current Structural Prior is the incumbent;
-- target is live residual (attendance and occupancy variants are compared).
+`ridge_directocc_compact_generic_a10`
 
-Tournament families:
+Whole-event LOEO:
 
-- zero correction / bias baselines;
-- Ridge;
-- ElasticNet;
-- Huber;
-- HistGradientBoosting;
-- constrained ExtraTrees / RandomForest;
-- shallow XGBoost;
-- shallow LightGBM.
+- Structural Prior: **3,968.7 MAE**;
+- v2 live expert: **2,929.3 MAE**;
+- uplift: **1,039.4 / 26.19%**;
+- event improvement rate: **4/9**;
+- worst-event degradation: **4,748.6**.
 
-Primary objective:
+This proves strong complementary live signal but is too unstable for unconditional replacement.
 
-**lowest stable event-level MAE vs Structural Prior.**
+### v3 — nested threshold/blend gate
 
-R&D target:
+Evidence:
 
-- <1700 MAE;
-- stretch <1500 MAE.
+`ml/results/C1_ALPHA_T1_GATED_V3_2026-10-16.md`
 
-### C1 — Learned Live Correction promotion — EVIDENCE-GATED
+- MAE: **3,054.3**;
+- relative improvement: **23.04%**;
+- worst-event degradation reduced to **1,326.1**;
+- improvement rate: **2/9**.
 
-The 20-independent-completed-match rule remains a **later promotion/validation gate**, not a training-start gate.
+Safer, but still not accurate enough.
 
-It is not a blocker for C1-alpha, C0 or E0.
+### v4 — stacked/meta gate
 
-Promotion still requires:
+Evidence:
 
-- enough independent completed events;
-- positive uplift vs Structural Prior;
-- lower error than incumbent;
-- frozen evidence package;
-- human review;
-- no automatic activation.
+`ml/results/C1_ALPHA_T1_STACKED_V4_2026-10-16.md`
 
-## Phase E — now split into E0 and E1
+- MAE: **3,106.8**;
+- relative improvement: **21.72%**;
+- improvement rate: **2/9**.
 
-### E0 — Sector Decision & Dynamic Pricing MVP — START NOW
+More stacking did not solve expert selection.
+
+### v5 — stacked gate + PIT-safe `hybrid_v6`
+
+Evidence:
+
+`ml/results/C1_ALPHA_T1_HYBRID_GATE_V5_2026-10-16.md`
+
+- MAE: **3,073.8**;
+- relative improvement: **22.55%**;
+- improvement rate: **4/9**;
+- still unstable.
+
+Hybrid velocity adds information but high-dimensional stacking remains unsuitable for N=9 independent events.
+
+### v6 — one-row-per-event T-24 challenger — **rejected direction**
+
+Evidence:
+
+`ml/results/C1_ALPHA_T24_RESIDUAL_V6_2026-10-16.md`
+
+Winner:
+
+`ridge_direct_occupancy_hybrid_a10`
+
+LOEO:
+
+- Structural Prior: **3,968.7 MAE**;
+- v6: **3,873.2 MAE**;
+- improvement: **2.41%**;
+- improvement rate: **5/9**.
+
+LOCO:
+
+- v6: **3,989.8 MAE**;
+- relative change vs prior: **-0.53%**.
+
+Outcome-aware oracle prior-or-v6: **2,942.1 MAE**.
+
+This is materially worse than the v2 expert-pair oracle, so T-24-only compression discards useful live-trajectory information.
+
+## Main C1-alpha conclusion
+
+The best honest aggregate learned challenger remains **v2 at 2,929.3 MAE**, but no candidate is stable enough to freeze as the live correction.
+
+The most important diagnostic is the non-deployable v2 expert-pair oracle:
+
+**Structural Prior vs v2 live expert oracle switch ≈ 1,867.9 MAE.**
+
+This means the primary unsolved problem is **expert reliability / expert selection**, not lack of live signal.
+
+Production remains:
+
+`live_adjustment = 0`
+
+Do **not** activate v2-v6 in production or present the oracle as deployable.
+
+## Immediate C1-alpha next action — v7 reliability diagnostic
+
+Do not build another feature-heavy stacker yet.
+
+Build one event-level diagnostic row per completed match for the **existing v2 pair** and identify PIT-observable characteristics that distinguish:
+
+- events where Structural Prior should be trusted;
+- events where the full final-24h live expert should take over.
+
+Required PIT-safe diagnostics:
+
+- Structural Prior P50 / expected occupancy;
+- round number / current-season completed home evidence before T-1;
+- v2 earliest and latest final-24h estimates;
+- prior-vs-live disagreement magnitude and direction;
+- live estimate range / standard deviation / slope over final 24h;
+- observation window and snapshot count;
+- signal readiness / feature quality;
+- matched-sector vs raw-only regime;
+- release / coverage flags.
+
+Actual outcome and oracle winner may be stored **only as evaluation labels**.
+
+After the diagnostic, define a small predeclared reliability policy and validate it by whole-event holdout. Do not tune rules directly to an outer held-out event.
+
+## C1 promotion gate
+
+The 20-independent-completed-match rule remains a **promotion/validation gate**, not a training-start gate.
+
+Promotion still requires sufficient independent events, positive uplift, acceptable tail risk, frozen model/data/feature package, human review and no automatic activation.
+
+## E0 — Sector Decision & Dynamic Pricing MVP
+
+This remains a parallel product priority and does not wait for C1 promotion.
 
 Canonical spec:
 
 `ml/SECTOR_DECISION_PRICING_V1.md`
 
-Required outputs:
+Required outputs include sector trajectory gap/status, no-action projection, pricing scenarios, recommendation rationale and decision/execution history.
 
-1. sector underperformance / outperformance;
-2. sector trajectory gap;
-3. projected final public sell-through / remaining availability if current trajectory continues;
-4. event projected outcome if current trajectory continues;
-5. current sector price where available;
-6. pricing recommendation: `HOLD / INCREASE / DECREASE`;
-7. configurable price scenarios;
-8. projected sell-through / revenue proxy under each scenario;
-9. confidence / assumptions / reason codes;
-10. recommendation decision / execution tracking.
-
-No automatic price execution:
+No automatic production price changes:
 
 `auto_price_change_allowed = false`
-
-Before learned elasticity exists, pricing scenarios are explicitly assumption-based.
-
-### E1 — Learned Pricing / Intervention Engine — EVIDENCE-GATED
-
-Later learn:
-
-- sector/context-specific price elasticity;
-- intervention uplift;
-- incremental tickets;
-- incremental revenue / contribution;
-- action expected value;
-- uncertainty.
-
-## Growth relationship
-
-Existing Growth measurement remains the outcome/ROI framework:
-
-`Demand signal -> recommendation -> experiment -> execution -> outcome -> incremental tickets/revenue -> ROI`
-
-Pricing is a first-class intervention family.
-
-Relevant docs:
-
-- `growth/GROWTH_MEASUREMENT_V1.md`;
-- `growth/GROWTH_EXECUTION_DATA_V2.md`;
-- `growth/DYNAMIC_PRICING_MEASUREMENT_V1.md`.
 
 ## Dashboard target
 
@@ -249,35 +244,25 @@ Primary page:
 
 `src/pages/EventDetailPage.tsx`
 
-Near-term product block:
+Target block:
 
 **Sector Performance & Pricing**
 
-Minimum table fields:
-
-`Sector | Current price | Availability | Velocity | Expected progress | Actual progress | Gap | No-action final | Status | Price recommendation | Scenario impact | Confidence`
-
 ## Immediate implementation sequence
 
-1. run and record `C1-alpha Model Tournament v1` leaderboard against current Structural Prior;
-2. freeze the simplest stable winner if it beats the incumbent and run it in experimental/shadow mode;
-3. keep five-horizon Structural Prior / orchestrator healthy;
-4. implement sector-level trajectory gap/status;
-5. implement sector no-action projection;
-6. define price data contract / ingest;
-7. implement assumption-based dynamic-pricing E0 scenarios;
-8. persist recommendation / club decision / execution history;
-9. expose Sector Performance & Pricing in Event Detail;
-10. continue T-30 R&D in parallel;
-11. calibrate P10/P50/P90 when evidence supports it.
+1. build and persist **v7 expert reliability diagnostic** for Structural Prior + v2 final-24h expert;
+2. define one small predeclared reliability policy from PIT-safe semantics and validate it whole-event;
+3. keep Structural Prior / orchestrator healthy with `live_adjustment=0`;
+4. continue sector gap and no-action projection work;
+5. continue price-data and E0 pricing-scenario implementation;
+6. keep collecting prospective 2026/27 evidence;
+7. continue T-30 R&D in parallel, not as the product critical path.
 
-## Non-negotiable product/model labels
+## Non-negotiable labels / rules
 
-Until learned/validated:
-
-- use `EXPERIMENTAL`, `PROVISIONAL`, `SCENARIO`, or `ASSUMPTION-BASED` where appropriate;
-- never call scenario uplift causal;
-- never equate public inventory with paid sales;
-- never change production prices automatically;
-- never report snapshot-row cross-validation as independent-match validation;
+- never call public inventory paid sales;
+- never report snapshot rows as independent matches;
+- never present the oracle as a deployable model;
+- never tune a selector against its outer held-out event;
+- use `EXPERIMENTAL`, `PROVISIONAL`, `SCENARIO` or `ASSUMPTION-BASED` until validated;
 - persist source, timestamp, dataset/model version and reason codes behind every recommendation/model result.
