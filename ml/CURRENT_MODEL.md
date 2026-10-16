@@ -2,7 +2,7 @@
 
 Last product-direction update: **2026-10-16**
 
-This is the canonical short-form state. Read `AI_BOOTSTRAP.md` first in a cold session. Operational C1 v8 details are in `ml/C1_V8_PROSPECTIVE_SHADOW_V1.md`.
+This is the canonical short-form state. Read `AI_BOOTSTRAP.md` first in a cold session. Operational C1 v8 details are in `ml/C1_V8_PROSPECTIVE_SHADOW_V1.md`. Active E0 implementation details are in `ml/E0_SECTOR_TRAJECTORY_IMPLEMENTATION_V1.md`.
 
 ## Current north star
 
@@ -185,51 +185,18 @@ Cadence:
 
 `9,24,39,54 * * * *`
 
-The live shadow path now performs:
+The live shadow path performs forward-only T-1 inference, persists append-only pre-outcome decisions and scores only decisions that existed before the outcome.
 
-1. forward-only main-branch OIDC authentication;
-2. natural T-1 eligibility check;
-3. max four PIT-valid final-24h 6-hour representatives;
-4. frozen v2 artifact inference;
-5. frozen v8 policy selection;
-6. append-only pre-outcome decision persistence;
-7. post-outcome scoring of only previously persisted decisions.
+Read-only operational surfaces are available:
 
-Pre-outcome evidence:
+- `public.dashboard_c1_shadow_v8_status_v1`;
+- `public.dashboard_c1_shadow_v8_events_v1`.
 
-`private.c1_shadow_v8_predictions_v1`
-
-Post-outcome scores:
-
-`private.c1_shadow_v8_event_scores_v1`
-
-The writer rejects known outcomes and non-PIT/non-T1 evidence. The scorer never reconstructs a missing decision after the outcome is known.
-
-## Current prospective evidence state
-
-As of initial deployment on 2026-10-16:
-
-- prospective prediction rows: **0**;
-- prospective scored events: **0**;
-- latest full main workflow run completed successfully;
-- zero candidates is expected because the next eligible matches were still resolved at T-3 during deployment.
-
-No historical backfill was performed.
-
-The first valid checkpoint is the first non-zero decision created after a genuine T-1 prior becomes naturally due. The second is its post-outcome score after actual attendance is confirmed.
+Current prospective evidence remains at zero until the first naturally due T-1 decision. No historical backfill was performed.
 
 ## Governance during prospective validation
 
-Do not:
-
-- retune 10 pp / 20 pp / positive-slope thresholds;
-- refit the package automatically;
-- silently add prospective events to training;
-- backfill a missed prediction after an outcome is known;
-- use future timestamps to force T-1 evidence;
-- overwrite pre-outcome evidence;
-- label the original v8 replay as fresh validation;
-- write v8 into production forecast values.
+Do not retune v8, refit the frozen package automatically, expand its training set silently, force T-1 with future timestamps, backfill missed predictions after outcomes, or write v8 into production forecast values.
 
 Any retrain requires an explicit new package version and governance decision.
 
@@ -237,30 +204,72 @@ Any retrain requires an explicit new package version and governance decision.
 
 Promotion requires enough genuinely prospective independent completed events, positive uplift vs Structural Prior, acceptable tail risk, a frozen reproducible package, human review and explicit promotion. No automatic production promotion exists.
 
-## E0 — Sector Decision & Dynamic Pricing MVP
+## E0 — Sector Decision & Dynamic Pricing MVP — ACTIVE IMPLEMENTATION
 
-This remains a parallel product priority and does not wait for C1 promotion.
-
-Canonical spec:
+Canonical product specification:
 
 `ml/SECTOR_DECISION_PRICING_V1.md`
 
-Required outputs include sector trajectory gap/status, no-action projection, pricing scenarios, recommendation rationale and decision/execution history.
+Canonical implementation plan:
+
+`ml/E0_SECTOR_TRAJECTORY_IMPLEMENTATION_V1.md`
+
+### Confirmed data state
+
+Real sector inventory history is already available in `public.sector_inventory` for active events.
+
+Critical ownership rule:
+
+`sector_inventory.snapshot_id -> snapshots.id -> snapshots.ticket_event_id`
+
+Do **not** use `sector_inventory.event_id` as the E0 ownership key; it is nullable and produced the initial false zero-sector result.
+
+Verified active-event coverage at the implementation checkpoint included approximately:
+
+- Lech Poznań: **151 sectors**;
+- Pogoń Szczecin: **42**;
+- GKS Katowice: **23**;
+- Wisła Płock: **17**;
+- Zagłębie Lubin: **14**.
+
+Sector data is therefore sufficient to start real E0 trajectory work now.
+
+### E0 target
+
+`sector state -> release-aware trajectory -> relative gap -> no-action projection -> pricing scenario -> recommendation`
+
+Public sector inventory remains a proxy and must never be presented as confirmed paid sales.
+
+### Immediate E0 implementation
+
+1. create versioned `sector-trajectory-v1` with one PIT-safe event/sector/as-of row;
+2. derive reference/current availability, absorption/sell-through proxy, 6h/24h/72h/7d velocity and acceleration;
+3. detect release/inventory increase/sector coverage/data-gap anomalies before status classification;
+4. derive provisional event-relative expected progress and continuous sector gap using `PROVISIONAL_RELATIVE_EVENT_BASELINE`;
+5. inspect real gap stability/distribution, then freeze deterministic versioned status thresholds;
+6. implement bounded **Projected outcome if current trajectory continues** at sector level;
+7. expose read-only sector status/projection for `BeyondTicketingPanel`;
+8. audit/implement price source and `PRICE_DATA_MISSING` contract;
+9. implement assumption-based `HOLD / INCREASE / DECREASE` pricing scenarios;
+10. persist recommendation/decision/execution/outcome evidence for future E1 learning.
 
 No automatic production price changes:
 
 `auto_price_change_allowed = false`
 
+Do not claim learned elasticity or causal price uplift in E0.
+
 ## Immediate implementation sequence
 
-1. keep the frozen v2+v8 shadow package unchanged and collect the first genuine T-1 prospective decisions;
-2. expose read-only prospective shadow status/evidence for dashboard/operations;
-3. score every completed prospective event from already-persisted decisions;
-4. keep production Structural Prior/orchestrator unchanged with `live_adjustment=0`;
-5. continue sector gap/status and no-action projection;
-6. continue price-data ingest and E0 pricing scenarios;
-7. persist recommendation/decision/execution history;
-8. continue T-30 R&D in parallel, not as the product critical path.
+1. **Build `sector-trajectory-v1` now.**
+2. Build release-aware continuous sector gap features before status thresholds.
+3. Build provisional sector no-action projection.
+4. Expose read-only E0 dashboard data.
+5. Add price-data contract and assumption-based pricing scenarios.
+6. Add recommendation/decision/execution persistence.
+7. Let frozen C1 v8 collect prospective evidence in parallel without modification.
+8. Keep production Structural Prior/orchestrator unchanged with `live_adjustment=0`.
+9. Continue T-30 R&D separately; it is not the E0 critical path.
 
 ## Non-negotiable rules
 
@@ -268,6 +277,9 @@ No automatic production price changes:
 - never report snapshot rows as independent matches;
 - never present the oracle as deployable;
 - never retune v8 on the original 9 events;
-- scheduled inference loads frozen artifacts and never fits;
+- scheduled C1 inference loads frozen artifacts and never fits;
 - prospective evidence must exist before outcome to count as prospective;
-- production remains `live_adjustment = 0` until explicit promotion.
+- E0 sector ownership comes through the snapshot, not `sector_inventory.event_id`;
+- E0 no-action projection is a continuation scenario, not a causal counterfactual;
+- E0 pricing is `ASSUMPTION_BASED_SCENARIO` until learned elasticity is validated;
+- production remains `live_adjustment = 0` and `auto_price_change_allowed = false` until explicit promotion/approval.
