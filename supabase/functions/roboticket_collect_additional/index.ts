@@ -45,18 +45,19 @@ async function db(path, options = {}) {
   return text ? JSON.parse(text) : null;
 }
 
-function extractEmbeddedJsonArray(html, key) {
+function extractJsonArrayCandidates(html, key) {
   const marker = `"${key}"`;
+  const candidates = [];
   let markerPos = html.indexOf(marker);
   while (markerPos >= 0) {
     const colonPos = html.indexOf(':', markerPos + marker.length);
-    if (colonPos < 0) return [];
-    const start = html.indexOf('[', colonPos + 1);
-    if (start < 0) return [];
+    const start = colonPos >= 0 ? html.indexOf('[', colonPos + 1) : -1;
+    if (start < 0) break;
 
     let depth = 0;
     let inString = false;
     let escaped = false;
+    let parsedEnd = -1;
     for (let i = start; i < html.length; i++) {
       const ch = html[i];
       if (inString) {
@@ -65,27 +66,40 @@ function extractEmbeddedJsonArray(html, key) {
         else if (ch === '"') inString = false;
         continue;
       }
-      if (ch === '"') {
-        inString = true;
-        continue;
-      }
+      if (ch === '"') { inString = true; continue; }
       if (ch === '[') depth += 1;
       else if (ch === ']') {
         depth -= 1;
         if (depth === 0) {
-          const raw = html.slice(start, i + 1);
+          parsedEnd = i;
           try {
-            const parsed = JSON.parse(raw);
-            return Array.isArray(parsed) ? parsed : [];
-          } catch {
-            break;
-          }
+            const parsed = JSON.parse(html.slice(start, i + 1));
+            if (Array.isArray(parsed)) candidates.push(parsed);
+          } catch {}
+          break;
         }
       }
     }
-    markerPos = html.indexOf(marker, markerPos + marker.length);
+    markerPos = html.indexOf(marker, Math.max(markerPos + marker.length, parsedEnd + 1));
   }
-  return [];
+  return candidates;
+}
+
+function selectEmbeddedArray(html, key, kind) {
+  const candidates = extractJsonArrayCandidates(html, key);
+  const score = rows => {
+    if (!rows.length) return -1;
+    const sample = rows.slice(0, 10);
+    if (kind === 'areas' || kind === 'types') {
+      return sample.filter(row => row && typeof row === 'object' && !Array.isArray(row)
+        && Number.isFinite(Number(row.id)) && typeof row.name === 'string').length;
+    }
+    return sample.filter(row => row && typeof row === 'object' && !Array.isArray(row)
+      && Number.isFinite(Number(row.priceAreaId))
+      && Number.isFinite(Number(row.priceTypeId))
+      && Number.isFinite(Number(row.price))).length;
+  };
+  return candidates.sort((a, b) => score(b) - score(a) || b.length - a.length)[0] || [];
 }
 
 function extractCurrency(html) {
@@ -94,9 +108,9 @@ function extractCurrency(html) {
 }
 
 function parsePricing(html) {
-  const priceAreas = extractEmbeddedJsonArray(html, 'priceAreas');
-  const priceTypes = extractEmbeddedJsonArray(html, 'priceTypes');
-  const prices = extractEmbeddedJsonArray(html, 'prices');
+  const priceAreas = selectEmbeddedArray(html, 'priceAreas', 'areas');
+  const priceTypes = selectEmbeddedArray(html, 'priceTypes', 'types');
+  const prices = selectEmbeddedArray(html, 'prices', 'prices');
   const currency = extractCurrency(html);
 
   const priceAreaNames = new Map();
