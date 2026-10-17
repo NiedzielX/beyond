@@ -34,16 +34,18 @@ async function roboJson(base: string, pageUrl: string, cookie: string, path: str
   return { status: res.status, json };
 }
 
-function extractEmbeddedJsonArray(html: string, key: string) {
+function extractJsonArrayCandidates(html: string, key: string) {
   const marker = `"${key}"`;
+  const candidates: any[][] = [];
   let markerPos = html.indexOf(marker);
   while (markerPos >= 0) {
     const colonPos = html.indexOf(':', markerPos + marker.length);
     const start = colonPos >= 0 ? html.indexOf('[', colonPos + 1) : -1;
-    if (start < 0) return [];
+    if (start < 0) break;
     let depth = 0;
     let inString = false;
     let escaped = false;
+    let parsedEnd = -1;
     for (let i = start; i < html.length; i++) {
       const ch = html[i];
       if (inString) {
@@ -57,18 +59,34 @@ function extractEmbeddedJsonArray(html: string, key: string) {
       else if (ch === ']') {
         depth -= 1;
         if (depth === 0) {
+          parsedEnd = i;
           try {
             const parsed = JSON.parse(html.slice(start, i + 1));
-            return Array.isArray(parsed) ? parsed : [];
-          } catch {
-            break;
-          }
+            if (Array.isArray(parsed)) candidates.push(parsed);
+          } catch {}
+          break;
         }
       }
     }
-    markerPos = html.indexOf(marker, markerPos + marker.length);
+    markerPos = html.indexOf(marker, Math.max(markerPos + marker.length, parsedEnd + 1));
   }
-  return [];
+  return candidates;
+}
+
+function selectEmbeddedArray(html: string, key: string, kind: 'areas' | 'types' | 'prices') {
+  const candidates = extractJsonArrayCandidates(html, key);
+  const score = (rows: any[]) => {
+    if (!rows.length) return -1;
+    const sample = rows.slice(0, 10);
+    if (kind === 'areas' || kind === 'types') {
+      return sample.filter(row => row && typeof row === 'object' && !Array.isArray(row) && Number.isFinite(Number(row.id)) && typeof row.name === 'string').length;
+    }
+    return sample.filter(row => row && typeof row === 'object' && !Array.isArray(row)
+      && Number.isFinite(Number(row.priceAreaId))
+      && Number.isFinite(Number(row.priceTypeId))
+      && Number.isFinite(Number(row.price))).length;
+  };
+  return candidates.sort((a, b) => score(b) - score(a) || b.length - a.length)[0] || [];
 }
 
 function extractCurrency(html: string) {
@@ -89,9 +107,9 @@ async function probe(c: { slug: string; base: string; id: string; label: string 
   const cookie = setCookies.map((v: string) => v.split(';')[0]).join('; ');
   const info = await roboJson(c.base, pageUrl, cookie, `/Stadium/GetWGLSectorsInfo?eventId=${c.id}`);
   const infoSectors = Array.isArray(info.json?.sectors) ? info.json.sectors : [];
-  const priceAreas = extractEmbeddedJsonArray(html, 'priceAreas');
-  const priceTypes = extractEmbeddedJsonArray(html, 'priceTypes');
-  const prices = extractEmbeddedJsonArray(html, 'prices');
+  const priceAreas = selectEmbeddedArray(html, 'priceAreas', 'areas');
+  const priceTypes = selectEmbeddedArray(html, 'priceTypes', 'types');
+  const prices = selectEmbeddedArray(html, 'prices', 'prices');
 
   return {
     slug: c.slug,
@@ -102,9 +120,9 @@ async function probe(c: { slug: string; base: string; id: string; label: string 
     priceAreaCount: priceAreas.length,
     priceTypeCount: priceTypes.length,
     priceCount: prices.length,
-    priceAreas: priceAreas.slice(0, 20),
+    priceAreas: priceAreas.slice(0, 30),
     priceTypes: priceTypes.slice(0, 30),
-    prices: prices.slice(0, 60),
+    prices: prices.slice(0, 80),
     availablePriceAreaSamples: infoSectors.slice(0, 12).map((sector: any) => ({
       sectorId: sector.id,
       freeSeatsByPriceArea: sector.freeSeatsByPriceArea || []
