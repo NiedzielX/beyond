@@ -1,4 +1,6 @@
 const CANDIDATES = [
+  { slug: 'lech-korona', base: 'https://bilety.lechpoznan.pl', id: '10597', label: 'Lech-Korona' },
+  { slug: 'lech-wisla', base: 'https://bilety.lechpoznan.pl', id: '10960', label: 'Lech-Wisla Krakow' },
   { slug: 'gkskatowice', base: 'https://bilety.gkskatowice.eu', id: '5769', label: 'GKS Katowice-Pogon' },
   { slug: 'zaglebie_lubin', base: 'https://bilety.zaglebie.com', id: '1953', label: 'Zaglebie-Jagiellonia' },
   { slug: 'wisla_plock', base: 'https://bilety.wisla-plock.pl', id: '3042', label: 'Wisla Plock-Radomiak' },
