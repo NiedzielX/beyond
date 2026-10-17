@@ -65,9 +65,7 @@ function priceAreaDiagnostics(infoSectors: any[]) {
         types[key].add(type);
         sanitized[key] = primitiveShape(value);
       }
-      if (rows.length < 12) {
-        rows.push({ sectorId: String(sector?.id ?? ''), priceArea: sanitized });
-      }
+      if (rows.length < 12) rows.push({ sectorId: String(sector?.id ?? ''), priceArea: sanitized });
     }
   }
 
@@ -80,6 +78,52 @@ function priceAreaDiagnostics(infoSectors: any[]) {
     types: Object.fromEntries(Object.entries(types).map(([key, values]) => [key, Array.from(values).sort()])),
     samples: rows
   };
+}
+
+function objectPrimitiveSample(value: any) {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return null;
+  const out: Record<string, unknown> = {};
+  for (const [key, child] of Object.entries(value)) {
+    if (child === null || ['string', 'number', 'boolean'].includes(typeof child)) out[key] = child;
+    else if (Array.isArray(child)) out[key] = `[array:${child.length}]`;
+  }
+  return out;
+}
+
+function commercialFieldScan(root: any) {
+  const matches: Array<{ path: string; key: string; type: string; sample: unknown }> = [];
+  const seen = new Set<string>();
+  const commercialKey = /(price|currency|amount|tariff|cost|discount|fee|value)/i;
+
+  function visit(value: any, path: string, depth: number) {
+    if (matches.length >= 80 || depth > 7 || value === null || value === undefined) return;
+    if (Array.isArray(value)) {
+      for (let i = 0; i < Math.min(value.length, 8); i++) visit(value[i], `${path}[${i}]`, depth + 1);
+      return;
+    }
+    if (typeof value !== 'object') return;
+
+    for (const [key, child] of Object.entries(value)) {
+      const childPath = path ? `${path}.${key}` : key;
+      if (commercialKey.test(key)) {
+        const signature = `${childPath}:${typeof child}:${JSON.stringify(primitiveShape(child))}`;
+        if (!seen.has(signature)) {
+          seen.add(signature);
+          matches.push({
+            path: childPath,
+            key,
+            type: child === null ? 'null' : Array.isArray(child) ? 'array' : typeof child,
+            sample: primitiveShape(child)
+          });
+        }
+      }
+      visit(child, childPath, depth + 1);
+      if (matches.length >= 80) break;
+    }
+  }
+
+  visit(root, '', 0);
+  return matches;
 }
 
 async function probe(c: { slug: string; base: string; id: string; label: string }) {
@@ -100,6 +144,8 @@ async function probe(c: { slug: string; base: string; id: string; label: string 
     roboJson(c.base, pageUrl, cookie, `/Stadium/GetWGLSeats?eventId=${c.id}`)
   ]);
   const infoSectors = Array.isArray(info.json?.sectors) ? info.json.sectors : [];
+  const sectorShapes = Array.isArray(sectors.json?.sectors) ? sectors.json.sectors : [];
+  const seatRows = Array.isArray(seats.json?.seats) ? seats.json.seats : [];
   const availableTotal = infoSectors.reduce(
     (sum: number, s: any) => sum + (s.freeSeatsByPriceArea || []).reduce((a: number, p: any) => a + Number(p.freeSeatsNo || 0), 0),
     0
@@ -115,12 +161,19 @@ async function probe(c: { slug: string; base: string; id: string; label: string 
     infoStatus: info.status,
     sectorsStatus: sectors.status,
     seatsStatus: seats.status,
-    seatsCount: Array.isArray(seats.json?.seats) ? seats.json.seats.length : null,
+    seatsCount: seatRows.length,
     sectorInfoCount: infoSectors.length,
-    sectorShapeCount: Array.isArray(sectors.json?.sectors) ? sectors.json.sectors.length : null,
+    sectorShapeCount: sectorShapes.length,
     availableTotal,
     sourceTimestamp: info.json?.timestamp || null,
     priceAreaDiagnostics: priceAreaDiagnostics(infoSectors),
+    payloadDiagnostics: {
+      infoCommercialFields: commercialFieldScan(info.json),
+      sectorsCommercialFields: commercialFieldScan(sectors.json),
+      seatsCommercialFields: commercialFieldScan(seats.json),
+      firstSectorShape: objectPrimitiveSample(sectorShapes[0]),
+      firstSeat: objectPrimitiveSample(seatRows[0])
+    },
     redirects: { info: info.location, sectors: sectors.location, seats: seats.location },
     debug: {
       infoLength: info.length,
