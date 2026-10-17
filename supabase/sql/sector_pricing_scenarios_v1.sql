@@ -11,6 +11,10 @@
 -- Scenario impact applies the assumed demand multiplier only to projected
 -- additional public-inventory absorption from now to kickoff. Revenue is a
 -- future-window proxy, not booked/verified revenue.
+--
+-- IMPORTANT: a price recommendation is NOT emitted when the current no-action
+-- projection contains <1 seat of measurable future absorption. In that case
+-- the engine returns scenarios for transparency but recommended_action=MONITOR.
 
 create or replace function public.get_sector_pricing_scenarios_v1_asof(
     p_ticket_event_id bigint,
@@ -69,11 +73,21 @@ as $function$
 with context as (
     select *
     from public.get_sector_pricing_context_v1_asof(p_ticket_event_id,p_as_of_at)
+), measurable as (
+    select
+        c.*,
+        greatest(
+            c.current_public_availability::numeric
+            -c.projected_public_availability_at_kickoff,
+            0::numeric
+        ) as baseline_absorption
+    from context c
 ), recommendation as (
     select
         c.*,
         case
             when not c.scenario_eligible then null::numeric
+            when c.baseline_absorption<1 then null::numeric
             when c.sector_status='UNDERPERFORMING' then
                 case
                     when c.sector_gap_ratio>=0.25 and c.hours_to_kickoff>24 then -0.10::numeric
@@ -89,7 +103,7 @@ with context as (
             when c.sector_status='ON_TRACK' then 0::numeric
             else null::numeric
         end as recommended_pct
-    from context c
+    from measurable c
 ), grid as (
     select r.*,g.pct
     from recommendation r
@@ -104,11 +118,6 @@ with context as (
 ), baseline as (
     select
         g.*,
-        greatest(
-            g.current_public_availability::numeric
-            -g.projected_public_availability_at_kickoff,
-            0::numeric
-        ) as baseline_absorption,
         g.current_standard_price_proxy*(1+g.pct) as scenario_price,
         power((1+g.pct)::double precision,-0.5::double precision)::numeric as multiplier_conservative,
         power((1+g.pct)::double precision,-1.0::double precision)::numeric as multiplier_base,
@@ -134,7 +143,7 @@ with context as (
 select
     'sector-pricing-scenarios-v1'::text,
     'E0_ELASTICITY_ASSUMPTIONS_V1_EPS_-0.5_-1.0_-1.5'::text,
-    'E0_PRICE_RECOMMENDATION_V1_STATUS_GAP_TREND_SCARCITY'::text,
+    'E0_PRICE_RECOMMENDATION_V1_STATUS_GAP_TREND_SCARCITY_MIN1_ABSORPTION'::text,
     f.ticket_event_id,
     f.sector,
     f.sector_status,
@@ -181,6 +190,7 @@ select
     end::text,
     (f.recommended_pct is not null and f.pct=f.recommended_pct),
     case
+        when f.baseline_absorption<1 then 'LOW'
         when f.projection_confidence='HIGH' then 'MEDIUM'
         when f.projection_confidence='MEDIUM' then 'MEDIUM'
         else 'LOW'
@@ -207,4 +217,4 @@ revoke all on function public.get_sector_pricing_scenarios_v1_asof(bigint,timest
 grant execute on function public.get_sector_pricing_scenarios_v1_asof(bigint,timestamptz) to service_role;
 
 comment on function public.get_sector_pricing_scenarios_v1_asof(bigint,timestamptz) is
-'E0 assumption-based price scenarios using real observed base prices and provisional elasticity assumptions. Human review required; auto price change disabled.';
+'E0 assumption-based price scenarios using real observed base prices and provisional elasticity assumptions. MONITOR when current no-action trajectory has <1 measurable future absorption. Human review required; auto price change disabled.';
