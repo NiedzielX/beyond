@@ -147,6 +147,7 @@ with decision as (
 ), context as (
     select
         a.*,
+        coalesce(nullif(a.price_area_name,''),nullif(r.price_area_name,'')) as resolved_price_area_name,
         r.price_type_id,
         r.price_type_name,
         r.price,
@@ -236,7 +237,7 @@ select
     f.sector_gap_ratio,
     f.projection_confidence,
     f.price_area_id,
-    coalesce(nullif(f.price_area_name,''),nullif(f.price_area_name,'')),
+    f.resolved_price_area_name,
     f.price_type_id,
     f.price_type_name,
     f.price,
