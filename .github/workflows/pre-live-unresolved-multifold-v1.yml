@@ -1,0 +1,84 @@
+name: Pre-Live Unresolved Multi-Fold v1
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - "ml/pre_live_unresolved_multifold_v1.py"
+      - "ml/test_pre_live_unresolved_multifold_v1.py"
+      - "ml/PRE_LIVE_UNRESOLVED_MULTIFOLD_V1.md"
+      - "ml/pre_live_baseline_optimization_v1.py"
+      - "ml/demand_engine/structural_prior_runtime.py"
+      - "ml/features/structural_prior_feature_store_v1.py"
+      - "ml/artifacts/structural_prior_runtime_v1/historical_runtime_v1.csv.gz"
+      - "ml/artifacts/structural_prior_runtime_v1/manifest.json"
+      - ".github/workflows/pre-live-unresolved-multifold-v1.yml"
+  push:
+    branches: [main]
+    paths:
+      - "ml/pre_live_unresolved_multifold_v1.py"
+      - "ml/test_pre_live_unresolved_multifold_v1.py"
+      - "ml/PRE_LIVE_UNRESOLVED_MULTIFOLD_V1.md"
+      - "ml/pre_live_baseline_optimization_v1.py"
+      - "ml/demand_engine/structural_prior_runtime.py"
+      - "ml/features/structural_prior_feature_store_v1.py"
+      - "ml/artifacts/structural_prior_runtime_v1/historical_runtime_v1.csv.gz"
+      - "ml/artifacts/structural_prior_runtime_v1/manifest.json"
+      - ".github/workflows/pre-live-unresolved-multifold-v1.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pre-live-unresolved-multifold-v1-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  validate-and-score:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install pinned runtime
+        run: |
+          python -m pip install --upgrade pip
+          pip install numpy==2.3.5 pandas==2.2.3 scikit-learn==1.8.0 joblib==1.5.3
+
+      - name: Compile experiment code
+        run: |
+          python -m py_compile ml/pre_live_unresolved_multifold_v1.py
+          python -m py_compile ml/test_pre_live_unresolved_multifold_v1.py
+          python -m py_compile ml/pre_live_baseline_optimization_v1.py
+          python -m py_compile ml/demand_engine/structural_prior_runtime.py
+          python -m py_compile ml/features/structural_prior_feature_store_v1.py
+
+      - name: Run unit checks
+        run: python -m ml.test_pre_live_unresolved_multifold_v1
+
+      - name: Run unresolved-horizon multi-fold tournament
+        run: |
+          python -m ml.pre_live_unresolved_multifold_v1 \
+            --historical-runtime ml/artifacts/structural_prior_runtime_v1/historical_runtime_v1.csv.gz \
+            --manifest ml/artifacts/structural_prior_runtime_v1/manifest.json \
+            --output /tmp/pre-live-unresolved-multifold-v1.json
+
+      - name: Print concise scorecard
+        run: |
+          jq '{experiment,promotion_allowed,horizons:[.horizons[]|{horizon,selected_candidate_id,selection_reason:.selection.reason,reference_signal:.references.signal,mean_reference_incumbent_mae:.references.mean_incumbent_mae,mean_reference_selected_mae:.references.mean_selected_mae,mean_reference_mae_improvement:.references.mean_mae_improvement}]}' \
+            /tmp/pre-live-unresolved-multifold-v1.json
+
+      - name: Upload full evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: pre-live-unresolved-multifold-v1-${{ github.run_id }}
+          path: /tmp/pre-live-unresolved-multifold-v1.json
+          if-no-files-found: error
+          retention-days: 30
