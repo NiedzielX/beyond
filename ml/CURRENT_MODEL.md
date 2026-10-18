@@ -56,19 +56,28 @@ Keep Structural Prior, test feature contribution, remove noisy features and weig
 
 ## b) Aktualny sezon — wzmocnić
 
-**CZĘŚCIOWO — NEXT ACTIVE DEVELOPMENT.**
+**TESTED / NOT PROVEN / NO PRODUCTION CHANGE.**
 
-Current-season evidence exists, and an explicit governed Current Season Adjustment v1 challenger is implemented. It reacts to recent home-match reality with shrinkage and bounded adjustments, but remains experimental until its historical reference evaluation is completed and reviewed.
+Current Season Adjustment v1 was evaluated with the incumbent Structural Prior isolated before challenger-only signals are added.
 
-Canonical design:
+Result:
 
-`ml/CURRENT_SEASON_ADJUSTMENT_V1.md`
+- T-30 / T-14 / T-3 / T-1: governed selector chooses `NO_ADJUSTMENT` on development;
+- T-7 selects `season_r3-k6-a25` on 2023/24 development, but it degrades both reference holdouts;
+- no horizon improves mean holdout MAE;
+- no horizon improves both reference seasons.
+
+Canonical evidence:
+
+`ml/results/CURRENT_SEASON_ADJUSTMENT_V1_2026-10-18.md`
+
+Do not promote or keep tuning this same explicit adjustment against the exposed reference seasons. Current-season information already present inside Structural Prior remains unchanged.
 
 ## c) Context meczu — rozbudować
 
-**CZĘŚCIOWO.**
+**CZĘŚCIOWO — NEXT ACTIVE DEVELOPMENT.**
 
-Existing context includes parts of form, table, opponent and schedule information. Future fixtures / cannibalization and reliable squad context are still missing as first-class governed features.
+Existing context includes parts of form, table, opponent and schedule information. The next task is to audit what is already PIT-valid and then add governed match-context challengers such as opponent attractiveness and future-fixture / cannibalization context. Squad context is allowed only where reliable PIT data exists.
 
 ## d) Live demand — najmocniej rozwinąć
 
@@ -205,13 +214,13 @@ Therefore there is **no confirmed prospective live MAE yet**.
 
 ## Current development decision
 
-Historical validation and forward-event diagnosis on the currently available live events are sufficient to stop tuning frozen v8 and move to the next workstream while prospective C1 evidence continues automatically.
+Historical C1 validation is complete for the currently available data, Current Season Adjustment v1 has been tested and is not promoted, and prospective C1 evidence continues automatically.
 
 Next active workstream:
 
-**b) Aktualny sezon — wzmocnić.**
+**c) Context meczu — rozbudować.**
 
-Current Season Adjustment v1 is implemented as an experimental challenger; evaluate it under its frozen development/reference-season protocol before considering any promotion.
+Start by auditing the canonical feature store for existing PIT-valid context and identify the smallest additional context challenger that can be tested without leakage. Prefer opponent attractiveness / strength and future-fixture cannibalization before unreliable squad feeds.
 
 Synthetic trajectory augmentation remains a train-side challenger/regularisation technique for future C1 packages. It does not modify frozen v8 automatically.
 
