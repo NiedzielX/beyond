@@ -2,7 +2,7 @@
 
 Last product-direction update: **2026-10-18**
 
-This file exists so a new AI/chat session continues the actual Beyond plan instead of rediscovering or redefining it.
+This file exists so a new AI/chat session continues the actual Beyond plan instead of rediscovering it.
 
 ## Cold-start rule
 
@@ -11,22 +11,22 @@ Read in this order:
 1. `ml/MODEL_ACCURACY_DEVELOPMENT_INSTRUCTIONS_V2.md`;
 2. `ml/CURRENT_MODEL.md`;
 3. `ml/DEMAND_FORECAST_DEVELOPMENT_PLAN_V2.md`;
-4. `ml/results/PRE_LIVE_BASELINE_OPTIMIZATION_V1_2026-10-18.md`;
-5. `ml/results/T7_ROBUST_ESTIMATOR_V1_2026-10-18.md`;
-6. `ml/results/T7_EXTERNAL_MODEL_FAMILY_V1_2026-10-18.md`;
-7. `ml/results/T7_FIXED_TEMPORAL_ROBUSTNESS_V1_2026-10-18.md`;
-8. `ml/results/PRE_LIVE_UNRESOLVED_MULTIFOLD_V1_2026-10-18.md`;
-9. `ml/C1_V8_PROSPECTIVE_SHADOW_V1.md`;
-10. `ml/LIVE_DEMAND_ENGINE_V1_PLAN.md`;
-11. `ml/SECTOR_DECISION_PRICING_V1.md`;
+4. `ml/results/T7_FIXED_TEMPORAL_ROBUSTNESS_V1_2026-10-18.md`;
+5. `ml/results/PRE_LIVE_UNRESOLVED_MULTIFOLD_V1_2026-10-18.md`;
+6. `ml/results/PERSISTENT_CLUB_CALIBRATION_V1_2026-10-18.md`;
+7. `ml/results/CURRENT_SEASON_RESIDUAL_REGIME_V1_2026-10-18.md`;
+8. `ml/results/CURRENT_SEASON_REGIME_MATURITY_STAGE2_V1_2026-10-18.md`;
+9. `ml/results/CURRENT_SEASON_REGIME_FIXED_TEMPORAL_AUDIT_V1_2026-10-18.md`;
+10. `ml/C1_V8_PROSPECTIVE_SHADOW_V1.md`;
+11. `ml/LIVE_DEMAND_ENGINE_V1_PLAN.md`;
 12. `ml/NORTH_STAR.md`;
 13. `ml/MODEL_PROMOTION_GOVERNANCE_V1.md`.
 
 ## Immediate objective
 
-> **Dopracować model maksymalnie teraz i obniżyć MAE tak daleko, jak pozwala uczciwa, reprodukowalna walidacja.**
+> **Dopracować model maksymalnie teraz i obniżyć MAE tak daleko, jak pozwala uczciwa, reprodukowalna walidacja PIT-safe.**
 
-Do not optimize for finishing roadmap labels. A failed challenger closes the challenger, not the workstream.
+Do not optimize for finishing roadmap labels. A failed challenger closes the challenger, not the whole workstream.
 
 ## Architecture
 
@@ -34,114 +34,123 @@ Do not optimize for finishing roadmap labels. A failed challenger closes the cha
 
 then:
 
-`Pre-Live v2 + live trajectory + inventory + time-to-kickoff + reliability -> Continuous Live Updater v2`
+`Pre-Live v2 + continuous live trajectory -> Continuous Live Updater v2`
 
-Active sequence:
+Canonical sequence:
 
 `a2 -> b2 -> c2 -> freeze Pre-Live v2 -> d2`
 
-## Current a2 state
+Current active workstream:
 
-The first model/feature/recency optimization phase is now settled under stronger multi-fold rules.
+**c2 — match context**.
 
-### Historical candidate per horizon
+## a2 — CLOSED FOR CURRENT DATA
 
-| Horizon | Historical Pre-Live candidate | Production changed? |
+Historical candidate state:
+
+| Horizon | a2 historical base |
+|---|---|
+| T-30 | production Structural Prior incumbent |
+| T-14 | production Structural Prior incumbent |
+| T-7 | **`hist31-leaf20-l2-1` frozen historical candidate** |
+| T-3 | production Structural Prior incumbent |
+| T-1 | production Structural Prior incumbent |
+
+T-7 fixed temporal audit improves all 4 rolling folds, mean **+104.66 MAE**.
+
+Unresolved-horizon two-fold tournament retains incumbent at T-30/T-14/T-3/T-1.
+
+Persistent cross-season club calibration was tested under two fixed formulations and did not produce stable development evidence.
+
+Do not restart these grids on the same exposed references without materially new data/hypothesis.
+
+## b2 — CLOSED FOR CURRENT DATA
+
+Old raw-attendance-vs-history Current Season Adjustment v1 was not proven.
+
+The successful b2 hypothesis uses **same-season actual-vs-own-model residual state**.
+
+Critical PIT rule:
+
+`prior kickoff + 3h <= current forecast as_of`
+
+No uncompleted match outcome may enter regime state.
+
+Frozen historical b2 policies:
+
+| Horizon | b2 policy |
+|---|---|
+| T-30 | `NO_ADJUSTMENT` |
+| T-14 | `NO_ADJUSTMENT` |
+| T-7 | `ewma50-resid-k6-cap05-min3` |
+| T-3 | `ewma50-resid-k2-cap05-min3` |
+| T-1 | `ewma50-resid-k6-cap05-min3` |
+
+Final fixed 4-fold audit:
+
+- T-7: all 4 folds positive, mean **+51.47 MAE**;
+- T-3: all 4 folds positive, mean **+70.44**;
+- T-1: all 4 folds positive, mean **+69.54**.
+
+Maturity gate:
+
+- activate only after **3 earlier completed same-season home matches**.
+
+Risk boundary:
+
+- max observed harmful event regression **+2,760.55 seats**;
+- club-season improvement share roughly 60–64%;
+- correction cap remains +/-5% verified capacity.
+
+These are historical Pre-Live candidates, not production promotion.
+
+## Current Pre-Live candidate stack before c2
+
+| Horizon | a2 base | b2 layer |
 |---|---|---|
-| T-30 | current production incumbent | no |
-| T-14 | current production incumbent | no |
-| T-7 | **`hist31-leaf20-l2-1` frozen historical candidate** | no |
-| T-3 | current production incumbent | no |
-| T-1 | current production incumbent | no |
+| T-30 | incumbent | none |
+| T-14 | incumbent | none |
+| T-7 | `hist31-leaf20-l2-1` | `ewma50-resid-k6-cap05-min3` |
+| T-3 | incumbent | `ewma50-resid-k2-cap05-min3` |
+| T-1 | incumbent | `ewma50-resid-k6-cap05-min3` |
 
-### T-7
+c2 must measure incremental value over this stack, not over the older production-only baseline.
 
-`hist31-leaf20-l2-1` is frozen after Stages 1–5.
+## c2 — ACTIVE NOW
 
-Stage-3/4 references:
+Already present PIT-safe context:
 
-- incumbent mean MAE: **1,789.98**;
-- candidate: **1,712.38**;
-- improvement: **+77.60**.
+- opponent draw / pair history;
+- PPG / GD per game;
+- last-5 form;
+- table position / gaps;
+- top/bottom interactions;
+- rest / congestion.
 
-Fixed temporal audit:
+`Future Fixture Context v1` was `NOT PROVEN`. Do not retune the same future-fixture formulation on the same references.
 
-- positive MAE improvement in **4/4 rolling folds**;
-- mean fold improvement **+104.66**;
-- median/p90 improve 4/4;
-- 47/72 reportable club-season cells improve;
-- tail risk remains, including +6,623.99 worst degradation in 2022/23;
-- 2025/26 bootstrap uncertainty crosses zero.
+Next c2 priorities:
 
-Decision:
+1. **match stakes / table pressure**
+   - title-race relevance;
+   - European qualification relevance;
+   - relegation relevance;
+   - direct-table-rival / points-pressure;
+   - late-season importance.
+2. **sequence-aware form**
+   - winning streak;
+   - unbeaten streak;
+   - losing streak;
+   - points acceleration/deceleration;
+   - home-specific streak where justified.
+3. rivalry/derby/exceptional draw only with deterministic mapping.
+4. squad context only if historical PIT source is reliable and timestamped.
 
-- freeze as historical candidate;
-- stop T-7 micro-tuning on the same historical references;
-- do not call it production champion;
-- reopen only for genuinely new data/materially new hypothesis.
+Immediate next experiment:
 
-### T-30 / T-14 / T-3 / T-1 multi-fold result
+> **C2 Context Extension v2: PIT-safe match-stakes + sequence-aware form, development-only selection, full temporal/tail diagnostics, incremental evaluation over the frozen a2+b2 stack.**
 
-Canonical run: `39159907426`.
-
-Protocol:
-
-- train 2021/22 -> validate 2022/23;
-- train 2021/22–2022/23 -> validate 2023/24;
-- challenger must be identifiable and improve incumbent in both development folds;
-- references cannot rescue a failed development challenger.
-
-Result:
-
-- T-30: no eligible non-incumbent -> incumbent retained;
-- T-14: no eligible non-incumbent -> incumbent retained;
-- T-3: no eligible non-incumbent -> incumbent retained;
-- T-1: `ablate-rest_congestion` wins both development folds (+63.47, +11.97) but fails references on mean (-6.55) -> incumbent retained.
-
-Do not post-hoc select other candidates using reference results.
-
-## Immediate next a2 task
-
-**Historical residual / club calibration.**
-
-Question:
-
-> Does a stable cross-season home-club residual remain after the correct rolling per-horizon model prediction, and can it improve future matches with strong shrinkage and no leakage/memorization?
-
-Required:
-
-- PIT residuals only from completed earlier matches;
-- separate calibration layer, not estimator retuning;
-- small predeclared mean/median/normalized/shrunk variants;
-- low-sample shrinkage;
-- bounded corrections;
-- multi-fold development selection;
-- full club/tail/correction diagnostics;
-- T-7 estimator itself stays frozen.
-
-If this is not proven, treat a2 historical optimization as sufficiently exhausted for current data and advance to b2.
-
-## b2 after a2
-
-Current Season Adjustment v1 was `NOT PROVEN`, but b2 is not exhausted.
-
-Next b2 should model current-season actual-vs-expected regime using residuals/demand ratios, EWMA/rolling windows and sample-size-aware shrinkage.
-
-Important distinction:
-
-- a2 club calibration = persistent cross-season club residual;
-- b2 = current-season regime shift.
-
-## c2 after b2
-
-Still open:
-
-- match stakes / title-Europe-relegation relevance;
-- sequence-aware streaks;
-- deterministic rivalry/derby/exceptional draw;
-- squad context only with reliable PIT historical data.
-
-## Production / C1 boundary
+## Production / Live boundary
 
 Production remains:
 
@@ -149,14 +158,7 @@ Production remains:
 
 Frozen C1 v8 remains `EXPERIMENTAL_SHADOW` and must not be retuned silently.
 
-Historical C1 boundary:
-
-- raw Live LOEO 2,929.3;
-- conservative synthetic 2,261.5;
-- stress synthetic 2,498.8;
-- four-event Prior 452.8;
-- raw Live 2,103.7;
-- frozen v8 452.8 with PRIOR 16/16.
+Prospective collection continues in parallel.
 
 ## Non-negotiable CI/CD
 
@@ -164,10 +166,10 @@ Every material experiment:
 
 `code -> tests/checks -> CI -> artifact -> metrics -> result doc -> decision -> canonical docs update`
 
-Persist exact features, data/artifact versions, as-of rules, splits, exclusions, preprocessing, weights/caps/shrinkage, hyperparameters, seeds, benchmark assertions, hashes and limitations.
+Persist exact feature definitions, data versions, as-of rules, splits, exclusions, preprocessing, weights/caps/shrinkage, hyperparameters, seeds, benchmark assertions, artifact hashes and limitations.
 
-No random snapshot split. No synthetic rows as independent evidence. No silent reference retuning. CI green != production promotion.
+No random snapshot split. No future standings. No final-season labels in historical as-of features. No silent reference retuning. CI green != production promotion.
 
 ## One-line instruction
 
-> **T-7 is frozen as historical Pre-Live candidate; T-30/T-14/T-3/T-1 retain incumbents after a stricter two-fold tournament. Do not continue the same model grid. Test historical residual/club calibration as the final major a2 hypothesis; if not proven, move to b2. Keep production and frozen C1 unchanged, with full reproducible CI/CD evidence.**
+> **a2 and b2 are sufficiently evaluated for current data. Treat the frozen a2+b2 historical stack as the c2 baseline. Build PIT-safe match-stakes and sequence-aware context next; do not revisit old grids or future-fixture v1. Keep production and frozen C1 unchanged with full CI/CD evidence.**
