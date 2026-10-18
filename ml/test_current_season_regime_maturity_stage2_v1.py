@@ -24,7 +24,7 @@ class RegimeMaturityStage2V1Test(unittest.TestCase):
             "regime_ewma_residual_fraction": [0.20, 0.20, 0.20],
             "regime_mean_demand_ratio": [0.20, 0.20, 0.20],
         })
-        variant = RegimeVariant(source="ewma_residual_fraction", shrink_k=2)
+        variant = RegimeVariant(source="ewma50_residual_fraction", shrink_k=2)
         prediction, _ = apply_activation_threshold(
             rows,
             np.array([10000.0, 10000.0, 10000.0]),
