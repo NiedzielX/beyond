@@ -1,0 +1,85 @@
+name: Historical Club Calibration v1
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - "ml/historical_club_calibration_v1.py"
+      - "ml/test_historical_club_calibration_v1.py"
+      - "ml/HISTORICAL_CLUB_CALIBRATION_V1.md"
+      - "ml/t7_robust_estimator_v1.py"
+      - "ml/pre_live_baseline_optimization_v1.py"
+      - "ml/demand_engine/structural_prior_runtime.py"
+      - "ml/features/structural_prior_feature_store_v1.py"
+      - "ml/artifacts/structural_prior_runtime_v1/historical_runtime_v1.csv.gz"
+      - "ml/artifacts/structural_prior_runtime_v1/manifest.json"
+      - ".github/workflows/historical-club-calibration-v1.yml"
+  push:
+    branches: [main]
+    paths:
+      - "ml/historical_club_calibration_v1.py"
+      - "ml/test_historical_club_calibration_v1.py"
+      - "ml/HISTORICAL_CLUB_CALIBRATION_V1.md"
+      - "ml/t7_robust_estimator_v1.py"
+      - "ml/pre_live_baseline_optimization_v1.py"
+      - "ml/demand_engine/structural_prior_runtime.py"
+      - "ml/features/structural_prior_feature_store_v1.py"
+      - "ml/artifacts/structural_prior_runtime_v1/historical_runtime_v1.csv.gz"
+      - "ml/artifacts/structural_prior_runtime_v1/manifest.json"
+      - ".github/workflows/historical-club-calibration-v1.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: historical-club-calibration-v1-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install pinned runtime
+        run: |
+          python -m pip install --upgrade pip
+          pip install numpy==2.3.5 pandas==2.2.3 scikit-learn==1.8.0 joblib==1.5.3
+
+      - name: Compile
+        run: |
+          python -m py_compile ml/historical_club_calibration_v1.py
+          python -m py_compile ml/test_historical_club_calibration_v1.py
+          python -m py_compile ml/t7_robust_estimator_v1.py
+          python -m py_compile ml/pre_live_baseline_optimization_v1.py
+
+      - name: Unit checks
+        run: python -m ml.test_historical_club_calibration_v1
+
+      - name: Run fixed historical club calibration audit
+        run: |
+          python -m ml.historical_club_calibration_v1 \
+            --historical-runtime ml/artifacts/structural_prior_runtime_v1/historical_runtime_v1.csv.gz \
+            --manifest ml/artifacts/structural_prior_runtime_v1/manifest.json \
+            --output /tmp/historical-club-calibration-v1.json
+
+      - name: Print concise scorecard
+        run: |
+          jq '{experiment,policy,promotion_allowed,horizons:[.horizons[]|{horizon,base_model,signal,improvements:evaluation_mae_improvements,mean_improvement:mean_evaluation_mae_improvement}]}' \
+            /tmp/historical-club-calibration-v1.json
+
+      - name: Upload evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: historical-club-calibration-v1-${{ github.run_id }}
+          path: /tmp/historical-club-calibration-v1.json
+          if-no-files-found: error
+          retention-days: 30
