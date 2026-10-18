@@ -5,6 +5,7 @@ on:
   pull_request:
     paths:
       - "ml/d2_live_replay_anchor_v1.py"
+      - "ml/run_d2_live_replay_anchor_v1.py"
       - "ml/test_d2_live_replay_anchor_v1.py"
       - "ml/D2_LIVE_REPLAY_ANCHOR_V1.md"
       - "ml/artifacts/d2_stage0_capacity_audit_v1.json"
@@ -20,6 +21,7 @@ on:
       - main
     paths:
       - "ml/d2_live_replay_anchor_v1.py"
+      - "ml/run_d2_live_replay_anchor_v1.py"
       - "ml/test_d2_live_replay_anchor_v1.py"
       - "ml/D2_LIVE_REPLAY_ANCHOR_V1.md"
       - "ml/artifacts/d2_stage0_capacity_audit_v1.json"
@@ -61,6 +63,7 @@ jobs:
       - name: Compile Stage 0
         run: |
           python -m py_compile ml/d2_live_replay_anchor_v1.py
+          python -m py_compile ml/run_d2_live_replay_anchor_v1.py
           python -m py_compile ml/test_d2_live_replay_anchor_v1.py
           python -m py_compile ml/c1_alpha_model_tournament_v1.py
           python -m py_compile ml/current_season_regime_fixed_temporal_audit_v1.py
@@ -134,7 +137,7 @@ jobs:
 
       - name: Build exact frozen-v2 live replay anchor
         run: |
-          python -m ml.d2_live_replay_anchor_v1 \
+          python -m ml.run_d2_live_replay_anchor_v1 \
             --input /tmp/d2-stage0-input.json \
             --structural-artifact-dir ml/artifacts/structural_prior_runtime_v1 \
             --freeze-manifest ml/artifacts/pre_live_v2_historical_candidate_v1/manifest.json \
