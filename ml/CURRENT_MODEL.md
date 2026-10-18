@@ -103,12 +103,46 @@ Development evidence contains:
 Key results:
 
 - Structural Prior T-1 on this difficult development subset: **3,968.7 MAE**;
-- v2 live expert: **2,929.3 MAE**;
+- v2 live expert LOEO: **2,929.3 MAE**;
 - non-deployable Prior/Live oracle: **1,867.9 MAE**;
 - v8 development replay: **2,713.3 window MAE**;
 - v8 latest-row replay: **1,998.1 MAE**.
 
 These are **development results only**. The v8 policy was designed using the same small event set and is not independently validated.
+
+## Synthetic trajectory validation — completed
+
+Train-only synthetic trajectory augmentation was tested against real held-out events.
+
+Canonical evidence:
+
+`ml/results/C1_SYNTHETIC_TRAJECTORY_VALIDATION_V1_2026-10-18.md`
+
+### Leave-One-Event-Out — 9 events
+
+- real-only live: **2,929.3 MAE**;
+- conservative synthetic: **2,813.4 MAE**;
+- stress synthetic: **2,742.4 MAE**;
+- Structural Prior on the same LOEO set: **3,968.7 MAE**.
+
+Synthetic augmentation therefore improves LOEO generalisation on this small event set.
+
+### Chronological walk-forward — 4 later events
+
+- Structural Prior: **1,711.0 MAE**;
+- real-only live: **4,499.9 MAE**;
+- conservative synthetic: **4,550.5 MAE**;
+- stress synthetic: **4,383.3 MAE**.
+
+This is the more important deployment-like warning: the current live expert generalises poorly when trained only on genuinely earlier events. Synthetic augmentation does not solve that problem.
+
+Decision:
+
+`conservative_augmentation_signal = NOT_PROVEN`
+
+`promotion_allowed = false`
+
+The next validation task is to diagnose why the four chronological forward events fail and when live evidence should be ignored in favour of Structural Prior.
 
 ## Frozen C1 v8 prospective package — LIVE
 
@@ -146,19 +180,26 @@ Production status surface reports:
 
 Therefore there is **no confirmed prospective live MAE yet**.
 
-Do not describe the 2.0k–2.7k replay range as current production accuracy.
+Do not describe the 2.0k–2.7k replay/LOEO range as current production accuracy.
 
 ## Walidacja obecnego modelu — najpierw sprawdzić, co naprawdę mamy
 
-Before adding more forecasting features:
+Completed so far:
 
-1. run **Leave-One-Event-Out** — remove the tested event from fitting/tuning entirely;
-2. reconstruct PIT-safe T-7 / T-3 / T-1 evidence for the held-out event;
-3. compare Structural Prior, Live/C1 and final prediction on the same rows;
-4. calculate MAE, bias and worst-event degradation;
-5. repeat using **chronological walk-forward**.
+- strict train-only synthetic augmentation experiment;
+- LOEO on 9 real events;
+- chronological walk-forward on 4 later real events.
 
-This does not replace prospective validation, but it should answer whether the current live model is actually closer to ~2k, ~3k or worse on unseen historical events.
+Current finding:
+
+> LOEO is promising, but chronological walk-forward is poor. Do not trust the live expert universally.
+
+Next:
+
+1. identify which forward events create the largest errors;
+2. diagnose club/domain shift, sparse history, coverage and feature instability;
+3. test whether reliable gating can keep Structural Prior when live is unsafe;
+4. keep all evaluation on real held-out events.
 
 ## Kolejność developmentu
 
@@ -203,6 +244,7 @@ Club decision/execution workflow is intentionally deferred. Any demo of a club t
 - no random row split across the same event trajectories;
 - every feature must be reconstructable as-of the forecast timestamp;
 - compare challengers against the exact incumbent on identical event/horizon pairs;
+- synthetic rows are training regularisation, never independent evidence;
 - replay is not prospective evidence;
 - do not present the oracle as deployable;
 - C1 v8 stays frozen during prospective validation;
