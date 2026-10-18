@@ -22,14 +22,14 @@ Before doing Beyond forecasting, ML, dashboard, Growth or recommendation work, r
 
 Beyond is a **live demand decision system**.
 
-Use these exact model-development workstreams:
+Workstreams:
 
 - **a) Dane historyczne — dopracować, nie przebudowywać**;
 - **b) Aktualny sezon — wzmocnić**;
 - **c) Context meczu — rozbudować**;
 - **d) Live demand — najmocniej rozwinąć**.
 
-Development order:
+Order:
 
 `Walidacja -> b -> c -> d -> tuning a`
 
@@ -43,9 +43,9 @@ Production remains:
 
 `live_adjustment = 0`
 
-Historical reference:
+Historical reference MAE:
 
-| Horizon | 2024/25 MAE | 2025/26 MAE |
+| Horizon | 2024/25 | 2025/26 |
 |---|---:|---:|
 | T-30 | 1,889.4 | 1,846.3 |
 | T-14 | 1,748.5 | 1,870.4 |
@@ -77,7 +77,7 @@ Training events:
 
 Do not retune or silently retrain this package during prospective validation.
 
-## Walidacja obecnego modelu — historical result
+## C1 historical validation
 
 Canonical evidence:
 
@@ -90,7 +90,7 @@ Key result:
 - LOEO raw Live: **2,929.3 MAE**;
 - conservative train-only synthetic Live: **2,261.5**;
 - four-event chronological raw Live: **2,103.7** vs Prior **452.8**;
-- frozen v8 selects PRIOR in **16 / 16 rows** and preserves Prior exactly;
+- frozen v8 selects PRIOR in **16/16 rows** and preserves Prior exactly;
 - forward diagnostic finds no single compact feature group that consistently fixes raw Live;
 - frozen v8 remains unchanged.
 
@@ -103,60 +103,78 @@ Current prospective evidence:
 
 There is still no confirmed prospective live MAE.
 
-## b) Aktualny sezon — wzmocnić — TESTED / NOT PROVEN
+## b) Aktualny sezon — TESTED / NOT PROVEN
 
 Canonical evidence:
 
 `ml/results/CURRENT_SEASON_ADJUSTMENT_V1_2026-10-18.md`
 
-Current Season Adjustment v1 tested an explicit bounded/shrunk correction on top of Structural Prior with the incumbent isolated before challenger-only signals are added.
-
 Result:
 
-- T-30: `NO_ADJUSTMENT`;
-- T-14: `NO_ADJUSTMENT`;
-- T-7: `season_r3-k6-a25` wins development but worsens 2024/25 and 2025/26 holdouts;
-- T-3: `NO_ADJUSTMENT`;
-- T-1: `NO_ADJUSTMENT`;
-- no horizon has positive mean holdout improvement;
+- T-30/T-14/T-3/T-1: `NO_ADJUSTMENT`;
+- T-7 development winner worsens both reference holdouts;
+- no positive mean holdout improvement;
 - no promotion;
 - production unchanged.
 
-Do not keep tuning the same explicit current-season adjustment against the exposed reference seasons. Current-season features already inside Structural Prior remain.
+Do not keep tuning the same explicit current-season adjustment against exposed reference seasons.
+
+## c) Context meczu — AUDITED / NOT PROVEN
+
+Canonical evidence:
+
+- `ml/MATCH_CONTEXT_AUDIT_V1.md`;
+- `ml/results/MATCH_CONTEXT_FUTURE_FIXTURE_V1_2026-10-18.md`.
+
+Existing PIT context already covers opponent draw/pair history, PPG, GD/game, form, table position and past congestion.
+
+Future Fixture Context v1 tested next-home timing/attractiveness/cannibalization:
+
+- T-30/T-14/T-3 select `NO_CONTEXT_EXTENSION`;
+- T-7 is essentially neutral/mixed and mean worse by ~0.9 MAE;
+- T-1 is unstable and mean worse by ~15.2 MAE;
+- no horizon improves mean holdout MAE;
+- no horizon improves both reference seasons.
+
+The evidence is additionally `SCHEDULE_AS_RECORDED_RETROSPECTIVE_PROXY`; historical schedule versions do not exist.
+
+Do not add future-fixture features. Do not add squad context without a reliable historical PIT feed.
 
 ## Current development state
 
-### c) Context meczu — rozbudować — NEXT ACTIVE DEVELOPMENT
+### d) Live demand — najmocniej rozwinąć — ACTIVE
 
-Start with a point-in-time audit of context already present in the canonical feature store, then add the smallest governed challenger that can be evaluated without leakage.
+Already implemented:
 
-Priority:
+- live inventory collection;
+- trajectory / velocity / acceleration;
+- release / coverage-change handling;
+- frozen C1 v8 prospective shadow;
+- sector and price-area trajectories;
+- real Roboticket price capture;
+- guarded recommendations and dashboard decision support.
 
-1. opponent strength / attractiveness;
-2. future fixtures and cannibalization / fixture congestion;
-3. form and table context not already captured sufficiently;
-4. squad injuries/suspensions/key players only if reliable PIT history exists.
+Next development must improve continuous live evidence / Prior-to-Live transition **without changing frozen v8**.
 
-### d) Live demand — najmocniej rozwinąć
+Priorities:
 
-- inventory od pierwszego momentu sprzedaży;
-- velocity / acceleration / sector / price-area movement;
-- aktualizacja forecastu po każdym znaczącym snapshotcie;
-- checkpointy T-30/T-14/T-7/T-3/T-1 głównie do pomiaru jakości.
+1. inventory from the earliest available sales moment;
+2. continuous trajectory rather than treating T-30/T-14/T-7/T-3/T-1 as the only model moments;
+3. forecast refresh on meaningful snapshots;
+4. reliability / gating as a separately governed challenger;
+5. prospective outcome collection;
+6. production remains `live_adjustment = 0` until explicit promotion.
 
-### a) Dane historyczne — dopracować, nie przebudowywać
+### a) Dane historyczne — tuning later
 
-- utrzymać Structural Prior;
-- feature contribution;
-- usunąć noisy features;
-- lepiej ważyć nowsze sezony.
+Only after d): feature contribution, noisy-feature removal and newer-season weighting.
 
 ## E0 sector / price-area decision support — implemented
 
 Implemented:
 
 - sector trajectory / status;
-- bounded no-action sector projection;
+- bounded no-action projection;
 - Roboticket price capture;
 - price-area mapping / mixed-price split;
 - assumption-based scenarios;
@@ -166,8 +184,6 @@ Implemented:
 `auto_price_change_allowed = false`
 
 No learned elasticity or causal pricing uplift is claimed.
-
-Club decision/execution workflow remains deferred. Simulated intervention uplift must be labeled simulated.
 
 ## Non-negotiable forecasting rules
 
@@ -182,4 +198,4 @@ Club decision/execution workflow remains deferred. Simulated intervention uplift
 
 ## One-line cold-start instruction
 
-> **Walidacja historyczna C1 jest wykonana; frozen v8 odcina unsafe Live. b) Current Season Adjustment v1 zostało przetestowane i nie udowodniło poprawy, więc go nie promuj. Następny aktywny development: c) Context meczu — rozbudować; potem d -> tuning a.**
+> **C1 historical validation is complete for current data; frozen v8 stays frozen. b) Current Season and c) Match Context were tested and did not prove a production improvement. Active development is now d) Live demand — improve continuous live evidence and Prior→Live decision quality without retuning v8.**
