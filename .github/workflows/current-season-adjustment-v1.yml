@@ -1,0 +1,67 @@
+name: Current Season Adjustment v1
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - "ml/current_season_adjustment_v1.py"
+      - "ml/CURRENT_SEASON_ADJUSTMENT_V1.md"
+      - "ml/demand_engine/structural_prior_runtime.py"
+      - "ml/features/structural_prior_feature_store_v1.py"
+      - ".github/workflows/current-season-adjustment-v1.yml"
+  pull_request:
+    paths:
+      - "ml/current_season_adjustment_v1.py"
+      - "ml/CURRENT_SEASON_ADJUSTMENT_V1.md"
+      - "ml/demand_engine/structural_prior_runtime.py"
+      - "ml/features/structural_prior_feature_store_v1.py"
+      - ".github/workflows/current-season-adjustment-v1.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: current-season-adjustment-v1-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install pinned runtime
+        run: |
+          python -m pip install --upgrade pip
+          pip install numpy==2.3.5 pandas==2.2.3 scikit-learn==1.8.0 joblib==1.5.3
+
+      - name: Validate code
+        run: python -m py_compile ml/current_season_adjustment_v1.py
+
+      - name: Run current-season adjustment challenger
+        run: |
+          python -m ml.current_season_adjustment_v1 \
+            --historical-runtime ml/artifacts/structural_prior_runtime_v1/historical_runtime_v1.csv.gz \
+            --output /tmp/current-season-adjustment-v1.json
+
+      - name: Print concise result
+        run: |
+          jq '{experiment,workstream,protocol,summary,horizons:[.horizons[]|{horizon,signal,mean_holdout_incumbent_mae,mean_holdout_adjusted_mae,mean_holdout_mae_delta,selected_variant:.development.selected_variant.variant,holdouts:(.holdouts|to_entries|map({season:.key,incumbent_mae:.value.incumbent.mae,adjusted_mae:.value.adjusted.mae,mae_delta_vs_incumbent:.value.mae_delta_vs_incumbent,eligible_adjustment_share:.value.diagnostics.eligible_adjustment_share}))}]}' \
+            /tmp/current-season-adjustment-v1.json
+
+      - name: Upload full evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: current-season-adjustment-v1-${{ github.run_id }}
+          path: /tmp/current-season-adjustment-v1.json
+          if-no-files-found: error
+          retention-days: 30
