@@ -1,7 +1,7 @@
 # Beyond Ticketing — C1 Synthetic Trajectory Validation v1
 
 Last updated: **2026-10-18**  
-Status: **COMPLETED / NOT PROVEN FOR PROMOTION**
+Status: **COMPLETED / PROMISING FOR FURTHER VALIDATION / NO PROMOTION**
 
 This experiment belongs to:
 
@@ -15,7 +15,7 @@ Canonical result:
 
 ## Result in one sentence
 
-Synthetic augmentation improved LOEO on real held-out events, but did **not** establish reliable chronological generalisation; the current live expert still loses badly to Structural Prior on the four walk-forward folds.
+Synthetic augmentation improved the raw Live expert on real held-out events in both LOEO and chronological walk-forward, but raw Live still lost to Structural Prior on the four chronological events.
 
 ## Main numbers
 
@@ -23,59 +23,43 @@ Synthetic augmentation improved LOEO on real held-out events, but did **not** es
 
 | Training mode | Structural Prior MAE | Live window MAE | Live latest-row MAE |
 |---|---:|---:|---:|
-| `real_only` | 3,968.7 | 2,929.3 | 2,757.0 |
-| `conservative_synthetic` | 3,968.7 | 2,813.4 | **2,582.1** |
-| `stress_synthetic` | 3,968.7 | **2,742.4** | 2,582.3 |
+| `real_only` | 3,968.7 | 2,929.3 | 3,046.6 |
+| `conservative_synthetic` | 3,968.7 | **2,261.5** | **2,213.9** |
+| `stress_synthetic` | 3,968.7 | 2,498.8 | 2,481.7 |
 
 ### Chronological walk-forward — 4 real later events
 
 | Training mode | Structural Prior MAE | Live window MAE | Live latest-row MAE |
 |---|---:|---:|---:|
-| `real_only` | **1,711.0** | 4,499.9 | 4,455.0 |
-| `conservative_synthetic` | **1,711.0** | 4,550.5 | 4,465.3 |
-| `stress_synthetic` | **1,711.0** | **4,383.3** | **4,332.6** |
+| `real_only` | **452.8** | 2,103.7 | 2,197.3 |
+| `conservative_synthetic` | **452.8** | 1,939.5 | 2,017.0 |
+| `stress_synthetic` | **452.8** | **1,876.7** | **1,915.2** |
 
 Decision:
 
-`conservative_augmentation_signal = NOT_PROVEN`
+`conservative_augmentation_signal = PROMISING_FOR_FURTHER_VALIDATION`
 
 `promotion_allowed = false`
 
 Frozen C1 v8 and production are unchanged.
 
-## What this is
-
-We have only a small number of completed events with useful live trajectory history. Synthetic augmentation is used as a **regularisation experiment**, not as fake evidence.
-
-We compare three training modes using the same real held-out events:
-
-1. `real_only`;
-2. `conservative_synthetic`;
-3. `stress_synthetic`.
-
-Current model under test:
-
-`ridge_directocc_compact_generic_a10`
-
 ## Hard rule
 
 > Synthetic data may exist only on the training side. The held-out / scored event is always 100% real.
 
-For every LOEO fold:
+For every validation fold:
 
-- one real event is removed from training;
+- the real test event is excluded from training;
 - no row from that event is used to generate synthetic data;
-- training uses the remaining real events;
-- synthetic variants may be generated only from those training events;
-- evaluation is performed only on the untouched real held-out event.
-
-The same rule applies to chronological walk-forward: only earlier real events may generate synthetic training variants.
+- synthetic variants may be generated only from training events;
+- evaluation is performed only on untouched real events;
+- synthetic rows never count as new independent matches.
 
 ## What is synthetic
 
 Synthetic rows preserve the real training event and its real final attendance.
 
-We perturb only plausible observable trajectory conditions, including bounded changes to:
+We perturb plausible observable trajectory conditions, including bounded changes to:
 
 - public availability / availability index;
 - net inventory movement;
@@ -86,19 +70,15 @@ We perturb only plausible observable trajectory conditions, including bounded ch
 - small timestamp / observation-position jitter;
 - limited missingness in live trajectory features.
 
-The purpose is to make the model less sensitive to one exact observed trajectory shape.
-
 ## What is NOT synthetic
 
 We do **not** generate:
 
 - fake held-out matches;
 - fake final attendance outcomes and then score against them;
-- thousands of synthetic events counted as independent evidence;
+- synthetic events counted as independent evidence;
 - synthetic rows in the test set;
-- synthetic evidence used to claim production MAE.
-
-A synthetic row remains part of its real source training event and does not increase independent event count.
+- synthetic evidence used to claim prospective production MAE.
 
 ## Weighting
 
@@ -113,19 +93,19 @@ Each real event still contributes equal total event weight regardless of synthet
 
 ### `real_only`
 
-No augmentation. Reproduces the current v2-style baseline.
+No augmentation. Current v2-style baseline.
 
 ### `conservative_synthetic`
 
-Small, bounded perturbations intended to represent plausible trajectory observation variation.
+Small, bounded trajectory perturbations.
 
-This profile improved LOEO but did not improve chronological walk-forward, so it is **not proven**.
+This profile produced the best LOEO result and improved chronological walk-forward vs `real_only`.
 
 ### `stress_synthetic`
 
 Larger perturbations used as a robustness/stress test.
 
-It improved both LOEO and walk-forward relative to `real_only`, but the absolute walk-forward live error remained far worse than Structural Prior. It is therefore not promotable evidence.
+It produced the best raw-Live chronological walk-forward result, but still remained much worse than Structural Prior on those four events.
 
 ## Why this is not perpetuum mobile
 
@@ -151,8 +131,12 @@ Artifact:
 
 `c1-synthetic-trajectory-validation-v1-39139461760`
 
+Artifact SHA256:
+
+`428bff63d8b01b19c81199c4d2c482cf7e1dd551c3e6bb2d48677aa6e702e00a`
+
 ## Next validation step
 
-Do not move from this result directly to promotion or claim that synthetic data solved C1.
+Synthetic augmentation is worth keeping as a challenger/regularisation technique, but it does not justify replacing Structural Prior with raw Live.
 
-Within **Walidacja obecnego modelu**, diagnose why chronological walk-forward produces ~4.4–4.5k live MAE vs ~1.7k Structural Prior MAE on four later events, and identify whether the failure is caused by domain/club shift, sparse history, coverage differences or unstable trajectory features.
+Next, validate whether the fixed v8 `Prior vs Live` policy protects the final forecast during chronological walk-forward without changing any v8 thresholds.
