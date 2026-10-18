@@ -8,13 +8,16 @@ This is the canonical short-form state. Read `AI_BOOTSTRAP.md` first in a cold s
 
 Beyond is a **live demand decision system**, not only an attendance model.
 
-Forecasting stack:
+For model development, keep these exact workstreams:
 
-`Historical Structural Prior -> Current-season adjustment -> Match context -> Live demand trajectory -> Forecast revision`
+- **a) Dane historyczne — dopracować, nie przebudowywać**;
+- **b) Aktualny sezon — wzmocnić**;
+- **c) Context meczu — rozbudować**;
+- **d) Live demand — najmocniej rozwinąć**.
 
-Decision-support stack:
+Before further development:
 
-`Event forecast -> Sector trajectory -> No-action projection -> Price-area scenario -> Recommendation`
+- **Walidacja obecnego modelu — najpierw sprawdzić, co naprawdę mamy.**
 
 Public seat-map inventory is a **demand proxy, not confirmed paid sales**.
 
@@ -51,31 +54,39 @@ Canonical historical benchmark:
 
 2024/25 and 2025/26 are exposed historical reference seasons, not pristine fresh holdouts for new R&D.
 
-## Current forecasting capability
+## a) Dane historyczne — dopracować, nie przebudowywać
 
-### a) Historical data
+**TAK — działa i jest najbardziej dojrzałe.**
 
-**Implemented / mature.**
+Structural Prior is the incumbent baseline. Keep it, test which historical features actually improve MAE, remove noisy features and weight newer seasons better than older ones.
 
-Structural Prior is the incumbent baseline. It should be tuned, not rebuilt without evidence.
+**Cel:** mocniejszy baseline bez komplikowania modelu.
 
-### b) Current season
+## b) Aktualny sezon — wzmocnić
 
-**Implemented partially.**
+**TAK, ale częściowo.**
 
-Current-season / recent host evidence exists, but the next model-quality step is a stronger explicit current-season adjustment and recency weighting.
+Current-season / recent host evidence exists. Add a clearer current season adjustment, use recent home matches more strongly, measure whether the club is currently above/below its historical norm and update the adjustment after every completed match.
 
-### c) Match context
+**Cel:** model szybciej reaguje na zmianę realiów w danym sezonie.
 
-**Implemented partially.**
+## c) Context meczu — rozbudować
 
-Existing context includes football / schedule / host-opponent information. Future-fixture attractiveness, fixture cannibalization and governed PIT squad context are not yet first-class features.
+**CZĘŚCIOWO.**
 
-### d) Live demand
+Existing context already includes parts of form, table, opponent and schedule information. Add opponent attractiveness, future fixtures, fixture congestion / cannibalization and reliable squad context where point-in-time data exists.
 
-**Implemented and running, but not yet maximized.**
+**Cel:** model rozumie, dlaczego konkretny mecz może mieć większy lub mniejszy popyt.
 
-Live inventory, trajectory, velocity and C1 shadow inference exist. The next direction is continuous revision from meaningful snapshots while keeping the official horizons as evaluation checkpoints.
+## d) Live demand — najmocniej rozwinąć
+
+**TAK — działa, ale ma największy potencjał rozwoju.**
+
+Live inventory, trajectory, velocity and C1 shadow inference exist. Collect inventory from the earliest sales moment, calculate velocity / acceleration / sector / price-area movement and update the forecast after meaningful new snapshots.
+
+T-30 / T-14 / T-7 / T-3 / T-1 should remain evaluation checkpoints, not the only moments when the model can update.
+
+**Cel:** mieć forecast, który żyje razem ze sprzedażą.
 
 Canonical development plan:
 
@@ -137,35 +148,31 @@ Therefore there is **no confirmed prospective live MAE yet**.
 
 Do not describe the 2.0k–2.7k replay range as current production accuracy.
 
-## Immediate model-quality validation — NEW PRIORITY 1
+## Walidacja obecnego modelu — najpierw sprawdzić, co naprawdę mamy
 
-Before adding more forecasting features, run the strongest historical approximation of an unseen-event deployment test:
+Before adding more forecasting features:
 
-1. **Leave-One-Event-Out** — remove the tested event from fitting/tuning entirely;
+1. run **Leave-One-Event-Out** — remove the tested event from fitting/tuning entirely;
 2. reconstruct PIT-safe T-7 / T-3 / T-1 evidence for the held-out event;
-3. compare Structural Prior, Live expert/C1 and final policy on the same rows;
+3. compare Structural Prior, Live/C1 and final prediction on the same rows;
 4. calculate MAE, bias and worst-event degradation;
 5. repeat using **chronological walk-forward**.
 
 This does not replace prospective validation, but it should answer whether the current live model is actually closer to ~2k, ~3k or worse on unseen historical events.
 
-## Model-quality development order
+## Kolejność developmentu
 
-Canonical plan:
+1. **Walidacja obecnego modelu**
+2. **b) Aktualny sezon — wzmocnić**
+3. **c) Context meczu — rozbudować**
+4. **d) Live demand — najmocniej rozwinąć**
+5. **a) Dane historyczne — dopracować, nie przebudowywać**
 
-`ml/DEMAND_FORECAST_DEVELOPMENT_PLAN_V2.md`
+Skrót:
 
-Order:
-
-1. strict LOEO + chronological walk-forward validation;
-2. stronger current-season adjustment;
-3. richer match context — especially future-fixture cannibalization and reliable squad context;
-4. continuous live demand correction;
-5. historical Structural Prior tuning.
+`Walidacja -> b -> c -> d -> tuning a`
 
 ## E0 — Sector & Price-area Decision Support — IMPLEMENTED
-
-The former E0 implementation path is no longer the primary next build.
 
 Implemented capabilities include:
 
