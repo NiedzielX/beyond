@@ -4,23 +4,17 @@ Last updated: **2026-10-18**
 
 Status: **ACTIVE EXPERIMENT / b2 / NO PRODUCTION CHANGE**
 
-## Why this is different from Current Season Adjustment v1
+## Why this differs from Current Season Adjustment v1
 
-The old `CURRENT_SEASON_ADJUSTMENT_V1` asked:
+The old experiment asked whether raw current-season attendance was above/below the club's historical attendance norm. That formulation was not proven.
 
-> Is current-season raw attendance above/below the club's historical attendance norm?
+This experiment asks:
 
-That formulation was not proven.
+> **Is the club currently drawing systematically above or below what our own strongest rolling Pre-Live base model expected earlier in this same season?**
 
-This experiment asks instead:
+This targets current-season regime change that may remain after existing Structural Prior features.
 
-> **Is the club currently drawing systematically above or below what our own strongest Pre-Live base model expected earlier in this same season?**
-
-This isolates a current-season regime shift that may remain after Structural Prior's existing current-season features.
-
-## Base model state
-
-Use the strongest current historical Pre-Live candidate per horizon:
+## Base model by horizon
 
 - T-30: retained production incumbent;
 - T-14: retained production incumbent;
@@ -32,35 +26,38 @@ No production runtime is changed by this experiment.
 
 ## PIT rule — critical
 
-A previous home-match residual may enter current-season regime state only when that previous match is actually completed at the current forecast timestamp.
+A prior home-match residual may enter current-season state only when its outcome was available **before** the target forecast timestamp.
 
-Canonical completion time:
+Canonical completion:
 
 `completed_at = kickoff_at + 3 hours`
 
-For every current snapshot:
+Effective rule:
 
-`previous completed_at <= current as_of_at`
+`source completed_at < target as_of_at`
 
-This is stricter than simply ordering matches by fixture date.
+The implementation uses canonical event ordering:
+
+- snapshot priority = 0;
+- completion priority = 1.
+
+Therefore a snapshot at exactly `completed_at` is processed first and **must not** see the outcome that completes at the same timestamp.
 
 Example:
 
 - Match A kickoff: 10 January 12:00;
-- Match A completion state: 10 January 15:00;
-- Match B T-30 snapshot: 10 January 14:00.
+- canonical completion: 10 January 15:00;
+- Match B snapshot: 10 January 14:00 -> cannot use A;
+- snapshot exactly 15:00 -> still cannot use A;
+- snapshot 15:00:01 or later -> may use A.
 
-Match B **must not** use Match A's attendance residual yet.
-
-A snapshot at 16:00 may use it.
-
-The implementation stores the latest completion timestamp used and hard-fails if future completion leakage is detected.
+This is stricter than fixture-date ordering and is covered by unit tests.
 
 ## Same-season residual state
 
-For every target-season home match, first calculate the frozen base prediction using only training seasons before the target season.
+For every target-season match, calculate the frozen base prediction using only seasons before the target season.
 
-When a match completes, create:
+When a home match completes, create two signal forms.
 
 ### Capacity-normalized residual
 
@@ -78,17 +75,19 @@ Input clip:
 
 `[-0.50, +0.50]`
 
-For every home club, maintain only residuals from earlier completed home matches in the same season.
+For a target snapshot, state contains only earlier completed home matches of the same club in the same season.
 
 ## Candidate signal families
 
-Three materially different same-season representations:
+Five predeclared representations:
 
-1. `mean_residual_fraction` — mean capacity-normalized residual;
-2. `ewma_residual_fraction` — EWMA of residual fraction with fixed alpha `0.50`;
-3. `mean_demand_ratio` — mean actual/expected ratio.
+1. `mean_residual_fraction` — broad same-season regime level;
+2. `median_residual_fraction` — robust to one exceptional prior match;
+3. `ewma50_residual_fraction` — fixed alpha 0.50, stronger recency;
+4. `last3_mean_residual_fraction` — explicit last-three-home-match emphasis;
+5. `mean_demand_ratio` — actual/expected ratio rather than capacity residual.
 
-Each signal is tested with shrinkage:
+Each is tested with shrinkage:
 
 - `k=2`;
 - `k=4`;
@@ -98,24 +97,22 @@ Shrinkage:
 
 `w = n / (n + k)`
 
-A signal becomes available after the first earlier completed same-season home match. The first match is automatically strongly shrunk.
-
 Total:
 
-- 9 non-zero variants;
+- **15 non-zero variants**;
 - `NO_ADJUSTMENT` fallback.
 
-No alpha/cap grid is added.
+There is no alpha grid and no cap grid.
 
 ## Correction
 
 For residual-fraction candidates:
 
-`raw_delta = shrink * residual_signal * capacity`
+`raw_delta = shrink * signal * capacity`
 
 For demand-ratio candidates:
 
-`raw_delta = shrink * ratio_signal * base_prediction`
+`raw_delta = shrink * signal * base_prediction`
 
 Safety cap:
 
@@ -125,81 +122,73 @@ Final:
 
 `adjusted = clip(base_prediction + delta, 0, capacity)`
 
-## Selection protocol
+The first available same-season residual is allowed, but shrinkage is strongest when `n` is small.
 
-Candidate selection uses two development-era rolling seasons only.
+## Development selection
 
-### Development Fold A
+Two development-era rolling seasons:
 
-Train base model:
+### Fold A
 
-- 2021/22.
+Train base model on 2021/22. Evaluate b2 on 2022/23.
 
-Evaluate current-season regime:
+### Fold B
 
-- 2022/23.
+Train base model on 2021/22 + 2022/23. Evaluate b2 on 2023/24.
 
-### Development Fold B
-
-Train base model:
-
-- 2021/22 + 2022/23.
-
-Evaluate current-season regime:
-
-- 2023/24.
-
-A candidate is eligible only if:
+A non-zero candidate is eligible only if:
 
 1. MAE improves versus base in **both** development folds;
 2. mean relative MAE improvement is at least **0.5%**.
 
 Among eligible candidates:
 
-1. identify the best mean development MAE gain;
-2. keep candidates retaining at least **90%** of that gain;
+1. find the best mean development MAE gain;
+2. retain candidates with at least **90%** of that gain;
 3. choose minimum maximum worst-event degradation;
 4. then lower mean p90 AE delta;
 5. then higher mean event-improvement rate;
 6. then deterministic candidate ID.
 
-If no candidate passes:
+If none passes:
 
 `selected = NO_ADJUSTMENT`
 
+This selection rule is frozen before reference scoring.
+
 ## Reference scoring
 
-Only after development selection is frozen, evaluate unchanged on:
+Only after selection, score unchanged on:
 
-1. 2024/25 — base trained through 2023/24;
-2. 2025/26 — base trained through 2024/25.
+- 2024/25 — base trained through 2023/24;
+- 2025/26 — base trained through 2024/25.
 
-The references do not select:
+References do not choose:
 
-- signal source;
-- shrink `k`;
+- signal family;
+- shrink k;
 - cap;
 - EWMA alpha;
 - base model.
 
 Evidence class:
 
-`EXPOSED_HISTORICAL_REFERENCE_SEASONS`
+`TWO_DEVELOPMENT_SEASONS_PLUS_EXPOSED_REFERENCES`
 
 Therefore:
 
 `promotion_allowed = false`
 
-## Signal-maturity diagnostics
+## Signal maturity diagnostics
 
-For the selected candidate, report MAE conditional on the number of earlier completed same-season home matches available at the forecast timestamp:
+For the selected candidate, report quality conditional on prior completed same-season home matches available at the target snapshot:
 
 - `0`;
 - `1`;
 - `2`;
 - `3+`.
 
-This is necessary because b2 should answer not only whether current-season regime helps, but **when in the season it starts becoming useful**.
+This answers not only whether b2 helps, but **when in the season it becomes useful**.
 
 ## Required scorecard
 
@@ -215,16 +204,16 @@ Per candidate/fold:
 - event improvement rate;
 - club breakdown where sample permits;
 - correction coverage;
-- mean/median/max correction seats;
+- mean/median/p90/max correction seats;
 - conditional MAE by prior same-season home-match count.
 
 ## Reproduction gates
 
-Reference base MAE must reproduce canonical values.
+2023/24 base MAE is hard-asserted for all five horizons.
 
-For T-7, the experiment must reproduce frozen `hist31-leaf20-l2-1` exactly for all canonical seasons where an expected value exists.
+2024/25 and 2025/26 base MAE must reproduce canonical values.
 
-For other horizons, retained Structural Prior benchmarks remain hard-asserted where canonical expected values exist.
+T-7 must reproduce frozen `hist31-leaf20-l2-1`, not the old production T-7 runtime.
 
 ## Files
 
@@ -240,4 +229,4 @@ Workflow:
 
 `.github/workflows/current-season-residual-regime-v1.yml`
 
-The final result must later persist run/artifact hashes, exact winner per horizon, signal-maturity diagnostics and the explicit advance/reject decision.
+The final result must persist run/artifact IDs and hashes, exact winner/fallback per horizon, signal-maturity diagnostics, explicit reference behavior and the next b2 decision.
