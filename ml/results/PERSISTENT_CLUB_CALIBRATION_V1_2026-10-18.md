@@ -8,12 +8,14 @@ Workstream:
 
 ## Evidence source
 
-GitHub Actions run: `39160907508`  
-Tested branch head: `3824d083b98f7234b7c0a20bc6110bcc5f4ed117`  
-Artifact: `persistent-club-calibration-v1-39160907508`  
-Artifact ID: `12148178637`  
-Artifact ZIP SHA256: `3a38374a9ebd4527b482e488ff7879ef6509581d572f4e2b78e0d2c1605e3bde`  
-Result JSON SHA256: `1dc52a9bd060eeddde70637f1c5923c86e6f76f0b41dedd4dac91169ba089956`
+Final-head GitHub Actions run: `39160997315`  
+Tested branch head: `8135ba24d241605e1c6139192f0529a2bb7100d5`  
+Artifact: `persistent-club-calibration-v1-39160997315`  
+Artifact ID: `12148683008`  
+Artifact ZIP SHA256: `a90ca19a872e1c2af19aacdcbc57dddbfe9cfca001f324dad98304c1ee833b1b`  
+Result JSON SHA256: `47b2371e5999280f0269cca19020c84538de11722e4731d73baf297305cbd13c`
+
+The immediately preceding accepted run `39160907508` on commit `3824d083...` reached the same model decisions. The final-head run above is canonical because it validates the exact branch state being merged. Numerical differences between the two accepted JSONs are floating-point noise at approximately machine precision and do not change any metric interpretation or decision.
 
 CI:
 
@@ -42,7 +44,7 @@ The first implementation attempt was correctly rejected by CI before producing a
 
 Cause: the local reconstruction passed explicit uniform sample weights, while the canonical Stage-3 fitter did not.
 
-The accepted run delegates T-7 fitting directly to the canonical Stage-3 `fit_estimator()` with `hist31-leaf20-l2-1` and keeps the hard reproduction assertion.
+The accepted implementation delegates T-7 fitting to the canonical Stage-3 adapter and also keeps the local reconstruction contract aligned. Exact reproduction assertions remain mandatory.
 
 The failed run is **not evidence**.
 
