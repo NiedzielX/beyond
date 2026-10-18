@@ -18,6 +18,7 @@ on:
       - "ml/results/CONTEXT_EXTENSION_V2_2026-10-18.md"
       - "ml/artifacts/structural_prior_runtime_v1/historical_runtime_v1.csv.gz"
       - "ml/artifacts/structural_prior_runtime_v1/manifest.json"
+      - "ml/artifacts/pre_live_v2_historical_candidate_v1/manifest.json"
       - ".github/workflows/pre-live-v2-historical-freeze-v1.yml"
   push:
     branches:
@@ -37,6 +38,7 @@ on:
       - "ml/results/CONTEXT_EXTENSION_V2_2026-10-18.md"
       - "ml/artifacts/structural_prior_runtime_v1/historical_runtime_v1.csv.gz"
       - "ml/artifacts/structural_prior_runtime_v1/manifest.json"
+      - "ml/artifacts/pre_live_v2_historical_candidate_v1/manifest.json"
       - ".github/workflows/pre-live-v2-historical-freeze-v1.yml"
 
 permissions:
@@ -85,6 +87,14 @@ jobs:
             --input-manifest ml/artifacts/structural_prior_runtime_v1/manifest.json \
             --repo-root . \
             --output /tmp/pre-live-v2-historical-candidate-manifest.json
+
+      - name: Verify committed freeze manifest byte-for-byte
+        run: |
+          cmp \
+            ml/artifacts/pre_live_v2_historical_candidate_v1/manifest.json \
+            /tmp/pre-live-v2-historical-candidate-manifest.json
+          test "$(sha256sum /tmp/pre-live-v2-historical-candidate-manifest.json | awk '{print $1}')" = \
+            "44c911d1ac8b1bf6870ed31e1a636b9b8374d8c8da2d57ba3b4fb5b4aaba4d3c"
 
       - name: Print frozen contract
         run: |
