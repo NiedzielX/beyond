@@ -5,6 +5,7 @@ on:
   pull_request:
     paths:
       - "ml/current_season_regime_maturity_stage2_v1.py"
+      - "ml/run_current_season_regime_maturity_stage2_v1.py"
       - "ml/test_current_season_regime_maturity_stage2_v1.py"
       - "ml/CURRENT_SEASON_REGIME_MATURITY_STAGE2_V1.md"
       - "ml/current_season_residual_regime_v1.py"
@@ -20,6 +21,7 @@ on:
       - main
     paths:
       - "ml/current_season_regime_maturity_stage2_v1.py"
+      - "ml/run_current_season_regime_maturity_stage2_v1.py"
       - "ml/test_current_season_regime_maturity_stage2_v1.py"
       - "ml/CURRENT_SEASON_REGIME_MATURITY_STAGE2_V1.md"
       - "ml/current_season_residual_regime_v1.py"
@@ -60,6 +62,7 @@ jobs:
       - name: Compile
         run: |
           python -m py_compile ml/current_season_regime_maturity_stage2_v1.py
+          python -m py_compile ml/run_current_season_regime_maturity_stage2_v1.py
           python -m py_compile ml/test_current_season_regime_maturity_stage2_v1.py
           python -m py_compile ml/current_season_residual_regime_v1.py
           python -m py_compile ml/t7_robust_estimator_v1.py
@@ -69,7 +72,7 @@ jobs:
 
       - name: Run maturity stage 2
         run: |
-          python -m ml.current_season_regime_maturity_stage2_v1 \
+          python -m ml.run_current_season_regime_maturity_stage2_v1 \
             --historical-runtime ml/artifacts/structural_prior_runtime_v1/historical_runtime_v1.csv.gz \
             --manifest ml/artifacts/structural_prior_runtime_v1/manifest.json \
             --output /tmp/current-season-regime-maturity-stage2-v1.json
