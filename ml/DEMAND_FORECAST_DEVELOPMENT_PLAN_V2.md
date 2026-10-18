@@ -6,86 +6,82 @@ To jest canonical plan rozwoju jakości forecastu. Nazwy etapów mają pozostać
 
 ## 1. Walidacja obecnego modelu — najpierw sprawdzić, co naprawdę mamy
 
-Zanim dodamy kolejne dane i features, sprawdzamy uczciwie, jak obecny model działa na meczach, których nie widział podczas treningu / tuningu.
+Status: **historyczna walidacja na obecnie dostępnych live eventach wykonana; prospective validation trwa dalej automatycznie.**
 
-- zrobić **Leave-One-Event-Out** na zakończonych meczach z użytecznymi live danymi;
-- dla każdego testowanego meczu trenować / tunować model bez tego meczu;
-- odtworzyć historyczny stan T-7 / T-3 / T-1 wyłącznie z danych dostępnych wtedy;
-- porównać:
-  - Structural Prior,
-  - Live / C1,
-  - final prediction / policy;
-- policzyć MAE, bias i błędy per mecz;
-- dodatkowo zrobić **chronological walk-forward**;
-- nie liczyć wielu snapshotów jednego meczu jako wielu niezależnych meczów.
+Sprawdziliśmy model na prawdziwych held-out eventach bez używania testowanego meczu do treningu lub syntetyki.
 
-### Syntetyczne warianty trajectory — WYKONANE
+### Leave-One-Event-Out
 
-Sprawdziliśmy, czy małą liczbę prawdziwych meczów można lepiej wykorzystać przez **train-only synthetic trajectory augmentation**.
-
-Porównane warianty:
-
-1. `real_only` — tylko prawdziwe dane;
-2. `conservative_synthetic` — niewielkie, realistyczne perturbacje trajectory;
-3. `stress_synthetic` — większe perturbacje jako stress test.
-
-Twarde zasady zostały zachowane:
-
-- syntetyczne dane powstawały wyłącznie z eventów treningowych;
-- held-out mecz był zawsze 100% realny;
-- z held-out meczu nie generowano synthetic rows;
-- synthetic row zachowywał realny outcome swojego training eventu;
-- synthetic rows nie zwiększały liczby niezależnych eventów;
-- jakość była liczona wyłącznie na prawdziwych held-out eventach.
-
-#### Wynik LOEO — 9 realnych eventów
+9 realnych held-out eventów, 30 final-24h rows.
 
 | Training mode | Structural Prior MAE | Live window MAE | Live latest-row MAE |
 |---|---:|---:|---:|
-| `real_only` | 3,968.7 | 2,929.3 | 2,757.0 |
-| `conservative_synthetic` | 3,968.7 | 2,813.4 | **2,582.1** |
-| `stress_synthetic` | 3,968.7 | **2,742.4** | 2,582.3 |
+| `real_only` | 3,968.7 | 2,929.3 | 3,046.6 |
+| `conservative_synthetic` | 3,968.7 | **2,261.5** | **2,213.9** |
+| `stress_synthetic` | 3,968.7 | 2,498.8 | 2,481.7 |
 
-W LOEO syntetyka pomaga.
+### Syntetyczne warianty trajectory
 
-#### Wynik chronological walk-forward — 4 późniejsze realne eventy
+Synthetic augmentation jest wykonywane **wyłącznie po stronie train**.
 
-| Training mode | Structural Prior MAE | Live window MAE | Live latest-row MAE |
+Zasady:
+
+- held-out event jest zawsze 100% realny;
+- z held-out eventu nie generujemy żadnych synthetic rows;
+- synthetic row zachowuje prawdziwy outcome swojego training eventu;
+- synthetic rows nie są liczone jako nowe niezależne mecze;
+- jakość mierzymy wyłącznie na prawdziwych held-out eventach.
+
+Wynik:
+
+- conservative synthetic poprawiło LOEO window MAE o **667.8** vs real-only;
+- conservative synthetic poprawiło LOEO latest-row MAE o **832.8**;
+- synthetic augmentation jest więc **PROMISING_FOR_FURTHER_VALIDATION** jako regularizacja małego datasetu;
+- nie jest nowym źródłem prawdy i nie zastępuje nowych realnych meczów.
+
+### Chronological walk-forward
+
+Na czterech późniejszych realnych eventach:
+
+| Training mode | Structural Prior MAE | Raw Live window MAE | Raw Live latest-row MAE |
 |---|---:|---:|---:|
-| `real_only` | **1,711.0** | 4,499.9 | 4,455.0 |
-| `conservative_synthetic` | **1,711.0** | 4,550.5 | 4,465.3 |
-| `stress_synthetic` | **1,711.0** | **4,383.3** | **4,332.6** |
+| `real_only` | **452.8** | 2,103.7 | 2,197.3 |
+| `conservative_synthetic` | **452.8** | 1,939.5 | 2,017.0 |
+| `stress_synthetic` | **452.8** | **1,876.7** | **1,915.2** |
 
-W walk-forward:
+Syntetyka poprawia więc raw Live również chronologicznie, ale sam raw Live nadal nie powinien automatycznie zastępować Structural Prior.
 
-- conservative synthetic nie poprawia `real_only`;
-- stress synthetic poprawia `real_only` o ok. 117 MAE, ale live model nadal bardzo mocno przegrywa ze Structural Prior;
-- syntetyka jest więc ciekawym regularizatorem, ale **nie rozwiązuje problemu generalizacji**.
+### Finalna logika v8 — sprawdzona chronologicznie
 
-Decyzja:
+Następnie przepuściliśmy te same forward conditions przez **zamrożoną, niezmienioną bramkę v8 Prior vs Live**.
 
-`conservative_augmentation_signal = NOT_PROVEN`
+Wynik dla `real_only`:
 
-`promotion_allowed = false`
+- Structural Prior MAE: **452.8**;
+- raw Live MAE: **2,103.7**;
+- final v8 policy MAE: **452.8**;
+- v8 wybrało PRIOR w **16/16 rows**;
+- worst policy degradation vs Prior: **0.0**.
+
+Czyli na obecnych czterech forward eventach v8 poprawnie rozpoznało, że Live jest niewiarygodne i nie pogorszyło forecastu.
 
 Canonical evidence:
 
-`ml/results/C1_SYNTHETIC_TRAJECTORY_VALIDATION_V1_2026-10-18.md`
+- `ml/results/C1_SYNTHETIC_TRAJECTORY_VALIDATION_V1_2026-10-18.md`;
+- `ml/results/C1_WALK_FORWARD_POLICY_VALIDATION_V1_2026-10-18.md`.
 
-### Co dalej w Walidacji obecnego modelu
+### Wniosek z Walidacji obecnego modelu
 
-Nie przechodzimy jeszcze automatycznie do b). Najpierw wyjaśniamy, dlaczego chronological walk-forward jest słaby.
+Na dzisiejszym materiale:
 
-Do sprawdzenia:
+1. Structural Prior jest mocnym bezpiecznym baseline;
+2. raw Live ma realny sygnał, ale nie jest stabilne jako universal replacement;
+3. train-only synthetic trajectory augmentation realnie poprawia raw Live na realnych held-out eventach;
+4. zamrożona bramka v8 potrafi odciąć Live, kiedy jest niewiarygodne;
+5. nadal nie mamy prospective scored events, więc nie znamy jeszcze prawdziwego prospective MAE;
+6. v8 pozostaje frozen i `live_adjustment = 0`.
 
-- które forward eventy generują największy błąd;
-- czy problemem jest klub / domain shift;
-- czy training history jest za mała;
-- czy live trajectory ma inne coverage / phase niż dane treningowe;
-- które live features są niestabilne;
-- czy możemy rozpoznać sytuacje, kiedy należy zostać przy Structural Prior zamiast ufać Live/C1.
-
-**Cel Walidacji:** uczciwie odpowiedzieć, co obecny model naprawdę umie i kiedy można ufać live correction.
+**Walidacja historyczna na aktualnie dostępnych danych jest wystarczająca, żeby przejść do b) Aktualny sezon, jednocześnie zbierając prospective evidence w tle.**
 
 ## a) Dane historyczne — dopracować, nie przebudowywać
 
@@ -97,6 +93,8 @@ Do sprawdzenia:
 **Cel:** mocniejszy baseline bez komplikowania modelu.
 
 ## b) Aktualny sezon — wzmocnić
+
+Status: **NASTĘPNY AKTYWNY DEVELOPMENT.**
 
 - dodać wyraźny current season adjustment;
 - mocniej brać pod uwagę ostatnie mecze domowe;
@@ -129,13 +127,13 @@ Do sprawdzenia:
 
 # Kolejność developmentu
 
-1. **Walidacja obecnego modelu**
-2. **b) Aktualny sezon — wzmocnić**
+1. **Walidacja obecnego modelu — historyczna część wykonana, prospective trwa**
+2. **b) Aktualny sezon — wzmocnić — AKTYWNE**
 3. **c) Context meczu — rozbudować**
 4. **d) Live demand — najmocniej rozwinąć**
 5. **a) Dane historyczne — dopracować, nie przebudowywać**
 
-Czyli skrótowo:
+Skrót:
 
 `Walidacja -> b -> c -> d -> tuning a`
 
@@ -150,19 +148,17 @@ Czyli skrótowo:
 - Structural Prior dla T-30 / T-14 / T-7 / T-3 / T-1;
 - historyczne MAE około 1.65k–1.89k na referencyjnych sezonach 2024/25–2025/26, zależnie od horyzontu.
 
-Do dopracowania, nie do przebudowy.
-
 ## b) Aktualny sezon
 
-**TAK, ale częściowo — trzeba wzmocnić.**
+**TAK, ale częściowo — teraz wzmacniamy.**
 
-Bieżący sezon i ostatnie mecze są już używane w części features, ale nie mamy jeszcze wystarczająco wyraźnej i silnie kontrolowanej warstwy current season adjustment.
+Bieżący sezon i ostatnie mecze są już używane w części features, ale nie mamy jeszcze wystarczająco wyraźnej warstwy current season adjustment.
 
 ## c) Context meczu
 
 **CZĘŚCIOWO.**
 
-Mamy już część danych o formie, tabeli, przeciwniku i terminarzu. Future fixtures / cannibalization oraz skład nie są jeszcze wdrożone jako pełnoprawne, kontrolowane features.
+Mamy część danych o formie, tabeli, przeciwniku i terminarzu. Future fixtures / cannibalization oraz skład nie są jeszcze pełnoprawnymi kontrolowanymi features.
 
 ## d) Live demand
 
@@ -172,9 +168,7 @@ Mamy już część danych o formie, tabeli, przeciwniku i terminarzu. Future fix
 - mamy trajectory / velocity;
 - C1 v8 działa prospectively w shadow;
 - mamy sector i price-area trajectories;
-- production attendance forecast nadal ma `live_adjustment = 0` do czasu świadomej promocji.
-
-Najważniejszy kierunek: forecast aktualizowany ciągle razem z live demand, a nie tylko myślenie checkpointami.
+- production attendance forecast nadal ma `live_adjustment = 0`.
 
 # Aktualna granica jakości
 
@@ -188,8 +182,6 @@ Stan na 2026-10-18:
 
 Nie mamy jeszcze potwierdzonego prospective live MAE.
 
-Development replay około 2.0k–2.7k oraz synthetic LOEO około 2.74k–2.81k są development evidence i nie mogą być przedstawiane jako dokładność na nowych meczach.
-
 # Zasady walidacji
 
 - zero future leakage;
@@ -198,9 +190,8 @@ Development replay około 2.0k–2.7k oraz synthetic LOEO około 2.74k–2.81k s
 - żadnego random splitu snapshotów tego samego meczu między train/test;
 - każda cecha musi być dostępna w danym historical as-of;
 - testowany mecz nie może wpływać na fitting ani tuning;
-- porównujemy modele na tych samych event/horizon pairs;
 - synthetic data może być tylko w train i nie może powstawać z held-out eventu;
 - synthetic rows nie są nowymi niezależnymi eventami;
-- wynik syntetycznego eksperymentu oceniamy tylko na prawdziwych held-out eventach;
 - replay nie jest prospective validation;
-- C1 v8 nie jest automatycznie promowany.
+- v8 nie jest retunowane na tych samych eventach;
+- C1 nie jest automatycznie promowany.
