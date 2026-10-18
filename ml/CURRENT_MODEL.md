@@ -59,44 +59,17 @@ Historical evidence base:
 
 Do not assume b) and c) are absent from the incumbent.
 
-The current PIT feature store already includes, among others:
-
-### Historical demand
-
-- home attendance mean / median / last;
-- rolling 3 / 5 / 10;
-- variance / p90 / trend;
-- previous-season mean;
-- club-vs-league demand;
-- opponent demand history;
-- home-opponent pair history.
-
-### Current-season demand
-
-- `season_home_n`;
-- `season_home_mean`;
-- `season_home_last`;
-- `season_home_r3`;
-- `season_vs_long_ratio`.
-
-### Sporting / match context
-
-- home and away matches played / points / PPG;
-- GD per game;
-- last-5 points / GD;
-- table position and gaps;
-- top/bottom-table interactions;
-- days since last match;
-- previous-14-day congestion;
-- opponent-draw interactions.
+The current PIT feature store already includes historical demand, current-season demand, opponent/pair history, sporting form, table context, calendar/time and rest/congestion signals.
 
 Therefore new work should test new information or a materially better representation, not duplicate existing variables under another name.
 
 ## a) Historical data
 
-Status: **ACTIVE OPTIMIZATION / STAGE 1 COMPLETE / PRODUCTION INCUMBENT UNCHANGED**.
+Status: **ACTIVE OPTIMIZATION / T-7 MATERIAL LEAD FOUND / PRODUCTION INCUMBENT UNCHANGED**.
 
-Canonical stage-1 evidence:
+### a2 stage 1 — Pre-Live Baseline Optimization v1
+
+Canonical evidence:
 
 `ml/results/PRE_LIVE_BASELINE_OPTIMIZATION_V1_2026-10-18.md`
 
@@ -104,36 +77,25 @@ Run:
 
 `39156711796`
 
-Stage 1 tested, one change at a time:
-
-- feature-group ablation;
-- explicit season recency weighting;
-- selected alternative scikit-learn model families;
-- development selection on 2023/24 only;
-- unchanged scoring on 2024/25 and 2025/26 rolling reference holdouts.
-
-### a2 stage-1 result
-
 | Horizon | Development-selected candidate | Mean incumbent MAE | Mean candidate MAE | Mean improvement | Interpretation |
 |---|---|---:|---:|---:|---|
 | T-30 | `ablate-rest_congestion` | 1,867.82 | 1,864.11 | +3.71 | too small / unstable to change champion |
 | T-14 | `recency-linear_075` | 1,809.45 | 1,798.25 | +11.19 | mixed by season; retain incumbent |
-| T-7 | `model-hist_absolute_31` | 1,789.98 | **1,721.18** | **+68.81** | material lead; advance to stage 2 |
+| T-7 | `model-hist_absolute_31` | 1,789.98 | **1,721.18** | **+68.81** | material lead; robustness research required |
 | T-3 | `incumbent` | **1,718.39** | 1,718.39 | 0.00 | incumbent wins development |
 | T-1 | `recency-linear_075` | **1,697.28** | 1,707.36 | -10.07 | not proven |
 
-### T-7 lead
-
-`model-hist_absolute_31` uses the incumbent T-7 feature/baseline contract with:
+T-7 `model-hist_absolute_31` uses the incumbent T-7 baseline/feature contract with:
 
 - HistGradientBoostingRegressor;
-- absolute-error loss;
+- `loss=absolute_error`;
 - learning rate 0.04;
 - 300 iterations;
 - max 31 leaf nodes;
 - min samples leaf 10;
-- L2 regularization 1.0;
-- seed 42.
+- L2 = 1.0;
+- seed 42;
+- uniform season weights.
 
 MAE improvement:
 
@@ -142,28 +104,75 @@ MAE improvement:
 - 2025/26 reference: **+32.06**;
 - mean reference: **+68.81**.
 
-Supporting quality:
-
-- median AE improves on both reference seasons;
-- p90 improves on 2024/25 and is approximately neutral on 2025/26;
-- bias moves from positive incumbent bias to mild negative challenger bias on both references.
-
 But harmful single-event regressions are too large:
 
 - `Śląsk Wrocław – Raków` 2024/25: **+3,685.74** error degradation;
 - `Lech – Arka Gdynia` 2025/26: **+4,233.11** error degradation.
 
-Decision:
+### a2 T-7 stage 2 — fixed-blend robustness v1
 
-> **Do not replace T-7 production champion yet. Advance Hist31 to an a2 stage-2 robustness / fixed-blend experiment selected on development only.**
+Canonical evidence:
+
+`ml/results/T7_HIST31_BLEND_ROBUSTNESS_V1_2026-10-18.md`
+
+Run:
+
+`39157403710`
+
+Fixed predeclared alpha candidates:
+
+`0.00 / 0.25 / 0.50 / 0.75 / 1.00`
+
+Development result:
+
+| Alpha | MAE | Improvement vs incumbent | Worst degradation |
+|---:|---:|---:|---:|
+| **1.00** | **2,379.46** | **+97.36** | 4,317.24 |
+| 0.75 | 2,381.95 | +94.86 | 3,237.93 |
+| 0.50 | 2,400.99 | +75.83 | 2,158.62 |
+| 0.25 | 2,433.51 | +43.30 | 1,079.31 |
+| 0.00 | 2,476.82 | 0.00 | 0.00 |
+
+Development selects:
+
+`alpha = 1.00`
+
+Reference result therefore remains full Hist31:
+
+- mean reference incumbent MAE: **1,789.98**;
+- selected/full-Hist31 MAE: **1,721.18**;
+- improvement: **+68.81**;
+- improves both reference seasons: **true**;
+- tail reduction vs stage 1: **0**.
+
+Automated signal:
+
+`FULL_HIST31_SELECTED_NO_BLEND_ROBUSTNESS_GAIN`
+
+Interpretation:
+
+> **A constant blend does not solve the T-7 tail problem under the declared MAE-first selection protocol.**
+
+Choosing a smaller alpha because it looks safer on 2024/25 or 2025/26 would be holdout retuning and is not allowed.
 
 ### Current a2 next step
 
-Build T-7 robustness stage 2 with predeclared incumbent/Hist31 blend weights. The objective is to retain meaningful MAE improvement while reducing severe event-level degradation.
+Keep the current production T-7 incumbent unchanged and test **predeclared stronger-regularization / robust T-7 estimators** while preserving:
 
-Reference holdouts must not choose the blend weight.
+- the T-7 baseline;
+- feature contract;
+- data splits;
+- development-only selection;
+- exact incumbent assertions;
+- full MAE + tail scorecard.
 
-After this T-7 stage, continue the remaining justified a2 model-family / feature / calibration work before declaring a2 complete.
+Primary hypothesis:
+
+> Hist31's average gain is real, but a less locally flexible absolute-error booster may retain most of the MAE improvement with smaller event-level regressions.
+
+Do not invent a tail penalty from exposed reference outcomes and call it unseen evidence.
+
+After this T-7 work, continue remaining justified a2 model-family / feature / calibration research before declaring a2 complete.
 
 ## b) Current season
 
@@ -355,10 +364,6 @@ Active work remains:
 
 Within a2 the immediate next experiment is:
 
-**T-7 Hist31 robustness / fixed-blend stage 2.**
+**T-7 stronger-regularization / robust estimator challenger.**
 
 Frozen C1 v8 prospective collection continues in parallel.
-
-Mandatory interpretation:
-
-> **A failed challenger closes the challenger, not the workstream; a lower mean MAE does not by itself justify champion replacement when tail degradation is materially worse.**

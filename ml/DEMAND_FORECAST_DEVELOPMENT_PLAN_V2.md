@@ -16,7 +16,7 @@ Nie optymalizujemy developmentu pod „zamknięcie” kolejnych literek roadmapy
 
 Negatywny wynik jednego challengera nie zamyka całego workstreamu.
 
-Niższe średnie MAE również nie wystarcza do promocji, jeśli challenger tworzy nieakceptowalny tail risk.
+Niższe średnie MAE również nie wystarcza do promocji, jeśli challenger tworzy materialny tail risk.
 
 ## Docelowa architektura
 
@@ -92,7 +92,7 @@ Dlatego nowe eksperymenty muszą testować **nową informację lub lepszą repre
 
 # 1. a2 — Historical / Structural Prior optimization
 
-Status: **ACTIVE / STAGE 1 COMPLETE / STAGE 2 NEXT**.
+Status: **ACTIVE / STAGE 1 COMPLETE / T-7 BLEND STAGE 2 COMPLETE / ROBUST ESTIMATOR STAGE NEXT**.
 
 Cel:
 
@@ -132,7 +132,7 @@ Tested candidate families:
 |---|---|---:|---:|---:|---|
 | T-30 | `ablate-rest_congestion` | 1,867.82 | 1,864.11 | +3.71 | retain incumbent |
 | T-14 | `recency-linear_075` | 1,809.45 | 1,798.25 | +11.19 | retain incumbent; mixed seasons |
-| T-7 | `model-hist_absolute_31` | 1,789.98 | **1,721.18** | **+68.81** | stage-2 robustness candidate |
+| T-7 | `model-hist_absolute_31` | 1,789.98 | **1,721.18** | **+68.81** | material lead; robustness research |
 | T-3 | `incumbent` | **1,718.39** | 1,718.39 | 0.00 | retain incumbent |
 | T-1 | `recency-linear_075` | **1,697.28** | 1,707.36 | -10.07 | retain incumbent |
 
@@ -166,7 +166,7 @@ However:
 - worst degradation 2024/25: **+3,685.74** on `Śląsk Wrocław – Raków`;
 - worst degradation 2025/26: **+4,233.11** on `Lech – Arka Gdynia`.
 
-**Decision: advance to robustness stage 2, no champion change yet.**
+**Decision: material lead, but no champion change until robustness/tail is better understood.**
 
 #### T-3
 
@@ -180,56 +180,129 @@ Linear recency wins development but mean reference MAE is **10.07 worse** and re
 
 **Decision: challenger not proven; retain incumbent.**
 
-## 1.2 Stage 2 — T-7 Hist31 robustness / fixed blend — NEXT
+## 1.2 Stage 2 — T-7 Hist31 fixed-blend robustness v1 — COMPLETED
+
+Canonical evidence:
+
+`ml/results/T7_HIST31_BLEND_ROBUSTNESS_V1_2026-10-18.md`
+
+Run:
+
+`39157403710`
 
 Question:
 
-> Can we keep a meaningful part of the T-7 Hist31 MAE improvement while reducing severe event-level degradation?
+> Can a constant blend between incumbent and Hist31 preserve meaningful T-7 MAE uplift while reducing severe event-level degradation?
 
-Required candidates must be predeclared before scoring reference holdouts.
+Predeclared blend:
 
-At minimum test:
+`prediction(alpha) = (1-alpha) * incumbent + alpha * Hist31`
 
-- incumbent only;
-- fixed incumbent/Hist31 blends;
-- Hist31 only.
+Alphas:
 
-Recommended fixed challenger form:
-
-`prediction(alpha) = (1-alpha) * incumbent + alpha * hist31`
-
-with a small predeclared alpha set such as:
-
+- 0.00;
 - 0.25;
 - 0.50;
 - 0.75;
 - 1.00.
 
-Selection:
+Development selection:
 
-- 2023/24 development only;
+- 2023/24 only;
 - primary metric MAE;
-- exact deterministic tie rule;
-- tail diagnostics reported but reference holdouts may not choose alpha.
+- exact tie -> lower alpha / more incumbent;
+- reference holdouts cannot choose alpha.
 
-Required output:
+### Development ranking
 
-- MAE;
+| Alpha | Development MAE | Improvement vs incumbent | Worst degradation |
+|---:|---:|---:|---:|
+| **1.00** | **2,379.46** | **+97.36** | 4,317.24 |
+| 0.75 | 2,381.95 | +94.86 | 3,237.93 |
+| 0.50 | 2,400.99 | +75.83 | 2,158.62 |
+| 0.25 | 2,433.51 | +43.30 | 1,079.31 |
+| 0.00 | 2,476.82 | 0.00 | 0.00 |
+
+Development selects:
+
+`alpha = 1.00`
+
+Therefore the frozen reference candidate remains full Hist31.
+
+Reference outcome:
+
+- mean reference incumbent MAE: **1,789.98**;
+- mean selected/full-Hist31 MAE: **1,721.18**;
+- mean improvement: **+68.81 MAE**;
+- selected improves both reference seasons: **true**;
+- worst-degradation reduction vs full Hist31: **0**.
+
+Automated signal:
+
+`FULL_HIST31_SELECTED_NO_BLEND_ROBUSTNESS_GAIN`
+
+### Stage-2 conclusion
+
+A fixed unconditional blend is **not** the solution under the declared MAE-first protocol.
+
+Lower alpha mechanically reduces harmful revisions, but development MAE consistently improves as alpha moves toward 1.0. Picking 0.25/0.50/0.75 because reference tails look safer would be post-hoc holdout tuning.
+
+**Decision: no production champion change; close this blend formulation and continue a2.**
+
+## 1.3 Stage 3 — T-7 stronger-regularization / robust estimator family — NEXT
+
+Question:
+
+> Can a less locally flexible robust booster retain a material portion of Hist31's MAE advantage while reducing severe event-level regressions without post-hoc gating?
+
+Keep fixed:
+
+- T-7 baseline = `baseline_season`;
+- T-7 base feature mode / exact feature contract;
+- capacity-normalized residual target;
+- uniform season weights unless the experiment explicitly declares a separate recency dimension;
+- train/dev/reference split;
+- development-only model selection;
+- exact incumbent benchmark assertions;
+- full MAE + tail scorecard.
+
+### Required predeclared candidate family
+
+At minimum include:
+
+- current incumbent `gbr_huber`;
+- current Hist31 stage-1 lead;
+- HistGradientBoosting with fewer leaf nodes;
+- HistGradientBoosting with larger `min_samples_leaf`;
+- HistGradientBoosting with stronger L2 regularization;
+- combinations of the above in a small, predeclared grid.
+
+The experiment must **not** use 2024/25 or 2025/26 to choose regularization.
+
+Primary selection metric remains development MAE.
+
+For every candidate report:
+
+- development MAE;
 - median AE;
 - p90 AE;
 - bias;
 - WAPE;
 - event improvement rate;
 - worst-event degradation;
-- exact worst-event identity;
-- development-selected alpha;
-- unchanged result on both reference seasons.
+- exact worst event.
 
-No automatic promotion.
+After one candidate is selected on development, score only it + incumbent on references.
 
-## 1.3 Remaining a2 research after T-7 stage 2
+### Why this is the correct next step
 
-Stage 1 does not exhaust a2.
+Stage 2 showed that constant blending is only a linear MAE/tail trade-off and development wants full Hist31. The unresolved issue is therefore model robustness, not blend weight.
+
+A stronger-regularized model may reduce local overreaction before prediction rather than patching it afterward.
+
+## 1.4 Remaining a2 research after T-7 robust-estimator stage
+
+Stage 1 + stage 2 do not exhaust a2.
 
 Still justified:
 
@@ -244,6 +317,12 @@ Where technically appropriate and pinned/reproducible, evaluate:
 - validated ensembles.
 
 Do not add dependencies only for complexity. Each family must have a clear reason and the same evidence protocol.
+
+### Fixed-config broader temporal robustness
+
+For any serious T-7 champion candidate, add a fixed-config retrospective chronological backtest across as many valid earlier seasons/folds as the data allows, clearly labeling folds that are not fresh model-selection evidence.
+
+Do not reselect hyperparameters per reference fold.
 
 ### Feature contribution follow-up
 
@@ -664,8 +743,8 @@ CI green does not mean CD to production.
 
 # 9. Immediate next task
 
-**Implement T-7 Hist31 robustness / fixed-blend stage 2.**
+**Implement T-7 stronger-regularization / robust-estimator stage 3.**
 
 Do not modify the current production T-7 champion yet.
 
-Stage 2 must be development-selected, fully reproducible and specifically test whether the +68.81 mean reference MAE lead can be retained with materially safer event-level behavior.
+Stage 3 must use predeclared candidate configurations, development-only selection, exact incumbent regression assertions and full tail diagnostics. The purpose is to see whether the Hist31 MAE lead can be made safer at the model level rather than by post-hoc fixed blending.
