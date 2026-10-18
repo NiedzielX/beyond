@@ -8,7 +8,7 @@ This is the canonical short-form state. Read `AI_BOOTSTRAP.md` first in a cold s
 
 Beyond is a **live demand decision system**, not only an attendance model.
 
-For model development, keep these exact workstreams:
+Model-development workstreams:
 
 - **a) Dane historyczne — dopracować, nie przebudowywać**;
 - **b) Aktualny sezon — wzmocnić**;
@@ -41,7 +41,7 @@ Production remains:
 
 `live_adjustment = 0`
 
-## Historical evidence base
+Historical evidence base:
 
 - Ekstraklasa 2021/22–2025/26;
 - 1,530 matches;
@@ -52,18 +52,18 @@ Production remains:
 
 **TAK — działa i jest najbardziej dojrzałe.**
 
-Keep Structural Prior, test feature contribution, remove noisy features and weight newer seasons better.
+Keep Structural Prior. Later tuning may test feature contribution, noisy-feature removal and stronger weighting of newer seasons, but only after d).
 
 ## b) Aktualny sezon — wzmocnić
 
 **TESTED / NOT PROVEN / NO PRODUCTION CHANGE.**
 
-Current Season Adjustment v1 was evaluated with the incumbent Structural Prior isolated before challenger-only signals are added.
+Current Season Adjustment v1 was evaluated with the incumbent Structural Prior isolated before challenger-only signals were added.
 
 Result:
 
-- T-30 / T-14 / T-3 / T-1: governed selector chooses `NO_ADJUSTMENT` on development;
-- T-7 selects `season_r3-k6-a25` on 2023/24 development, but it degrades both reference holdouts;
+- T-30 / T-14 / T-3 / T-1: `NO_ADJUSTMENT` selected on development;
+- T-7 selects `season_r3-k6-a25` on 2023/24 development but degrades both reference holdouts;
 - no horizon improves mean holdout MAE;
 - no horizon improves both reference seasons.
 
@@ -71,25 +71,68 @@ Canonical evidence:
 
 `ml/results/CURRENT_SEASON_ADJUSTMENT_V1_2026-10-18.md`
 
-Do not promote or keep tuning this same explicit adjustment against the exposed reference seasons. Current-season information already present inside Structural Prior remains unchanged.
+Do not promote or keep tuning the same explicit adjustment against the exposed reference seasons. Current-season information already inside Structural Prior remains unchanged.
 
 ## c) Context meczu — rozbudować
 
-**CZĘŚCIOWO — NEXT ACTIVE DEVELOPMENT.**
+**AUDITED / FUTURE-FIXTURE EXTENSION NOT PROVEN / NO PRODUCTION CHANGE.**
 
-Existing context includes parts of form, table, opponent and schedule information. The next task is to audit what is already PIT-valid and then add governed match-context challengers such as opponent attractiveness and future-fixture / cannibalization context. Squad context is allowed only where reliable PIT data exists.
+The PIT feature store already contains substantial context:
+
+- opponent demand and pair history;
+- home/away PPG, GD/game and last-5 form;
+- table positions/gaps and top/bottom interactions;
+- past rest and 14-day congestion.
+
+Future Fixture Context v1 then tested the main remaining safe-to-evaluate gap: next-home-fixture timing, attractiveness and a bounded cannibalization proxy.
+
+Result:
+
+| Horizon | Selected option | Mean incumbent MAE | Mean challenger MAE |
+|---|---|---:|---:|
+| T-30 | `NO_CONTEXT_EXTENSION` | 1,867.8 | 1,867.8 |
+| T-14 | `NO_CONTEXT_EXTENSION` | 1,809.4 | 1,809.4 |
+| T-7 | `future_timing_attractiveness` | **1,790.0** | 1,790.9 |
+| T-3 | `NO_CONTEXT_EXTENSION` | 1,718.4 | 1,718.4 |
+| T-1 | `future_timing_attractiveness` | **1,697.3** | 1,712.4 |
+
+No horizon improves mean holdout MAE and no horizon improves both reference seasons.
+
+The experiment is additionally only `SCHEDULE_AS_RECORDED_RETROSPECTIVE_PROXY` evidence because historical schedule versions are unavailable.
+
+Canonical evidence:
+
+- `ml/MATCH_CONTEXT_AUDIT_V1.md`;
+- `ml/results/MATCH_CONTEXT_FUTURE_FIXTURE_V1_2026-10-18.md`.
+
+Do not add future-fixture features to Structural Prior. Do not backfill injuries/suspensions/expected XI without a real historical PIT source.
 
 ## d) Live demand — najmocniej rozwinąć
 
-**TAK — działa, ale nie jest finalnie promowane.**
+**ACTIVE DEVELOPMENT.**
 
-Live inventory, trajectory, velocity, C1 shadow inference, sector and price-area trajectories exist. Official horizons remain evaluation checkpoints; future live work should become more continuous.
+Already implemented:
+
+- live public inventory collection;
+- PIT trajectory / velocity / acceleration features;
+- release / coverage-change handling;
+- frozen C1 v8 prospective shadow inference;
+- sector trajectories;
+- price-area trajectories and real Roboticket price observations;
+- guarded sector and price-area recommendations;
+- dashboard decision support.
+
+Development goal now:
+
+> Improve how live evidence updates Structural Prior continuously, while keeping the frozen v8 package untouched and collecting prospective evidence automatically.
+
+Do not confuse this with retuning v8. New live-demand work must be a separately governed challenger / product layer.
 
 ## C1 development evidence
 
-Current live evidence base:
+Current live evidence base used by frozen v8:
 
-- 9 completed in-domain events;
+- 9 completed in-domain training events;
 - 206 PIT-valid full-trajectory rows;
 - 30 final-24h rows.
 
@@ -103,7 +146,7 @@ Known development replay:
 
 These remain development evidence only.
 
-## Walidacja obecnego modelu — current completed historical evidence
+## Historical validation of C1
 
 Canonical evidence:
 
@@ -111,72 +154,17 @@ Canonical evidence:
 - `ml/results/C1_WALK_FORWARD_POLICY_VALIDATION_V1_2026-10-18.md`;
 - `ml/results/C1_FORWARD_EVENT_DIAGNOSTIC_V1_2026-10-18.md`.
 
-### Synthetic trajectory augmentation — LOEO
+Key results:
 
-Train-only augmentation, all scoring on real held-out events:
+- real-only Live LOEO: **2,929.3 MAE**;
+- conservative train-only synthetic Live LOEO: **2,261.5 MAE**;
+- four-event chronological Prior: **452.8 MAE**;
+- four-event chronological raw Live: **2,103.7 MAE**;
+- frozen v8 policy: **452.8 MAE**, selecting PRIOR in **16/16 rows**, worst degradation **0.0**.
 
-| Training mode | Prior MAE | Raw Live MAE |
-|---|---:|---:|
-| `real_only` | 3,968.7 | 2,929.3 |
-| `conservative_synthetic` | 3,968.7 | **2,261.5** |
-| `stress_synthetic` | 3,968.7 | 2,498.8 |
+The forward-event diagnostic found mixed raw-Live error direction and no single compact feature group whose removal consistently fixes all four events. The failure is better described as heterogeneous small-sample generalisation / feature-state distribution shift.
 
-Conservative synthetic improves raw Live by **667.8 MAE** vs real-only LOEO.
-
-Automated signal:
-
-`PROMISING_FOR_FURTHER_VALIDATION`
-
-No promotion is allowed from this evidence.
-
-### Synthetic trajectory augmentation — chronological walk-forward
-
-Four later real events:
-
-| Training mode | Prior MAE | Raw Live MAE |
-|---|---:|---:|
-| `real_only` | **452.8** | 2,103.7 |
-| `conservative_synthetic` | **452.8** | 1,939.5 |
-| `stress_synthetic` | **452.8** | **1,876.7** |
-
-Synthetic augmentation improves raw Live chronologically, but raw Live still loses to Prior on this small four-event subset.
-
-### Frozen v8 policy — chronological walk-forward
-
-The already-fixed v8 gate was then applied without changing or refitting its thresholds.
-
-For real-only Live:
-
-- Prior MAE: **452.8**;
-- raw Live MAE: **2,103.7**;
-- final v8 policy MAE: **452.8**;
-- v8 selected PRIOR in **16 / 16 rows**;
-- worst degradation vs Prior: **0.0**.
-
-Conclusion:
-
-> On the currently available four chronological forward events, raw Live is weak but the frozen v8 gate successfully rejects it and preserves Structural Prior exactly.
-
-This is useful retrospective safety evidence, not prospective validation.
-
-### Raw-Live forward-event diagnostic
-
-A separate retrospective diagnostic then tested full prediction paths, feature drift and leave-one-feature-group-out sensitivity on the same four folds.
-
-Result:
-
-- latest raw-Live error direction is mixed: **3 underpredictions / 1 overprediction**;
-- no compact feature group fixes the four events consistently;
-- removing `release_coverage` changes aggregate window MAE only from **2,103.7 -> 2,077.4** and improves only **1 / 4** event windows;
-- removing `motion_velocity` improves aggregate latest-row MAE to **1,852.5**, but its window effect is nearly neutral and event-specific;
-- removing `inventory_level` is strongly harmful in aggregate (**2,759.0 window MAE**);
-- the strongest local diagnostic is Legia Warszawa – Wisła Kraków, where removing `motion_velocity` improves window MAE by ~**857** and removing `release_coverage` by ~**717**.
-
-Conclusion:
-
-> Current raw-Live failure is better described as heterogeneous small-sample generalisation / feature-state distribution shift than as one globally broken feature group or a simple one-direction calibration error.
-
-Do not retune frozen v8 from these four events. Continue prospective evidence collection and use this diagnostic only to inform future challenger design.
+Do not retune frozen v8 from these events.
 
 ## Frozen C1 v8 prospective package — LIVE
 
@@ -200,7 +188,7 @@ Frozen training events:
 
 `[1, 3, 4, 8, 9, 12, 13, 14, 17]`
 
-Do not retune this frozen package during prospective validation.
+Do not retune or silently retrain this package during prospective validation.
 
 ## Current prospective evidence — verified 2026-10-18
 
@@ -214,15 +202,13 @@ Therefore there is **no confirmed prospective live MAE yet**.
 
 ## Current development decision
 
-Historical C1 validation is complete for the currently available data, Current Season Adjustment v1 has been tested and is not promoted, and prospective C1 evidence continues automatically.
+Historical C1 validation is complete for the currently available data. Workstreams b) and c) have both been tested without a validated production improvement. Prospective C1 evidence continues automatically.
 
 Next active workstream:
 
-**c) Context meczu — rozbudować.**
+**d) Live demand — najmocniej rozwinąć.**
 
-Start by auditing the canonical feature store for existing PIT-valid context and identify the smallest additional context challenger that can be tested without leakage. Prefer opponent attractiveness / strength and future-fixture cannibalization before unreliable squad feeds.
-
-Synthetic trajectory augmentation remains a train-side challenger/regularisation technique for future C1 packages. It does not modify frozen v8 automatically.
+The next implementation should focus on continuous live evidence and decision quality, not another v8 retune. Preserve Structural Prior as the production incumbent and frozen v8 as the prospective shadow comparator.
 
 ## E0 — Sector & Price-area Decision Support — IMPLEMENTED
 
