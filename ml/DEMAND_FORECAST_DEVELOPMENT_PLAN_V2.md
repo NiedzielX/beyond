@@ -2,15 +2,17 @@
 
 Ostatnia aktualizacja: **2026-10-18**
 
-To jest canonical plan rozwoju jakości forecastu. Nazwy etapów mają pozostać proste i spójne z ustaleniami produktowymi.
+To jest canonical plan rozwoju jakości forecastu.
 
-## 1. Walidacja obecnego modelu — najpierw sprawdzić, co naprawdę mamy
+Kolejność:
+
+`Walidacja -> b -> c -> d -> tuning a`
+
+## 1. Walidacja obecnego modelu
 
 Status: **historyczna walidacja na obecnie dostępnych live eventach wykonana; prospective validation trwa dalej automatycznie.**
 
-Sprawdziliśmy model na prawdziwych held-out eventach bez używania testowanego meczu do treningu lub syntetyki.
-
-### Leave-One-Event-Out
+### C1 — Leave-One-Event-Out
 
 9 realnych held-out eventów, 30 final-24h rows.
 
@@ -20,26 +22,9 @@ Sprawdziliśmy model na prawdziwych held-out eventach bez używania testowanego 
 | `conservative_synthetic` | 3,968.7 | **2,261.5** | **2,213.9** |
 | `stress_synthetic` | 3,968.7 | 2,498.8 | 2,481.7 |
 
-### Syntetyczne warianty trajectory
+Synthetic augmentation jest train-only; held-out event pozostaje 100% realny. Jest `PROMISING_FOR_FURTHER_VALIDATION`, ale nie jest niezależnym evidence i nie zmienia frozen v8.
 
-Synthetic augmentation jest wykonywane **wyłącznie po stronie train**.
-
-Zasady:
-
-- held-out event jest zawsze 100% realny;
-- z held-out eventu nie generujemy żadnych synthetic rows;
-- synthetic row zachowuje prawdziwy outcome swojego training eventu;
-- synthetic rows nie są liczone jako nowe niezależne mecze;
-- jakość mierzymy wyłącznie na prawdziwych held-out eventach.
-
-Wynik:
-
-- conservative synthetic poprawiło LOEO window MAE o **667.8** vs real-only;
-- conservative synthetic poprawiło LOEO latest-row MAE o **832.8**;
-- synthetic augmentation jest więc **PROMISING_FOR_FURTHER_VALIDATION** jako regularizacja małego datasetu;
-- nie jest nowym źródłem prawdy i nie zastępuje nowych realnych meczów.
-
-### Chronological walk-forward
+### C1 — chronological walk-forward
 
 Na czterech późniejszych realnych eventach:
 
@@ -49,31 +34,25 @@ Na czterech późniejszych realnych eventach:
 | `conservative_synthetic` | **452.8** | 1,939.5 | 2,017.0 |
 | `stress_synthetic` | **452.8** | **1,876.7** | **1,915.2** |
 
-Syntetyka poprawia raw Live również chronologicznie, ale sam raw Live nadal nie powinien automatycznie zastępować Structural Prior.
+Raw Live nadal nie jest universal replacement dla Structural Prior.
 
-### Finalna logika v8 — sprawdzona chronologicznie
+### Frozen v8 policy — chronological safety check
 
-Następnie przepuściliśmy te same forward conditions przez **zamrożoną, niezmienioną bramkę v8 Prior vs Live**.
-
-Wynik dla `real_only`:
+Bez zmiany/refitu progów:
 
 - Structural Prior MAE: **452.8**;
 - raw Live MAE: **2,103.7**;
 - final v8 policy MAE: **452.8**;
-- v8 wybrało PRIOR w **16/16 rows**;
-- worst policy degradation vs Prior: **0.0**.
-
-Czyli na obecnych czterech forward eventach v8 poprawnie rozpoznało, że Live jest niewiarygodne i nie pogorszyło forecastu.
+- PRIOR selected in **16/16 rows**;
+- worst degradation vs Prior: **0.0**.
 
 ### Forward-event diagnostic
 
-Dodatkowa diagnoza tych samych czterech forward eventów pokazała:
-
-- 3 latest-row underpredictions i 1 overprediction raw Live;
-- brak jednej grupy cech, której usunięcie naprawiałoby wszystkie eventy;
-- `motion_velocity` pomaga jako lokalny diagnostic m.in. na Legia – Wisła, ale nie jest stabilnym globalnym rozwiązaniem;
-- usunięcie `inventory_level` jest mocno szkodliwe w agregacie;
-- problem jest lepiej opisany jako small-sample / event-specific distribution shift i interakcje niż jako jeden zepsuty feature.
+- latest raw-Live error: 3 underpredictions / 1 overprediction;
+- brak jednej compact feature group, której usunięcie naprawia wszystkie eventy;
+- `inventory_level` jest globalnie użyteczne;
+- lokalne problemy dotyczą m.in. `motion_velocity` / `release_coverage`, ale są event-specific;
+- diagnoza: small-sample generalisation + feature-state distribution shift / interakcje, nie jeden zepsuty feature.
 
 Canonical evidence:
 
@@ -81,41 +60,22 @@ Canonical evidence:
 - `ml/results/C1_WALK_FORWARD_POLICY_VALIDATION_V1_2026-10-18.md`;
 - `ml/results/C1_FORWARD_EVENT_DIAGNOSTIC_V1_2026-10-18.md`.
 
-### Wniosek z Walidacji obecnego modelu
-
-Na dzisiejszym materiale:
-
-1. Structural Prior jest mocnym bezpiecznym baseline;
-2. raw Live ma realny sygnał, ale nie jest stabilne jako universal replacement;
-3. train-only synthetic trajectory augmentation realnie poprawia raw Live na realnych held-out eventach;
-4. zamrożona bramka v8 potrafi odciąć Live, kiedy jest niewiarygodne;
-5. forward diagnostic nie uzasadnia globalnego usunięcia żadnej grupy compact features;
-6. nadal nie mamy prospective scored events, więc nie znamy jeszcze prawdziwego prospective MAE;
-7. v8 pozostaje frozen i `live_adjustment = 0`.
+Frozen v8 pozostaje bez zmian i `live_adjustment = 0`.
 
 ## a) Dane historyczne — dopracować, nie przebudowywać
 
-- utrzymać obecny Structural Prior;
-- sprawdzić, które historyczne cechy realnie poprawiają MAE;
-- usunąć słabe / noisy features;
-- lepiej ważyć nowsze sezony względem starszych.
+Status: **DZIAŁA / TUNING DOPIERO PO d).**
 
-**Cel:** mocniejszy baseline bez komplikowania modelu.
+- utrzymać obecny Structural Prior;
+- później sprawdzić feature contribution;
+- usuwać noisy features tylko na podstawie evidence;
+- później przetestować mocniejsze ważenie nowszych sezonów.
 
 ## b) Aktualny sezon — wzmocnić
 
 Status: **PRZETESTOWANE / NOT PROVEN / NIE PROMOWAĆ.**
 
-Current Season Adjustment v1 został zaimplementowany i oceniony z poprawnie odizolowanym incumbentem.
-
-Protocol:
-
-- 18 non-zero wariantów + `NO_ADJUSTMENT`;
-- wybór na 2023/24 development;
-- zamrożony wybór na 2024/25 i 2025/26 reference holdouts;
-- exact frozen benchmark Structural Prior jest hard-asserted.
-
-Wynik:
+Current Season Adjustment v1:
 
 | Horizon | Wybrana opcja | Mean incumbent MAE | Mean adjusted MAE |
 |---|---|---:|---:|
@@ -125,14 +85,7 @@ Wynik:
 | T-3 | `NO_ADJUSTMENT` | 1,718.4 | 1,718.4 |
 | T-1 | `NO_ADJUSTMENT` | 1,697.3 | 1,697.3 |
 
-T-7 non-zero wariant pogarsza oba holdouty (~52 i ~57 MAE). Na pozostałych horyzontach selector poprawnie wybiera `NO_ADJUSTMENT` już na development.
-
-Wniosek:
-
-- nie dokładamy dodatkowej post-model korekty current-season;
-- bieżący sezon pozostaje używany przez obecne Structural Prior features;
-- nie tunujemy dalej tej samej idei pod exposed reference seasons;
-- production bez zmian.
+Nie dokładamy dodatkowej post-model korekty current-season. Obecne current-season features w Structural Prior zostają.
 
 Canonical evidence:
 
@@ -140,72 +93,97 @@ Canonical evidence:
 
 ## c) Context meczu — rozbudować
 
-Status: **NASTĘPNY AKTYWNY DEVELOPMENT.**
+Status: **AUDIT + CHALLENGER WYKONANE / NOT PROVEN / NIE PROMOWAĆ.**
 
-- dodać siłę / atrakcyjność przeciwnika;
-- future fixtures: czy za kilka dni jest atrakcyjniejszy mecz;
-- fixture congestion / cannibalization;
-- forma i pozycja obu drużyn;
-- skład: kontuzje, zawieszenia, kluczowi zawodnicy — tam, gdzie mamy wiarygodne dane.
+Audyt potwierdził, że Structural Prior już ma dużo PIT-safe contextu:
 
-**Cel:** model rozumie, dlaczego konkretny mecz może mieć większy lub mniejszy popyt.
+- opponent draw / pair history;
+- PPG, GD/game, last-5 form obu drużyn;
+- pozycje tabeli i różnice;
+- top/bottom interactions;
+- past rest i 14-day congestion.
+
+Future Fixture Context v1 przetestował główną lukę: next-home-fixture timing + attractiveness/cannibalization.
+
+| Horizon | Wybrana opcja | Mean incumbent MAE | Mean challenger MAE |
+|---|---|---:|---:|
+| T-30 | `NO_CONTEXT_EXTENSION` | 1,867.8 | 1,867.8 |
+| T-14 | `NO_CONTEXT_EXTENSION` | 1,809.4 | 1,809.4 |
+| T-7 | `future_timing_attractiveness` | **1,790.0** | 1,790.9 |
+| T-3 | `NO_CONTEXT_EXTENSION` | 1,718.4 | 1,718.4 |
+| T-1 | `future_timing_attractiveness` | **1,697.3** | 1,712.4 |
+
+No horizon improves mean holdout MAE; no horizon improves both reference seasons.
+
+Dodatkowo fixture evidence ma klasę `SCHEDULE_AS_RECORDED_RETROSPECTIVE_PROXY`, bo nie mamy historycznej wersjonowanej historii terminarza.
+
+Wniosek:
+
+- nie dodajemy Future Fixture Context v1;
+- nie budujemy schedule-history tylko po to, żeby ratować ten słaby signal;
+- squad context dopiero po uzyskaniu wiarygodnego PIT feedu;
+- istniejący context zostaje.
+
+Canonical evidence:
+
+- `ml/MATCH_CONTEXT_AUDIT_V1.md`;
+- `ml/results/MATCH_CONTEXT_FUTURE_FIXTURE_V1_2026-10-18.md`.
 
 ## d) Live demand — najmocniej rozwinąć
 
-- zbierać inventory od pierwszego momentu sprzedaży;
-- liczyć velocity, acceleration, zmianę sektorów i price areas;
-- aktualizować forecast po każdym nowym, znaczącym snapshotcie;
-- nie ograniczać modelu tylko do T-30 / T-14 / T-7 / T-3 / T-1;
-- checkpointy zostawić głównie do mierzenia jakości;
-- live correction ma stale poprawiać Structural Prior, ale tylko gdy live signal jest wystarczająco wiarygodny;
-- public inventory nadal traktować jako proxy popytu, nie potwierdzoną sprzedaż.
+Status: **AKTYWNY DEVELOPMENT.**
 
-**Cel:** mieć forecast, który żyje razem ze sprzedażą.
+Już działa:
 
-# Kolejność developmentu
+- live public inventory;
+- trajectory / velocity / acceleration;
+- release / coverage-change handling;
+- C1 v8 prospective shadow;
+- sector trajectories;
+- price-area trajectories;
+- real Roboticket price capture;
+- guarded pricing recommendations;
+- dashboard decision support.
+
+Teraz rozwijamy live demand jako osobną, governowaną warstwę — **bez retunowania frozen v8**.
+
+Priorytety:
+
+1. wykorzystywać inventory od pierwszego momentu sprzedaży;
+2. liczyć continuous trajectory zamiast myśleć wyłącznie checkpointami T-30/T-14/T-7/T-3/T-1;
+3. aktualizować forecast po każdym znaczącym snapshotcie;
+4. lepiej modelować wiarygodność live signal i transition Prior -> Live;
+5. używać sector / price-area movement jako decision evidence, ale nie mieszać tego z potwierdzoną sprzedażą;
+6. zbierać nowe prospective outcomes automatycznie;
+7. nie zmieniać production `live_adjustment = 0`, dopóki nie przejdzie promotion governance.
+
+**Cel:** forecast żyje razem ze sprzedażą, ale każda live correction jest evidence-based i bezpieczna.
+
+# Kolejność developmentu — stan aktualny
 
 1. **Walidacja obecnego modelu — historyczna część wykonana, prospective trwa**
-2. **b) Aktualny sezon — wzmocnić — PRZETESTOWANE / NOT PROVEN**
-3. **c) Context meczu — rozbudować — AKTYWNE**
-4. **d) Live demand — najmocniej rozwinąć**
-5. **a) Dane historyczne — dopracować, nie przebudowywać**
-
-Skrót pozostaje:
-
-`Walidacja -> b -> c -> d -> tuning a`
+2. **b) Aktualny sezon — PRZETESTOWANE / NOT PROVEN**
+3. **c) Context meczu — PRZETESTOWANE / NOT PROVEN**
+4. **d) Live demand — AKTYWNE**
+5. **a) Dane historyczne — tuning później**
 
 # Co jest wdrożone dzisiaj
 
-## a) Dane historyczne
-
-**TAK — działa i jest najbardziej dojrzałe.**
+## Structural Prior
 
 - pięć sezonów Ekstraklasy;
 - 1,530 meczów;
-- Structural Prior dla T-30 / T-14 / T-7 / T-3 / T-1;
-- historyczne MAE około 1.65k–1.89k na referencyjnych sezonach 2024/25–2025/26, zależnie od horyzontu.
+- 7,650 PIT horizon rows;
+- T-30 / T-14 / T-7 / T-3 / T-1;
+- historyczne MAE około 1.65k–1.89k na referencyjnych sezonach.
 
-## b) Aktualny sezon
+## Live demand
 
-**TAK w incumbent features; dodatkowy explicit adjustment przetestowany i odrzucony.**
-
-Bieżący sezon i ostatnie mecze pozostają używane w Structural Prior. Current Season Adjustment v1 nie wykazał dodatkowej wartości ponad incumbent.
-
-## c) Context meczu
-
-**CZĘŚCIOWO — teraz rozwijamy.**
-
-Mamy część danych o formie, tabeli, przeciwniku i terminarzu. Future fixtures / cannibalization oraz skład nie są jeszcze pełnoprawnymi kontrolowanymi features.
-
-## d) Live demand
-
-**TAK — działa, ale ma największy potencjał rozwoju.**
-
-- zbieramy live inventory;
-- mamy trajectory / velocity;
-- C1 v8 działa prospectively w shadow;
-- mamy sector i price-area trajectories;
-- production attendance forecast nadal ma `live_adjustment = 0`.
+- inventory collection;
+- full trajectory features;
+- frozen C1 v8 shadow inference;
+- sector/price-area trajectory and pricing context;
+- production attendance forecast nadal `live_adjustment = 0`.
 
 # Aktualna granica jakości
 
@@ -226,9 +204,7 @@ Nie mamy jeszcze potwierdzonego prospective live MAE.
 - snapshoty jednego eventu nie są niezależnymi meczami;
 - żadnego random splitu snapshotów tego samego meczu między train/test;
 - każda cecha musi być dostępna w danym historical as-of;
-- testowany mecz nie może wpływać na fitting ani tuning;
-- synthetic data może być tylko w train i nie może powstawać z held-out eventu;
-- synthetic rows nie są nowymi niezależnymi eventami;
+- synthetic data tylko w train, nigdy jako niezależne evidence;
 - replay nie jest prospective validation;
-- v8 nie jest retunowane na tych samych eventach;
-- C1 nie jest automatycznie promowany.
+- frozen v8 nie jest retunowane na tych samych eventach;
+- production pozostaje `live_adjustment = 0` do explicit promotion.
