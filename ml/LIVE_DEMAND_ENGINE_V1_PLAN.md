@@ -10,61 +10,47 @@ Last updated: **2026-10-18**
 > **Phase C1-alpha — frozen v2+v8 prospective shadow validation: LIVE**  
 > **Phase C1 promotion — EVIDENCE-GATED**  
 > **Phase E0 — Sector / Price-area Decision Support MVP: IMPLEMENTED**  
-> **Current model-development order: Walidacja -> b -> c -> d -> tuning a**
+> **New learned live development: WAIT FOR PRE-LIVE v2 FREEZE**
 
-| Phase | Scope | Status |
-|---|---|---|
-| A — Foundation | Canonical live trajectory / PIT evidence / registry | **DONE** |
-| B — Shadow Forecasting | Structural Prior, trajectory gap, shadow revisions, audit | **DONE** |
-| C0 — Provisional live decision layer | Continuation logic / sector decisions | **DONE / RUNNING** |
-| C1-alpha | Frozen v2+v8 package + prospective pre-outcome evidence + scoring | **LIVE** |
-| C1 — Promoted Learned Live Correction | Production promotion after sufficient fresh evidence | **EVIDENCE-GATED** |
-| D — Probabilistic | Calibrated P10/P50/P90 | TODO |
-| E0 — Sector / Price-area Decision Support | Sector trajectory, no-action projection, pricing scenarios, dashboard | **IMPLEMENTED** |
-| E1 — Learned Pricing / Intervention | Learned elasticity / intervention uplift | **EVIDENCE-GATED** |
+The immediate model-quality roadmap is defined in:
 
-Canonical state:
-
-- `ml/CURRENT_MODEL.md`;
+- `ml/MODEL_ACCURACY_DEVELOPMENT_INSTRUCTIONS_V2.md`;
 - `ml/DEMAND_FORECAST_DEVELOPMENT_PLAN_V2.md`;
-- `AI_BOOTSTRAP.md`;
-- `ml/C1_V8_PROSPECTIVE_SHADOW_V1.md`;
-- `ml/SECTOR_DECISION_PRICING_V1.md`;
-- `ml/NORTH_STAR.md`.
+- `ml/CURRENT_MODEL.md`.
 
-## Product purpose
+## Critical architecture change
 
-Beyond must continuously answer:
+New live-model development must use the strongest frozen pre-live baseline.
 
-1. where the event is likely to finish;
-2. whether live evidence is strong enough to revise the Structural Prior;
-3. which sectors / price areas are underperforming or outperforming;
-4. what happens if the current trajectory continues;
-5. what pricing action should be considered;
-6. eventually, what happened after the club acted.
+Target architecture:
 
-## Development workstreams — use these exact names
+### Pre-Live Model v2
 
-- **a) Dane historyczne — dopracować, nie przebudowywać**;
-- **b) Aktualny sezon — wzmocnić**;
-- **c) Context meczu — rozbudować**;
-- **d) Live demand — najmocniej rozwinąć**.
+`history + current-season regime + match context -> pre-live forecast`
 
-Before them:
+### Continuous Live Updater v2
 
-- **Walidacja obecnego modelu — najpierw sprawdzić, co naprawdę mamy.**
+`Pre-Live v2 + live trajectory + inventory state + time-to-kickoff + reliability -> delta / revised forecast`
 
-## Production forecasting state
+Therefore new learned live correction should not be trained while the baseline is still being materially changed by a2/b2/c2 optimization.
 
-Promoted production live adjustment remains:
+Frozen C1 v8 remains a separate prospective comparator and continues running in parallel.
+
+## Current runtime state
+
+Production remains:
 
 `live_adjustment = 0`
 
-C1 v8 remains separate `EXPERIMENTAL_SHADOW` evidence and does not write production forecast values.
+C1 v8 remains:
 
-## Structural Prior
+`EXPERIMENTAL_SHADOW`
 
-All five horizons are executable and frozen:
+It does not write production forecast values.
+
+## Structural Prior incumbent
+
+Current executable model specs:
 
 - T-30 `structural-prior-runtime-v1-t30-extra-full`;
 - T-14 `structural-prior-runtime-v1-t14-hist-base`;
@@ -72,26 +58,7 @@ All five horizons are executable and frozen:
 - T-3 `structural-prior-runtime-v1-t3-hist-full`;
 - T-1 `structural-prior-runtime-v1-t1-hist-full`.
 
-Historical reference performance is maintained in `ml/CURRENT_MODEL.md`.
-
-Do not rebuild this layer first. It is the strongest and most mature forecasting component.
-
-## C1-alpha development evidence
-
-Development set:
-
-- 9 completed in-domain Ekstraklasa events;
-- 206 PIT-valid full-trajectory rows;
-- 30 regularized PIT-valid final-24h rows.
-
-Key results:
-
-- Prior on the development subset: **3,968.7 MAE**;
-- v2 live expert: **2,929.3 MAE**;
-- v8 development replay: **2,713.3 window / 1,998.1 latest-row MAE**;
-- non-deployable Prior/Live oracle: **1,867.9 MAE**.
-
-These are development results only and are not fresh unseen-event validation.
+These remain the production incumbent while Pre-Live v2 challengers are evaluated.
 
 ## Frozen C1-alpha package
 
@@ -107,6 +74,10 @@ Frozen policy:
 
 `c1-alpha-reliability-policy-v8-fixed-10pp-positive-slope-20pp-single`
 
+Training events:
+
+`[1, 3, 4, 8, 9, 12, 13, 14, 17]`
+
 Rule:
 
 - one observation: LIVE only if disagreement >= `0.20` capacity;
@@ -115,114 +86,200 @@ Rule:
 
 Scheduled inference must never fit this package.
 
-## Prospective C1 v8 runtime — LIVE
+Do not change these thresholds as part of the new accuracy roadmap.
 
-Workflow:
+## Current C1 evidence
 
-`.github/workflows/c1-shadow-v8-inference.yml`
+Historical development/validation:
 
-Cadence:
+- raw Live LOEO: **2,929.3 MAE**;
+- conservative train-only synthetic Live LOEO: **2,261.5 MAE**;
+- stress train-only synthetic Live LOEO: **2,498.8 MAE**;
+- four-event chronological Prior: **452.8 MAE**;
+- four-event chronological raw Live: **2,103.7 MAE**;
+- frozen v8 final policy: **452.8 MAE**, PRIOR selected in **16/16 rows**.
 
-`9,24,39,54 * * * *`
+Interpretation:
 
-Current verified state on 2026-10-18:
+- synthetic augmentation improves the raw live expert;
+- raw Live is not safe as a universal replacement for Prior;
+- frozen v8 was conservative and safe on the current retrospective forward events;
+- this does not prove it can identify future cases where Live is genuinely better;
+- prospective independent completed events remain necessary.
 
-- prediction rows: **31**;
-- prospective events: **5**;
-- scored prospective events: **0**;
-- validation state: `AWAITING_FIRST_PROSPECTIVE_SCORE`.
+## Existing live / decision infrastructure
 
-Therefore there is still **no confirmed prospective live MAE**.
+Already implemented:
 
-## Walidacja obecnego modelu — najpierw sprawdzić, co naprawdę mamy
+- live public inventory collection;
+- PIT trajectory / velocity / acceleration;
+- release / coverage-change handling;
+- frozen C1 v8 prospective shadow;
+- sector trajectories;
+- price-area trajectories;
+- Roboticket price observations;
+- guarded sector / price-area recommendations;
+- dashboard decision support.
 
-Run two strict tests using completed events with usable live evidence.
+This infrastructure remains useful and should continue collecting prospective evidence during Pre-Live v2 development.
 
-### Leave-One-Event-Out
+## What may continue before Pre-Live v2 freeze
 
-For each test event:
+Allowed in parallel:
 
-- exclude it from fitting and tuning;
-- reconstruct only features available at the historical forecast timestamp;
-- evaluate Structural Prior, Live/C1 and final prediction;
-- report MAE, bias and event-level degradation.
+- scraping / inventory reliability improvements;
+- earlier sales-opening detection;
+- additional prospective data collection;
+- sector / price-area coverage quality;
+- data-quality flags;
+- outcome collection / scoring automation;
+- observability;
+- reproducibility fixes;
+- frozen-v8 prospective scoring.
 
-### Chronological walk-forward
+Do not treat these as permission to train/promote a new learned d2 correction against a moving baseline.
 
-At every step:
+## d2 — Continuous Live Updater after Pre-Live v2 freeze
 
-- train/tune only on events that occurred earlier;
-- score later events;
-- never use future outcomes or future snapshots.
+### 1. Continuous time
 
-**Cel:** uczciwie sprawdzić, czy obecny model jest bliżej 2k, 3k czy gorzej na niewidzianych meczach.
+T-30/T-14/T-7/T-3/T-1 remain standard quality checkpoints.
 
-## b) Aktualny sezon — wzmocnić
+The model itself should update at meaningful snapshots using continuous `time_to_kickoff`.
 
-- dodać wyraźny current season adjustment;
-- mocniej brać pod uwagę ostatnie mecze domowe;
-- mierzyć, czy klub w tym sezonie sprzedaje lepiej/gorzej niż jego historyczna norma;
-- aktualizować adjustment po każdym kolejnym meczu.
+Examples may include:
 
-**Cel:** model szybciej reaguje na zmianę realiów w danym sezonie.
+- T-32;
+- T-25;
+- T-20;
+- T-11.5;
+- T-4.2;
+- any other valid observation time.
 
-## c) Context meczu — rozbudować
+### 2. Earliest usable sales evidence
 
-- dodać siłę / atrakcyjność przeciwnika;
-- future fixtures: czy za kilka dni jest atrakcyjniejszy mecz;
-- fixture congestion / cannibalization;
-- forma i pozycja obu drużyn;
-- skład: kontuzje, zawieszenia, kluczowi zawodnicy — tam, gdzie mamy wiarygodne dane.
+Use inventory from the earliest reliable sales moment.
 
-**Cel:** model rozumie, dlaczego konkretny mecz może mieć większy lub mniejszy popyt.
+Do not wait for T-30 if the event has a valid earlier trajectory.
 
-## d) Live demand — najmocniej rozwinąć
+### 3. Target formulations to benchmark
 
-- zbierać inventory od pierwszego momentu sprzedaży;
-- liczyć velocity, acceleration, zmianę sektorów i price areas;
-- aktualizować forecast po każdym nowym znaczącym snapshotcie;
-- nie ograniczać modelu tylko do T-30/T-14/T-7/T-3/T-1;
-- checkpointy zostawić głównie do mierzenia jakości;
-- live correction ma stale poprawiać Structural Prior, gdy sygnał jest wystarczająco wiarygodny.
+#### A. Delta against Pre-Live v2
 
-**Cel:** mieć forecast, który żyje razem ze sprzedażą.
+`live_delta = final_attendance - pre_live_prediction`
 
-## a) Dane historyczne — dopracować, nie przebudowywać
+Final:
 
-- utrzymać obecny Structural Prior;
-- sprawdzić, które historyczne cechy realnie poprawiają MAE;
-- usunąć słabe / noisy features;
-- lepiej ważyć nowsze sezony względem starszych.
+`forecast = pre_live_prediction + governed_live_delta`
 
-**Cel:** mocniejszy baseline bez komplikowania modelu.
+#### B. Remaining demand
 
-## Kolejność developmentu
+Estimate additional demand remaining between current snapshot and kickoff.
 
-1. **Walidacja obecnego modelu**
-2. **b) Aktualny sezon — wzmocnić**
-3. **c) Context meczu — rozbudować**
-4. **d) Live demand — najmocniej rozwinąć**
-5. **a) Dane historyczne — dopracować, nie przebudowywać**
+This may be more stable than asking a small live model to relearn the full event attendance level.
 
-`Walidacja -> b -> c -> d -> tuning a`
+#### C. Reliability-weighted blend
 
-## E0 sector / price-area decision support — IMPLEMENTED
+Blend Pre-Live and live evidence continuously according to reliability rather than only a binary hard switch.
 
-Current implemented flow:
+Frozen v8 remains the comparator; do not mutate it into this formulation.
+
+### 4. Reliability inputs
+
+Candidate reliability signals include:
+
+- observation count;
+- observation span;
+- time to kickoff;
+- trajectory stability;
+- velocity;
+- acceleration;
+- coverage completeness;
+- material release events;
+- sector consistency;
+- price-area consistency;
+- disagreement with Pre-Live;
+- scrape/data-quality state.
+
+All reliability thresholds/weights must be explicit and versioned.
+
+### 5. Inventory interpretation
+
+Public availability is a demand proxy, not confirmed paid sales.
+
+Live features must account for:
+
+- ticket release;
+- sector opening/closure;
+- coverage expansion/contraction;
+- scrape anomalies;
+- true demand movement as far as it can be inferred safely.
+
+### 6. Forecast refresh
+
+A new meaningful snapshot may trigger a new shadow forecast.
+
+Every revision must preserve:
+
+- as-of timestamp;
+- input snapshot ID(s);
+- Pre-Live model ID;
+- live model ID;
+- feature-contract ID;
+- previous forecast;
+- revised forecast;
+- revision reason/reliability;
+- audit trail.
+
+## Accuracy evaluation for d2
+
+Mandatory metrics:
+
+- event-level MAE;
+- window MAE;
+- latest-row MAE;
+- median AE;
+- bias;
+- tail/worst-event degradation;
+- revision rate;
+- maximum harmful revision;
+- percent observations using non-zero live correction;
+- performance conditional on observation count/time-to-kickoff where possible.
+
+A live model is not promoted merely because it improves average MAE on a small development set.
+
+## CI/CD requirements
+
+All new live challengers follow `ml/MODEL_ACCURACY_DEVELOPMENT_INSTRUCTIONS_V2.md`.
+
+Do not skip:
+
+- source code;
+- CI workflow;
+- pinned runtime;
+- deterministic seeds;
+- exact training events;
+- exact feature definitions;
+- input artifact versions;
+- PIT assertions;
+- event-independent evaluation;
+- machine-readable artifact;
+- run/artifact IDs and hashes;
+- committed result document;
+- explicit decision;
+- canonical docs update.
+
+No local-only benchmark becomes canonical.
+
+CI success is not automatic production activation.
+
+## E0 sector / price-area decision support
+
+Current implemented flow remains:
 
 `sector state -> trajectory gap -> no-action projection -> real price-area mapping -> pricing scenario -> guarded recommendation`
 
-Implemented:
-
-- sector trajectory and status;
-- no-action public-availability projection;
-- Roboticket price-area capture where available;
-- mixed-price sector split;
-- assumption-based price scenarios;
-- guarded `DECREASE / HOLD / INCREASE / MONITOR` recommendations;
-- RLS-safe dashboard caches and UI.
-
-Pricing maturity remains:
+Current pricing maturity:
 
 `ASSUMPTION_BASED_SCENARIO`
 
@@ -232,27 +289,21 @@ No automatic price changes:
 
 No learned elasticity or causal uplift claim is allowed yet.
 
-Club decision / execution persistence is intentionally deferred for now. Demo intervention outcomes must be explicitly simulated.
+## Promotion boundary
 
-## C1 promotion
+Production learned live correction remains evidence-gated.
 
-The 20-independent-completed-match rule remains a later promotion gate.
+Promotion requires:
 
-Promotion requires enough genuinely prospective independent completed events, positive uplift vs Structural Prior, acceptable degradation/tail risk, frozen reproducible package, human review and explicit promotion.
+- enough genuinely prospective independent completed events;
+- positive uplift vs the correct frozen incumbent;
+- acceptable degradation/tail risk;
+- frozen reproducible package;
+- full CI evidence;
+- explicit human-reviewed promotion.
 
 No automatic production promotion exists.
 
-## Immediate implementation sequence
+## Immediate live-engine instruction
 
-1. **Walidacja obecnego modelu.**
-2. **b) Aktualny sezon — wzmocnić.**
-3. **c) Context meczu — rozbudować.**
-4. **d) Live demand — najmocniej rozwinąć.**
-5. **a) Dane historyczne — dopracować, nie przebudowywać.**
-6. Keep C1 v8 frozen and collect prospective outcomes in parallel.
-7. Keep E0 pricing assumption-based and human-reviewed.
-8. Keep production `live_adjustment = 0` until explicit promotion.
-
-## Product target
-
-> **Beyond powinien łączyć dane historyczne, aktualny sezon, context meczu i live demand, żeby forecast żył razem ze sprzedażą — a potem przekładać ten sygnał na bezpieczne decyzje sektorowe i cenowe przed kickoffem.**
+> **Keep frozen C1 v8 and data collection running, improve live-data infrastructure where useful, but do not train/promote the next learned live correction until Pre-Live v2 is frozen. Then build d2 as a continuous correction/remaining-demand/reliability layer against that stronger baseline.**
