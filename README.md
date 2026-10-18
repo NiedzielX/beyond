@@ -10,7 +10,7 @@ Read in this order:
 
 1. [`AI_BOOTSTRAP.md`](AI_BOOTSTRAP.md) — cold-start state, current runtime status and immediate work order;
 2. [`ml/CURRENT_MODEL.md`](ml/CURRENT_MODEL.md) — canonical current forecasting / Demand Engine state;
-3. [`ml/DEMAND_FORECAST_DEVELOPMENT_PLAN_V2.md`](ml/DEMAND_FORECAST_DEVELOPMENT_PLAN_V2.md) — current model-quality development plan: validation -> current season -> match context -> continuous live demand -> Structural Prior tuning;
+3. [`ml/DEMAND_FORECAST_DEVELOPMENT_PLAN_V2.md`](ml/DEMAND_FORECAST_DEVELOPMENT_PLAN_V2.md) — current model-development plan;
 4. [`ml/LIVE_DEMAND_ENGINE_V1_PLAN.md`](ml/LIVE_DEMAND_ENGINE_V1_PLAN.md) — live engine implementation and promotion roadmap;
 5. [`ml/C1_V8_PROSPECTIVE_SHADOW_V1.md`](ml/C1_V8_PROSPECTIVE_SHADOW_V1.md) — frozen C1 prospective runtime/governance;
 6. [`ml/SECTOR_DECISION_PRICING_V1.md`](ml/SECTOR_DECISION_PRICING_V1.md) — E0 sector/pricing product contract;
@@ -21,23 +21,30 @@ Read in this order:
 
 ## Current direction
 
-Beyond is building a live demand decision system:
+Beyond is building a live demand decision system.
 
-`Historical baseline -> Current-season adjustment -> Match context -> Live demand trajectory -> Forecast revision -> Sector/price-area decision support`
+For model development, use exactly these workstreams:
 
-The attendance forecast and the pricing decision layer are related but separate:
+- **a) Dane historyczne — dopracować, nie przebudowywać**;
+- **b) Aktualny sezon — wzmocnić**;
+- **c) Context meczu — rozbudować**;
+- **d) Live demand — najmocniej rozwinąć**.
 
-- event forecast estimates where attendance is likely to finish;
-- sector / price-area logic diagnoses public inventory and suggests assumption-based pricing actions;
-- public seat-map inventory is a **demand proxy, not confirmed paid sales**.
+Before further development, first run:
 
-## Current model-quality work order
+- **Walidacja obecnego modelu — najpierw sprawdzić, co naprawdę mamy.**
 
-1. validate the current live model with **Leave-One-Event-Out + chronological walk-forward**;
-2. strengthen the **current-season adjustment**;
-3. expand **match context**, especially future-fixture cannibalization and reliable squad context;
-4. make **live demand correction continuous** rather than thinking only in T-30/T-14/T-7/T-3/T-1 checkpoints;
-5. tune the historical Structural Prior last, without rebuilding it unnecessarily.
+## Kolejność developmentu
+
+1. **Walidacja obecnego modelu**
+2. **b) Aktualny sezon — wzmocnić**
+3. **c) Context meczu — rozbudować**
+4. **d) Live demand — najmocniej rozwinąć**
+5. **a) Dane historyczne — dopracować, nie przebudowywać**
+
+Skrót:
+
+`Walidacja -> b -> c -> d -> tuning a`
 
 See [`ml/DEMAND_FORECAST_DEVELOPMENT_PLAN_V2.md`](ml/DEMAND_FORECAST_DEVELOPMENT_PLAN_V2.md).
 
