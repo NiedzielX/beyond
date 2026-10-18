@@ -1,0 +1,94 @@
+name: Persistent Club Calibration v1
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - "ml/persistent_club_calibration_v1.py"
+      - "ml/run_persistent_club_calibration_v1.py"
+      - "ml/test_persistent_club_calibration_v1.py"
+      - "ml/PERSISTENT_CLUB_CALIBRATION_V1.md"
+      - "ml/t7_robust_estimator_v1.py"
+      - "ml/pre_live_baseline_optimization_v1.py"
+      - "ml/demand_engine/structural_prior_runtime.py"
+      - "ml/demand_engine/freeze_structural_prior_artifacts.py"
+      - "ml/features/structural_prior_feature_store_v1.py"
+      - "ml/artifacts/structural_prior_runtime_v1/historical_runtime_v1.csv.gz"
+      - "ml/artifacts/structural_prior_runtime_v1/manifest.json"
+      - ".github/workflows/persistent-club-calibration-v1.yml"
+  push:
+    branches:
+      - main
+    paths:
+      - "ml/persistent_club_calibration_v1.py"
+      - "ml/run_persistent_club_calibration_v1.py"
+      - "ml/test_persistent_club_calibration_v1.py"
+      - "ml/PERSISTENT_CLUB_CALIBRATION_V1.md"
+      - "ml/t7_robust_estimator_v1.py"
+      - "ml/pre_live_baseline_optimization_v1.py"
+      - "ml/demand_engine/structural_prior_runtime.py"
+      - "ml/demand_engine/freeze_structural_prior_artifacts.py"
+      - "ml/features/structural_prior_feature_store_v1.py"
+      - "ml/artifacts/structural_prior_runtime_v1/historical_runtime_v1.csv.gz"
+      - "ml/artifacts/structural_prior_runtime_v1/manifest.json"
+      - ".github/workflows/persistent-club-calibration-v1.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: persistent-club-calibration-v1-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  validate-and-score:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install pinned runtime
+        run: |
+          python -m pip install --upgrade pip
+          pip install numpy==2.3.5 pandas==2.2.3 scikit-learn==1.8.0 joblib==1.5.3
+
+      - name: Compile experiment code
+        run: |
+          python -m py_compile ml/persistent_club_calibration_v1.py
+          python -m py_compile ml/run_persistent_club_calibration_v1.py
+          python -m py_compile ml/test_persistent_club_calibration_v1.py
+          python -m py_compile ml/t7_robust_estimator_v1.py
+          python -m py_compile ml/pre_live_baseline_optimization_v1.py
+          python -m py_compile ml/demand_engine/structural_prior_runtime.py
+          python -m py_compile ml/demand_engine/freeze_structural_prior_artifacts.py
+          python -m py_compile ml/features/structural_prior_feature_store_v1.py
+
+      - name: Run unit checks
+        run: python -m ml.test_persistent_club_calibration_v1
+
+      - name: Run persistent club calibration
+        run: |
+          python -m ml.run_persistent_club_calibration_v1 \
+            --historical-runtime ml/artifacts/structural_prior_runtime_v1/historical_runtime_v1.csv.gz \
+            --manifest ml/artifacts/structural_prior_runtime_v1/manifest.json \
+            --output /tmp/persistent-club-calibration-v1.json
+
+      - name: Print concise scorecard
+        run: |
+          jq '{experiment,promotion_allowed,horizons:[.horizons[]|{horizon,base_model,development_mae_improvement,mean_reference_mae_improvement,both_references_improve,signal}]}' \
+            /tmp/persistent-club-calibration-v1.json
+
+      - name: Upload full evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: persistent-club-calibration-v1-${{ github.run_id }}
+          path: /tmp/persistent-club-calibration-v1.json
+          if-no-files-found: error
+          retention-days: 30
