@@ -19,7 +19,38 @@ Zanim dodamy kolejne dane i features, sprawdzamy uczciwie, jak obecny model dzia
 - dodatkowo zrobić **chronological walk-forward**;
 - nie liczyć wielu snapshotów jednego meczu jako wielu niezależnych meczów.
 
-**Cel:** uczciwie odpowiedzieć, czy obecny live model faktycznie jest bliżej 2k, 3k czy gorzej — zanim zaczniemy go dalej rozbudowywać.
+### Syntetyczne warianty trajectory — eksperyment w ramach walidacji
+
+Dodatkowo sprawdzamy, czy możemy lepiej wykorzystać małą liczbę prawdziwych meczów poprzez **train-only synthetic trajectory augmentation**.
+
+Porównujemy trzy warianty:
+
+1. `real_only` — tylko prawdziwe dane;
+2. `conservative_synthetic` — niewielkie, realistyczne perturbacje trajectory;
+3. `stress_synthetic` — większe perturbacje jako stress test.
+
+Twarde zasady:
+
+- syntetyczne dane mogą powstawać **wyłącznie z eventów treningowych**;
+- testowany / held-out mecz jest zawsze 100% realny;
+- z testowanego meczu nie wolno generować żadnych syntetycznych rows;
+- synthetic row zachowuje realny outcome swojego training eventu — nie generujemy sztucznej frekwencji i nie udajemy, że jest prawdziwa;
+- synthetic rows nie zwiększają liczby niezależnych meczów;
+- syntetyczne dane nie mogą być używane do raportowania jakości — jakość liczymy tylko na prawdziwych held-out eventach;
+- augmentation ma pomagać w generalizacji / regularizacji, a nie tworzyć sztuczne evidence.
+
+Sprawdzamy, czy `conservative_synthetic` poprawia `real_only` zarówno w:
+
+- Leave-One-Event-Out;
+- chronological walk-forward.
+
+Jeśli poprawa nie pojawia się na prawdziwych held-out meczach — syntetyka jest odrzucana.
+
+Canonical eksperyment:
+
+`ml/C1_SYNTHETIC_TRAJECTORY_VALIDATION_V1.md`
+
+**Cel:** uczciwie odpowiedzieć, czy obecny live model faktycznie jest bliżej 2k, 3k czy gorzej — i czy syntetyczne warianty trajectory realnie pomagają na prawdziwych niewidzianych meczach — zanim zaczniemy go dalej rozbudowywać.
 
 ## a) Dane historyczne — dopracować, nie przebudowywać
 
@@ -133,5 +164,8 @@ Development replay około 2.0k–2.7k jest tylko development evidence i nie moż
 - każda cecha musi być dostępna w danym historical as-of;
 - testowany mecz nie może wpływać na fitting ani tuning;
 - porównujemy modele na tych samych event/horizon pairs;
+- synthetic data może być tylko w train i nie może powstawać z held-out eventu;
+- synthetic rows nie są nowymi niezależnymi eventami;
+- wynik syntetycznego eksperymentu oceniamy tylko na prawdziwych held-out eventach;
 - replay nie jest prospective validation;
 - C1 v8 nie jest automatycznie promowany.
