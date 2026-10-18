@@ -12,15 +12,17 @@ Before doing Beyond forecasting, ML, dashboard, Growth or recommendation work, r
 2. `ml/CURRENT_MODEL.md` — current model/product state;
 3. `ml/DEMAND_FORECAST_DEVELOPMENT_PLAN_V2.md` — active accuracy roadmap;
 4. `ml/results/PRE_LIVE_BASELINE_OPTIMIZATION_V1_2026-10-18.md` — a2 stage-1 evidence;
-5. `ml/results/T7_HIST31_BLEND_ROBUSTNESS_V1_2026-10-18.md` — a2 T-7 stage-2 evidence;
-6. `ml/results/T7_ROBUST_ESTIMATOR_V1_2026-10-18.md` — a2 T-7 stage-3 evidence;
-7. `ml/C1_V8_PROSPECTIVE_SHADOW_V1.md` — frozen C1 prospective runtime/governance;
-8. `ml/LIVE_DEMAND_ENGINE_V1_PLAN.md` — live forecasting runtime/roadmap;
-9. `ml/SECTOR_DECISION_PRICING_V1.md` — E0 sector/pricing product contract;
-10. `ml/NORTH_STAR.md`;
-11. `ml/LIVE_FORECAST_ORCHESTRATOR_V1.md`;
-12. `ml/STRUCTURAL_PRIOR_MATERIALIZER_V1.md`;
-13. `ml/MODEL_PROMOTION_GOVERNANCE_V1.md`.
+5. `ml/results/T7_HIST31_BLEND_ROBUSTNESS_V1_2026-10-18.md` — T-7 stage-2 evidence;
+6. `ml/results/T7_ROBUST_ESTIMATOR_V1_2026-10-18.md` — T-7 stage-3 evidence;
+7. `ml/results/T7_EXTERNAL_MODEL_FAMILY_V1_2026-10-18.md` — T-7 stage-4 evidence;
+8. `ml/results/T7_FIXED_TEMPORAL_ROBUSTNESS_V1_2026-10-18.md` — T-7 stage-5 fixed-config robustness evidence;
+9. `ml/C1_V8_PROSPECTIVE_SHADOW_V1.md` — frozen C1 prospective runtime/governance;
+10. `ml/LIVE_DEMAND_ENGINE_V1_PLAN.md` — live forecasting runtime/roadmap;
+11. `ml/SECTOR_DECISION_PRICING_V1.md` — E0 sector/pricing product contract;
+12. `ml/NORTH_STAR.md`;
+13. `ml/LIVE_FORECAST_ORCHESTRATOR_V1.md`;
+14. `ml/STRUCTURAL_PRIOR_MATERIALIZER_V1.md`;
+15. `ml/MODEL_PROMOTION_GOVERNANCE_V1.md`.
 
 ## Immediate objective
 
@@ -45,11 +47,13 @@ Frozen C1 v8 continues prospective collection in parallel and must not be retune
 ## Active work order
 
 1. **a2 — Historical / Structural Prior optimization — ACTIVE**
-   - stage 1 baseline optimization: **COMPLETED**;
-   - T-7 fixed-blend robustness stage 2: **COMPLETED / NO ROBUSTNESS GAIN**;
-   - T-7 stronger-regularization stage 3: **COMPLETED / LOWER MAE FOUND / TAIL STILL MIXED**;
-   - next: **materially different T-7 model-family challengers** under the same baseline/feature/split contract;
-   - then fixed-config broader temporal robustness before any T-7 champion freeze.
+   - Stage 1 baseline optimization: **COMPLETED**;
+   - T-7 Stage 2 fixed blending: **COMPLETED / NO ROBUSTNESS GAIN**;
+   - T-7 Stage 3 stronger regularization: **COMPLETED / LOWER MAE FOUND**;
+   - T-7 Stage 4 external model-family comparison: **COMPLETED / HGB REMAINS DEVELOPMENT WINNER**;
+   - T-7 Stage 5 fixed temporal robustness: **COMPLETED / POSITIVE 4 OF 4 ROLLING FOLDS / TAIL RISK REMAINS**;
+   - T-7 exact config `hist31-leaf20-l2-1`: **FROZEN HISTORICAL PRE-LIVE CANDIDATE / NOT PRODUCTION CHAMPION**;
+   - next: **multi-fold unresolved-horizon tournament for T-30 / T-14 / T-3 / T-1**.
 2. **b2 — Current-season regime**
    - residual-based current-season signals;
    - actual-vs-expected ratios;
@@ -70,7 +74,7 @@ Shortcut:
 
 ## Workstream status
 
-- a) Historical data: **ACTIVE OPTIMIZATION / T-7 STRONGER MAE CHALLENGER FOUND / PRODUCTION INCUMBENT UNCHANGED**.
+- a) Historical data: **ACTIVE / T-7 HISTORICAL CANDIDATE FROZEN / OTHER HORIZONS UNRESOLVED / PRODUCTION UNCHANGED**.
 - b) Current season: **PARTIALLY TESTED / NOT EXHAUSTED**.
 - c) Match context: **AUDITED + ONE CHALLENGER TESTED / NOT EXHAUSTED**.
 - d) Live demand: **IMPORTANT / FROZEN C1 PROSPECTIVE COLLECTION ACTIVE / NEW d2 AFTER PRE-LIVE v2 FREEZE**.
@@ -95,124 +99,90 @@ Production remains:
 
 `live_adjustment = 0`
 
-## a2 stage 1 — baseline optimization
+## T-7 historical candidate — frozen after a2 Stages 1–5
 
-Evidence:
-
-`ml/results/PRE_LIVE_BASELINE_OPTIMIZATION_V1_2026-10-18.md`
-
-Run: `39156711796`
-
-Key T-7 lead:
-
-`model-hist_absolute_31`
-
-- development improvement: **+97.36 MAE**;
-- 2024/25: **+105.55**;
-- 2025/26: **+32.06**;
-- mean reference improvement: **+68.81**;
-- mean reference MAE: **1,721.18**.
-
-Tail problem:
-
-- 2024/25 worst degradation: **+3,685.74**;
-- 2025/26 worst degradation: **+4,233.11**.
-
-## a2 stage 2 — fixed blend robustness
-
-Evidence:
-
-`ml/results/T7_HIST31_BLEND_ROBUSTNESS_V1_2026-10-18.md`
-
-Run: `39157403710`
-
-Development selected `alpha=1.00` from fixed blends `0 / .25 / .50 / .75 / 1.0`.
-
-Signal:
-
-`FULL_HIST31_SELECTED_NO_BLEND_ROBUSTNESS_GAIN`
-
-Conclusion:
-
-- constant blending only trades away MAE for smaller revisions;
-- development provides no basis to pick a partial blend;
-- production remains unchanged.
-
-## a2 stage 3 — T-7 robust estimator v1
-
-Evidence:
-
-`ml/results/T7_ROBUST_ESTIMATOR_V1_2026-10-18.md`
-
-Run: `39157926927`
-
-Selected on 2023/24 development:
+Candidate:
 
 `hist31-leaf20-l2-1`
 
-Exact change versus stage-1 Hist31:
-
-`min_samples_leaf: 10 -> 20`
-
-Other core settings remain:
+Exact settings:
 
 - HistGradientBoostingRegressor;
-- `loss=absolute_error`;
+- absolute-error loss;
 - learning rate 0.04;
 - 300 iterations;
 - max leaf nodes 31;
+- min samples leaf 20;
 - L2 1.0;
-- seed 42.
+- seed 42;
+- T-7 base feature contract;
+- `baseline_season`;
+- capacity-normalized residual target.
 
-### Development
+### Stage 3 / 4 reference result
 
-- incumbent MAE: **2,476.82**;
-- selected MAE: **2,317.34**;
-- improvement: **+159.48**;
-- median AE: **1,103.63**;
-- bias: **-31.75**.
-
-### 2024/25
-
-- incumbent MAE: **1,777.69**;
-- selected MAE: **1,650.97**;
-- improvement: **+126.73**;
-- median AE: **926.00**;
-- p90 AE: **4,396.22**;
-- bias: **+13.05**;
-- worst degradation: **+4,094.16** on `Śląsk Wrocław – Legia`.
-
-### 2025/26
-
-- incumbent MAE: **1,802.28**;
-- selected MAE: **1,773.80**;
-- improvement: **+28.48**;
-- median AE: **1,051.76**;
-- p90 AE: **3,753.08**;
-- bias: **-5.43**;
-- worst degradation: **+3,700.56** on `Lechia Gdańsk – Legia`.
-
-### Aggregate
-
-- mean incumbent MAE: **1,789.98**;
-- selected mean MAE: **1,712.38**;
+- incumbent mean reference MAE: **1,789.98**;
+- fixed candidate mean reference MAE: **1,712.38**;
 - mean improvement: **+77.60**;
-- both reference seasons improve: **true**;
-- tail improves versus stage-1 Hist31 on both references: **false**.
+- both reference seasons improve: true.
 
-Signal:
+### Stage 5 rolling temporal audit
 
-`REGULARIZED_WINNER_POSITIVE_MEAN_TAIL_NOT_SOLVED`
+Run: `39159276055`
 
-This is the **lowest T-7 mean reference MAE found so far**.
+| Season | Incumbent | Candidate | Improvement | Bootstrap P(uplift > 0) |
+|---|---:|---:|---:|---:|
+| 2022/23 | 2,088.94 | **1,984.99** | +103.95 | 91.8% |
+| 2023/24 | 2,476.82 | **2,317.34** | +159.48 | 99.08% |
+| 2024/25 | 1,777.69 | **1,650.97** | +126.73 | 99.35% |
+| 2025/26 | 1,802.28 | **1,773.80** | +28.48 | 76.04% |
 
-Decision:
+Aggregate:
 
-- no production champion change yet;
-- `hist31-leaf20-l2-1` becomes strongest current T-7 MAE challenger;
-- do not post-hoc pick a different stage-3 candidate from reference behavior;
-- next test a materially different estimator family, not another tiny HGB micro-grid;
-- any serious champion candidate then requires a fixed-config broader temporal robustness audit before freeze/promotion.
+- positive MAE improvement: **4/4 folds**;
+- mean fold improvement: **+104.66 MAE**;
+- median/p90 improve in all four folds;
+- bias closer to zero in all four folds;
+- club-season cells improved: **47/72 = 65.28%**.
+
+Remaining risk:
+
+- worst harmful regression reaches **+6,623.99** in the earliest fold;
+- 2025/26 bootstrap interval crosses zero;
+- only ~53–55% individual events improve;
+- 25/72 reportable club-season cells do not improve.
+
+### T-7 decision
+
+Freeze this exact configuration as the **historical T-7 Pre-Live candidate**.
+
+Do not:
+
+- continue micro-tuning T-7 on the same exposed seasons;
+- call it a production champion;
+- replace `structural-prior-runtime-v1-t7-gbr-base` from retrospective evidence alone.
+
+Reopen T-7 only for genuinely new evidence or a materially new hypothesis.
+
+## Immediate a2 next step
+
+Build a stronger **multi-fold development tournament** for unresolved horizons:
+
+- T-30;
+- T-14;
+- T-3;
+- T-1.
+
+Default development consistency protocol:
+
+- train 2021/22 -> validate 2022/23;
+- train 2021/22–2022/23 -> validate 2023/24;
+- candidate must improve incumbent MAE in both folds before it may advance;
+- if none does, retain incumbent without using references to rescue a candidate;
+- freeze one candidate before 2024/25–2025/26 reference scoring;
+- full MAE/median/p90/bias/tail/club diagnostics mandatory.
+
+Start with attributable Stage-1 hypotheses: incumbent, feature-group ablations, explicit recency weights and the small internal model-family set. No open-ended model search.
 
 ## Frozen C1 v8 — prospective shadow
 
@@ -224,28 +194,16 @@ Status:
 
 `EXPERIMENTAL_SHADOW`
 
-Frozen expert:
-
-`c1-v2-live-ridge-directocc-compact-generic-a10`
-
-Frozen policy:
-
-`c1-alpha-reliability-policy-v8-fixed-10pp-positive-slope-20pp-single`
-
-Training events:
-
-`[1, 3, 4, 8, 9, 12, 13, 14, 17]`
-
 Do not retune or silently retrain this package during prospective validation.
 
-## Current C1 historical evidence
+Historical C1 boundary:
 
 - raw Live LOEO: **2,929.3 MAE**;
-- conservative train-only synthetic Live LOEO: **2,261.5 MAE**;
-- stress train-only synthetic Live LOEO: **2,498.8 MAE**;
-- four-event chronological Prior: **452.8 MAE**;
-- four-event chronological raw Live: **2,103.7 MAE**;
-- frozen v8 selects PRIOR in **16/16 rows** and preserves Prior exactly.
+- conservative train-only synthetic: **2,261.5**;
+- stress train-only synthetic: **2,498.8**;
+- four-event chronological Prior: **452.8**;
+- raw Live: **2,103.7**;
+- frozen v8: **452.8**, PRIOR in 16/16 rows.
 
 ## b) evidence already produced
 
@@ -253,22 +211,22 @@ Do not retune or silently retrain this package during prospective validation.
 
 Result: `NOT PROVEN / NO PRODUCTION CHANGE`.
 
-Important: one failed formulation does not exhaust b).
+One failed formulation does not exhaust b).
 
 ## c) evidence already produced
 
 - `ml/MATCH_CONTEXT_AUDIT_V1.md`;
 - `ml/results/MATCH_CONTEXT_FUTURE_FIXTURE_V1_2026-10-18.md`.
 
-Result: Future Fixture Context v1 is `NOT PROVEN / RESEARCH-ONLY`.
+Future Fixture Context v1: `NOT PROVEN / RESEARCH-ONLY`.
 
-Important: one failed formulation does not exhaust c).
+One failed formulation does not exhaust c).
 
 ## Non-negotiable engineering accuracy / CI/CD
 
 Every material experiment must have committed code and executable CI.
 
-Never skip exact feature definitions, source/artifact versions, as-of rules, train/dev/holdout, exclusions, imputation/normalization, hyperparameters, seeds, incumbent assertions, leakage checks, machine-readable artifacts, hashes, result docs and explicit decisions.
+Never skip exact feature definitions, source/artifact versions, as-of rules, train/dev/holdout, exclusions, preprocessing, hyperparameters, seeds, incumbent/challenger reproduction assertions, leakage checks, machine-readable artifacts, hashes, result docs and explicit decisions.
 
 No random split of snapshots from the same event.
 
@@ -280,4 +238,4 @@ CI success is not automatic production promotion.
 
 ## One-line cold-start instruction
 
-> **Optimize for honest MAE reduction, not roadmap completion. T-7 `hist31-leaf20-l2-1` is now the strongest MAE challenger at 1712.38 mean reference MAE (+77.60 vs incumbent), but tail is still inconsistent across seasons, so production remains unchanged. Next compare materially different T-7 estimator families under the same development-only selection contract, then run broader fixed-config temporal robustness before any T-7 freeze. Continue a2 -> b2 -> c2 -> freeze Pre-Live v2 -> d2 with complete CI/CD evidence.**
+> **Optimize for honest MAE reduction, not roadmap completion. T-7 `hist31-leaf20-l2-1` is frozen as the historical Pre-Live candidate after improving MAE in 4/4 rolling folds, but it is not a production champion and tail risk remains explicit. Stop T-7 micro-tuning on the same data. Continue a2 with multi-fold selection for T-30/T-14/T-3/T-1, then b2 -> c2 -> freeze Pre-Live v2 -> d2, with complete CI/CD evidence.**

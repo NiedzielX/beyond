@@ -36,7 +36,7 @@ Active sequence:
 | T-3 | `structural-prior-runtime-v1-t3-hist-full` | 2,311.6 | 1,661.7 | 1,775.1 |
 | T-1 | `structural-prior-runtime-v1-t1-hist-full` | 2,348.0 | 1,651.7 | 1,742.8 |
 
-Frozen bundle:
+Frozen production bundle:
 
 `structural-prior-runtime-v1-frozen-2026-10-15-t1`
 
@@ -67,7 +67,7 @@ New work must add information or materially improve representation/modeling rath
 
 # a) Historical data
 
-Status: **ACTIVE OPTIMIZATION / STRONGER T-7 MAE CHALLENGER FOUND / PRODUCTION INCUMBENT UNCHANGED**.
+Status: **ACTIVE OPTIMIZATION / T-7 HISTORICAL CANDIDATE FROZEN / OTHER HORIZONS NEXT / PRODUCTION UNCHANGED**.
 
 ## a2 stage 1 — baseline optimization
 
@@ -85,25 +85,15 @@ Run: `39156711796`
 | T-3 | `incumbent` | 1,718.39 | 1,718.39 | 0.00 | retain incumbent |
 | T-1 | `recency-linear_075` | 1,697.28 | 1,707.36 | -10.07 | retain incumbent |
 
-Stage-1 T-7 Hist31:
+Stage 1 identified T-7 as the only material initial opportunity.
 
-- development: +97.36 MAE;
-- 2024/25: +105.55;
-- 2025/26: +32.06;
-- mean reference: +68.81;
-- worst degradations: +3,685.74 and +4,233.11.
-
-## a2 stage 2 — fixed blend robustness
+## a2 stage 2 — T-7 fixed blend robustness
 
 Evidence:
 
 `ml/results/T7_HIST31_BLEND_ROBUSTNESS_V1_2026-10-18.md`
 
 Run: `39157403710`
-
-Fixed alphas:
-
-`0 / .25 / .50 / .75 / 1.0`
 
 Development selected:
 
@@ -115,19 +105,17 @@ Signal:
 
 Conclusion:
 
-- unconditional blending only trades MAE for lower revision size;
+- unconditional fixed blending only trades MAE for lower revision size;
 - development gives no basis for a partial blend;
-- no production change.
+- production unchanged.
 
-## a2 stage 3 — T-7 robust estimator v1
+## a2 stage 3 — T-7 robust estimator
 
 Evidence:
 
 `ml/results/T7_ROBUST_ESTIMATOR_V1_2026-10-18.md`
 
 Run: `39157926927`
-
-Ten predeclared estimator/regularization candidates were selected on 2023/24 only.
 
 Development winner:
 
@@ -140,82 +128,134 @@ Exact settings:
 - learning rate 0.04;
 - 300 iterations;
 - max leaf nodes 31;
-- **min samples leaf 20**;
+- `min_samples_leaf=20`;
 - L2 1.0;
 - seed 42;
-- same T-7 baseline/features and uniform season weights.
+- same T-7 base features and `baseline_season`;
+- capacity-normalized residual target.
 
-Only material change versus stage-1 Hist31:
+Stage-3 result:
 
-`min_samples_leaf: 10 -> 20`
+- 2023/24 development: 2,476.82 -> **2,317.34**, +159.48 MAE;
+- 2024/25: 1,777.69 -> **1,650.97**, +126.73;
+- 2025/26: 1,802.28 -> **1,773.80**, +28.48;
+- mean reference: 1,789.98 -> **1,712.38**, +77.60.
 
-### Development
+Tail remained material:
 
-- incumbent MAE: **2,476.82**;
-- selected MAE: **2,317.34**;
-- improvement: **+159.48**;
-- median AE: **1,103.63**;
-- bias: **-31.75**.
+- 2024/25 worst degradation: +4,094.16;
+- 2025/26 worst degradation: +3,700.56.
 
-### 2024/25
+## a2 stage 4 — external T-7 model families
 
-- incumbent MAE: **1,777.69**;
-- selected MAE: **1,650.97**;
-- improvement: **+126.73**;
-- median AE: **926.00**;
-- p90 AE: **4,396.22**;
-- bias: **+13.05**;
-- worst degradation: **+4,094.16** on `Śląsk Wrocław – Legia`.
+Evidence:
 
-### 2025/26
+`ml/results/T7_EXTERNAL_MODEL_FAMILY_V1_2026-10-18.md`
 
-- incumbent MAE: **1,802.28**;
-- selected MAE: **1,773.80**;
-- improvement: **+28.48**;
-- median AE: **1,051.76**;
-- p90 AE: **3,753.08**;
-- bias: **-5.43**;
-- worst degradation: **+3,700.56** on `Lechia Gdańsk – Legia`.
+Run: `39158519963`
 
-### Aggregate
+Pinned external families:
 
-- incumbent mean reference MAE: **1,789.98**;
-- selected mean reference MAE: **1,712.38**;
-- improvement: **+77.60**;
-- improves both reference seasons: **true**;
-- reduces stage-1 Hist31 worst tail on both references: **false**.
+- CatBoost 1.2.10;
+- LightGBM 4.7.0;
+- XGBoost 3.4.1.
 
-Signal:
+Development ranking top:
 
-`REGULARIZED_WINNER_POSITIVE_MEAN_TAIL_NOT_SOLVED`
+1. `hist31-leaf20-l2-1` — **2,317.34 MAE**;
+2. LightGBM 15 leaves — 2,323.57;
+3. LightGBM 31 leaves — 2,369.53.
 
-This is the **lowest T-7 mean reference MAE found so far**.
+The internal HGB remained the development winner. References therefore reproduced the Stage-3 result:
 
-### Current T-7 decision
+- mean reference MAE **1,712.38**;
+- mean improvement **+77.60**.
 
-`hist31-leaf20-l2-1` is the strongest current MAE challenger, but **not production champion**.
+Decision:
 
-Reason:
+- tested CatBoost/LightGBM/XGBoost variants do not beat the frozen HGB development winner;
+- do not rescue the LightGBM runner-up from reference behavior;
+- stop broadening the T-7 model zoo without a genuinely new hypothesis.
 
-- average/median quality is materially better;
-- tail remains inconsistent, improving in 2025/26 but worsening in 2024/25;
-- references are already exposed historical evidence;
-- no post-hoc candidate selection from reference behavior is allowed.
+## a2 stage 5 — fixed T-7 temporal robustness
 
-### Immediate a2 next step
+Evidence:
 
-Compare a materially different estimator family under the exact same T-7 baseline/feature/split contract.
+`ml/results/T7_FIXED_TEMPORAL_ROBUSTNESS_V1_2026-10-18.md`
 
-Priority candidates:
+Run: `39159276055`
 
-- CatBoost;
-- LightGBM;
-- XGBoost;
-- or another clearly different pinned tabular learner.
+Artifact ID: `12148660037`
 
-Selection remains development-only. Reference scoring occurs only after one candidate is frozen.
+Result JSON SHA256:
 
-Any serious champion candidate then needs a fixed-config broader temporal robustness audit before explicit T-7 freeze/promotion.
+`0e3f6720be56dabe358cea00b3ad5edf896e4dc7f71940cb89b400f287621d54`
+
+The Stage-3 winner was frozen exactly. No tuning or candidate selection occurred.
+
+Rolling folds:
+
+| Test season | Incumbent MAE | Fixed challenger MAE | Improvement | Paired bootstrap P(uplift > 0) | Worst degradation |
+|---|---:|---:|---:|---:|---:|
+| 2022/23 | 2,088.94 | **1,984.99** | **+103.95** | 91.8% | +6,623.99 |
+| 2023/24 | 2,476.82 | **2,317.34** | **+159.48** | 99.08% | +4,335.66 |
+| 2024/25 | 1,777.69 | **1,650.97** | **+126.73** | 99.35% | +4,094.16 |
+| 2025/26 | 1,802.28 | **1,773.80** | **+28.48** | 76.04% | +3,700.56 |
+
+Aggregate:
+
+- positive MAE improvement: **4/4 rolling folds**;
+- mean fold improvement: **+104.66 MAE**;
+- median fold improvement: +115.34;
+- median AE improves in all four folds;
+- p90 AE improves in all four folds;
+- bias is closer to zero in all four folds;
+- reportable club-season cells improved: **47/72 = 65.28%**.
+
+Important remaining risk:
+
+- earliest 2022/23 fold has a +6,623.99 worst single-event degradation;
+- 2025/26 paired bootstrap 95% interval crosses zero and P(uplift > 0) is 76.04%;
+- event improvement rate is only about 53–55%, so value comes from error magnitude, not universal per-event wins;
+- 25/72 reportable club-season cells do not improve.
+
+### T-7 freeze decision
+
+`hist31-leaf20-l2-1` is now the **frozen historical T-7 candidate for Pre-Live v2**.
+
+Freeze means:
+
+- stop T-7 estimator/hyperparameter tuning on the current exposed historical reference set;
+- preserve this exact config for later Pre-Live v2 integration and future evidence;
+- reopen T-7 tuning only for genuinely new data or a materially new hypothesis;
+- do **not** replace the production T-7 runtime from historical evidence alone.
+
+Production T-7 remains:
+
+`structural-prior-runtime-v1-t7-gbr-base`
+
+## Immediate remaining a2 work
+
+T-7 estimator search is paused/frozen.
+
+Next optimize unresolved horizons with a stronger **multi-fold development selection** protocol:
+
+- T-30;
+- T-14;
+- T-3;
+- T-1.
+
+Do not repeat one-season winner selection if a candidate is unstable across earlier rolling development folds.
+
+A justified next harness should:
+
+- use 2022/23 and 2023/24 as development-era rolling folds where technically valid;
+- require explicit improvement/stability criteria before a candidate advances;
+- freeze the selected candidate before 2024/25–2025/26 reference scoring;
+- preserve exact incumbent benchmark assertions;
+- report full MAE, median, p90, bias, tail and club diagnostics.
+
+Residual/club calibration remains a valid later a2 hypothesis after per-horizon model-family/protocol work.
 
 # b) Current season
 
@@ -330,4 +370,4 @@ Continue:
 
 Immediate next a2 experiment:
 
-**T-7 materially different external/tabular estimator family comparison**, followed by broader fixed-config temporal robustness for any serious champion candidate.
+**multi-fold unresolved-horizon tournament for T-30 / T-14 / T-3 / T-1**, while keeping the T-7 historical candidate frozen and production unchanged.
