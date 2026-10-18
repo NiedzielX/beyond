@@ -77,83 +77,65 @@ Training events:
 
 Do not retune or silently retrain this package during prospective validation.
 
-## Walidacja obecnego modelu — current historical result
+## Walidacja obecnego modelu — historical result
 
 Canonical evidence:
 
 - `ml/results/C1_SYNTHETIC_TRAJECTORY_VALIDATION_V1_2026-10-18.md`;
-- `ml/results/C1_WALK_FORWARD_POLICY_VALIDATION_V1_2026-10-18.md`.
+- `ml/results/C1_WALK_FORWARD_POLICY_VALIDATION_V1_2026-10-18.md`;
+- `ml/results/C1_FORWARD_EVENT_DIAGNOSTIC_V1_2026-10-18.md`.
 
-### Synthetic trajectory augmentation
+Key result:
 
-Synthetic variants are train-only. Test events remain 100% real.
+- LOEO raw Live: **2,929.3 MAE**;
+- conservative train-only synthetic Live: **2,261.5**;
+- four-event chronological raw Live: **2,103.7** vs Prior **452.8**;
+- frozen v8 selects PRIOR in **16 / 16 rows** and preserves Prior exactly;
+- forward diagnostic finds no single compact feature group that consistently fixes raw Live;
+- frozen v8 remains unchanged.
 
-LOEO on 9 real held-out events:
-
-- Prior: **3,968.7 MAE**;
-- real-only Live: **2,929.3**;
-- conservative synthetic Live: **2,261.5**;
-- stress synthetic Live: **2,498.8**.
-
-Chronological walk-forward on 4 later real events:
-
-- Prior: **452.8 MAE**;
-- real-only Live: **2,103.7**;
-- conservative synthetic Live: **1,939.5**;
-- stress synthetic Live: **1,876.7**.
-
-Synthetic augmentation is therefore:
-
-`PROMISING_FOR_FURTHER_VALIDATION`
-
-It improves raw Live on real held-out events in both validation modes, but it does not make raw Live universally safer than Structural Prior.
-
-### Frozen v8 policy — chronological safety check
-
-The already-fixed v8 policy was applied without any threshold change/refit.
-
-Real-only result:
-
-- Prior MAE: **452.8**;
-- raw Live MAE: **2,103.7**;
-- final v8 policy MAE: **452.8**;
-- v8 selected PRIOR in **16 / 16 rows**;
-- worst degradation vs Prior: **0.0**.
-
-Meaning:
-
-> On the current four chronological forward events, v8 correctly rejected unsafe Live and preserved Structural Prior exactly.
-
-This is retrospective evidence only. It does not replace prospective validation.
-
-### Current prospective evidence — 2026-10-18
+Current prospective evidence:
 
 - prediction rows: **31**;
 - prospective events: **5**;
 - scored prospective events: **0**;
-- validation state: `AWAITING_FIRST_PROSPECTIVE_SCORE`;
-- production live adjustment: **0**.
+- state: `AWAITING_FIRST_PROSPECTIVE_SCORE`.
 
-There is still **no confirmed prospective live MAE**.
+There is still no confirmed prospective live MAE.
+
+## b) Aktualny sezon — wzmocnić — TESTED / NOT PROVEN
+
+Canonical evidence:
+
+`ml/results/CURRENT_SEASON_ADJUSTMENT_V1_2026-10-18.md`
+
+Current Season Adjustment v1 tested an explicit bounded/shrunk correction on top of Structural Prior with the incumbent isolated before challenger-only signals are added.
+
+Result:
+
+- T-30: `NO_ADJUSTMENT`;
+- T-14: `NO_ADJUSTMENT`;
+- T-7: `season_r3-k6-a25` wins development but worsens 2024/25 and 2025/26 holdouts;
+- T-3: `NO_ADJUSTMENT`;
+- T-1: `NO_ADJUSTMENT`;
+- no horizon has positive mean holdout improvement;
+- no promotion;
+- production unchanged.
+
+Do not keep tuning the same explicit current-season adjustment against the exposed reference seasons. Current-season features already inside Structural Prior remain.
 
 ## Current development state
 
-Historical validation on the currently available live dataset is complete enough to continue the plan while prospective evidence accumulates automatically.
+### c) Context meczu — rozbudować — NEXT ACTIVE DEVELOPMENT
 
-### b) Aktualny sezon — wzmocnić — NEXT ACTIVE DEVELOPMENT
+Start with a point-in-time audit of context already present in the canonical feature store, then add the smallest governed challenger that can be evaluated without leakage.
 
-- dodać wyraźny current season adjustment;
-- mocniej brać pod uwagę ostatnie mecze domowe;
-- mierzyć, czy klub w tym sezonie sprzedaje lepiej/gorzej niż jego historyczna norma;
-- aktualizować adjustment po każdym kolejnym meczu.
+Priority:
 
-### c) Context meczu — rozbudować
-
-- siła / atrakcyjność przeciwnika;
-- future fixtures;
-- fixture congestion / cannibalization;
-- forma i pozycja obu drużyn;
-- skład, jeśli mamy wiarygodne dane PIT.
+1. opponent strength / attractiveness;
+2. future fixtures and cannibalization / fixture congestion;
+3. form and table context not already captured sufficiently;
+4. squad injuries/suspensions/key players only if reliable PIT history exists.
 
 ### d) Live demand — najmocniej rozwinąć
 
@@ -200,4 +182,4 @@ Club decision/execution workflow remains deferred. Simulated intervention uplift
 
 ## One-line cold-start instruction
 
-> **Walidacja historyczna obecnego modelu jest wykonana: syntetyka poprawia raw Live, a frozen v8 odcina unsafe Live na 4 forward eventach. Nie retunuj v8. Następny aktywny development: b) Aktualny sezon — wzmocnić; potem c -> d -> tuning a.**
+> **Walidacja historyczna C1 jest wykonana; frozen v8 odcina unsafe Live. b) Current Season Adjustment v1 zostało przetestowane i nie udowodniło poprawy, więc go nie promuj. Następny aktywny development: c) Context meczu — rozbudować; potem d -> tuning a.**
