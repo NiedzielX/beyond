@@ -4,15 +4,16 @@ Last product-direction update: **2026-10-18**
 
 This is the canonical short-form model state.
 
-Read `AI_BOOTSTRAP.md` and `ml/MODEL_ACCURACY_DEVELOPMENT_INSTRUCTIONS_V2.md` first in a cold session.
+Read first in a cold session:
 
-## Current north star
+1. `AI_BOOTSTRAP.md`;
+2. `ml/MODEL_ACCURACY_DEVELOPMENT_INSTRUCTIONS_V2.md`;
+3. this file;
+4. `ml/DEMAND_FORECAST_DEVELOPMENT_PLAN_V2.md`.
 
-Beyond is a **live demand decision system**.
+## North star
 
-Immediate forecasting goal:
-
-> **Reduce MAE as far as possible with honest, reproducible, point-in-time-safe evidence before treating the model as mature.**
+> **Reduce forecasting MAE as far as possible with honest, reproducible, point-in-time-safe evidence before treating the model as mature.**
 
 Architecture:
 
@@ -20,15 +21,23 @@ Architecture:
 
 then:
 
-`Pre-Live v2 + live trajectory + inventory + time-to-kickoff + reliability -> Continuous Live Updater v2`
+`Pre-Live v2 + continuous live trajectory -> Continuous Live Updater v2`
 
-Active sequence:
+Canonical sequence:
 
 `a2 -> b2 -> c2 -> freeze Pre-Live v2 -> d2`
 
-## Production Structural Prior
+Current active workstream:
 
-| Horizon | Model spec | 2024/25 MAE | 2025/26 MAE |
+**b2 — current-season residual regime**.
+
+---
+
+# Production boundary
+
+Production Structural Prior remains unchanged:
+
+| Horizon | Production runtime | 2024/25 MAE | 2025/26 MAE |
 |---|---|---:|---:|
 | T-30 | `structural-prior-runtime-v1-t30-extra-full` | 1,889.4 | 1,846.3 |
 | T-14 | `structural-prior-runtime-v1-t14-hist-base` | 1,748.5 | 1,870.4 |
@@ -51,42 +60,55 @@ Production remains:
 
 `live_adjustment = 0`
 
-# a) Historical data
+No historical challenger described below is a production promotion.
 
-Status: **ACTIVE / CURRENT MODEL-FAMILY GRID SETTLED PER HORIZON / RESIDUAL-CLUB CALIBRATION NEXT / PRODUCTION UNCHANGED**.
+---
 
-## Stage 1 — baseline optimization
+# a2 — Historical / Structural Prior optimization
 
-Evidence:
+Status: **SUFFICIENTLY EXHAUSTED FOR CURRENT DATA / HISTORICAL CANDIDATE STATE FROZEN / PRODUCTION UNCHANGED**.
 
-`ml/results/PRE_LIVE_BASELINE_OPTIMIZATION_V1_2026-10-18.md`
+The objective of a2 was not to search indefinitely. It was to test the main realistic ways the historical baseline could improve before b2/c2.
 
-Run: `39156711796`
+## What a2 tested
 
-| Horizon | Dev-selected candidate | Mean reference improvement | Stage-1 interpretation |
-|---|---|---:|---|
-| T-30 | `ablate-rest_congestion` | +3.71 | tiny / unstable |
-| T-14 | `recency-linear_075` | +11.19 | mixed |
-| T-7 | `model-hist_absolute_31` | **+68.81** | material lead |
-| T-3 | incumbent | 0.00 | incumbent |
-| T-1 | `recency-linear_075` | -10.07 | not proven |
+Canonical evidence now covers:
 
-Stage 1 made T-7 the only material initial lead.
+- feature-group contribution / ablation;
+- season-recency weighting;
+- internal estimator-family challengers;
+- regularization / robustness for the strongest horizon;
+- CatBoost / LightGBM / XGBoost external family challengers for T-7;
+- fixed-config rolling temporal robustness;
+- stronger multi-fold selection for unresolved horizons;
+- persistent cross-season club residual calibration;
+- empirical-Bayes cross-season club calibration.
 
-## T-7 Stages 2–5 — completed
+Do not restart the same grids on exposed historical references without materially new data or a materially new hypothesis.
+
+## Current historical Pre-Live candidate state
+
+| Horizon | Historical candidate after a2 | Production changed? |
+|---|---|---|
+| T-30 | retained Structural Prior incumbent | no |
+| T-14 | retained Structural Prior incumbent | no |
+| T-7 | **`hist31-leaf20-l2-1` frozen historical candidate** | no |
+| T-3 | retained Structural Prior incumbent | no |
+| T-1 | retained Structural Prior incumbent | no |
+
+## T-7 historical candidate
 
 Canonical evidence:
 
+- `ml/results/PRE_LIVE_BASELINE_OPTIMIZATION_V1_2026-10-18.md`;
 - `ml/results/T7_HIST31_BLEND_ROBUSTNESS_V1_2026-10-18.md`;
 - `ml/results/T7_ROBUST_ESTIMATOR_V1_2026-10-18.md`;
 - `ml/results/T7_EXTERNAL_MODEL_FAMILY_V1_2026-10-18.md`;
 - `ml/results/T7_FIXED_TEMPORAL_ROBUSTNESS_V1_2026-10-18.md`.
 
-### Frozen T-7 historical candidate
+Frozen historical T-7 config:
 
 `hist31-leaf20-l2-1`
-
-Exact config:
 
 - HistGradientBoostingRegressor;
 - absolute-error loss;
@@ -94,227 +116,263 @@ Exact config:
 - 300 iterations;
 - max leaf nodes 31;
 - min samples leaf 20;
-- L2 1.0;
+- L2 = 1.0;
 - seed 42;
 - T-7 base feature contract;
-- `baseline_season`;
 - capacity-normalized residual target.
 
-Stage-3 / Stage-4 reference result:
+Fixed rolling audit:
 
-- incumbent mean reference MAE: **1,789.98**;
-- fixed candidate mean reference MAE: **1,712.38**;
-- improvement: **+77.60**;
-- both reference seasons improve.
+| Season | Incumbent MAE | Candidate MAE | Improvement |
+|---|---:|---:|---:|
+| 2022/23 | 2,088.94 | **1,984.99** | +103.95 |
+| 2023/24 | 2,476.82 | **2,317.34** | +159.48 |
+| 2024/25 | 1,777.69 | **1,650.97** | +126.73 |
+| 2025/26 | 1,802.28 | **1,773.80** | +28.48 |
 
-Stage 4 tested pinned CatBoost / LightGBM / XGBoost variants; none beat the HGB development winner.
+Mean fold improvement:
 
-Stage 5 fixed-config rolling audit:
+**+104.66 MAE**.
 
-| Season | Incumbent | Candidate | Improvement | Bootstrap P(uplift > 0) |
-|---|---:|---:|---:|---:|
-| 2022/23 | 2,088.94 | **1,984.99** | +103.95 | 91.8% |
-| 2023/24 | 2,476.82 | **2,317.34** | +159.48 | 99.08% |
-| 2024/25 | 1,777.69 | **1,650.97** | +126.73 | 99.35% |
-| 2025/26 | 1,802.28 | **1,773.80** | +28.48 | 76.04% |
+The candidate improves all 4 rolling folds, but tail / club heterogeneity remains explicit. It is frozen as a **historical candidate**, not production champion.
 
-Aggregate:
-
-- positive MAE improvement: **4/4 folds**;
-- mean fold improvement: **+104.66**;
-- median and p90 AE improve in all four folds;
-- bias closer to zero in all four folds;
-- reportable club-season cells improved: **47/72 = 65.28%**.
-
-Risk remains explicit:
-
-- earliest-fold worst degradation: **+6,623.99**;
-- 2025/26 bootstrap CI crosses zero;
-- event improvement rate ~53–55%;
-- 25/72 reportable club-season cells do not improve.
-
-Decision:
-
-> **Freeze `hist31-leaf20-l2-1` as the historical T-7 Pre-Live candidate. Do not call it production champion. Stop T-7 micro-tuning on the current exposed historical set.**
-
-Production T-7 remains `structural-prior-runtime-v1-t7-gbr-base`.
-
-## Unresolved-horizon multi-fold tournament — completed
+## Unresolved-horizon tournament
 
 Evidence:
 
 `ml/results/PRE_LIVE_UNRESOLVED_MULTIFOLD_V1_2026-10-18.md`
 
-Run: `39159907426`
+Run:
 
-Artifact ID: `12148169124`
+`39159907426`
+
+Result:
+
+- T-30: no stable non-incumbent -> retain incumbent;
+- T-14: no stable non-incumbent -> retain incumbent;
+- T-3: no stable non-incumbent -> retain incumbent;
+- T-1: development selected `ablate-rest_congestion`, but exposed references were mixed and mean worsened -> retain incumbent.
+
+References were not allowed to rescue a different candidate.
+
+## Persistent cross-season club calibration
+
+Canonical empirical-Bayes evidence:
+
+`ml/results/PERSISTENT_CLUB_CALIBRATION_V1_2026-10-18.md`
+
+Run:
+
+`39160907508`
+
+Artifact ZIP SHA256:
+
+`3a38374a9ebd4527b482e488ff7879ef6509581d572f4e2b78e0d2c1605e3bde`
 
 Result JSON SHA256:
 
-`f7bf178bad293547f3e866dd312997e2415744b68d66f5d4ed5db9cc8b984b1a`
+`1dc52a9bd060eeddde70637f1c5923c86e6f76f0b41dedd4dac91169ba089956`
 
-Protocol strengthened Stage 1:
+Fixed PIT-safe empirical-Bayes correction is rejected on 2023/24 development for every horizon:
 
-- Fold A: train 2021/22 -> validate 2022/23;
-- Fold B: train 2021/22–2022/23 -> validate 2023/24;
-- candidate must be identifiable and improve incumbent MAE in both folds;
-- recency is explicitly non-identifiable with only one training season;
-- references cannot rescue a development-inconsistent candidate;
-- only incumbent + frozen multi-fold winner are scored on 2024/25–2025/26.
+- T-30: -40.61 MAE;
+- T-14: 0.00;
+- T-7: -66.16;
+- T-3: -80.59;
+- T-1: -62.97.
 
-### T-30
+Exposed references cannot rescue a development-negative candidate.
 
-No non-incumbent improves both identifiable development folds.
+A separate predeclared fixed median / `n/(n+10)` calibration audit also failed to establish stable uplift and was intentionally not made canonical.
+
+Decision:
+
+> **Do not add persistent cross-season club calibration. a2 is sufficiently exhausted for the current dataset. Advance to b2.**
+
+---
+
+# b2 — Current-season regime
+
+Status: **ACTIVE / RESIDUAL-REGIME V1 COMPLETED / T-3 AND T-1 MATERIAL HISTORICAL LEADS / SIGNAL-MATURITY ROBUSTNESS NEXT**.
+
+## Old current-season formulation
+
+`Current Season Adjustment v1` compared current raw attendance level with historical club norm.
+
+It was `NOT PROVEN` and remains rejected.
+
+Evidence:
+
+`ml/results/CURRENT_SEASON_ADJUSTMENT_V1_2026-10-18.md`
+
+That result did not exhaust b2.
+
+## Current-Season Residual Regime v1
+
+Canonical evidence:
+
+`ml/results/CURRENT_SEASON_RESIDUAL_REGIME_V1_2026-10-18.md`
+
+Run:
+
+`39161525672`
+
+Artifact ID:
+
+`12149111168`
+
+Artifact ZIP SHA256:
+
+`2296ed2c1e7c4594a3e94a8059c7789a3d15c20df2878c68b45292029dd63e90`
+
+Result JSON SHA256:
+
+`a2cda5a6a47afb974df3a3c7e9c337cd14f57504c7829c0280d40ced5868f85b`
+
+### New hypothesis
+
+Instead of raw attendance-vs-history, b2 v1 uses earlier **same-season actual-vs-our-own-forecast residuals**.
+
+A prior match may enter regime state only after:
+
+`prior kickoff + 3h <= current forecast as_of`
+
+This is a hard PIT rule.
+
+Signals tested:
+
+- mean capacity-normalized residual;
+- EWMA(0.50) residual;
+- mean actual/expected ratio;
+- shrink `n/(n+k)`, k = 2/4/6;
+- correction cap +/-5% capacity.
+
+Selection uses only 2022/23 + 2023/24 development folds. 2024/25–2025/26 are scored after selection is frozen.
+
+### Result
+
+| Horizon | Selected b2 v1 policy | Dev A | Dev B | Ref 2024/25 | Ref 2025/26 | Mean ref gain | Status |
+|---|---|---:|---:|---:|---:|---:|---|
+| T-30 | `NO_ADJUSTMENT` | 0.00 | 0.00 | 0.00 | 0.00 | 0.00 | no stable regime |
+| T-14 | `NO_ADJUSTMENT` | 0.00 | 0.00 | 0.00 | 0.00 | 0.00 | no stable regime |
+| T-7 | `ewma50-resid-k6-cap05` | +80.21 | +75.33 | -3.89 | +33.69 | +14.90 | mixed references / research-only |
+| T-3 | `ewma50-resid-k2-cap05` | +65.63 | +120.91 | +31.46 | +32.86 | **+32.16** | material lead |
+| T-1 | `ewma50-resid-k6-cap05` | +106.90 | +81.22 | +18.80 | +51.51 | **+35.15** | material lead |
+
+T-3 and T-1 improve both development folds and both exposed reference seasons.
+
+T-7 has strong development evidence but reference seasons disagree; it is not frozen as a stable b2 layer.
+
+T-30/T-14 do not advance.
+
+## Signal maturity finding
+
+Development diagnostics show the same-season residual signal is much more reliable once the club has **3+ earlier completed home matches**.
 
 Examples:
 
-- `ablate-sporting_form`: +11.34 then -21.31;
-- `ablate-rest_congestion`: -27.75 then +9.31;
-- `model-extra_leaf5`: +20.07 then -57.99.
+### T-3 development
 
-Decision: **retain incumbent**.
+2022/23:
 
-### T-14
+- 1 prior: -281.94 MAE;
+- 2 prior: -100.22;
+- 3+ prior: **+109.27**.
 
-No non-incumbent improves both identifiable development folds.
+2023/24:
 
-The prior recency signal cannot advance because recency has only one identifiable development fold under the available historical window.
+- 1 prior: +185.66;
+- 2 prior: -184.36;
+- 3+ prior: **+147.69**.
 
-Examples:
+### T-1 development
 
-- `ablate-table_context`: +12.37 then -67.56;
-- `ablate-sporting_form`: +60.96 then -118.69.
+2022/23:
 
-Decision: **retain incumbent**.
+- 1 prior: -147.42;
+- 2 prior: -64.29;
+- 3+ prior: **+146.34**.
 
-### T-3
+2023/24:
 
-No non-incumbent improves both development folds.
+- 1 prior: +64.77;
+- 2 prior: -158.21;
+- 3+ prior: **+106.19**.
 
-Several average-looking hypotheses reverse sign:
+This is visible in development evidence, not only in exposed references.
 
-- `ablate-rest_congestion`: +81.25 then -31.67;
-- `ablate-home_history`: +48.09 then -2.90;
-- `model-hist_absolute_31`: +34.59 then -26.26;
-- `model-extra_leaf5`: +92.31 then -99.60.
+## Immediate b2 next step
 
-Decision: **retain incumbent**.
+Run **Current-Season Residual Regime Stage 2 — signal-maturity activation robustness**.
 
-### T-1
+Freeze the v1-selected signal source / k per advancing horizon and test only activation maturity:
 
-Two candidates improve both development folds:
+- activate after 1 prior completed same-season home match;
+- activate after 2;
+- activate after 3.
 
-- `ablate-rest_congestion`;
-- `ablate-capacity`.
+Selection remains development-only on 2022/23 + 2023/24.
 
-Development selects `ablate-rest_congestion`:
+Primary objective:
 
-- 2022/23 improvement: **+63.47**;
-- 2023/24 improvement: **+11.97**;
-- mean: **+37.72**.
+> preserve the T-3/T-1 MAE uplift while avoiding low-sample current-season corrections that are unstable in development.
 
-Frozen reference scoring:
+T-7 may be included as a research comparator, but mixed references prevent treating it as frozen b2 candidate without stronger evidence.
 
-- 2024/25: incumbent 1,651.73 vs selected 1,690.10 -> **-38.36**;
-- 2025/26: incumbent 1,742.84 vs selected 1,717.57 -> **+25.26**;
-- mean reference change: **-6.55** — worse.
+Do **not** advance to c2 until this b2 maturity question is resolved.
 
-Signal:
+---
 
-`MULTIFOLD_SELECTED_CANDIDATE_NOT_PROVEN_ON_REFERENCES`
+# c2 — Match context
 
-Do not post-hoc score/select `ablate-capacity` to rescue the experiment.
+Status: **NOT ACTIVE YET / AUDITED + FUTURE-FIXTURE V1 NOT PROVEN / NOT EXHAUSTED**.
 
-Decision: **retain incumbent**.
+Existing PIT-safe context already includes:
 
-## Current per-horizon historical candidate state
+- opponent draw;
+- pair history;
+- PPG;
+- GD/game;
+- last-5 form;
+- table position / gaps;
+- top/bottom interactions;
+- rest / congestion.
 
-| Horizon | Historical Pre-Live candidate | Production runtime changed? |
-|---|---|---|
-| T-30 | current production incumbent | no |
-| T-14 | current production incumbent | no |
-| T-7 | **`hist31-leaf20-l2-1` frozen historical candidate** | no |
-| T-3 | current production incumbent | no |
-| T-1 | current production incumbent | no |
+Future Fixture Context v1 was `NOT PROVEN` and must not be repeatedly retuned against the same exposed references.
 
-## Immediate remaining a2 hypothesis
-
-Do **not** continue permutations of the same ablation/recency/internal-estimator grid.
-
-Next justified a2 hypothesis:
-
-**historical residual / club calibration**.
-
-Required principles:
-
-- calculate PIT residuals against the correct rolling per-horizon incumbent/historical candidate;
-- test whether a persistent club-level residual remains out-of-sample;
-- shrink low-sample club estimates strongly toward zero;
-- no club memorization without evidence;
-- multi-fold development selection;
-- full club and tail diagnostics;
-- keep the frozen T-7 estimator itself unchanged while calibration is tested as a separate layer.
-
-If residual/club calibration is not proven, a2 should be considered sufficiently exhausted for the current data and development should advance to b2 rather than another model-grid search.
-
-# b) Current season
-
-Status: **PARTIALLY TESTED / NOT EXHAUSTED**.
-
-Current Season Adjustment v1 was `NOT PROVEN`; it closes that formulation only.
-
-Next b2 after a2:
-
-- historical PIT actual-vs-expected residuals within current season;
-- demand ratio `actual / expected`;
-- EWMA / rolling residuals;
-- sample-size-aware and hierarchical shrinkage.
-
-Goal:
-
-> detect whether the current season systematically beats or misses our own expected demand.
-
-Important separation:
-
-- a2 club calibration asks whether a persistent cross-season club residual exists;
-- b2 asks whether the **current season regime** differs from expected demand.
-
-# c) Match context
-
-Status: **AUDITED + ONE CHALLENGER TESTED / NOT EXHAUSTED**.
-
-Existing context already covers opponent draw, pair history, PPG, GD/game, form, table and past congestion.
-
-Future Fixture Context v1 was `NOT PROVEN` and must not be repeatedly tuned on the same references.
-
-Next safe candidate gaps:
+Next candidate gaps after b2:
 
 - match stakes / title-Europe-relegation relevance;
-- sequence-aware streaks;
-- rivalry / derby / exceptional opponent draw where deterministic;
-- squad availability only with reliable historical PIT data.
+- sequence-aware winning/unbeaten/losing streaks;
+- deterministic rivalry / derby / exceptional opponent draw;
+- squad availability only if a reliable historical PIT source exists.
 
-# Freeze point — Pre-Live v2
+---
 
-After a2+b2+c2, freeze exact per-horizon:
+# Pre-Live v2 freeze point
 
-- model ID;
+After b2 + c2 are sufficiently evaluated, freeze exact per-horizon:
+
+- base model ID;
+- current-season regime policy where proven;
+- match-context contract where proven;
 - feature contract;
-- data version;
-- training seasons / weights;
-- hyperparameters;
+- training data/version;
 - preprocessing;
+- hyperparameters;
 - calibration;
-- seed;
-- artifact hash;
-- benchmark scorecard;
+- seeds;
+- artifacts / hashes;
+- scorecard;
 - limitations.
 
-Only then train the new learned live updater.
+Only then train the next learned live updater.
 
-# d) Live demand
+---
 
-Status: **LIVE INFRASTRUCTURE EXISTS / NEW d2 LEARNED MODEL AFTER PRE-LIVE v2 FREEZE**.
+# d2 — Continuous Live Updater
+
+Status: **LIVE DATA INFRASTRUCTURE EXISTS / NEW LEARNED d2 AFTER PRE-LIVE v2 FREEZE**.
 
 Already available:
 
@@ -322,28 +380,42 @@ Already available:
 - PIT trajectory / velocity / acceleration;
 - release / coverage-change handling;
 - frozen C1 v8 prospective shadow;
-- sector and price-area trajectories;
+- sector / price-area trajectories;
 - Roboticket price observations;
-- guarded decision support.
+- guarded sector / pricing decision support.
 
-New d2 should use continuous time-to-kickoff and learn delta/remaining-demand/reliability against frozen Pre-Live v2.
+Target d2 architecture:
+
+`frozen Pre-Live v2 + continuous live evidence -> delta / remaining demand / reliability-weighted revision`
+
+T-30/T-14/T-7/T-3/T-1 remain evaluation checkpoints, not the only update moments.
+
+---
 
 # Frozen C1 v8
 
-Package: `c1-shadow-v8-frozen-2026-10-16-n9`
+Package:
 
-Status: `EXPERIMENTAL_SHADOW`
+`c1-shadow-v8-frozen-2026-10-16-n9`
+
+Status:
+
+`EXPERIMENTAL_SHADOW`
 
 Historical boundary:
 
 - raw Live LOEO: 2,929.3;
-- conservative synthetic: 2,261.5;
-- stress synthetic: 2,498.8;
+- conservative train-only synthetic: 2,261.5;
+- stress train-only synthetic: 2,498.8;
 - four-event chronological Prior: 452.8;
 - raw Live: 2,103.7;
-- frozen v8: 452.8 with PRIOR in 16/16 rows.
+- frozen v8: 452.8 with PRIOR selected 16/16 rows.
 
 Do not retune frozen v8 from this evidence.
+
+Prospective scoring continues in parallel.
+
+---
 
 # Engineering governance
 
@@ -353,21 +425,19 @@ Full rules:
 
 Non-negotiable:
 
-- MAE primary, tail/bias mandatory;
-- event is independent unit;
+- MAE primary; tail/bias mandatory;
+- event is independent evaluation unit;
+- every feature/state must exist at forecast as-of;
 - no random snapshot split;
-- PIT-only features;
-- synthetic data train-only;
-- exact versions and hashes;
-- code + CI + artifact + result + decision;
-- exact incumbent/challenger reproduction where applicable;
-- no silent holdout retuning;
+- exact data/model/feature versions;
+- committed code + CI + artifact + result doc + decision;
+- hard reproduction gates where canonical values exist;
+- exposed references cannot rescue development failures;
+- no silent retuning;
 - CI green != production promotion.
 
 ## Current development decision
 
-Continue:
-
-**a2 residual/club calibration -> if exhausted, b2 -> c2 -> freeze Pre-Live v2 -> d2**.
+**b2 Stage 2 signal-maturity activation robustness -> then complete b2 decision -> c2 -> freeze Pre-Live v2 -> d2**.
 
 Production remains unchanged.
