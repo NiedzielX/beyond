@@ -1,0 +1,71 @@
+name: T7 Fixed Temporal Robustness v1
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - "ml/t7_fixed_temporal_robustness_v1.py"
+      - "ml/test_t7_fixed_temporal_robustness_v1.py"
+      - "ml/T7_FIXED_TEMPORAL_ROBUSTNESS_V1.md"
+      - "ml/t7_robust_estimator_v1.py"
+      - "ml/pre_live_baseline_optimization_v1.py"
+      - "ml/demand_engine/structural_prior_runtime.py"
+      - "ml/artifacts/structural_prior_runtime_v1/historical_runtime_v1.csv.gz"
+      - "ml/artifacts/structural_prior_runtime_v1/manifest.json"
+      - ".github/workflows/t7-fixed-temporal-robustness-v1.yml"
+  push:
+    branches: [main]
+    paths:
+      - "ml/t7_fixed_temporal_robustness_v1.py"
+      - "ml/test_t7_fixed_temporal_robustness_v1.py"
+      - "ml/T7_FIXED_TEMPORAL_ROBUSTNESS_V1.md"
+      - "ml/t7_robust_estimator_v1.py"
+      - "ml/pre_live_baseline_optimization_v1.py"
+      - "ml/demand_engine/structural_prior_runtime.py"
+      - "ml/artifacts/structural_prior_runtime_v1/historical_runtime_v1.csv.gz"
+      - "ml/artifacts/structural_prior_runtime_v1/manifest.json"
+      - ".github/workflows/t7-fixed-temporal-robustness-v1.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: t7-fixed-temporal-robustness-v1-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install pinned runtime
+        run: |
+          python -m pip install --upgrade pip
+          pip install numpy==2.3.5 pandas==2.2.3 scikit-learn==1.8.0 joblib==1.5.3
+      - name: Compile
+        run: |
+          python -m py_compile ml/t7_fixed_temporal_robustness_v1.py
+          python -m py_compile ml/test_t7_fixed_temporal_robustness_v1.py
+          python -m py_compile ml/t7_robust_estimator_v1.py
+      - name: Unit checks
+        run: python -m ml.test_t7_fixed_temporal_robustness_v1
+      - name: Run fixed-config audit
+        run: |
+          python -m ml.t7_fixed_temporal_robustness_v1 \
+            --historical-runtime ml/artifacts/structural_prior_runtime_v1/historical_runtime_v1.csv.gz \
+            --manifest ml/artifacts/structural_prior_runtime_v1/manifest.json \
+            --output /tmp/t7-fixed-temporal-robustness-v1.json
+      - name: Print concise scorecard
+        run: |
+          jq '{experiment,fixed_candidate,promotion_allowed,folds,summary}' /tmp/t7-fixed-temporal-robustness-v1.json
+      - name: Upload evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: t7-fixed-temporal-robustness-v1-${{ github.run_id }}
+          path: /tmp/t7-fixed-temporal-robustness-v1.json
+          if-no-files-found: error
+          retention-days: 30
