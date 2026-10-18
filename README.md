@@ -4,32 +4,53 @@ Beyond Ticketing engineering workspace.
 
 ## Start here
 
-For any new AI / engineering session, **do not reconstruct the project from old benchmarks**.
+For any new AI / engineering session, **do not reconstruct the project from old benchmarks or stale implementation notes**.
 
 Read in this order:
 
-1. [`AI_BOOTSTRAP.md`](AI_BOOTSTRAP.md) — cold-start state, trusted frozen results, re-run rules and next actions;
+1. [`AI_BOOTSTRAP.md`](AI_BOOTSTRAP.md) — cold-start state, current runtime status and immediate work order;
 2. [`ml/CURRENT_MODEL.md`](ml/CURRENT_MODEL.md) — canonical current forecasting / Demand Engine state;
-3. [`ml/LIVE_DEMAND_ENGINE_V1_PLAN.md`](ml/LIVE_DEMAND_ENGINE_V1_PLAN.md) — current implementation phase and sequence;
-4. [`ml/T30_RND_STATUS_2026-10-16.md`](ml/T30_RND_STATUS_2026-10-16.md) — current T-30 research state, rejected challengers and active validation rule;
-5. [`ml/T30_RND_GOVERNANCE_V2.md`](ml/T30_RND_GOVERNANCE_V2.md) — T-30 rolling-origin / prospective validation policy;
-6. [`ml/NORTH_STAR.md`](ml/NORTH_STAR.md) — model objective and evaluation philosophy;
-7. [`ml/MODEL_PROMOTION_GOVERNANCE_V1.md`](ml/MODEL_PROMOTION_GOVERNANCE_V1.md) — evidence and promotion gates.
+3. [`ml/DEMAND_FORECAST_DEVELOPMENT_PLAN_V2.md`](ml/DEMAND_FORECAST_DEVELOPMENT_PLAN_V2.md) — current model-quality development plan: validation -> current season -> match context -> continuous live demand -> Structural Prior tuning;
+4. [`ml/LIVE_DEMAND_ENGINE_V1_PLAN.md`](ml/LIVE_DEMAND_ENGINE_V1_PLAN.md) — live engine implementation and promotion roadmap;
+5. [`ml/C1_V8_PROSPECTIVE_SHADOW_V1.md`](ml/C1_V8_PROSPECTIVE_SHADOW_V1.md) — frozen C1 prospective runtime/governance;
+6. [`ml/SECTOR_DECISION_PRICING_V1.md`](ml/SECTOR_DECISION_PRICING_V1.md) — E0 sector/pricing product contract;
+7. [`ml/NORTH_STAR.md`](ml/NORTH_STAR.md) — model objective and evaluation philosophy;
+8. [`ml/MODEL_PROMOTION_GOVERNANCE_V1.md`](ml/MODEL_PROMOTION_GOVERNANCE_V1.md) — evidence and promotion gates.
 
-**Rule:** frozen benchmarks and persisted model state must not be re-run merely to recover context. A re-run is justified only when model code, feature contracts, input data, benchmark protocol or an intentional challenger changes, or when explicit verification is requested.
-
-**T-30 validation rule from 2026-10-16:** 2024/25 and 2025/26 are exposed fixed historical regression/reference seasons for new T-30 R&D and must not be treated as fresh untouched holdouts. New T-30 challenger selection uses the rolling-origin development gate; fresh promotion evidence must come from prospective 2026/27 outcomes or another explicitly locked future period.
+**Rule:** frozen benchmarks and persisted model state must not be re-run merely to recover context. A re-run is justified when model code, feature contracts, input data, benchmark protocol or an intentional challenger changes, or when explicit verification is requested.
 
 ## Current direction
 
-Beyond is building a leakage-safe live attendance / ticket-demand forecasting stack:
+Beyond is building a live demand decision system:
 
-`Structural Prior -> Live Ticketing Trajectory -> Trajectory Gap -> Shadow Forecast Revision -> Evidence / Promotion`
+`Historical baseline -> Current-season adjustment -> Match context -> Live demand trajectory -> Forecast revision -> Sector/price-area decision support`
 
-Early actionability is first-class: T-30 and T-14 matter because clubs still have time to react.
+The attendance forecast and the pricing decision layer are related but separate:
+
+- event forecast estimates where attendance is likely to finish;
+- sector / price-area logic diagnoses public inventory and suggests assumption-based pricing actions;
+- public seat-map inventory is a **demand proxy, not confirmed paid sales**.
+
+## Current model-quality work order
+
+1. validate the current live model with **Leave-One-Event-Out + chronological walk-forward**;
+2. strengthen the **current-season adjustment**;
+3. expand **match context**, especially future-fixture cannibalization and reliable squad context;
+4. make **live demand correction continuous** rather than thinking only in T-30/T-14/T-7/T-3/T-1 checkpoints;
+5. tune the historical Structural Prior last, without rebuilding it unnecessarily.
+
+See [`ml/DEMAND_FORECAST_DEVELOPMENT_PLAN_V2.md`](ml/DEMAND_FORECAST_DEVELOPMENT_PLAN_V2.md).
+
+## Current evidence boundary
+
+The historical Structural Prior is mature and benchmarked. C1 v8 is still `EXPERIMENTAL_SHADOW`.
+
+As of 2026-10-18 the prospective C1 pipeline has created predictions for new matches, but **no prospective event has been scored yet**, so there is no confirmed prospective live MAE.
+
+Do not present development replay results around ~2.0k–2.7k as production accuracy.
 
 ## ML / forecasting
 
-The current multi-club benchmark uses five Ekstraklasa seasons (2021/22–2025/26), 1,530 matches and 7,650 point-in-time snapshots. Current results and model IDs are maintained in [`ml/CURRENT_MODEL.md`](ml/CURRENT_MODEL.md).
+The current multi-club historical benchmark uses five Ekstraklasa seasons (2021/22–2025/26), 1,530 matches and 7,650 point-in-time horizon rows. Current results and model IDs are maintained in [`ml/CURRENT_MODEL.md`](ml/CURRENT_MODEL.md).
 
-Older Lech-only audits and v0.1 benchmarks are retained as **historical lineage only** and must not be treated as the current starting point.
+Older Lech-only audits and v0.1 benchmarks are historical lineage only and must not be treated as the current starting point.
