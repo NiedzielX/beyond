@@ -9,7 +9,7 @@ This file exists so a new AI/chat session continues the actual Beyond plan inste
 Before doing Beyond forecasting, ML, dashboard, Growth or recommendation work, read in this order:
 
 1. `ml/CURRENT_MODEL.md` — canonical current model/product state;
-2. `ml/DEMAND_FORECAST_DEVELOPMENT_PLAN_V2.md` — current forecasting-quality development order;
+2. `ml/DEMAND_FORECAST_DEVELOPMENT_PLAN_V2.md` — current development plan;
 3. `ml/C1_V8_PROSPECTIVE_SHADOW_V1.md` — frozen C1 prospective runtime/governance;
 4. `ml/LIVE_DEMAND_ENGINE_V1_PLAN.md` — live forecasting roadmap;
 5. `ml/SECTOR_DECISION_PRICING_V1.md` — E0 sector/pricing product contract;
@@ -22,13 +22,16 @@ Before doing Beyond forecasting, ML, dashboard, Growth or recommendation work, r
 
 Beyond is a **live demand decision system**, not primarily a campaign tool or a single attendance model.
 
-Forecasting direction:
+For model development, keep these exact workstreams and names:
 
-`Historical baseline -> Current-season adjustment -> Match context -> Live demand trajectory -> Forecast revision`
+- **a) Dane historyczne — dopracować, nie przebudowywać**;
+- **b) Aktualny sezon — wzmocnić**;
+- **c) Context meczu — rozbudować**;
+- **d) Live demand — najmocniej rozwinąć**.
 
-Decision-support direction:
+Before further development, first do:
 
-`Event forecast -> Sector trajectory -> No-action projection -> Price-area scenario -> Recommendation`
+- **Walidacja obecnego modelu — najpierw sprawdzić, co naprawdę mamy.**
 
 Public seat-map inventory is a **demand proxy, not confirmed paid sales**.
 
@@ -96,11 +99,7 @@ Runtime state verified in production:
 
 Therefore there is **no confirmed prospective live MAE yet**.
 
-The next fresh evidence milestone is the first completed event for which the pre-outcome C1 decision already exists.
-
 ## E0 sector / price-area decision support — implemented
-
-The previous docs described E0 as the next build. That is no longer the current state.
 
 Implemented capabilities include:
 
@@ -119,49 +118,51 @@ Do not claim learned elasticity or causal pricing uplift. E0 remains assumption-
 
 Club decision/execution workflow is intentionally deferred for now. If product demos simulate an intervention, label it explicitly as **simulated**, never as observed club uplift.
 
-## Active forecasting development plan
+## Active model-development plan
 
 Canonical plan:
 
 `ml/DEMAND_FORECAST_DEVELOPMENT_PLAN_V2.md`
 
-Development order:
+### Walidacja obecnego modelu — najpierw sprawdzić, co naprawdę mamy
 
-1. **Validate the current model honestly**
-   - Leave-One-Event-Out;
-   - chronological walk-forward;
-   - held-out event must not participate in fitting/tuning;
-   - compare Structural Prior vs Live/C1 vs final policy on identical PIT evidence.
-2. **Strengthen current-season adjustment**
-   - recent home matches;
-   - above/below historical club baseline;
-   - recency weighting.
-3. **Expand match context**
-   - opponent attractiveness;
-   - future-fixture attractiveness;
-   - fixture cannibalization/congestion;
-   - form/position;
-   - reliable PIT squad context where available.
-4. **Develop continuous live demand correction**
-   - inventory from earliest sales moment;
-   - velocity/acceleration/sector/price-area movement;
-   - forecast revision after meaningful snapshots;
-   - T-30/T-14/T-7/T-3/T-1 remain evaluation checkpoints, not the only reasoning times.
-5. **Tune historical Structural Prior last**
-   - feature contribution;
-   - remove noisy features;
-   - stronger recency weighting;
-   - no unnecessary architecture rewrite.
+- Leave-One-Event-Out;
+- chronological walk-forward;
+- held-out event must not participate in fitting/tuning;
+- compare Structural Prior vs Live/C1 vs final prediction on identical PIT evidence.
 
-## Why validation is first
+### b) Aktualny sezon — wzmocnić
 
-We currently know that historical Structural Prior benchmarks are strong and that C1 development replay is promising. We do **not** yet know the true unseen-event live MAE.
+- dodać wyraźny current season adjustment;
+- mocniej brać pod uwagę ostatnie mecze domowe;
+- mierzyć, czy klub w tym sezonie sprzedaje lepiej/gorzej niż jego historyczna norma;
+- aktualizować adjustment po każdym kolejnym meczu.
 
-The immediate objective is to produce the strongest leakage-safe historical approximation of deployment quality:
+### c) Context meczu — rozbudować
 
-`LOEO + chronological walk-forward + strict point-in-time replay`
+- siła / atrakcyjność przeciwnika;
+- future fixtures;
+- fixture congestion / cannibalization;
+- forma i pozycja obu drużyn;
+- skład, jeśli mamy wiarygodne dane PIT.
 
-This does not replace prospective validation, but it tells us whether the current model is actually closer to ~2k, ~3k or worse before more feature development.
+### d) Live demand — najmocniej rozwinąć
+
+- inventory od pierwszego momentu sprzedaży;
+- velocity / acceleration / sector / price-area movement;
+- aktualizacja forecastu po każdym znaczącym snapshotcie;
+- T-30/T-14/T-7/T-3/T-1 jako checkpointy do mierzenia jakości, nie jedyne momenty pracy modelu.
+
+### a) Dane historyczne — dopracować, nie przebudowywać
+
+- utrzymać Structural Prior;
+- sprawdzić feature contribution;
+- usunąć słabe/noisy features;
+- lepiej ważyć nowsze sezony.
+
+## Kolejność developmentu
+
+`Walidacja -> b -> c -> d -> tuning a`
 
 ## Non-negotiable forecasting rules
 
@@ -177,4 +178,4 @@ This does not replace prospective validation, but it tells us whether the curren
 
 ## One-line cold-start instruction
 
-> **Start with `ml/DEMAND_FORECAST_DEVELOPMENT_PLAN_V2.md`: first run strict LOEO + chronological walk-forward on the current model, then strengthen current-season adjustment, match context and continuous live demand. Do not restart the C1 tournament, do not retune frozen v8, and do not treat E0 pricing as still unimplemented.**
+> **Najpierw Walidacja obecnego modelu. Potem: b) Aktualny sezon -> c) Context meczu -> d) Live demand -> a) Dane historyczne. Nie zmieniaj tych nazw na nowe fazy ani techniczne etykiety.**
