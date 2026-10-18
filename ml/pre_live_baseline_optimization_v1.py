@@ -109,7 +109,8 @@ FEATURE_GROUPS: dict[str, tuple[str, ...]] = {
     "capacity": ("capacity",),
 }
 
-RECENCY_POLICIES = ("uniform", "linear_075", "exp_075", "exp_050")
+RECENCY_POLICIES = ("uniform", "linear_075", "exp_050")
+DEVELOPMENT_TIE_ATOL = 1e-9
 MODEL_POLICIES = ("incumbent", "rf_absolute_leaf3", "extra_leaf5", "hist_absolute_31")
 
 
@@ -238,6 +239,20 @@ def comparison_scorecard(
             "mae_improvement": float(im["mae"] - cm["mae"]),
         }
 
+    event_frame = pd.DataFrame({
+        "match_key": rows["match_key"].astype(str).to_numpy(),
+        "home_club_key": rows["home_club_key"].astype(str).to_numpy(),
+        "away_club_key": rows["away_club_key"].astype(str).to_numpy(),
+        "actual": actual,
+        "candidate_prediction": candidate_prediction,
+        "incumbent_prediction": incumbent_prediction,
+        "candidate_ae": candidate_ae,
+        "incumbent_ae": incumbent_ae,
+        "degradation_vs_incumbent": degradation,
+    })
+    worst = event_frame.iloc[int(np.argmax(degradation))].to_dict()
+    best = event_frame.iloc[int(np.argmin(degradation))].to_dict()
+
     return {
         "candidate": candidate_metrics,
         "incumbent": incumbent_metrics,
@@ -246,6 +261,8 @@ def comparison_scorecard(
         "best_event_improvement": float(np.max(-degradation)),
         "event_improvement_rate": float(np.mean(candidate_ae < incumbent_ae)),
         "event_equal_rate": float(np.mean(np.isclose(candidate_ae, incumbent_ae))),
+        "worst_event": worst,
+        "best_event": best,
         "club_breakdown_min_n_5": clubs,
     }
 
@@ -272,9 +289,6 @@ def season_weight_map(training_seasons: list[str], policy: str) -> dict[str, flo
         values = np.ones(n, dtype=float)
     elif policy == "linear_075":
         values = np.linspace(0.75, 1.0, n, dtype=float)
-    elif policy == "exp_075":
-        distance = np.arange(n - 1, -1, -1, dtype=float)
-        values = np.power(0.75, distance)
     elif policy == "exp_050":
         distance = np.arange(n - 1, -1, -1, dtype=float)
         values = np.power(0.50, distance)
@@ -509,6 +523,7 @@ def score_split(
 def horizon_experiment(store: pd.DataFrame, horizon: str) -> dict[str, Any]:
     candidates, groups, protected = candidate_set(store, horizon)
 
+    # Stage 1 selection sees development only.
     development = score_split(
         store,
         horizon,
@@ -518,6 +533,40 @@ def horizon_experiment(store: pd.DataFrame, horizon: str) -> dict[str, Any]:
         candidates,
         groups,
     )
+    candidate_order = {candidate.id: index for index, candidate in enumerate(candidates)}
+    development_rows = [
+        {
+            "candidate_id": candidate.id,
+            "mae": float(
+                development["candidates"][candidate.id]["scorecard"]["candidate"]["mae"]
+            ),
+            "mae_improvement_vs_incumbent": float(
+                development["candidates"][candidate.id]["scorecard"]["mae_improvement"]
+            ),
+        }
+        for candidate in candidates
+    ]
+    best_mae = min(item["mae"] for item in development_rows)
+    tie_ids = [
+        item["candidate_id"]
+        for item in development_rows
+        if np.isclose(item["mae"], best_mae, rtol=0.0, atol=DEVELOPMENT_TIE_ATOL)
+    ]
+    selected_id = min(tie_ids, key=lambda cid: candidate_order[cid])
+    development_ranking = sorted(
+        development_rows,
+        key=lambda item: (item["mae"], candidate_order[item["candidate_id"]]),
+    )
+    selected_candidate = next(candidate for candidate in candidates if candidate.id == selected_id)
+    incumbent_candidate = candidates[0]
+
+    # Holdouts are evaluated only for the development-selected candidate.
+    # This avoids using reference holdouts as an informal tournament.
+    holdout_candidates = (
+        [incumbent_candidate]
+        if selected_id == "incumbent"
+        else [incumbent_candidate, selected_candidate]
+    )
     holdout_results = {}
     for season, train in HOLDOUTS:
         holdout_results[season] = score_split(
@@ -526,26 +575,9 @@ def horizon_experiment(store: pd.DataFrame, horizon: str) -> dict[str, Any]:
             train,
             season,
             "holdout",
-            candidates,
+            holdout_candidates,
             groups,
         )
-
-    development_ranking = sorted(
-        (
-            {
-                "candidate_id": candidate.id,
-                "mae": float(
-                    development["candidates"][candidate.id]["scorecard"]["candidate"]["mae"]
-                ),
-                "mae_improvement_vs_incumbent": float(
-                    development["candidates"][candidate.id]["scorecard"]["mae_improvement"]
-                ),
-            }
-            for candidate in candidates
-        ),
-        key=lambda item: (item["mae"], item["candidate_id"]),
-    )
-    selected_id = development_ranking[0]["candidate_id"]
 
     holdout_summary = []
     both_improve = True
@@ -560,7 +592,14 @@ def horizon_experiment(store: pd.DataFrame, horizon: str) -> dict[str, Any]:
             "selected_candidate_mae": float(score["candidate"]["mae"]),
             "mae_improvement": improvement,
             "worst_event_degradation": float(score["worst_event_degradation"]),
+            "worst_event": score["worst_event"],
             "event_improvement_rate": float(score["event_improvement_rate"]),
+            "candidate_median_ae": float(score["candidate"]["median_ae"]),
+            "incumbent_median_ae": float(score["incumbent"]["median_ae"]),
+            "candidate_p90_ae": float(score["candidate"]["p90_ae"]),
+            "incumbent_p90_ae": float(score["incumbent"]["p90_ae"]),
+            "candidate_bias": float(score["candidate"]["bias"]),
+            "incumbent_bias": float(score["incumbent"]["bias"]),
         })
 
     mean_incumbent = float(np.mean([item["incumbent_mae"] for item in holdout_summary]))
@@ -570,11 +609,11 @@ def horizon_experiment(store: pd.DataFrame, horizon: str) -> dict[str, Any]:
     if selected_id == "incumbent":
         signal = "INCUMBENT_SELECTED_ON_DEVELOPMENT"
     elif both_improve and mean_improvement > 0:
-        signal = "PROMISING_CONSISTENT_HOLDOUT_IMPROVEMENT"
+        signal = "POSITIVE_BOTH_REFERENCE_HOLDOUTS"
     elif mean_improvement > 0:
-        signal = "MIXED_BUT_POSITIVE_MEAN"
+        signal = "POSITIVE_MEAN_MIXED_REFERENCE_HOLDOUTS"
     else:
-        signal = "NOT_PROVEN"
+        signal = "NOT_PROVEN_ON_REFERENCE_HOLDOUTS"
 
     return {
         "horizon": horizon,
@@ -589,7 +628,14 @@ def horizon_experiment(store: pd.DataFrame, horizon: str) -> dict[str, Any]:
         "candidates": [asdict(candidate) for candidate in candidates],
         "development": development,
         "development_ranking": development_ranking,
+        "development_best_mae": best_mae,
+        "development_tie_ids": tie_ids,
+        "selection_tie_break_rule": (
+            "within 1e-9 MAE choose earliest predeclared candidate order; "
+            "incumbent is first, then ablations, recency, model-family challengers"
+        ),
         "selected_candidate_id": selected_id,
+        "holdout_policy": "score only incumbent plus development-selected candidate",
         "holdouts": holdout_results,
         "selected_holdout_summary": holdout_summary,
         "mean_holdout_incumbent_mae": mean_incumbent,
