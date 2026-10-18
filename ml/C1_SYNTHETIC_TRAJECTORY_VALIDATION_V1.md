@@ -1,13 +1,47 @@
 # Beyond Ticketing — C1 Synthetic Trajectory Validation v1
 
 Last updated: **2026-10-18**  
-Status: **EXPERIMENTAL VALIDATION**
+Status: **COMPLETED / NOT PROVEN FOR PROMOTION**
 
 This experiment belongs to:
 
 **Walidacja obecnego modelu — najpierw sprawdzić, co naprawdę mamy.**
 
 It tests whether train-only synthetic trajectory augmentation helps the current C1 v2 live expert generalise better to real unseen events.
+
+Canonical result:
+
+`ml/results/C1_SYNTHETIC_TRAJECTORY_VALIDATION_V1_2026-10-18.md`
+
+## Result in one sentence
+
+Synthetic augmentation improved LOEO on real held-out events, but did **not** establish reliable chronological generalisation; the current live expert still loses badly to Structural Prior on the four walk-forward folds.
+
+## Main numbers
+
+### Leave-One-Event-Out — 9 real events
+
+| Training mode | Structural Prior MAE | Live window MAE | Live latest-row MAE |
+|---|---:|---:|---:|
+| `real_only` | 3,968.7 | 2,929.3 | 2,757.0 |
+| `conservative_synthetic` | 3,968.7 | 2,813.4 | **2,582.1** |
+| `stress_synthetic` | 3,968.7 | **2,742.4** | 2,582.3 |
+
+### Chronological walk-forward — 4 real later events
+
+| Training mode | Structural Prior MAE | Live window MAE | Live latest-row MAE |
+|---|---:|---:|---:|
+| `real_only` | **1,711.0** | 4,499.9 | 4,455.0 |
+| `conservative_synthetic` | **1,711.0** | 4,550.5 | 4,465.3 |
+| `stress_synthetic` | **1,711.0** | **4,383.3** | **4,332.6** |
+
+Decision:
+
+`conservative_augmentation_signal = NOT_PROVEN`
+
+`promotion_allowed = false`
+
+Frozen C1 v8 and production are unchanged.
 
 ## What this is
 
@@ -68,75 +102,34 @@ A synthetic row remains part of its real source training event and does not incr
 
 ## Weighting
 
-Real observations retain most of the training weight.
+For synthetic profiles:
 
-For synthetic profiles the current experiment assigns:
+- real rows retain **65% of each event's total training weight**;
+- synthetic rows combined receive **35%**.
 
-- real rows: **65% of each event's total training weight**;
-- synthetic rows combined: **35%**.
-
-Each real event still contributes equal total event weight, regardless of how many real/synthetic rows it has.
+Each real event still contributes equal total event weight regardless of synthetic row count.
 
 ## Profiles
 
 ### `real_only`
 
-No augmentation. This should reproduce the current v2-style baseline as closely as possible.
+No augmentation. Reproduces the current v2-style baseline.
 
 ### `conservative_synthetic`
 
 Small, bounded perturbations intended to represent plausible trajectory observation variation.
 
-This is the only augmentation profile that may become a serious challenger if it improves real held-out performance.
+This profile improved LOEO but did not improve chronological walk-forward, so it is **not proven**.
 
 ### `stress_synthetic`
 
 Larger perturbations used as a robustness/stress test.
 
-A good result here is interesting, but this profile is not intended to be promoted directly.
-
-## Validation
-
-### 1. Leave-One-Event-Out
-
-Every completed event becomes the real held-out event once.
-
-Primary outputs:
-
-- window MAE;
-- latest-row MAE;
-- improvement rate vs Structural Prior;
-- worst-event degradation;
-- delta vs `real_only`.
-
-### 2. Chronological walk-forward
-
-Events are ordered by kickoff.
-
-For each later event:
-
-- training uses only earlier completed events;
-- test uses the next real event;
-- no future event/outcome can influence training or augmentation.
-
-This is a stricter approximation of how the model would have behaved over time.
-
-## Interpretation
-
-Synthetic augmentation is considered **promising**, not proven, only if conservative augmentation improves the real-only model on real held-out events in both:
-
-- LOEO;
-- chronological walk-forward.
-
-Even then:
-
-- frozen C1 v8 is not changed automatically;
-- production remains `live_adjustment = 0`;
-- prospective validation is still required.
+It improved both LOEO and walk-forward relative to `real_only`, but the absolute walk-forward live error remained far worse than Structural Prior. It is therefore not promotable evidence.
 
 ## Why this is not perpetuum mobile
 
-Synthetic variants cannot create new information about real future outcomes. They can only help the model use the limited real information more robustly.
+Synthetic variants cannot create new information about real future outcomes. They can only help the model use limited real information more robustly.
 
 Success is measured exclusively on real events that were not used to create the synthetic training variants.
 
@@ -150,4 +143,16 @@ Workflow:
 
 `.github/workflows/c1-synthetic-trajectory-validation-v1.yml`
 
-The workflow uses the existing main-only C1 training export and uploads the full JSON evidence artifact.
+Successful evidence run:
+
+`39139461760`
+
+Artifact:
+
+`c1-synthetic-trajectory-validation-v1-39139461760`
+
+## Next validation step
+
+Do not move from this result directly to promotion or claim that synthetic data solved C1.
+
+Within **Walidacja obecnego modelu**, diagnose why chronological walk-forward produces ~4.4–4.5k live MAE vs ~1.7k Structural Prior MAE on four later events, and identify whether the failure is caused by domain/club shift, sparse history, coverage differences or unstable trajectory features.
