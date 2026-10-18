@@ -20,18 +20,18 @@ Before doing Beyond forecasting, ML, dashboard, Growth or recommendation work, r
 
 ## Critical product direction
 
-Beyond is a **live demand decision system**, not primarily a campaign tool or a single attendance model.
+Beyond is a **live demand decision system**.
 
-For model development, keep these exact workstreams and names:
+Use these exact model-development workstreams:
 
 - **a) Dane historyczne — dopracować, nie przebudowywać**;
 - **b) Aktualny sezon — wzmocnić**;
 - **c) Context meczu — rozbudować**;
 - **d) Live demand — najmocniej rozwinąć**.
 
-Before further development, first do:
+Development order:
 
-- **Walidacja obecnego modelu — najpierw sprawdzić, co naprawdę mamy.**
+`Walidacja -> b -> c -> d -> tuning a`
 
 Public seat-map inventory is a **demand proxy, not confirmed paid sales**.
 
@@ -43,7 +43,7 @@ Production remains:
 
 `live_adjustment = 0`
 
-Historical benchmark reference:
+Historical reference:
 
 | Horizon | 2024/25 MAE | 2025/26 MAE |
 |---|---:|---:|
@@ -52,8 +52,6 @@ Historical benchmark reference:
 | T-7 | 1,777.7 | 1,802.3 |
 | T-3 | 1,661.7 | 1,775.1 |
 | T-1 | 1,651.7 | 1,742.8 |
-
-These are historical reference results, not prospective 2026/27 accuracy.
 
 ## C1 v8 — frozen prospective shadow
 
@@ -79,44 +77,56 @@ Training events:
 
 Do not retune or silently retrain this package during prospective validation.
 
-### Development evidence
-
-- v2 live expert LOEO: **2,929.3 MAE** vs Prior **3,968.7**;
-- non-deployable Prior/Live oracle: **1,867.9 MAE**;
-- v8: **2,713.3 window MAE** and **1,998.1 latest-row MAE** in development replay.
-
-These values are development evidence only.
-
-### Synthetic trajectory validation — completed
+## Walidacja obecnego modelu — current historical result
 
 Canonical evidence:
 
-`ml/results/C1_SYNTHETIC_TRAJECTORY_VALIDATION_V1_2026-10-18.md`
+- `ml/results/C1_SYNTHETIC_TRAJECTORY_VALIDATION_V1_2026-10-18.md`;
+- `ml/results/C1_WALK_FORWARD_POLICY_VALIDATION_V1_2026-10-18.md`.
+
+### Synthetic trajectory augmentation
+
+Synthetic variants are train-only. Test events remain 100% real.
 
 LOEO on 9 real held-out events:
 
-- real-only live: **2,929.3 MAE**;
-- conservative synthetic: **2,813.4 MAE**;
-- stress synthetic: **2,742.4 MAE**.
+- Prior: **3,968.7 MAE**;
+- real-only Live: **2,929.3**;
+- conservative synthetic Live: **2,261.5**;
+- stress synthetic Live: **2,498.8**.
 
 Chronological walk-forward on 4 later real events:
 
-- Structural Prior: **1,711.0 MAE**;
-- real-only live: **4,499.9 MAE**;
-- conservative synthetic: **4,550.5 MAE**;
-- stress synthetic: **4,383.3 MAE**.
+- Prior: **452.8 MAE**;
+- real-only Live: **2,103.7**;
+- conservative synthetic Live: **1,939.5**;
+- stress synthetic Live: **1,876.7**.
 
-Conclusion:
+Synthetic augmentation is therefore:
 
-- synthetic augmentation helps LOEO;
-- conservative synthetic is `NOT_PROVEN` under walk-forward;
-- stress synthetic helps vs real-only walk-forward but live still loses badly to Structural Prior;
-- no promotion;
-- next validation work is to diagnose chronological failure and determine when live must be ignored.
+`PROMISING_FOR_FURTHER_VALIDATION`
+
+It improves raw Live on real held-out events in both validation modes, but it does not make raw Live universally safer than Structural Prior.
+
+### Frozen v8 policy — chronological safety check
+
+The already-fixed v8 policy was applied without any threshold change/refit.
+
+Real-only result:
+
+- Prior MAE: **452.8**;
+- raw Live MAE: **2,103.7**;
+- final v8 policy MAE: **452.8**;
+- v8 selected PRIOR in **16 / 16 rows**;
+- worst degradation vs Prior: **0.0**.
+
+Meaning:
+
+> On the current four chronological forward events, v8 correctly rejected unsafe Live and preserved Structural Prior exactly.
+
+This is retrospective evidence only. It does not replace prospective validation.
 
 ### Current prospective evidence — 2026-10-18
-
-Runtime state verified in production:
 
 - prediction rows: **31**;
 - prospective events: **5**;
@@ -124,52 +134,13 @@ Runtime state verified in production:
 - validation state: `AWAITING_FIRST_PROSPECTIVE_SCORE`;
 - production live adjustment: **0**.
 
-Therefore there is **no confirmed prospective live MAE yet**.
+There is still **no confirmed prospective live MAE**.
 
-## E0 sector / price-area decision support — implemented
+## Current development state
 
-Implemented capabilities include:
+Historical validation on the currently available live dataset is complete enough to continue the plan while prospective evidence accumulates automatically.
 
-- sector trajectory / relative status;
-- release-aware public-inventory interpretation;
-- bounded no-action sector projection;
-- real Roboticket price capture where available;
-- sector -> price-area mapping;
-- assumption-based `-10% / -5% / HOLD / +5% / +10%` scenario logic;
-- guarded `DECREASE / HOLD / INCREASE / MONITOR` recommendation;
-- mixed-price sectors split into real price areas rather than a fake weighted sector price;
-- RLS-safe dashboard caches and UI;
-- `auto_price_change_allowed = false`.
-
-Do not claim learned elasticity or causal pricing uplift. E0 remains assumption-based decision support.
-
-Club decision/execution workflow is intentionally deferred for now. If product demos simulate an intervention, label it explicitly as **simulated**, never as observed club uplift.
-
-## Active model-development plan
-
-Canonical plan:
-
-`ml/DEMAND_FORECAST_DEVELOPMENT_PLAN_V2.md`
-
-### Walidacja obecnego modelu — najpierw sprawdzić, co naprawdę mamy
-
-Completed:
-
-- LOEO on 9 real events;
-- chronological walk-forward on 4 later real events;
-- train-only synthetic trajectory experiment.
-
-Current finding:
-
-> LOEO is promising, but chronological generalisation of the current live expert is poor.
-
-Next:
-
-- identify the failing forward events and why they fail;
-- inspect club/domain shift, sparse history, coverage/phase differences and unstable live features;
-- determine when Structural Prior should be kept instead of trusting Live/C1.
-
-### b) Aktualny sezon — wzmocnić
+### b) Aktualny sezon — wzmocnić — NEXT ACTIVE DEVELOPMENT
 
 - dodać wyraźny current season adjustment;
 - mocniej brać pod uwagę ostatnie mecze domowe;
@@ -189,32 +160,44 @@ Next:
 - inventory od pierwszego momentu sprzedaży;
 - velocity / acceleration / sector / price-area movement;
 - aktualizacja forecastu po każdym znaczącym snapshotcie;
-- T-30/T-14/T-7/T-3/T-1 jako checkpointy do mierzenia jakości, nie jedyne momenty pracy modelu.
+- checkpointy T-30/T-14/T-7/T-3/T-1 głównie do pomiaru jakości.
 
 ### a) Dane historyczne — dopracować, nie przebudowywać
 
 - utrzymać Structural Prior;
-- sprawdzić feature contribution;
-- usunąć słabe/noisy features;
+- feature contribution;
+- usunąć noisy features;
 - lepiej ważyć nowsze sezony.
 
-## Kolejność developmentu
+## E0 sector / price-area decision support — implemented
 
-`Walidacja -> b -> c -> d -> tuning a`
+Implemented:
+
+- sector trajectory / status;
+- bounded no-action sector projection;
+- Roboticket price capture;
+- price-area mapping / mixed-price split;
+- assumption-based scenarios;
+- guarded recommendations;
+- RLS-safe dashboard cache/UI.
+
+`auto_price_change_allowed = false`
+
+No learned elasticity or causal pricing uplift is claimed.
+
+Club decision/execution workflow remains deferred. Simulated intervention uplift must be labeled simulated.
 
 ## Non-negotiable forecasting rules
 
 - no future leakage;
 - event is the independent evaluation unit;
-- multiple snapshots from one event do not count as multiple matches;
-- no random snapshot-row train/test split across the same events;
-- every feature must exist as-of the forecast timestamp;
-- synthetic variants are train-only and never independent evidence;
-- never present the oracle as deployable;
-- never call development replay prospective evidence;
-- C1 v8 stays frozen during its prospective evidence collection;
+- no random snapshot-row split across the same events;
+- every feature must exist as-of forecast time;
+- synthetic variants are train-only and never new independent evidence;
+- frozen v8 is not retuned on the same nine events;
+- replay/walk-forward is not prospective evidence;
 - production remains `live_adjustment = 0` until explicit promotion.
 
 ## One-line cold-start instruction
 
-> **Najpierw dokończ Walidację obecnego modelu: synthetic augmentation pomogło LOEO, ale walk-forward live nadal przegrywa ze Structural Prior. Wyjaśnij ten failure zanim przejdziesz do b) Aktualny sezon. Potem: b -> c -> d -> tuning a.**
+> **Walidacja historyczna obecnego modelu jest wykonana: syntetyka poprawia raw Live, a frozen v8 odcina unsafe Live na 4 forward eventach. Nie retunuj v8. Następny aktywny development: b) Aktualny sezon — wzmocnić; potem c -> d -> tuning a.**
