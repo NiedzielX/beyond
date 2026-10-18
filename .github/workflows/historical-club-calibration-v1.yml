@@ -73,10 +73,11 @@ jobs:
 
       - name: Print concise scorecard
         run: |
-          jq '{experiment,policy,promotion_allowed,horizons:[.horizons[]|{horizon,base_model,signal,improvements:evaluation_mae_improvements,mean_improvement:mean_evaluation_mae_improvement}]}' \
+          jq '{experiment,policy,promotion_allowed,horizons:[.horizons[]|{horizon:.horizon,base_model:.base_model,signal:.signal,improvements:.evaluation_mae_improvements,mean_improvement:.mean_evaluation_mae_improvement}]}' \
             /tmp/historical-club-calibration-v1.json
 
       - name: Upload evidence
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: historical-club-calibration-v1-${{ github.run_id }}
