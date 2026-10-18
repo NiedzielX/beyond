@@ -58,7 +58,11 @@ Keep Structural Prior, test feature contribution, remove noisy features and weig
 
 **CZĘŚCIOWO — NEXT ACTIVE DEVELOPMENT.**
 
-Current-season evidence exists, but the next model-quality task is an explicit current season adjustment that reacts faster to recent home-match reality.
+Current-season evidence exists, and an explicit governed Current Season Adjustment v1 challenger is implemented. It reacts to recent home-match reality with shrinkage and bounded adjustments, but remains experimental until its historical reference evaluation is completed and reviewed.
+
+Canonical design:
+
+`ml/CURRENT_SEASON_ADJUSTMENT_V1.md`
 
 ## c) Context meczu — rozbudować
 
@@ -95,7 +99,8 @@ These remain development evidence only.
 Canonical evidence:
 
 - `ml/results/C1_SYNTHETIC_TRAJECTORY_VALIDATION_V1_2026-10-18.md`;
-- `ml/results/C1_WALK_FORWARD_POLICY_VALIDATION_V1_2026-10-18.md`.
+- `ml/results/C1_WALK_FORWARD_POLICY_VALIDATION_V1_2026-10-18.md`;
+- `ml/results/C1_FORWARD_EVENT_DIAGNOSTIC_V1_2026-10-18.md`.
 
 ### Synthetic trajectory augmentation — LOEO
 
@@ -145,6 +150,25 @@ Conclusion:
 
 This is useful retrospective safety evidence, not prospective validation.
 
+### Raw-Live forward-event diagnostic
+
+A separate retrospective diagnostic then tested full prediction paths, feature drift and leave-one-feature-group-out sensitivity on the same four folds.
+
+Result:
+
+- latest raw-Live error direction is mixed: **3 underpredictions / 1 overprediction**;
+- no compact feature group fixes the four events consistently;
+- removing `release_coverage` changes aggregate window MAE only from **2,103.7 -> 2,077.4** and improves only **1 / 4** event windows;
+- removing `motion_velocity` improves aggregate latest-row MAE to **1,852.5**, but its window effect is nearly neutral and event-specific;
+- removing `inventory_level` is strongly harmful in aggregate (**2,759.0 window MAE**);
+- the strongest local diagnostic is Legia Warszawa – Wisła Kraków, where removing `motion_velocity` improves window MAE by ~**857** and removing `release_coverage` by ~**717**.
+
+Conclusion:
+
+> Current raw-Live failure is better described as heterogeneous small-sample generalisation / feature-state distribution shift than as one globally broken feature group or a simple one-direction calibration error.
+
+Do not retune frozen v8 from these four events. Continue prospective evidence collection and use this diagnostic only to inform future challenger design.
+
 ## Frozen C1 v8 prospective package — LIVE
 
 Package:
@@ -181,11 +205,13 @@ Therefore there is **no confirmed prospective live MAE yet**.
 
 ## Current development decision
 
-Historical validation on the currently available live events is now sufficient to move to the next workstream while prospective C1 evidence continues automatically.
+Historical validation and forward-event diagnosis on the currently available live events are sufficient to stop tuning frozen v8 and move to the next workstream while prospective C1 evidence continues automatically.
 
 Next active workstream:
 
 **b) Aktualny sezon — wzmocnić.**
+
+Current Season Adjustment v1 is implemented as an experimental challenger; evaluate it under its frozen development/reference-season protocol before considering any promotion.
 
 Synthetic trajectory augmentation remains a train-side challenger/regularisation technique for future C1 packages. It does not modify frozen v8 automatically.
 
