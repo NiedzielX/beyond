@@ -7,6 +7,8 @@ from ml.pre_live_v2_historical_freeze_v1 import (
     EXPECTED_FINAL_MAE,
     FREEZE_ID,
     HORIZONS,
+    MANIFEST_FLOAT_DECIMALS,
+    canonical_metric,
 )
 
 
@@ -16,6 +18,11 @@ class PreLiveV2HistoricalFreezeV1Test(unittest.TestCase):
             FREEZE_ID,
             "pre-live-v2-historical-candidate-2026-10-18-v1",
         )
+
+    def test_manifest_metrics_are_canonicalized_to_nine_decimals(self) -> None:
+        self.assertEqual(MANIFEST_FLOAT_DECIMALS, 9)
+        self.assertEqual(canonical_metric(2157.1473613912335), 2157.147361391)
+        self.assertEqual(canonical_metric(1889.3672272292854), 1889.367227229)
 
     def test_all_five_horizons_are_frozen(self) -> None:
         self.assertEqual(HORIZONS, ["T-30", "T-14", "T-7", "T-3", "T-1"])

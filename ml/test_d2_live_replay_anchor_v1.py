@@ -14,11 +14,14 @@ from ml.d2_live_replay_anchor_v1 import (
     EXPECTED_C1_EVENT_IDS,
     EXPECTED_C1_LIVE_ROWS,
     EXPECTED_FREEZE_ID,
-    EXPECTED_FREEZE_MANIFEST_SHA256,
     canonical_club_key,
-    load_and_verify_freeze_manifest,
     load_capacity_audit,
-    sha256_file,
+)
+from ml.run_d2_live_replay_anchor_v1 import (
+    FREEZE_SEMANTIC_SHA256,
+    complete_sporting_state,
+    load_and_verify_freeze_manifest_semantic,
+    semantic_json_sha256,
 )
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -28,10 +31,11 @@ CAPACITY_AUDIT = ROOT / "ml/artifacts/d2_stage0_capacity_audit_v1.json"
 
 
 class D2LiveReplayAnchorV1Test(unittest.TestCase):
-    def test_frozen_pre_live_manifest_is_pinned(self) -> None:
-        manifest = load_and_verify_freeze_manifest(FREEZE_MANIFEST)
+    def test_frozen_pre_live_manifest_is_semantically_pinned(self) -> None:
+        manifest = load_and_verify_freeze_manifest_semantic(FREEZE_MANIFEST)
         self.assertEqual(manifest["freeze_id"], EXPECTED_FREEZE_ID)
-        self.assertEqual(sha256_file(FREEZE_MANIFEST), EXPECTED_FREEZE_MANIFEST_SHA256)
+        self.assertEqual(semantic_json_sha256(manifest), FREEZE_SEMANTIC_SHA256)
+        self.assertEqual(int(manifest["manifest_float_decimals"]), 9)
         t1 = next(row for row in manifest["horizons"] if row["horizon"] == "T-1")
         self.assertEqual(
             t1["contract"]["current_season_regime"],
@@ -70,6 +74,86 @@ class D2LiveReplayAnchorV1Test(unittest.TestCase):
         self.assertEqual(canonical_club_key("slaskwroclaw"), "slask_wroclaw")
         self.assertEqual(canonical_club_key("pogonszczecin"), "pogonszczecin")
 
+    def test_early_season_sporting_state_includes_zero_match_clubs(self) -> None:
+        aliases = {
+            "Alpha FC": "alpha",
+            "Beta FC": "beta",
+            "Gamma FC": "gamma",
+            "Delta FC": "delta",
+        }
+        matches = [
+            {
+                "season": "2026-2027",
+                "event_date": "2026-07-20",
+                "home_team": "Alpha FC",
+                "away_team": "Beta FC",
+                "home_score": None,
+                "away_score": None,
+                "completed": False,
+            },
+            {
+                "season": "2026-2027",
+                "event_date": "2026-07-21",
+                "home_team": "Gamma FC",
+                "away_team": "Delta FC",
+                "home_score": None,
+                "away_score": None,
+                "completed": False,
+            },
+        ]
+        state = complete_sporting_state(
+            matches,
+            aliases,
+            as_of_at=pd.Timestamp("2026-07-19T12:00:00Z"),
+            source_season="2026/2027",
+        )
+        self.assertEqual(set(state["club_key"]), {"alpha", "beta", "gamma", "delta"})
+        self.assertTrue((state["matches_played"] == 0).all())
+        self.assertTrue(state["ppg"].isna().all())
+        self.assertTrue(state["last_kickoff_at"].isna().all())
+        positions = dict(zip(state["club_key"], state["position"]))
+        self.assertEqual(positions, {"alpha": 1, "beta": 2, "delta": 3, "gamma": 4})
+
+    def test_sporting_zero_state_updates_after_completed_fixture(self) -> None:
+        aliases = {
+            "Alpha FC": "alpha",
+            "Beta FC": "beta",
+            "Gamma FC": "gamma",
+            "Delta FC": "delta",
+        }
+        matches = [
+            {
+                "season": "2026-2027",
+                "event_date": "2026-07-10",
+                "home_team": "Alpha FC",
+                "away_team": "Beta FC",
+                "home_score": 2,
+                "away_score": 0,
+                "completed": True,
+            },
+            {
+                "season": "2026-2027",
+                "event_date": "2026-07-20",
+                "home_team": "Gamma FC",
+                "away_team": "Delta FC",
+                "home_score": None,
+                "away_score": None,
+                "completed": False,
+            },
+        ]
+        state = complete_sporting_state(
+            matches,
+            aliases,
+            as_of_at=pd.Timestamp("2026-07-19T12:00:00Z"),
+            source_season="2026/2027",
+        ).set_index("club_key")
+        self.assertEqual(int(state.loc["alpha", "matches_played"]), 1)
+        self.assertEqual(float(state.loc["alpha", "points"]), 3.0)
+        self.assertEqual(int(state.loc["alpha", "position"]), 1)
+        self.assertEqual(int(state.loc["beta", "matches_played"]), 1)
+        self.assertEqual(int(state.loc["gamma", "matches_played"]), 0)
+        self.assertEqual(int(state.loc["delta", "matches_played"]), 0)
+
     def test_frozen_t1_b2_activates_only_at_three_prior_home_matches(self) -> None:
         rows = pd.DataFrame({
             "match_key": ["m1", "m2", "m3", "m4"],
@@ -98,7 +182,6 @@ class D2LiveReplayAnchorV1Test(unittest.TestCase):
         self.assertEqual(state["regime_prior_home_matches"].astype(int).tolist(), [0, 1, 2, 3])
         np.testing.assert_allclose(prediction[:3], base[:3], rtol=0.0, atol=0.0)
         self.assertGreater(float(prediction[3]), float(base[3]))
-        # Frozen b2 cap is +/-5% of capacity = 1,000 seats here.
         self.assertLessEqual(abs(float(prediction[3] - base[3])), 1000.0 + 1e-12)
 
 

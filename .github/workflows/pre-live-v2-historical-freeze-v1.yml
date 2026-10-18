@@ -88,36 +88,34 @@ jobs:
             --repo-root . \
             --output /tmp/pre-live-v2-historical-candidate-manifest.json
 
-      - name: Print generated manifest SHA256
-        run: sha256sum /tmp/pre-live-v2-historical-candidate-manifest.json
+      - name: Verify committed manifest semantics and canonical digest
+        run: |
+          python - <<'PY'
+          import hashlib
+          import json
+          from pathlib import Path
 
-      - name: Upload generated freeze manifest before seal check
+          expected_digest = "da4fe301516ff1ba298b869e7f7ac6d3d316515b2ad0a02ed986bf9a1b8d9c7b"
+          committed = json.loads(Path("ml/artifacts/pre_live_v2_historical_candidate_v1/manifest.json").read_text())
+          generated = json.loads(Path("/tmp/pre-live-v2-historical-candidate-manifest.json").read_text())
+          if committed != generated:
+              raise SystemExit("Committed freeze manifest is not semantically identical to generated manifest")
+          canonical = json.dumps(generated, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
+          digest = hashlib.sha256(canonical.encode("utf-8")).hexdigest()
+          print(f"canonical_semantic_sha256={digest}")
+          if digest != expected_digest:
+              raise SystemExit(f"Freeze semantic digest drift: {digest} != {expected_digest}")
+          PY
+
+      - name: Print frozen contract
+        run: |
+          jq '{freeze_id,status,production_change,live_adjustment,manifest_float_decimals,horizons:[.horizons[]|{horizon,contract,reference_2024_2025_mean_mae}]}' \
+            /tmp/pre-live-v2-historical-candidate-manifest.json
+
+      - name: Upload canonical generated manifest
         uses: actions/upload-artifact@v4
         with:
           name: pre-live-v2-historical-freeze-v1-${{ github.run_id }}
           path: /tmp/pre-live-v2-historical-candidate-manifest.json
           if-no-files-found: error
           retention-days: 90
-
-      - name: Verify committed freeze manifest semantics and canonical SHA
-        run: |
-          python - <<'PY'
-          import json
-          from pathlib import Path
-
-          committed = json.loads(
-              Path("ml/artifacts/pre_live_v2_historical_candidate_v1/manifest.json").read_text()
-          )
-          generated = json.loads(
-              Path("/tmp/pre-live-v2-historical-candidate-manifest.json").read_text()
-          )
-          if committed != generated:
-              raise SystemExit("Committed freeze manifest is not semantically identical to generated manifest")
-          PY
-          test "$(sha256sum /tmp/pre-live-v2-historical-candidate-manifest.json | awk '{print $1}')" = \
-            "44c911d1ac8b1bf6870ed31e1a636b9b8374d8c8da2d57ba3b4fb5b4aaba4d3c"
-
-      - name: Print frozen contract
-        run: |
-          jq '{freeze_id,status,production_change,live_adjustment,horizons:[.horizons[]|{horizon,contract,reference_2024_2025_mean_mae}]}' \
-            /tmp/pre-live-v2-historical-candidate-manifest.json
