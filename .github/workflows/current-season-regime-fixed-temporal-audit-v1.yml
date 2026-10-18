@@ -1,0 +1,88 @@
+name: Current Season Regime Fixed Temporal Audit v1
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - "ml/current_season_regime_fixed_temporal_audit_v1.py"
+      - "ml/test_current_season_regime_fixed_temporal_audit_v1.py"
+      - "ml/CURRENT_SEASON_REGIME_FIXED_TEMPORAL_AUDIT_V1.md"
+      - "ml/current_season_residual_regime_v1.py"
+      - "ml/t7_robust_estimator_v1.py"
+      - "ml/pre_live_baseline_optimization_v1.py"
+      - "ml/demand_engine/structural_prior_runtime.py"
+      - "ml/features/structural_prior_feature_store_v1.py"
+      - "ml/artifacts/structural_prior_runtime_v1/historical_runtime_v1.csv.gz"
+      - "ml/artifacts/structural_prior_runtime_v1/manifest.json"
+      - ".github/workflows/current-season-regime-fixed-temporal-audit-v1.yml"
+  push:
+    branches:
+      - main
+    paths:
+      - "ml/current_season_regime_fixed_temporal_audit_v1.py"
+      - "ml/test_current_season_regime_fixed_temporal_audit_v1.py"
+      - "ml/CURRENT_SEASON_REGIME_FIXED_TEMPORAL_AUDIT_V1.md"
+      - "ml/current_season_residual_regime_v1.py"
+      - "ml/t7_robust_estimator_v1.py"
+      - "ml/pre_live_baseline_optimization_v1.py"
+      - "ml/demand_engine/structural_prior_runtime.py"
+      - "ml/features/structural_prior_feature_store_v1.py"
+      - "ml/artifacts/structural_prior_runtime_v1/historical_runtime_v1.csv.gz"
+      - "ml/artifacts/structural_prior_runtime_v1/manifest.json"
+      - ".github/workflows/current-season-regime-fixed-temporal-audit-v1.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: current-season-regime-fixed-temporal-audit-v1-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  validate-and-audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install pinned runtime
+        run: |
+          python -m pip install --upgrade pip
+          pip install numpy==2.3.5 pandas==2.2.3 scikit-learn==1.8.0 joblib==1.5.3
+
+      - name: Compile
+        run: |
+          python -m py_compile ml/current_season_regime_fixed_temporal_audit_v1.py
+          python -m py_compile ml/test_current_season_regime_fixed_temporal_audit_v1.py
+          python -m py_compile ml/current_season_residual_regime_v1.py
+          python -m py_compile ml/t7_robust_estimator_v1.py
+
+      - name: Unit checks
+        run: python -m ml.test_current_season_regime_fixed_temporal_audit_v1
+
+      - name: Run fixed temporal audit
+        run: |
+          python -m ml.current_season_regime_fixed_temporal_audit_v1 \
+            --historical-runtime ml/artifacts/structural_prior_runtime_v1/historical_runtime_v1.csv.gz \
+            --manifest ml/artifacts/structural_prior_runtime_v1/manifest.json \
+            --output /tmp/current-season-regime-fixed-temporal-audit-v1.json
+
+      - name: Print audit summary
+        run: |
+          jq '{experiment,status,overall_pass,promotion_allowed,horizons:[.horizons[]|{horizon,fixed_candidate_id,all_four_folds_improve,mean_mae_improvement,minimum_fold_mae_improvement,max_worst_event_degradation,mean_active_share,signal}]}' \
+            /tmp/current-season-regime-fixed-temporal-audit-v1.json
+
+      - name: Upload evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: current-season-regime-fixed-temporal-audit-v1-${{ github.run_id }}
+          path: /tmp/current-season-regime-fixed-temporal-audit-v1.json
+          if-no-files-found: error
+          retention-days: 30
