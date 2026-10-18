@@ -88,6 +88,17 @@ jobs:
             --repo-root . \
             --output /tmp/pre-live-v2-historical-candidate-manifest.json
 
+      - name: Print generated manifest SHA256
+        run: sha256sum /tmp/pre-live-v2-historical-candidate-manifest.json
+
+      - name: Upload generated freeze manifest before seal check
+        uses: actions/upload-artifact@v4
+        with:
+          name: pre-live-v2-historical-freeze-v1-${{ github.run_id }}
+          path: /tmp/pre-live-v2-historical-candidate-manifest.json
+          if-no-files-found: error
+          retention-days: 90
+
       - name: Verify committed freeze manifest semantics and canonical SHA
         run: |
           python - <<'PY'
@@ -110,14 +121,3 @@ jobs:
         run: |
           jq '{freeze_id,status,production_change,live_adjustment,horizons:[.horizons[]|{horizon,contract,reference_2024_2025_mean_mae}]}' \
             /tmp/pre-live-v2-historical-candidate-manifest.json
-
-      - name: Manifest SHA256
-        run: sha256sum /tmp/pre-live-v2-historical-candidate-manifest.json
-
-      - name: Upload freeze manifest
-        uses: actions/upload-artifact@v4
-        with:
-          name: pre-live-v2-historical-freeze-v1-${{ github.run_id }}
-          path: /tmp/pre-live-v2-historical-candidate-manifest.json
-          if-no-files-found: error
-          retention-days: 90
