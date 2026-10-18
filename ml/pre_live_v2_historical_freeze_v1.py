@@ -6,6 +6,11 @@ historical candidate contract after c2 found no incremental historical context
 uplift. It hard-asserts exact final MAE for all 5 horizons across the four
 rolling seasons and emits a manifest with input + source-code hashes.
 
+Manifest floating metrics are canonicalized to 9 decimal places *after* raw
+reproduction assertions. This keeps the freeze hash stable across harmless
+sub-1e-9 floating representation differences while preserving the exact model
+gate at EXPECTED_ATOL=1e-9.
+
 This is a historical candidate freeze, not a production promotion.
 """
 from __future__ import annotations
@@ -33,6 +38,7 @@ EXPERIMENT = "pre-live-v2-historical-freeze-v1"
 HORIZONS = ["T-30", "T-14", "T-7", "T-3", "T-1"]
 B2_HORIZONS = {"T-7", "T-3", "T-1"}
 EXPECTED_ATOL = 1e-9
+MANIFEST_FLOAT_DECIMALS = 9
 
 EXPECTED_FINAL_MAE = {
     "T-30": {
@@ -117,6 +123,20 @@ def file_sha256(path: Path) -> str:
         for chunk in iter(lambda: handle.read(1024 * 1024), b""):
             digest.update(chunk)
     return digest.hexdigest()
+
+
+def canonical_metric(value: float) -> float:
+    return round(float(value), MANIFEST_FLOAT_DECIMALS)
+
+
+def canonicalize_manifest_floats(value: Any) -> Any:
+    if isinstance(value, float):
+        return canonical_metric(value)
+    if isinstance(value, dict):
+        return {key: canonicalize_manifest_floats(item) for key, item in value.items()}
+    if isinstance(value, list):
+        return [canonicalize_manifest_floats(item) for item in value]
+    return value
 
 
 def verify_mae(horizon: str, season: str, actual: float) -> None:
@@ -205,7 +225,7 @@ def main() -> None:
         for path in EVIDENCE
     }
 
-    manifest = {
+    raw_manifest = {
         "freeze_id": FREEZE_ID,
         "experiment": EXPERIMENT,
         "status": "FROZEN_HISTORICAL_CANDIDATE",
@@ -233,6 +253,7 @@ def main() -> None:
             "scikit_learn": sklearn.__version__,
             "joblib": joblib.__version__,
         },
+        "manifest_float_decimals": MANIFEST_FLOAT_DECIMALS,
         "expected_final_mae": EXPECTED_FINAL_MAE,
         "horizons": horizons,
         "limitations": [
@@ -243,6 +264,7 @@ def main() -> None:
         ],
         "next_workstream": "d2_continuous_live_updater_against_frozen_pre_live_v2",
     }
+    manifest = canonicalize_manifest_floats(raw_manifest)
 
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n")
@@ -250,13 +272,14 @@ def main() -> None:
         "freeze_id": FREEZE_ID,
         "status": manifest["status"],
         "production_change": False,
+        "manifest_float_decimals": MANIFEST_FLOAT_DECIMALS,
         "horizons": [
             {
                 "horizon": row["horizon"],
                 "reference_mean_mae": row["reference_2024_2025_mean_mae"],
                 "contract": row["contract"],
             }
-            for row in horizons
+            for row in manifest["horizons"]
         ],
     }, indent=2, sort_keys=True))
 
