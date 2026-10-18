@@ -81,11 +81,38 @@ Do not retune or silently retrain this package during prospective validation.
 
 ### Development evidence
 
-- v2 live expert: **2,929.3 MAE** vs Prior **3,968.7** on the development set;
+- v2 live expert LOEO: **2,929.3 MAE** vs Prior **3,968.7**;
 - non-deployable Prior/Live oracle: **1,867.9 MAE**;
 - v8: **2,713.3 window MAE** and **1,998.1 latest-row MAE** in development replay.
 
-These values are **development evidence only** because model/policy design used the same small event set.
+These values are development evidence only.
+
+### Synthetic trajectory validation — completed
+
+Canonical evidence:
+
+`ml/results/C1_SYNTHETIC_TRAJECTORY_VALIDATION_V1_2026-10-18.md`
+
+LOEO on 9 real held-out events:
+
+- real-only live: **2,929.3 MAE**;
+- conservative synthetic: **2,813.4 MAE**;
+- stress synthetic: **2,742.4 MAE**.
+
+Chronological walk-forward on 4 later real events:
+
+- Structural Prior: **1,711.0 MAE**;
+- real-only live: **4,499.9 MAE**;
+- conservative synthetic: **4,550.5 MAE**;
+- stress synthetic: **4,383.3 MAE**.
+
+Conclusion:
+
+- synthetic augmentation helps LOEO;
+- conservative synthetic is `NOT_PROVEN` under walk-forward;
+- stress synthetic helps vs real-only walk-forward but live still loses badly to Structural Prior;
+- no promotion;
+- next validation work is to diagnose chronological failure and determine when live must be ignored.
 
 ### Current prospective evidence — 2026-10-18
 
@@ -126,10 +153,21 @@ Canonical plan:
 
 ### Walidacja obecnego modelu — najpierw sprawdzić, co naprawdę mamy
 
-- Leave-One-Event-Out;
-- chronological walk-forward;
-- held-out event must not participate in fitting/tuning;
-- compare Structural Prior vs Live/C1 vs final prediction on identical PIT evidence.
+Completed:
+
+- LOEO on 9 real events;
+- chronological walk-forward on 4 later real events;
+- train-only synthetic trajectory experiment.
+
+Current finding:
+
+> LOEO is promising, but chronological generalisation of the current live expert is poor.
+
+Next:
+
+- identify the failing forward events and why they fail;
+- inspect club/domain shift, sparse history, coverage/phase differences and unstable live features;
+- determine when Structural Prior should be kept instead of trusting Live/C1.
 
 ### b) Aktualny sezon — wzmocnić
 
@@ -171,6 +209,7 @@ Canonical plan:
 - multiple snapshots from one event do not count as multiple matches;
 - no random snapshot-row train/test split across the same events;
 - every feature must exist as-of the forecast timestamp;
+- synthetic variants are train-only and never independent evidence;
 - never present the oracle as deployable;
 - never call development replay prospective evidence;
 - C1 v8 stays frozen during its prospective evidence collection;
@@ -178,4 +217,4 @@ Canonical plan:
 
 ## One-line cold-start instruction
 
-> **Najpierw Walidacja obecnego modelu. Potem: b) Aktualny sezon -> c) Context meczu -> d) Live demand -> a) Dane historyczne. Nie zmieniaj tych nazw na nowe fazy ani techniczne etykiety.**
+> **Najpierw dokończ Walidację obecnego modelu: synthetic augmentation pomogło LOEO, ale walk-forward live nadal przegrywa ze Structural Prior. Wyjaśnij ten failure zanim przejdziesz do b) Aktualny sezon. Potem: b -> c -> d -> tuning a.**
