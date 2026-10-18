@@ -5,6 +5,7 @@ on:
   pull_request:
     paths:
       - "ml/unresolved_horizon_multifold_tournament_v1.py"
+      - "ml/run_unresolved_horizon_multifold_tournament_v1.py"
       - "ml/test_unresolved_horizon_multifold_tournament_v1.py"
       - "ml/UNRESOLVED_HORIZON_MULTIFOLD_TOURNAMENT_V1.md"
       - "ml/pre_live_baseline_optimization_v1.py"
@@ -19,6 +20,7 @@ on:
       - main
     paths:
       - "ml/unresolved_horizon_multifold_tournament_v1.py"
+      - "ml/run_unresolved_horizon_multifold_tournament_v1.py"
       - "ml/test_unresolved_horizon_multifold_tournament_v1.py"
       - "ml/UNRESOLVED_HORIZON_MULTIFOLD_TOURNAMENT_V1.md"
       - "ml/pre_live_baseline_optimization_v1.py"
@@ -58,6 +60,7 @@ jobs:
       - name: Compile experiment code
         run: |
           python -m py_compile ml/unresolved_horizon_multifold_tournament_v1.py
+          python -m py_compile ml/run_unresolved_horizon_multifold_tournament_v1.py
           python -m py_compile ml/test_unresolved_horizon_multifold_tournament_v1.py
           python -m py_compile ml/pre_live_baseline_optimization_v1.py
           python -m py_compile ml/demand_engine/structural_prior_runtime.py
@@ -69,7 +72,7 @@ jobs:
 
       - name: Run unresolved-horizon multi-fold tournament
         run: |
-          python -m ml.unresolved_horizon_multifold_tournament_v1 \
+          python -m ml.run_unresolved_horizon_multifold_tournament_v1 \
             --historical-runtime ml/artifacts/structural_prior_runtime_v1/historical_runtime_v1.csv.gz \
             --manifest ml/artifacts/structural_prior_runtime_v1/manifest.json \
             --output /tmp/unresolved-horizon-multifold-tournament-v1.json
