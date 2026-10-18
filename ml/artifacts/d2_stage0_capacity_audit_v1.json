@@ -1,0 +1,72 @@
+{
+  "audit_version": "d2-stage0-capacity-stability-audit-2026-10-18-v1",
+  "source_project_ref": "adchzwqboeekhokapxqi",
+  "competition_key": "ekstraklasa",
+  "season": "2026/2027",
+  "purpose": "Prove that the existing C1 attendance export can reuse each tracked home club's target-event capacity when replaying earlier same-season home matches for frozen Pre-Live v2 b2 state.",
+  "scope": "Seven home clubs present in the frozen C1 v8 nine-event training set; attendance rows available through the current 2026-10-18 audit snapshot.",
+  "query_contract": "For each relevant ml_home_attendance_history_v2 row, resolve canonical club_key, then structural_prior_capacity_registry_v1 at that match date; require exactly one distinct non-null capacity per club over the audited rows.",
+  "clubs": {
+    "cracovia": {
+      "club_key": "cracovia",
+      "attendance_rows": 5,
+      "distinct_capacities": 1,
+      "capacity": 15016,
+      "verification_statuses": ["verified"],
+      "missing_capacity_rows": 0
+    },
+    "gkskatowice": {
+      "club_key": "gkskatowice",
+      "attendance_rows": 4,
+      "distinct_capacities": 1,
+      "capacity": 15048,
+      "verification_statuses": ["verified"],
+      "missing_capacity_rows": 0
+    },
+    "jagiellonia": {
+      "club_key": "jagiellonia",
+      "attendance_rows": 5,
+      "distinct_capacities": 1,
+      "capacity": 22372,
+      "verification_statuses": ["verified"],
+      "missing_capacity_rows": 0
+    },
+    "lech": {
+      "club_key": "lech",
+      "attendance_rows": 5,
+      "distinct_capacities": 1,
+      "capacity": 43269,
+      "verification_statuses": ["verified"],
+      "missing_capacity_rows": 0
+    },
+    "legia": {
+      "club_key": "legia",
+      "attendance_rows": 5,
+      "distinct_capacities": 1,
+      "capacity": 31006,
+      "verification_statuses": ["carry_forward"],
+      "missing_capacity_rows": 0
+    },
+    "pogonszczecin": {
+      "club_key": "pogonszczecin",
+      "attendance_rows": 6,
+      "distinct_capacities": 1,
+      "capacity": 21163,
+      "verification_statuses": ["verified"],
+      "missing_capacity_rows": 0
+    },
+    "slaskwroclaw": {
+      "club_key": "slask_wroclaw",
+      "attendance_rows": 4,
+      "distinct_capacities": 1,
+      "capacity": 43708,
+      "verification_statuses": ["verified"],
+      "missing_capacity_rows": 0
+    }
+  },
+  "limitations": [
+    "This is a frozen compatibility audit for the existing nine-event C1 training set, not a general future capacity source.",
+    "Legia capacity is explicitly carry_forward rather than newly verified for 2026/27.",
+    "A future d2 event whose home club/capacity is outside this audit must not be silently treated as exact-compatible; a new audited capacity lineage or exporter version is required."
+  ]
+}
