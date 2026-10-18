@@ -1,0 +1,177 @@
+name: d2 Live Replay Anchor v1
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - "ml/d2_live_replay_anchor_v1.py"
+      - "ml/test_d2_live_replay_anchor_v1.py"
+      - "ml/D2_LIVE_REPLAY_ANCHOR_V1.md"
+      - "ml/artifacts/d2_stage0_capacity_audit_v1.json"
+      - "ml/artifacts/pre_live_v2_historical_candidate_v1/manifest.json"
+      - "ml/artifacts/c1_shadow_v8/training_contract_v1.json"
+      - "ml/c1_alpha_model_tournament_v1.py"
+      - "ml/current_season_residual_regime_v1.py"
+      - "ml/current_season_regime_fixed_temporal_audit_v1.py"
+      - "ml/demand_engine/current_structural_prior_features.py"
+      - ".github/workflows/d2-live-replay-anchor-v1.yml"
+  push:
+    branches:
+      - main
+    paths:
+      - "ml/d2_live_replay_anchor_v1.py"
+      - "ml/test_d2_live_replay_anchor_v1.py"
+      - "ml/D2_LIVE_REPLAY_ANCHOR_V1.md"
+      - "ml/artifacts/d2_stage0_capacity_audit_v1.json"
+      - "ml/artifacts/pre_live_v2_historical_candidate_v1/manifest.json"
+      - "ml/artifacts/c1_shadow_v8/training_contract_v1.json"
+      - "ml/c1_alpha_model_tournament_v1.py"
+      - "ml/current_season_residual_regime_v1.py"
+      - "ml/current_season_regime_fixed_temporal_audit_v1.py"
+      - "ml/demand_engine/current_structural_prior_features.py"
+      - ".github/workflows/d2-live-replay-anchor-v1.yml"
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: d2-live-replay-anchor-v1-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install pinned runtime
+        run: |
+          python -m pip install --upgrade pip
+          pip install numpy==2.3.5 pandas==2.2.3 scikit-learn==1.8.0 joblib==1.5.3
+
+      - name: Compile Stage 0
+        run: |
+          python -m py_compile ml/d2_live_replay_anchor_v1.py
+          python -m py_compile ml/test_d2_live_replay_anchor_v1.py
+          python -m py_compile ml/c1_alpha_model_tournament_v1.py
+          python -m py_compile ml/current_season_regime_fixed_temporal_audit_v1.py
+          python -m py_compile ml/demand_engine/current_structural_prior_features.py
+
+      - name: Unit and lineage checks
+        run: python -m ml.test_d2_live_replay_anchor_v1
+
+  audit-main:
+    if: github.event_name != 'pull_request'
+    needs: validate
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install pinned runtime
+        run: |
+          python -m pip install --upgrade pip
+          pip install numpy==2.3.5 pandas==2.2.3 scikit-learn==1.8.0 joblib==1.5.3
+
+      - name: Request existing C1 training OIDC token
+        shell: bash
+        run: |
+          set -euo pipefail
+          response=$(curl -fsS -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
+            "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=beyond-c1-alpha-training")
+          token=$(printf '%s' "$response" | jq -r '.value')
+          test -n "$token"
+          test "$token" != "null"
+          echo "::add-mask::$token"
+          echo "C1_ALPHA_OIDC_TOKEN=$token" >> "$GITHUB_ENV"
+
+      - name: Fetch existing C1 v7 split payloads
+        shell: bash
+        run: |
+          set -euo pipefail
+          base='https://adchzwqboeekhokapxqi.supabase.co/functions/v1/c1_alpha_training_export_v1'
+          for part in events attendance sporting aliases; do
+            curl -fsS -H "Authorization: Bearer $C1_ALPHA_OIDC_TOKEN" \
+              "$base?version=v7-$part" -o "/tmp/c1-$part.json"
+            jq -e '.ok == true' "/tmp/c1-$part.json" >/dev/null
+          done
+          curl -fsS -H "Authorization: Bearer $C1_ALPHA_OIDC_TOKEN" \
+            "$base?version=v7-final24" -o /tmp/c1-final24.json
+          jq -e '.ok == true and .eventCount == 9 and .liveRowCount == 30' \
+            /tmp/c1-final24.json >/dev/null
+          jq -e '.eventCount == 9' /tmp/c1-events.json >/dev/null
+
+      - name: Compose d2 Stage 0 input from unchanged C1 exports
+        shell: bash
+        run: |
+          set -euo pipefail
+          jq -n \
+            --slurpfile events /tmp/c1-events.json \
+            --slurpfile attendance /tmp/c1-attendance.json \
+            --slurpfile sporting /tmp/c1-sporting.json \
+            --slurpfile aliases /tmp/c1-aliases.json \
+            --slurpfile live /tmp/c1-final24.json \
+            '{version:"d2-stage0-c1-replay-payload-v1",eventCount:$events[0].eventCount,events:$events[0].events,attendance:$attendance[0].attendance,sportingMatches:$sporting[0].sportingMatches,aliases:$aliases[0].aliases,liveRows:$live[0].liveRows,liveRowCount:$live[0].liveRowCount,sampling:$live[0].sampling}' \
+            > /tmp/d2-stage0-input.json
+          jq '{version,eventCount,liveRowCount,eventIds:(.events|map(.ticket_event_id)|sort)}' \
+            /tmp/d2-stage0-input.json
+
+      - name: Build exact frozen-v2 live replay anchor
+        run: |
+          python -m ml.d2_live_replay_anchor_v1 \
+            --input /tmp/d2-stage0-input.json \
+            --structural-artifact-dir ml/artifacts/structural_prior_runtime_v1 \
+            --freeze-manifest ml/artifacts/pre_live_v2_historical_candidate_v1/manifest.json \
+            --c1-training-contract ml/artifacts/c1_shadow_v8/training_contract_v1.json \
+            --capacity-audit ml/artifacts/d2_stage0_capacity_audit_v1.json \
+            --output-json /tmp/d2-live-replay-anchor-v1.json \
+            --output-csv /tmp/d2-live-replay-anchor-v1.csv
+
+      - name: Hard Stage 0 gate
+        run: |
+          jq -e '
+            .status == "FROZEN_V2_EXACT_COMPATIBILITY_READY"
+            and .production_change == false
+            and .model_training_performed == false
+            and .dataset.event_count == 9
+            and .dataset.row_count == 30
+            and .dataset.all_rows_exact_frozen_v2_anchor == true
+            and (.events | length) == 9
+            and ([.events[].anchor_status] | all(. == "FROZEN_V2_EXACT"))
+          ' /tmp/d2-live-replay-anchor-v1.json >/dev/null
+
+      - name: Print concise anchor scorecard
+        run: |
+          jq '{status,pre_live_freeze_id,dataset,anchor_comparison,events:[.events[]|{ticket_event_id,home_team,away_team,prior_completed_same_season_home_matches,legacy_prior_p50,frozen_v2_p50,anchor_delta_seats}]}' \
+            /tmp/d2-live-replay-anchor-v1.json
+
+      - name: Hash evidence
+        run: |
+          sha256sum /tmp/d2-live-replay-anchor-v1.json
+          sha256sum /tmp/d2-live-replay-anchor-v1.csv
+
+      - name: Upload Stage 0 evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: d2-live-replay-anchor-v1-${{ github.run_id }}
+          path: |
+            /tmp/d2-live-replay-anchor-v1.json
+            /tmp/d2-live-replay-anchor-v1.csv
+          if-no-files-found: error
+          retention-days: 90
