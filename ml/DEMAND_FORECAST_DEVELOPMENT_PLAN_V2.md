@@ -19,38 +19,73 @@ Zanim dodamy kolejne dane i features, sprawdzamy uczciwie, jak obecny model dzia
 - dodatkowo zrobić **chronological walk-forward**;
 - nie liczyć wielu snapshotów jednego meczu jako wielu niezależnych meczów.
 
-### Syntetyczne warianty trajectory — eksperyment w ramach walidacji
+### Syntetyczne warianty trajectory — WYKONANE
 
-Dodatkowo sprawdzamy, czy możemy lepiej wykorzystać małą liczbę prawdziwych meczów poprzez **train-only synthetic trajectory augmentation**.
+Sprawdziliśmy, czy małą liczbę prawdziwych meczów można lepiej wykorzystać przez **train-only synthetic trajectory augmentation**.
 
-Porównujemy trzy warianty:
+Porównane warianty:
 
 1. `real_only` — tylko prawdziwe dane;
 2. `conservative_synthetic` — niewielkie, realistyczne perturbacje trajectory;
 3. `stress_synthetic` — większe perturbacje jako stress test.
 
-Twarde zasady:
+Twarde zasady zostały zachowane:
 
-- syntetyczne dane mogą powstawać **wyłącznie z eventów treningowych**;
-- testowany / held-out mecz jest zawsze 100% realny;
-- z testowanego meczu nie wolno generować żadnych syntetycznych rows;
-- synthetic row zachowuje realny outcome swojego training eventu — nie generujemy sztucznej frekwencji i nie udajemy, że jest prawdziwa;
-- synthetic rows nie zwiększają liczby niezależnych meczów;
-- syntetyczne dane nie mogą być używane do raportowania jakości — jakość liczymy tylko na prawdziwych held-out eventach;
-- augmentation ma pomagać w generalizacji / regularizacji, a nie tworzyć sztuczne evidence.
+- syntetyczne dane powstawały wyłącznie z eventów treningowych;
+- held-out mecz był zawsze 100% realny;
+- z held-out meczu nie generowano synthetic rows;
+- synthetic row zachowywał realny outcome swojego training eventu;
+- synthetic rows nie zwiększały liczby niezależnych eventów;
+- jakość była liczona wyłącznie na prawdziwych held-out eventach.
 
-Sprawdzamy, czy `conservative_synthetic` poprawia `real_only` zarówno w:
+#### Wynik LOEO — 9 realnych eventów
 
-- Leave-One-Event-Out;
-- chronological walk-forward.
+| Training mode | Structural Prior MAE | Live window MAE | Live latest-row MAE |
+|---|---:|---:|---:|
+| `real_only` | 3,968.7 | 2,929.3 | 2,757.0 |
+| `conservative_synthetic` | 3,968.7 | 2,813.4 | **2,582.1** |
+| `stress_synthetic` | 3,968.7 | **2,742.4** | 2,582.3 |
 
-Jeśli poprawa nie pojawia się na prawdziwych held-out meczach — syntetyka jest odrzucana.
+W LOEO syntetyka pomaga.
 
-Canonical eksperyment:
+#### Wynik chronological walk-forward — 4 późniejsze realne eventy
 
-`ml/C1_SYNTHETIC_TRAJECTORY_VALIDATION_V1.md`
+| Training mode | Structural Prior MAE | Live window MAE | Live latest-row MAE |
+|---|---:|---:|---:|
+| `real_only` | **1,711.0** | 4,499.9 | 4,455.0 |
+| `conservative_synthetic` | **1,711.0** | 4,550.5 | 4,465.3 |
+| `stress_synthetic` | **1,711.0** | **4,383.3** | **4,332.6** |
 
-**Cel:** uczciwie odpowiedzieć, czy obecny live model faktycznie jest bliżej 2k, 3k czy gorzej — i czy syntetyczne warianty trajectory realnie pomagają na prawdziwych niewidzianych meczach — zanim zaczniemy go dalej rozbudowywać.
+W walk-forward:
+
+- conservative synthetic nie poprawia `real_only`;
+- stress synthetic poprawia `real_only` o ok. 117 MAE, ale live model nadal bardzo mocno przegrywa ze Structural Prior;
+- syntetyka jest więc ciekawym regularizatorem, ale **nie rozwiązuje problemu generalizacji**.
+
+Decyzja:
+
+`conservative_augmentation_signal = NOT_PROVEN`
+
+`promotion_allowed = false`
+
+Canonical evidence:
+
+`ml/results/C1_SYNTHETIC_TRAJECTORY_VALIDATION_V1_2026-10-18.md`
+
+### Co dalej w Walidacji obecnego modelu
+
+Nie przechodzimy jeszcze automatycznie do b). Najpierw wyjaśniamy, dlaczego chronological walk-forward jest słaby.
+
+Do sprawdzenia:
+
+- które forward eventy generują największy błąd;
+- czy problemem jest klub / domain shift;
+- czy training history jest za mała;
+- czy live trajectory ma inne coverage / phase niż dane treningowe;
+- które live features są niestabilne;
+- czy możemy rozpoznać sytuacje, kiedy należy zostać przy Structural Prior zamiast ufać Live/C1.
+
+**Cel Walidacji:** uczciwie odpowiedzieć, co obecny model naprawdę umie i kiedy można ufać live correction.
 
 ## a) Dane historyczne — dopracować, nie przebudowywać
 
@@ -153,7 +188,7 @@ Stan na 2026-10-18:
 
 Nie mamy jeszcze potwierdzonego prospective live MAE.
 
-Development replay około 2.0k–2.7k jest tylko development evidence i nie może być przedstawiany jako dokładność na nowych meczach.
+Development replay około 2.0k–2.7k oraz synthetic LOEO około 2.74k–2.81k są development evidence i nie mogą być przedstawiane jako dokładność na nowych meczach.
 
 # Zasady walidacji
 
