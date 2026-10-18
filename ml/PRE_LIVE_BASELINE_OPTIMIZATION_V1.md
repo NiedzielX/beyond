@@ -59,12 +59,38 @@ Selection metric:
 
 No 2024/25 or 2025/26 result is allowed to choose the stage-1 candidate.
 
+### Explicit tie handling
+
+If multiple candidates have development MAE equal within `1e-9`, select the earliest candidate in the predeclared order:
+
+1. incumbent;
+2. feature-group ablations in declared order;
+3. recency challengers in declared order;
+4. model-family challengers in declared order.
+
+This avoids arbitrary lexical tie-breaking and prefers the incumbent when it is statistically/numerically indistinguishable from a challenger.
+
+The artifact stores:
+
+- `development_best_mae`;
+- `development_tie_ids`;
+- exact tie-break rule.
+
 ### Rolling reference holdouts
 
 After the candidate is selected on 2023/24, evaluate unchanged:
 
 1. 2024/25, training through 2023/24;
 2. 2025/26, training through 2024/25.
+
+Only two models are scored on each reference holdout:
+
+- exact incumbent;
+- the candidate selected on 2023/24 development.
+
+If the incumbent wins development, only the incumbent is needed.
+
+This is deliberate. The reference holdouts are **not** a secondary tournament and must not be used to rescue a challenger that lost development selection.
 
 These seasons are already exposed historical reference evidence. They are not fresh untouched validation and cannot automatically promote anything.
 
@@ -128,8 +154,9 @@ Policies:
 
 - `uniform` — incumbent;
 - `linear_075` — linear weights from 0.75 for the oldest training season to 1.0 for the newest;
-- `exp_075` — weight `0.75 ^ season_distance`;
 - `exp_050` — weight `0.50 ^ season_distance`.
+
+`exp_075` is intentionally excluded from v1 because with the two-season development training window it resolves to exactly the same weights as `linear_075` (`0.75`, `1.0`). Two candidates that are not identifiable during selection must not be allowed to diverge only later when additional holdout-training seasons exist.
 
 The exact resolved season weights are persisted for every fit.
 
@@ -176,7 +203,7 @@ Prediction:
 
 ## Required scorecard
 
-Every candidate/split stores:
+Every development candidate stores:
 
 - n;
 - MAE;
@@ -194,14 +221,30 @@ Every candidate/split stores:
 - numeric feature count;
 - exact season sample weights.
 
+For the development-selected candidate on each holdout, persist additionally the exact worst/best event identity and values:
+
+- `match_key`;
+- home club;
+- away club;
+- actual attendance;
+- candidate prediction;
+- incumbent prediction;
+- candidate absolute error;
+- incumbent absolute error;
+- degradation/improvement versus incumbent.
+
+This prevents a lower average MAE from hiding a severe single-event regression.
+
 ## Candidate interpretation
 
 Per horizon:
 
 - `INCUMBENT_SELECTED_ON_DEVELOPMENT` — development does not justify changing the incumbent;
-- `PROMISING_CONSISTENT_HOLDOUT_IMPROVEMENT` — development-selected candidate improves both exposed reference holdouts and mean holdout MAE;
-- `MIXED_BUT_POSITIVE_MEAN` — positive mean holdout result but not both seasons;
-- `NOT_PROVEN` — selected challenger fails to improve mean reference holdout MAE.
+- `POSITIVE_BOTH_REFERENCE_HOLDOUTS` — the development-selected candidate improves both exposed reference holdouts and mean holdout MAE;
+- `POSITIVE_MEAN_MIXED_REFERENCE_HOLDOUTS` — positive mean holdout result but not both seasons;
+- `NOT_PROVEN_ON_REFERENCE_HOLDOUTS` — selected challenger fails to improve mean reference holdout MAE.
+
+These labels describe historical evidence. They are deliberately **not named as promotion decisions**.
 
 Regardless of label:
 
@@ -216,6 +259,8 @@ An ablation winner means a feature group may be noisy under the current model/pr
 A recency winner means the current historical evidence benefits from that weighting under this protocol. It does not justify tuning decay against the exposed holdouts.
 
 A model-family winner means the estimator is promising under the exact frozen feature/baseline contract. It does not justify immediate production promotion.
+
+A lower mean MAE is not sufficient by itself if tail degradation becomes unacceptable. Tail behavior must be diagnosed before any champion freeze.
 
 ## Files
 
@@ -235,4 +280,4 @@ Result artifact:
 
 `pre-live-baseline-optimization-v1-<run_id>`
 
-The final CI result must be persisted later under `ml/results/` with run ID, artifact ID/hash and exact decision before the roadmap advances.
+The final CI result must be persisted under `ml/results/` with run ID, artifact ID/hash, JSON hash, exact per-horizon result and decision before the roadmap advances.
