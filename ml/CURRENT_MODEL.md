@@ -90,24 +90,80 @@ The current PIT feature store already includes, among others:
 - previous-14-day congestion;
 - opponent-draw interactions.
 
-Therefore the next work should not simply duplicate these variables as another correction layer.
+Therefore new work should test new information or a materially better representation, not duplicate existing variables under another name.
 
 ## a) Historical data
 
-Status: **MATURE INCUMBENT / NOT FULLY OPTIMIZED**.
+Status: **ACTIVE OPTIMIZATION / STAGE 1 COMPLETE / PRODUCTION INCUMBENT UNCHANGED**.
 
-The current Structural Prior stays production incumbent until a challenger proves better.
+Canonical stage-1 evidence:
 
-Immediate a2 optimization is now allowed and required before freezing Pre-Live v2:
+`ml/results/PRE_LIVE_BASELINE_OPTIMIZATION_V1_2026-10-18.md`
 
-- feature-group contribution / ablation;
-- evidence-based noisy-feature removal;
-- newer-season weighting challengers;
-- horizon-specific model-family challengers;
-- residual / club calibration challengers;
-- validated ensemble candidates.
+Run:
 
-The goal is a stronger baseline without sacrificing point-in-time integrity or reproducibility.
+`39156711796`
+
+Stage 1 tested, one change at a time:
+
+- feature-group ablation;
+- explicit season recency weighting;
+- selected alternative scikit-learn model families;
+- development selection on 2023/24 only;
+- unchanged scoring on 2024/25 and 2025/26 rolling reference holdouts.
+
+### a2 stage-1 result
+
+| Horizon | Development-selected candidate | Mean incumbent MAE | Mean candidate MAE | Mean improvement | Interpretation |
+|---|---|---:|---:|---:|---|
+| T-30 | `ablate-rest_congestion` | 1,867.82 | 1,864.11 | +3.71 | too small / unstable to change champion |
+| T-14 | `recency-linear_075` | 1,809.45 | 1,798.25 | +11.19 | mixed by season; retain incumbent |
+| T-7 | `model-hist_absolute_31` | 1,789.98 | **1,721.18** | **+68.81** | material lead; advance to stage 2 |
+| T-3 | `incumbent` | **1,718.39** | 1,718.39 | 0.00 | incumbent wins development |
+| T-1 | `recency-linear_075` | **1,697.28** | 1,707.36 | -10.07 | not proven |
+
+### T-7 lead
+
+`model-hist_absolute_31` uses the incumbent T-7 feature/baseline contract with:
+
+- HistGradientBoostingRegressor;
+- absolute-error loss;
+- learning rate 0.04;
+- 300 iterations;
+- max 31 leaf nodes;
+- min samples leaf 10;
+- L2 regularization 1.0;
+- seed 42.
+
+MAE improvement:
+
+- 2023/24 development: **+97.36**;
+- 2024/25 reference: **+105.55**;
+- 2025/26 reference: **+32.06**;
+- mean reference: **+68.81**.
+
+Supporting quality:
+
+- median AE improves on both reference seasons;
+- p90 improves on 2024/25 and is approximately neutral on 2025/26;
+- bias moves from positive incumbent bias to mild negative challenger bias on both references.
+
+But harmful single-event regressions are too large:
+
+- `Śląsk Wrocław – Raków` 2024/25: **+3,685.74** error degradation;
+- `Lech – Arka Gdynia` 2025/26: **+4,233.11** error degradation.
+
+Decision:
+
+> **Do not replace T-7 production champion yet. Advance Hist31 to an a2 stage-2 robustness / fixed-blend experiment selected on development only.**
+
+### Current a2 next step
+
+Build T-7 robustness stage 2 with predeclared incumbent/Hist31 blend weights. The objective is to retain meaningful MAE improvement while reducing severe event-level degradation.
+
+Reference holdouts must not choose the blend weight.
+
+After this T-7 stage, continue the remaining justified a2 model-family / feature / calibration work before declaring a2 complete.
 
 ## b) Current season
 
@@ -130,7 +186,7 @@ Interpretation:
 
 > That formulation is not proven. The workstream is not exhausted.
 
-Next b2 priority is residual-based current-season regime modeling:
+Next b2 priority after a2 freeze is residual-based current-season regime modeling:
 
 - actual-vs-expected residuals from completed current-season home matches;
 - ratio `actual / expected`;
@@ -138,7 +194,7 @@ Next b2 priority is residual-based current-season regime modeling:
 - robust regime signal;
 - sample-size-aware / hierarchical shrinkage.
 
-The question is not only whether this season's raw attendance differs from history. The better question is:
+The better question is:
 
 > **Is this club currently running systematically above or below what our own incumbent model expected?**
 
@@ -193,7 +249,7 @@ After a2 + b2 + c2 are evaluated, freeze the strongest reproducible configuratio
 - artifact hashes;
 - benchmark result.
 
-Only then train the new learned live updater against the frozen Pre-Live v2 baseline.
+Only then train the new learned live updater against frozen Pre-Live v2.
 
 ## d) Live demand
 
@@ -293,14 +349,16 @@ Non-negotiable summary:
 
 ## Current development decision
 
-Do not jump directly from the current b/c results into a new production-oriented live model.
-
-The active accuracy work is:
+Active work remains:
 
 **a2 -> b2 -> c2 -> freeze Pre-Live v2 -> d2**.
+
+Within a2 the immediate next experiment is:
+
+**T-7 Hist31 robustness / fixed-blend stage 2.**
 
 Frozen C1 v8 prospective collection continues in parallel.
 
 Mandatory interpretation:
 
-> **A failed challenger closes the challenger, not the workstream.**
+> **A failed challenger closes the challenger, not the workstream; a lower mean MAE does not by itself justify champion replacement when tail degradation is materially worse.**
