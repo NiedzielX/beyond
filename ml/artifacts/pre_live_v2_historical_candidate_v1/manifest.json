@@ -1,0 +1,418 @@
+{
+  "c2_historical_extension": "NO_CONTEXT_ALL_HORIZONS",
+  "candidate_scope": "historical_pre_live_v2",
+  "evidence_sha256": {
+    "ml/results/CONTEXT_EXTENSION_V2_2026-10-18.md": "70a3d40b6b698907a0648343d768f48554f05bdebceb420f0bcc3142828a2f55",
+    "ml/results/CURRENT_SEASON_REGIME_FIXED_TEMPORAL_AUDIT_V1_2026-10-18.md": "d9c085027ceaa4e197e56fb6e024e25b9100f640344a089ea676fc574949764b",
+    "ml/results/PRE_LIVE_UNRESOLVED_MULTIFOLD_V1_2026-10-18.md": "ad1c1ed75f51ddba47b09462c4d0ef16413c588e103f883b4380ddc26d486e97",
+    "ml/results/T7_FIXED_TEMPORAL_ROBUSTNESS_V1_2026-10-18.md": "0b58dd1297fab241c7f30d0149df1e196d07985bd1b001c900c88cb7fc3658ff"
+  },
+  "expected_final_mae": {
+    "T-1": {
+      "2022/2023": 1794.2577798538857,
+      "2023/2024": 2261.110393081583,
+      "2024/2025": 1627.0746389116598,
+      "2025/2026": 1695.9606369653366
+    },
+    "T-14": {
+      "2022/2023": 1986.701536006362,
+      "2023/2024": 2339.9504993283904,
+      "2024/2025": 1748.4970512511325,
+      "2025/2026": 1870.393553818474
+    },
+    "T-3": {
+      "2022/2023": 1826.9503009277796,
+      "2023/2024": 2190.79000146779,
+      "2024/2025": 1611.374341513805,
+      "2025/2026": 1753.8914942230822
+    },
+    "T-30": {
+      "2022/2023": 2157.1473613912335,
+      "2023/2024": 2559.7406941266854,
+      "2024/2025": 1889.3672272292858,
+      "2025/2026": 1846.2792557036205
+    },
+    "T-7": {
+      "2022/2023": 1891.8569676571947,
+      "2023/2024": 2246.567509322297,
+      "2024/2025": 1643.8199399385203,
+      "2025/2026": 1738.980778795042
+    }
+  },
+  "experiment": "pre-live-v2-historical-freeze-v1",
+  "freeze_id": "pre-live-v2-historical-candidate-2026-10-18-v1",
+  "horizons": [
+    {
+      "contract": {
+        "current_season_regime": "NO_ADJUSTMENT",
+        "historical_base": "structural-prior-runtime-v1-t30-extra-full",
+        "historical_context_extension": "NO_CONTEXT"
+      },
+      "folds": [
+        {
+          "base_model_id": "structural-prior-runtime-v1-t30-extra-full",
+          "current_season_regime": "NO_ADJUSTMENT",
+          "final_mae": 2157.147361391233,
+          "historical_context_extension": "NO_CONTEXT",
+          "rows": 294,
+          "season": "2022/2023",
+          "training_seasons": [
+            "2021/2022"
+          ]
+        },
+        {
+          "base_model_id": "structural-prior-runtime-v1-t30-extra-full",
+          "current_season_regime": "NO_ADJUSTMENT",
+          "final_mae": 2559.7406941266854,
+          "historical_context_extension": "NO_CONTEXT",
+          "rows": 293,
+          "season": "2023/2024",
+          "training_seasons": [
+            "2021/2022",
+            "2022/2023"
+          ]
+        },
+        {
+          "base_model_id": "structural-prior-runtime-v1-t30-extra-full",
+          "current_season_regime": "NO_ADJUSTMENT",
+          "final_mae": 1889.3672272292858,
+          "historical_context_extension": "NO_CONTEXT",
+          "rows": 297,
+          "season": "2024/2025",
+          "training_seasons": [
+            "2021/2022",
+            "2022/2023",
+            "2023/2024"
+          ]
+        },
+        {
+          "base_model_id": "structural-prior-runtime-v1-t30-extra-full",
+          "current_season_regime": "NO_ADJUSTMENT",
+          "final_mae": 1846.2792557036205,
+          "historical_context_extension": "NO_CONTEXT",
+          "rows": 302,
+          "season": "2025/2026",
+          "training_seasons": [
+            "2021/2022",
+            "2022/2023",
+            "2023/2024",
+            "2024/2025"
+          ]
+        }
+      ],
+      "horizon": "T-30",
+      "mean_four_fold_mae": 2113.1336346127064,
+      "reference_2024_2025_mean_mae": 1867.823241466453
+    },
+    {
+      "contract": {
+        "current_season_regime": "NO_ADJUSTMENT",
+        "historical_base": "structural-prior-runtime-v1-t14-hist-base",
+        "historical_context_extension": "NO_CONTEXT"
+      },
+      "folds": [
+        {
+          "base_model_id": "structural-prior-runtime-v1-t14-hist-base",
+          "current_season_regime": "NO_ADJUSTMENT",
+          "final_mae": 1986.701536006362,
+          "historical_context_extension": "NO_CONTEXT",
+          "rows": 296,
+          "season": "2022/2023",
+          "training_seasons": [
+            "2021/2022"
+          ]
+        },
+        {
+          "base_model_id": "structural-prior-runtime-v1-t14-hist-base",
+          "current_season_regime": "NO_ADJUSTMENT",
+          "final_mae": 2339.9504993283904,
+          "historical_context_extension": "NO_CONTEXT",
+          "rows": 297,
+          "season": "2023/2024",
+          "training_seasons": [
+            "2021/2022",
+            "2022/2023"
+          ]
+        },
+        {
+          "base_model_id": "structural-prior-runtime-v1-t14-hist-base",
+          "current_season_regime": "NO_ADJUSTMENT",
+          "final_mae": 1748.4970512511325,
+          "historical_context_extension": "NO_CONTEXT",
+          "rows": 299,
+          "season": "2024/2025",
+          "training_seasons": [
+            "2021/2022",
+            "2022/2023",
+            "2023/2024"
+          ]
+        },
+        {
+          "base_model_id": "structural-prior-runtime-v1-t14-hist-base",
+          "current_season_regime": "NO_ADJUSTMENT",
+          "final_mae": 1870.393553818474,
+          "historical_context_extension": "NO_CONTEXT",
+          "rows": 303,
+          "season": "2025/2026",
+          "training_seasons": [
+            "2021/2022",
+            "2022/2023",
+            "2023/2024",
+            "2024/2025"
+          ]
+        }
+      ],
+      "horizon": "T-14",
+      "mean_four_fold_mae": 1986.3856601010898,
+      "reference_2024_2025_mean_mae": 1809.4453025348032
+    },
+    {
+      "contract": {
+        "current_season_regime": "ewma50-resid-k6-cap05-min3",
+        "historical_base": "hist31-leaf20-l2-1",
+        "historical_context_extension": "NO_CONTEXT"
+      },
+      "folds": [
+        {
+          "b2_mae_improvement": 93.13398947349538,
+          "base_mae_before_b2": 1984.99095713069,
+          "base_model_id": "hist31-leaf20-l2-1",
+          "current_season_regime": "ewma50-resid-k6-cap05-min3",
+          "final_mae": 1891.8569676571947,
+          "historical_context_extension": "NO_CONTEXT",
+          "rows": 297,
+          "season": "2022/2023",
+          "training_seasons": [
+            "2021/2022"
+          ]
+        },
+        {
+          "b2_mae_improvement": 70.77202561185231,
+          "base_mae_before_b2": 2317.3395349341495,
+          "base_model_id": "hist31-leaf20-l2-1",
+          "current_season_regime": "ewma50-resid-k6-cap05-min3",
+          "final_mae": 2246.567509322297,
+          "historical_context_extension": "NO_CONTEXT",
+          "rows": 297,
+          "season": "2023/2024",
+          "training_seasons": [
+            "2021/2022",
+            "2022/2023"
+          ]
+        },
+        {
+          "b2_mae_improvement": 7.1469068073731705,
+          "base_mae_before_b2": 1650.9668467458935,
+          "base_model_id": "hist31-leaf20-l2-1",
+          "current_season_regime": "ewma50-resid-k6-cap05-min3",
+          "final_mae": 1643.8199399385203,
+          "historical_context_extension": "NO_CONTEXT",
+          "rows": 300,
+          "season": "2024/2025",
+          "training_seasons": [
+            "2021/2022",
+            "2022/2023",
+            "2023/2024"
+          ]
+        },
+        {
+          "b2_mae_improvement": 34.81448179075642,
+          "base_mae_before_b2": 1773.7952605857984,
+          "base_model_id": "hist31-leaf20-l2-1",
+          "current_season_regime": "ewma50-resid-k6-cap05-min3",
+          "final_mae": 1738.980778795042,
+          "historical_context_extension": "NO_CONTEXT",
+          "rows": 303,
+          "season": "2025/2026",
+          "training_seasons": [
+            "2021/2022",
+            "2022/2023",
+            "2023/2024",
+            "2024/2025"
+          ]
+        }
+      ],
+      "horizon": "T-7",
+      "mean_four_fold_mae": 1880.3062989282635,
+      "reference_2024_2025_mean_mae": 1691.4003593667812
+    },
+    {
+      "contract": {
+        "current_season_regime": "ewma50-resid-k2-cap05-min3",
+        "historical_base": "structural-prior-runtime-v1-t3-hist-full",
+        "historical_context_extension": "NO_CONTEXT"
+      },
+      "folds": [
+        {
+          "b2_mae_improvement": 89.40050282044945,
+          "base_mae_before_b2": 1916.350803748229,
+          "base_model_id": "structural-prior-runtime-v1-t3-hist-full",
+          "current_season_regime": "ewma50-resid-k2-cap05-min3",
+          "final_mae": 1826.9503009277796,
+          "historical_context_extension": "NO_CONTEXT",
+          "rows": 297,
+          "season": "2022/2023",
+          "training_seasons": [
+            "2021/2022"
+          ]
+        },
+        {
+          "b2_mae_improvement": 120.83468784846946,
+          "base_mae_before_b2": 2311.6246893162593,
+          "base_model_id": "structural-prior-runtime-v1-t3-hist-full",
+          "current_season_regime": "ewma50-resid-k2-cap05-min3",
+          "final_mae": 2190.79000146779,
+          "historical_context_extension": "NO_CONTEXT",
+          "rows": 297,
+          "season": "2023/2024",
+          "training_seasons": [
+            "2021/2022",
+            "2022/2023"
+          ]
+        },
+        {
+          "b2_mae_improvement": 50.34162492732116,
+          "base_mae_before_b2": 1661.715966441126,
+          "base_model_id": "structural-prior-runtime-v1-t3-hist-full",
+          "current_season_regime": "ewma50-resid-k2-cap05-min3",
+          "final_mae": 1611.374341513805,
+          "historical_context_extension": "NO_CONTEXT",
+          "rows": 300,
+          "season": "2024/2025",
+          "training_seasons": [
+            "2021/2022",
+            "2022/2023",
+            "2023/2024"
+          ]
+        },
+        {
+          "b2_mae_improvement": 21.17758457663581,
+          "base_mae_before_b2": 1775.069078799718,
+          "base_model_id": "structural-prior-runtime-v1-t3-hist-full",
+          "current_season_regime": "ewma50-resid-k2-cap05-min3",
+          "final_mae": 1753.8914942230822,
+          "historical_context_extension": "NO_CONTEXT",
+          "rows": 303,
+          "season": "2025/2026",
+          "training_seasons": [
+            "2021/2022",
+            "2022/2023",
+            "2023/2024",
+            "2024/2025"
+          ]
+        }
+      ],
+      "horizon": "T-3",
+      "mean_four_fold_mae": 1845.7515345331142,
+      "reference_2024_2025_mean_mae": 1682.6329178684437
+    },
+    {
+      "contract": {
+        "current_season_regime": "ewma50-resid-k6-cap05-min3",
+        "historical_base": "structural-prior-runtime-v1-t1-hist-full",
+        "historical_context_extension": "NO_CONTEXT"
+      },
+      "folds": [
+        {
+          "b2_mae_improvement": 119.73231497365327,
+          "base_mae_before_b2": 1913.990094827539,
+          "base_model_id": "structural-prior-runtime-v1-t1-hist-full",
+          "current_season_regime": "ewma50-resid-k6-cap05-min3",
+          "final_mae": 1794.2577798538857,
+          "historical_context_extension": "NO_CONTEXT",
+          "rows": 297,
+          "season": "2022/2023",
+          "training_seasons": [
+            "2021/2022"
+          ]
+        },
+        {
+          "b2_mae_improvement": 86.88271796523532,
+          "base_mae_before_b2": 2347.9931110468183,
+          "base_model_id": "structural-prior-runtime-v1-t1-hist-full",
+          "current_season_regime": "ewma50-resid-k6-cap05-min3",
+          "final_mae": 2261.110393081583,
+          "historical_context_extension": "NO_CONTEXT",
+          "rows": 297,
+          "season": "2023/2024",
+          "training_seasons": [
+            "2021/2022",
+            "2022/2023"
+          ]
+        },
+        {
+          "b2_mae_improvement": 24.65898610839622,
+          "base_mae_before_b2": 1651.733625020056,
+          "base_model_id": "structural-prior-runtime-v1-t1-hist-full",
+          "current_season_regime": "ewma50-resid-k6-cap05-min3",
+          "final_mae": 1627.0746389116598,
+          "historical_context_extension": "NO_CONTEXT",
+          "rows": 300,
+          "season": "2024/2025",
+          "training_seasons": [
+            "2021/2022",
+            "2022/2023",
+            "2023/2024"
+          ]
+        },
+        {
+          "b2_mae_improvement": 46.87450583778241,
+          "base_mae_before_b2": 1742.835142803119,
+          "base_model_id": "structural-prior-runtime-v1-t1-hist-full",
+          "current_season_regime": "ewma50-resid-k6-cap05-min3",
+          "final_mae": 1695.9606369653366,
+          "historical_context_extension": "NO_CONTEXT",
+          "rows": 303,
+          "season": "2025/2026",
+          "training_seasons": [
+            "2021/2022",
+            "2022/2023",
+            "2023/2024",
+            "2024/2025"
+          ]
+        }
+      ],
+      "horizon": "T-1",
+      "mean_four_fold_mae": 1844.600862203116,
+      "reference_2024_2025_mean_mae": 1661.5176379384982
+    }
+  ],
+  "input": {
+    "artifact_version": "structural-prior-runtime-v1-frozen-2026-10-15-t1",
+    "feature_contract": "structural-prior-pit-v1+verified-capacity-v1",
+    "feature_rows": 7650,
+    "historical_dataset_versions": [
+      "historical-multiclub-2021-25-v2.1",
+      "historical-multiclub-2025-26-v1"
+    ],
+    "historical_runtime_path": "ml/artifacts/structural_prior_runtime_v1/historical_runtime_v1.csv.gz",
+    "historical_runtime_sha256": "3c6b35142c6bd20a484f2aa758cd41284fd6f4c6db1353b138f81cf321161569",
+    "input_manifest_path": "ml/artifacts/structural_prior_runtime_v1/manifest.json",
+    "matches": 1530
+  },
+  "limitations": [
+    "Historical reference seasons are exposed and are not fresh prospective validation.",
+    "b2 tail risk and club-level heterogeneity remain explicit despite positive aggregate MAE.",
+    "Forward-only rivalry, absence, hype and media context are not backfilled into historical c2.",
+    "This manifest freezes a historical candidate contract, not production behavior."
+  ],
+  "live_adjustment": 0,
+  "next_workstream": "d2_continuous_live_updater_against_frozen_pre_live_v2",
+  "production_change": false,
+  "production_promotion": false,
+  "runtime": {
+    "joblib": "1.5.3",
+    "numpy": "2.3.5",
+    "pandas": "2.2.3",
+    "scikit_learn": "1.8.0"
+  },
+  "selection_performed": false,
+  "source_sha256": {
+    "ml/current_season_regime_fixed_temporal_audit_v1.py": "ea6719fb24aa0b09d633d8ac7e0c4fd9fd88d530d14a8934196afcd21895b337",
+    "ml/current_season_residual_regime_v1.py": "69b39ed06db38196b1d0a9e7ada99cf809214ae3e6bc52a68a6b98495b186147",
+    "ml/demand_engine/structural_prior_runtime.py": "534a72c5a4f16f816042b194e6684d61dffd6f82fde8be74337980e4bbb8c079",
+    "ml/features/structural_prior_feature_store_v1.py": "da0295fedaf66e0e0976a53394c78ec72aa05be106a58c2f92ba83883fb9ceb2",
+    "ml/t7_robust_estimator_v1.py": "801bf1c230eb9d5cbf284fc081388fa01064043ef59cbc1b78e9235c9ebd4bbb"
+  },
+  "status": "FROZEN_HISTORICAL_CANDIDATE"
+}

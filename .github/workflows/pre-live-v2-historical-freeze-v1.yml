@@ -1,0 +1,123 @@
+name: Pre-Live v2 Historical Freeze v1
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - "ml/pre_live_v2_historical_freeze_v1.py"
+      - "ml/test_pre_live_v2_historical_freeze_v1.py"
+      - "ml/PRE_LIVE_V2_HISTORICAL_FREEZE_V1.md"
+      - "ml/demand_engine/structural_prior_runtime.py"
+      - "ml/t7_robust_estimator_v1.py"
+      - "ml/current_season_residual_regime_v1.py"
+      - "ml/current_season_regime_fixed_temporal_audit_v1.py"
+      - "ml/features/structural_prior_feature_store_v1.py"
+      - "ml/results/T7_FIXED_TEMPORAL_ROBUSTNESS_V1_2026-10-18.md"
+      - "ml/results/PRE_LIVE_UNRESOLVED_MULTIFOLD_V1_2026-10-18.md"
+      - "ml/results/CURRENT_SEASON_REGIME_FIXED_TEMPORAL_AUDIT_V1_2026-10-18.md"
+      - "ml/results/CONTEXT_EXTENSION_V2_2026-10-18.md"
+      - "ml/artifacts/structural_prior_runtime_v1/historical_runtime_v1.csv.gz"
+      - "ml/artifacts/structural_prior_runtime_v1/manifest.json"
+      - "ml/artifacts/pre_live_v2_historical_candidate_v1/manifest.json"
+      - ".github/workflows/pre-live-v2-historical-freeze-v1.yml"
+  push:
+    branches:
+      - main
+    paths:
+      - "ml/pre_live_v2_historical_freeze_v1.py"
+      - "ml/test_pre_live_v2_historical_freeze_v1.py"
+      - "ml/PRE_LIVE_V2_HISTORICAL_FREEZE_V1.md"
+      - "ml/demand_engine/structural_prior_runtime.py"
+      - "ml/t7_robust_estimator_v1.py"
+      - "ml/current_season_residual_regime_v1.py"
+      - "ml/current_season_regime_fixed_temporal_audit_v1.py"
+      - "ml/features/structural_prior_feature_store_v1.py"
+      - "ml/results/T7_FIXED_TEMPORAL_ROBUSTNESS_V1_2026-10-18.md"
+      - "ml/results/PRE_LIVE_UNRESOLVED_MULTIFOLD_V1_2026-10-18.md"
+      - "ml/results/CURRENT_SEASON_REGIME_FIXED_TEMPORAL_AUDIT_V1_2026-10-18.md"
+      - "ml/results/CONTEXT_EXTENSION_V2_2026-10-18.md"
+      - "ml/artifacts/structural_prior_runtime_v1/historical_runtime_v1.csv.gz"
+      - "ml/artifacts/structural_prior_runtime_v1/manifest.json"
+      - "ml/artifacts/pre_live_v2_historical_candidate_v1/manifest.json"
+      - ".github/workflows/pre-live-v2-historical-freeze-v1.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pre-live-v2-historical-freeze-v1-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  freeze-and-verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install pinned runtime
+        run: |
+          python -m pip install --upgrade pip
+          pip install numpy==2.3.5 pandas==2.2.3 scikit-learn==1.8.0 joblib==1.5.3
+
+      - name: Compile freeze code
+        run: |
+          python -m py_compile ml/pre_live_v2_historical_freeze_v1.py
+          python -m py_compile ml/test_pre_live_v2_historical_freeze_v1.py
+          python -m py_compile ml/current_season_regime_fixed_temporal_audit_v1.py
+          python -m py_compile ml/current_season_residual_regime_v1.py
+          python -m py_compile ml/t7_robust_estimator_v1.py
+          python -m py_compile ml/demand_engine/structural_prior_runtime.py
+          python -m py_compile ml/features/structural_prior_feature_store_v1.py
+
+      - name: Unit checks
+        run: python -m ml.test_pre_live_v2_historical_freeze_v1
+
+      - name: Reproduce and freeze 20 horizon-season cells
+        run: |
+          python -m ml.pre_live_v2_historical_freeze_v1 \
+            --historical-runtime ml/artifacts/structural_prior_runtime_v1/historical_runtime_v1.csv.gz \
+            --input-manifest ml/artifacts/structural_prior_runtime_v1/manifest.json \
+            --repo-root . \
+            --output /tmp/pre-live-v2-historical-candidate-manifest.json
+
+      - name: Print generated manifest SHA256
+        run: sha256sum /tmp/pre-live-v2-historical-candidate-manifest.json
+
+      - name: Upload generated freeze manifest before seal check
+        uses: actions/upload-artifact@v4
+        with:
+          name: pre-live-v2-historical-freeze-v1-${{ github.run_id }}
+          path: /tmp/pre-live-v2-historical-candidate-manifest.json
+          if-no-files-found: error
+          retention-days: 90
+
+      - name: Verify committed freeze manifest semantics and canonical SHA
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          committed = json.loads(
+              Path("ml/artifacts/pre_live_v2_historical_candidate_v1/manifest.json").read_text()
+          )
+          generated = json.loads(
+              Path("/tmp/pre-live-v2-historical-candidate-manifest.json").read_text()
+          )
+          if committed != generated:
+              raise SystemExit("Committed freeze manifest is not semantically identical to generated manifest")
+          PY
+          test "$(sha256sum /tmp/pre-live-v2-historical-candidate-manifest.json | awk '{print $1}')" = \
+            "44c911d1ac8b1bf6870ed31e1a636b9b8374d8c8da2d57ba3b4fb5b4aaba4d3c"
+
+      - name: Print frozen contract
+        run: |
+          jq '{freeze_id,status,production_change,live_adjustment,horizons:[.horizons[]|{horizon,contract,reference_2024_2025_mean_mae}]}' \
+            /tmp/pre-live-v2-historical-candidate-manifest.json
