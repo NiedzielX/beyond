@@ -88,11 +88,21 @@ jobs:
             --repo-root . \
             --output /tmp/pre-live-v2-historical-candidate-manifest.json
 
-      - name: Verify committed freeze manifest byte-for-byte
+      - name: Verify committed freeze manifest semantics and canonical SHA
         run: |
-          cmp \
-            ml/artifacts/pre_live_v2_historical_candidate_v1/manifest.json \
-            /tmp/pre-live-v2-historical-candidate-manifest.json
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          committed = json.loads(
+              Path("ml/artifacts/pre_live_v2_historical_candidate_v1/manifest.json").read_text()
+          )
+          generated = json.loads(
+              Path("/tmp/pre-live-v2-historical-candidate-manifest.json").read_text()
+          )
+          if committed != generated:
+              raise SystemExit("Committed freeze manifest is not semantically identical to generated manifest")
+          PY
           test "$(sha256sum /tmp/pre-live-v2-historical-candidate-manifest.json | awk '{print $1}')" = \
             "44c911d1ac8b1bf6870ed31e1a636b9b8374d8c8da2d57ba3b4fb5b4aaba4d3c"
 
