@@ -16,74 +16,90 @@ Beyond must not only forecast final attendance. It must tell the club:
 
 The forecasting layer remains the analytical foundation. Product value is created when that forecast becomes a useful decision before kickoff.
 
+For forecasting quality, the immediate objective is:
+
+> **Reduce forecasting MAE as far as possible with honest, reproducible, point-in-time-safe evidence before treating the model as mature.**
+
+Accuracy work must not be optimized for quickly completing roadmap labels.
+
 ## Core product question
 
 For every active event and every point in time before kickoff:
 
 > **What is happening, why is it happening, where is the problem/opportunity, what happens if nothing changes, and what should the club test now?**
 
-## Model-development workstreams — canonical wording
+## Forecasting architecture
 
-Use these names consistently:
+### Pre-Live Model v2
 
-- **a) Dane historyczne — dopracować, nie przebudowywać**;
-- **b) Aktualny sezon — wzmocnić**;
-- **c) Context meczu — rozbudować**;
-- **d) Live demand — najmocniej rozwinąć**.
+`historical demand + current-season regime + match context -> strongest possible pre-live forecast`
 
-Before further development:
+### Continuous Live Updater v2
 
-- **Walidacja obecnego modelu — najpierw sprawdzić, co naprawdę mamy.**
+`Pre-Live v2 + live trajectory + inventory + time-to-kickoff + reliability -> live delta / revised forecast`
 
-## a) Dane historyczne — dopracować, nie przebudowywać
+This architecture means:
 
-Historical Structural Prior remains the baseline.
+- a/b/c jointly build the strongest possible pre-live estimate;
+- d) updates that estimate continuously with live evidence;
+- T-30/T-14/T-7/T-3/T-1 are evaluation checkpoints, not the only moments the forecast may change.
 
-Use historical point-in-time evidence to estimate expected final demand, but do not rebuild this layer without evidence.
+## Model-development workstreams — canonical meaning
 
-Development focus:
+### a) Historical data — optimize the incumbent
 
-- keep current Structural Prior;
-- check which historical features really improve MAE;
-- remove weak / noisy features;
-- weight newer seasons better than older seasons.
+Historical Structural Prior remains the production baseline until a challenger proves better.
 
-**Cel:** mocniejszy baseline bez komplikowania modelu.
+Immediate focus:
 
-## b) Aktualny sezon — wzmocnić
+- feature contribution / ablation;
+- evidence-based noisy-feature removal;
+- recency weighting;
+- horizon-specific model-family challengers;
+- residual / club calibration;
+- validated ensembles where justified.
 
-Adapt the long-term baseline to the club's current-season reality.
+**Cel:** mocniejszy baseline bez komplikowania modelu bez evidence.
 
-Development focus:
+### b) Current season — model regime change
 
-- explicit current season adjustment;
-- stronger use of recent home matches;
-- measure whether the club is above/below its historical norm this season;
-- update the adjustment after every completed match.
+Current-season information already exists in Structural Prior, but the workstream is not exhausted.
 
-**Cel:** model szybciej reaguje na zmianę realiów w danym sezonie.
+`Current Season Adjustment v1` tested one specific post-model correction and was `NOT PROVEN`.
 
-## c) Context meczu — rozbudować
+Next focus:
 
-Explain why this particular fixture should differ from the club baseline.
+- residual-based current-season regime;
+- actual-vs-expected demand ratio;
+- EWMA / rolling residuals;
+- sample-size-aware shrinkage;
+- hierarchical regime signals where justified.
 
-Development focus:
+**Cel:** model szybciej reaguje na zmianę realiów w danym sezonie względem własnego expected demand.
 
-- opponent attractiveness / strength;
-- future fixtures;
-- fixture congestion / cannibalization;
-- form / league position of both teams;
-- injuries, suspensions and key players where reliable point-in-time data exists.
+### c) Match context — explain this fixture
 
-**Cel:** model rozumie, dlaczego konkretny mecz może mieć większy lub mniejszy popyt.
+Structural Prior already includes substantial PIT-safe opponent/form/table/rest context.
 
-## d) Live demand — najmocniej rozwinąć
+`Future Fixture Context v1` tested one specific future-fixture/cannibalization hypothesis and was `NOT PROVEN`.
+
+Next focus:
+
+- match stakes / title-Europe-relegation relevance;
+- sequence-aware streaks;
+- rivalry / derby / exceptional opponent draw where deterministic;
+- squad availability only with reliable historical PIT data.
+
+**Cel:** model rozumie, dlaczego konkretny mecz może różnić się od klubu/sezonu baseline.
+
+### d) Live demand — continuous evidence
 
 Interpret what is happening in ticketing now.
 
-Development focus:
+Focus after Pre-Live v2 freeze:
 
-- public inventory from the earliest sales moment;
+- inventory from the earliest sales moment;
+- continuous time-to-kickoff;
 - velocity;
 - acceleration;
 - sector / price-area movement;
@@ -91,21 +107,43 @@ Development focus:
 - release / replenishment activity;
 - anomalies;
 - source quality;
+- delta / remaining-demand / reliability-weighted live correction;
 - forecast update after every meaningful new snapshot.
-
-T-30 / T-14 / T-7 / T-3 / T-1 remain quality-measurement checkpoints, not the only moments when the forecast can change.
 
 **Cel:** mieć forecast, który żyje razem ze sprzedażą.
 
+## Active model-development order
+
+`a2 baseline optimization -> b2 current-season regime -> c2 match context -> freeze Pre-Live v2 -> d2 continuous live updater`
+
+Frozen C1 v8 prospective collection continues in parallel.
+
+## Interpretation principle
+
+> **A failed challenger closes the challenger, not the whole workstream.**
+
+Therefore:
+
+- `Current Season Adjustment v1 NOT PROVEN` does not mean current-season modeling is complete;
+- `Future Fixture Context v1 NOT PROVEN` does not mean match-context modeling is complete;
+- weak raw Live does not mean live evidence is useless;
+- synthetic data improving a model does not create new independent evidence.
+
+A workstream may be called exhausted only when remaining realistic hypotheses are explicitly tested, blocked by missing data, or deliberately deprioritized with rationale.
+
 ## Live correction
 
-Live correction is part of **d) Live demand**, not a separate development workstream.
+Live correction remains part of **d) Live demand**.
 
-Conceptually:
+New preferred concept:
 
-`Live Forecast = Structural Prior + reliable live correction`
+`Final Forecast(t) = Pre-Live v2(t) + reliability(t) * live_delta(t)`
 
-The live layer should revise the Structural Prior only when the live signal is reliable enough.
+Alternative challengers such as remaining-demand prediction or reliability-weighted blending are allowed.
+
+The next live layer should revise the strongest frozen pre-live baseline rather than relearn the whole attendance target from a tiny live sample by default.
+
+Frozen C1 v8 remains unchanged as a prospective comparator.
 
 ## Sector / price-area decision layer
 
@@ -129,29 +167,37 @@ Mixed-price sectors must be split into real price areas instead of using a fake 
 
 ## Current evidence boundary
 
-Historical Structural Prior is mature and benchmarked.
+Historical Structural Prior is mature and benchmarked, but not declared fully optimized.
 
-C1 v8 is still `EXPERIMENTAL_SHADOW`.
+Historical reference MAE is roughly **1.65k–1.89k** depending on horizon/season.
 
-As of 2026-10-18:
+C1 v8 is still:
 
-- prospective prediction rows: **31**;
-- prospective events: **5**;
-- scored prospective events: **0**;
-- there is no confirmed prospective live MAE yet.
+`EXPERIMENTAL_SHADOW`
 
-Development replay around ~2.0k–2.7k is promising evidence, not production accuracy.
+Current historical C1 evidence:
 
-## Walidacja obecnego modelu — najpierw sprawdzić, co naprawdę mamy
+- raw Live LOEO: **2,929.3 MAE**;
+- conservative train-only synthetic Live LOEO: **2,261.5 MAE**;
+- stress train-only synthetic Live LOEO: **2,498.8 MAE**;
+- four-event chronological Prior: **452.8 MAE**;
+- four-event chronological raw Live: **2,103.7 MAE**;
+- frozen v8 final: **452.8 MAE**, PRIOR in **16/16 rows**.
 
-Before more model complexity, run:
+Interpretation:
 
-1. **Leave-One-Event-Out** with the tested event excluded from fitting/tuning;
-2. **chronological walk-forward**;
-3. strict reconstruction of only the features available at each historical forecast timestamp;
-4. paired comparison of Structural Prior vs Live/C1 vs final prediction.
+- synthetic augmentation helps raw Live;
+- raw Live is not a universal replacement for Prior;
+- frozen v8 safely rejected weak Live on the current retrospective forward events;
+- this does not prove prospective live accuracy or prove that v8 will switch correctly when Live is genuinely better.
 
-**Cel:** ustalić, czy obecny live model jest faktycznie bliżej ~2k, ~3k czy gorzej na niewidzianych historycznych meczach.
+Until independent prospective completed events are scored, there is no confirmed prospective live MAE.
+
+Production remains:
+
+`live_adjustment = 0`
+
+Do not present replay/walk-forward as production accuracy.
 
 ## Business horizon priority
 
@@ -167,19 +213,29 @@ Early actionability remains first-class even though live reasoning should become
 
 ### Forecast quality
 
-- MAE;
-- WAPE;
+Primary:
+
+- MAE.
+
+Required supporting dimensions:
+
+- WAPE where meaningful;
 - median absolute error;
 - bias;
+- p90/tail error;
 - worst-event degradation;
+- event-improvement rate;
 - stability across clubs / seasons / horizons.
 
 ### Live demand quality
 
 - forecast revision quality;
-- incremental uplift over Structural Prior;
+- incremental uplift over the correct frozen pre-live incumbent;
 - first-detection lead time;
-- stability under release / coverage changes.
+- stability under release / coverage changes;
+- maximum harmful revision;
+- correction/blend usage rate;
+- quality conditional on observation count / time-to-kickoff where possible.
 
 ### Sector decision quality
 
@@ -207,26 +263,64 @@ After real intervention evidence matures:
 - uplift uncertainty;
 - recommendation expected value.
 
-## Kolejność developmentu
+## Point-in-time integrity
 
-Canonical roadmap:
+Every feature must exist at forecast time.
 
-`ml/DEMAND_FORECAST_DEVELOPMENT_PLAN_V2.md`
+No future leakage.
 
-1. **Walidacja obecnego modelu**
-2. **b) Aktualny sezon — wzmocnić**
-3. **c) Context meczu — rozbudować**
-4. **d) Live demand — najmocniej rozwinąć**
-5. **a) Dane historyczne — dopracować, nie przebudowywać**
+No random split of snapshots from the same event across train/test.
 
-`Walidacja -> b -> c -> d -> tuning a`
+Synthetic rows are train-only and never independent real events.
 
-In parallel:
+Exposed historical reference seasons must be labeled honestly as exposed evidence.
 
-- collect prospective C1 evidence without retuning frozen v8;
-- keep E0 pricing assumption-based / human-reviewed until real intervention evidence exists;
-- calibrate probabilistic P10/P50/P90 when the evidence supports it.
+## Engineering accuracy / CI/CD
+
+Canonical model results require a complete reproducible chain:
+
+`code -> tests/checks -> CI workflow -> artifact -> metrics -> result doc -> decision -> canonical docs update`
+
+Never omit details required to reproduce a result:
+
+- feature definitions;
+- source data/version;
+- as-of rules;
+- missingness/imputation;
+- normalization;
+- weights/caps/shrinkage/thresholds;
+- hyperparameters;
+- random seed;
+- train/dev/holdout sets;
+- exclusions;
+- model/feature-contract IDs;
+- artifact/run IDs and hashes;
+- evidence limitations.
+
+No undocumented local result becomes canonical.
+
+No silent retuning on the same holdout.
+
+CI success does not automatically promote production.
+
+Full rules:
+
+`ml/MODEL_ACCURACY_DEVELOPMENT_INSTRUCTIONS_V2.md`
+
+## Parallel product work
+
+While Pre-Live v2 is being optimized:
+
+- continue prospective C1 evidence without retuning frozen v8;
+- improve scraping/data-quality infrastructure where useful;
+- keep E0 pricing assumption-based and human-reviewed until real intervention evidence exists;
+- collect intervention outcomes when they become real;
+- calibrate probabilistic P10/P50/P90 only when evidence supports it.
 
 ## Product value statement
 
 **Beyond powinien łączyć dane historyczne, aktualny sezon, context meczu i live demand, żeby forecast żył razem ze sprzedażą — a potem przekładać ten sygnał na bezpieczne decyzje sektorowe i cenowe przed kickoffem.**
+
+## One-line instruction
+
+> **Optimize for honest MAE reduction, not roadmap completion: build and freeze the strongest reproducible Pre-Live v2 from history + current-season regime + match context, then build the continuous live updater against it, while preserving complete CI/CD evidence and the broader sector/pricing decision product.**

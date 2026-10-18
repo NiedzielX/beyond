@@ -8,40 +8,92 @@ This file exists so a new AI/chat session continues the actual Beyond plan inste
 
 Before doing Beyond forecasting, ML, dashboard, Growth or recommendation work, read in this order:
 
-1. `ml/CURRENT_MODEL.md` — canonical current model/product state;
-2. `ml/DEMAND_FORECAST_DEVELOPMENT_PLAN_V2.md` — current development plan;
-3. `ml/C1_V8_PROSPECTIVE_SHADOW_V1.md` — frozen C1 prospective runtime/governance;
-4. `ml/LIVE_DEMAND_ENGINE_V1_PLAN.md` — live forecasting roadmap;
-5. `ml/SECTOR_DECISION_PRICING_V1.md` — E0 sector/pricing product contract;
-6. `ml/NORTH_STAR.md`;
-7. `ml/LIVE_FORECAST_ORCHESTRATOR_V1.md`;
-8. `ml/STRUCTURAL_PRIOR_MATERIALIZER_V1.md`;
-9. `ml/MODEL_PROMOTION_GOVERNANCE_V1.md`.
+1. `ml/MODEL_ACCURACY_DEVELOPMENT_INSTRUCTIONS_V2.md` — canonical model-development and CI/CD instruction;
+2. `ml/CURRENT_MODEL.md` — current model/product state;
+3. `ml/DEMAND_FORECAST_DEVELOPMENT_PLAN_V2.md` — active accuracy roadmap;
+4. `ml/C1_V8_PROSPECTIVE_SHADOW_V1.md` — frozen C1 prospective runtime/governance;
+5. `ml/LIVE_DEMAND_ENGINE_V1_PLAN.md` — live forecasting runtime/roadmap;
+6. `ml/SECTOR_DECISION_PRICING_V1.md` — E0 sector/pricing product contract;
+7. `ml/NORTH_STAR.md`;
+8. `ml/LIVE_FORECAST_ORCHESTRATOR_V1.md`;
+9. `ml/STRUCTURAL_PRIOR_MATERIALIZER_V1.md`;
+10. `ml/MODEL_PROMOTION_GOVERNANCE_V1.md`.
 
-## Critical product direction
+## Immediate objective
 
-Beyond is a **live demand decision system**.
+> **Dopracować model maksymalnie teraz i obniżyć MAE tak daleko, jak pozwala uczciwa, reprodukowalna walidacja.**
 
-Workstreams:
+Do not optimize for finishing roadmap labels.
 
-- **a) Dane historyczne — dopracować, nie przebudowywać**;
-- **b) Aktualny sezon — wzmocnić**;
-- **c) Context meczu — rozbudować**;
-- **d) Live demand — najmocniej rozwinąć**.
+Do not mark a whole workstream complete because one challenger failed.
 
-Order:
+## Canonical architecture
 
-`Walidacja -> b -> c -> d -> tuning a`
+### Pre-Live Model v2
 
-Public seat-map inventory is a **demand proxy, not confirmed paid sales**.
+`history + current-season regime + match context -> strongest possible pre-live forecast`
+
+This is the immediate active development area.
+
+### Continuous Live Updater v2
+
+`Pre-Live v2 + live trajectory + inventory + time-to-kickoff + reliability -> live delta / revised forecast`
+
+This follows the Pre-Live v2 optimization/freeze.
+
+Frozen C1 v8 continues prospective collection in parallel and must not be retuned silently.
+
+## Active work order
+
+1. **a2 — Historical / Structural Prior optimization**
+   - feature contribution and ablation;
+   - noisy-feature removal only with evidence;
+   - recency weighting;
+   - model-family challengers;
+   - horizon-specific optimization;
+   - club/residual calibration challengers.
+2. **b2 — Current-season regime**
+   - residual-based current-season signals;
+   - actual-vs-expected ratios;
+   - EWMA / rolling residuals;
+   - sample-size-aware shrinkage;
+   - hierarchical regime signals where justified.
+3. **c2 — Match context**
+   - match stakes / title-Europe-relegation relevance;
+   - better streak representation;
+   - rivalry / derby / exceptional opponent draw where deterministic;
+   - squad availability only with reliable historical PIT data;
+   - do not keep retuning the already weak Future Fixture Context v1 on the same exposed holdouts.
+4. **Freeze Pre-Live v2.**
+5. **d2 — Continuous Live Updater**
+   - continuous time-to-kickoff;
+   - earliest usable inventory evidence;
+   - forecast refresh on meaningful snapshots;
+   - delta / remaining-demand / reliability-weighted blend challengers;
+   - explicit release/coverage/data-quality handling.
+
+Shortcut:
+
+`a2 -> b2 -> c2 -> freeze Pre-Live v2 -> d2`
+
+## Workstream status — precise wording
+
+- a) Historical data: **MATURE INCUMBENT / NOT FULLY OPTIMIZED**.
+- b) Current season: **PARTIALLY TESTED / NOT EXHAUSTED**.
+- c) Match context: **AUDITED + ONE CHALLENGER TESTED / NOT EXHAUSTED**.
+- d) Live demand: **IMPORTANT / FROZEN C1 PROSPECTIVE COLLECTION ACTIVE / NEW d2 AFTER PRE-LIVE v2 FREEZE**.
+
+Mandatory interpretation:
+
+> **A failed challenger closes the challenger, not the workstream.**
+
+`Current Season Adjustment v1 NOT PROVEN` closes that formulation only.
+
+`Future Fixture Context v1 NOT PROVEN` closes that formulation only.
 
 ## Structural Prior — production incumbent
 
-All five horizons T-30/T-14/T-7/T-3/T-1 are executable and frozen.
-
-Production remains:
-
-`live_adjustment = 0`
+All five horizons are executable and frozen in the current production bundle.
 
 Historical reference MAE:
 
@@ -53,7 +105,11 @@ Historical reference MAE:
 | T-3 | 1,661.7 | 1,775.1 |
 | T-1 | 1,651.7 | 1,742.8 |
 
-## C1 v8 — frozen prospective shadow
+Production remains:
+
+`live_adjustment = 0`
+
+## Frozen C1 v8 — prospective shadow
 
 Package:
 
@@ -63,7 +119,7 @@ Status:
 
 `EXPERIMENTAL_SHADOW`
 
-Frozen live expert:
+Frozen expert:
 
 `c1-v2-live-ridge-directocc-compact-generic-a10`
 
@@ -77,7 +133,7 @@ Training events:
 
 Do not retune or silently retrain this package during prospective validation.
 
-## C1 historical validation
+## Current C1 historical evidence
 
 Canonical evidence:
 
@@ -85,117 +141,73 @@ Canonical evidence:
 - `ml/results/C1_WALK_FORWARD_POLICY_VALIDATION_V1_2026-10-18.md`;
 - `ml/results/C1_FORWARD_EVENT_DIAGNOSTIC_V1_2026-10-18.md`.
 
-Key result:
+Key results:
 
-- LOEO raw Live: **2,929.3 MAE**;
-- conservative train-only synthetic Live: **2,261.5**;
-- four-event chronological raw Live: **2,103.7** vs Prior **452.8**;
-- frozen v8 selects PRIOR in **16/16 rows** and preserves Prior exactly;
-- forward diagnostic finds no single compact feature group that consistently fixes raw Live;
-- frozen v8 remains unchanged.
+- raw Live LOEO: **2,929.3 MAE**;
+- conservative train-only synthetic Live LOEO: **2,261.5 MAE**;
+- stress train-only synthetic Live LOEO: **2,498.8 MAE**;
+- four-event chronological Prior: **452.8 MAE**;
+- four-event chronological raw Live: **2,103.7 MAE**;
+- frozen v8 selects PRIOR in **16/16 rows** and preserves Prior exactly on those four events.
 
-Current prospective evidence:
+Interpretation:
 
-- prediction rows: **31**;
-- prospective events: **5**;
-- scored prospective events: **0**;
-- state: `AWAITING_FIRST_PROSPECTIVE_SCORE`.
+- synthetic augmentation helps the raw live expert;
+- raw Live is not a universal replacement for Prior;
+- frozen v8 was safe on the current retrospective forward events;
+- this is not prospective proof that v8 knows when to switch to Live;
+- more independent completed prospective events are still required.
 
-There is still no confirmed prospective live MAE.
-
-## b) Aktualny sezon — TESTED / NOT PROVEN
-
-Canonical evidence:
+## b) evidence already produced
 
 `ml/results/CURRENT_SEASON_ADJUSTMENT_V1_2026-10-18.md`
 
-Result:
+Result: `NOT PROVEN / NO PRODUCTION CHANGE`.
 
-- T-30/T-14/T-3/T-1: `NO_ADJUSTMENT`;
-- T-7 development winner worsens both reference holdouts;
-- no positive mean holdout improvement;
-- no promotion;
-- production unchanged.
+Important: this tested one post-model current-season adjustment. It does not exhaust b).
 
-Do not keep tuning the same explicit current-season adjustment against exposed reference seasons.
-
-## c) Context meczu — AUDITED / NOT PROVEN
-
-Canonical evidence:
+## c) evidence already produced
 
 - `ml/MATCH_CONTEXT_AUDIT_V1.md`;
 - `ml/results/MATCH_CONTEXT_FUTURE_FIXTURE_V1_2026-10-18.md`.
 
-Existing PIT context already covers opponent draw/pair history, PPG, GD/game, form, table position and past congestion.
+Result: Future Fixture Context v1 is `NOT PROVEN / RESEARCH-ONLY`.
 
-Future Fixture Context v1 tested next-home timing/attractiveness/cannibalization:
+Important: this tests one context hypothesis. It does not exhaust c).
 
-- T-30/T-14/T-3 select `NO_CONTEXT_EXTENSION`;
-- T-7 is essentially neutral/mixed and mean worse by ~0.9 MAE;
-- T-1 is unstable and mean worse by ~15.2 MAE;
-- no horizon improves mean holdout MAE;
-- no horizon improves both reference seasons.
+## Non-negotiable engineering accuracy / CI/CD
 
-The evidence is additionally `SCHEDULE_AS_RECORDED_RETROSPECTIVE_PROXY`; historical schedule versions do not exist.
+Every material experiment must have committed code and an executable CI workflow.
 
-Do not add future-fixture features. Do not add squad context without a reliable historical PIT feed.
+Never skip:
 
-## Current development state
+- exact feature definitions;
+- source data/artifact versions;
+- as-of availability;
+- train/dev/holdout definition;
+- exclusions;
+- imputation/normalization;
+- thresholds/caps/weights/shrinkage;
+- hyperparameters;
+- deterministic seed;
+- incumbent benchmark assertion;
+- PIT/leakage checks;
+- machine-readable result artifact;
+- run/artifact IDs and hashes where available;
+- committed result document;
+- explicit decision;
+- canonical docs update.
 
-### d) Live demand — najmocniej rozwinąć — ACTIVE
+Do not accept notebook/manual/local-only benchmarks as canonical evidence.
 
-Already implemented:
+Do not random-split snapshots from the same event across train/test.
 
-- live inventory collection;
-- trajectory / velocity / acceleration;
-- release / coverage-change handling;
-- frozen C1 v8 prospective shadow;
-- sector and price-area trajectories;
-- real Roboticket price capture;
-- guarded recommendations and dashboard decision support.
+Do not treat synthetic rows as independent real events.
 
-Next development must improve continuous live evidence / Prior-to-Live transition **without changing frozen v8**.
+Do not silently retune on the same holdout.
 
-Priorities:
-
-1. inventory from the earliest available sales moment;
-2. continuous trajectory rather than treating T-30/T-14/T-7/T-3/T-1 as the only model moments;
-3. forecast refresh on meaningful snapshots;
-4. reliability / gating as a separately governed challenger;
-5. prospective outcome collection;
-6. production remains `live_adjustment = 0` until explicit promotion.
-
-### a) Dane historyczne — tuning later
-
-Only after d): feature contribution, noisy-feature removal and newer-season weighting.
-
-## E0 sector / price-area decision support — implemented
-
-Implemented:
-
-- sector trajectory / status;
-- bounded no-action projection;
-- Roboticket price capture;
-- price-area mapping / mixed-price split;
-- assumption-based scenarios;
-- guarded recommendations;
-- RLS-safe dashboard cache/UI.
-
-`auto_price_change_allowed = false`
-
-No learned elasticity or causal pricing uplift is claimed.
-
-## Non-negotiable forecasting rules
-
-- no future leakage;
-- event is the independent evaluation unit;
-- no random snapshot-row split across the same events;
-- every feature must exist as-of forecast time;
-- synthetic variants are train-only and never new independent evidence;
-- frozen v8 is not retuned on the same nine events;
-- replay/walk-forward is not prospective evidence;
-- production remains `live_adjustment = 0` until explicit promotion.
+CI success is not automatic production promotion.
 
 ## One-line cold-start instruction
 
-> **C1 historical validation is complete for current data; frozen v8 stays frozen. b) Current Season and c) Match Context were tested and did not prove a production improvement. Active development is now d) Live demand — improve continuous live evidence and Prior→Live decision quality without retuning v8.**
+> **Optimize for honest MAE reduction, not roadmap completion: strengthen and freeze Pre-Live v2 from history + current-season regime + match context first, then build a continuous live updater against it. b) and c) are partially tested, not exhausted. Preserve frozen v8 prospective collection, production `live_adjustment = 0`, and complete CI/CD evidence without skipping implementation details.**
