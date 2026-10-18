@@ -1,7 +1,7 @@
 # Beyond Ticketing — c) Context meczu — audit v1
 
 Last updated: **2026-10-18**  
-Status: **ACTIVE DEVELOPMENT / AUDIT COMPLETE / FUTURE-FIXTURE CHALLENGER NEXT**
+Status: **AUDITED / FUTURE-FIXTURE CHALLENGER NOT PROVEN / NO PRODUCTION CHANGE**
 
 ## Purpose
 
@@ -59,49 +59,9 @@ Past schedule state is already represented through:
 - previous-14-day match counts;
 - `congestion_sum`.
 
-## Real gaps
+## Gap tested: future fixtures / cannibalization
 
-### 1. Future fixtures / cannibalization
-
-The current store does **not** model:
-
-- how soon the club's next home fixture occurs after the target match;
-- how many additional home fixtures occur in the next 7 / 14 / 30 days;
-- whether the next home opponent appears more attractive than the current opponent;
-- a bounded proxy for potential demand cannibalization by that next home fixture.
-
-This is the clearest first gap for workstream c).
-
-### 2. Squad availability
-
-No governed historical point-in-time feed currently exists for:
-
-- injuries;
-- suspensions;
-- expected XI;
-- key-player availability.
-
-Do **not** backfill squad features from present-day or final-season sources. Add them only after a reliable historical PIT source exists.
-
-## Important historical-schedule limitation
-
-The committed five-season match dataset contains the **recorded final fixture timestamps**, not a versioned history of what the schedule looked like at every historical forecast timestamp.
-
-Therefore future-fixture features derived from it are labeled:
-
-`SCHEDULE_AS_RECORDED_RETROSPECTIVE_PROXY`
-
-They can answer:
-
-> Is future-home-fixture context promising enough to justify collecting/versioning schedule history?
-
-They cannot by themselves justify production promotion, because historical reschedules may not be reconstructible exactly as known at T-30/T-14/etc.
-
-## Future Fixture Context v1 challenger
-
-The first challenger adds only future-home-fixture context on top of the untouched Structural Prior feature store.
-
-Candidate groups:
+Future Fixture Context v1 tested:
 
 ### `future_timing`
 
@@ -112,7 +72,7 @@ Candidate groups:
 
 ### `future_timing_attractiveness`
 
-Adds the latest safely available context snapshot for the next home fixture where that snapshot timestamp is `<= current as_of`:
+Adds the latest available context snapshot for the next home fixture only when that snapshot timestamp is `<= current as_of`:
 
 - next opponent draw ratio mean / recent3;
 - next opponent PPG;
@@ -120,20 +80,55 @@ Adds the latest safely available context snapshot for the next home fixture wher
 - next-vs-current opponent draw gap;
 - time-decayed cannibalization proxy.
 
-If no prior snapshot of the next fixture exists yet, attractiveness fields remain missing and the model receives the missingness signal rather than future information.
+## Historical-schedule limitation
 
-## Evaluation protocol
+The committed five-season match dataset contains the **recorded final fixture timestamps**, not a versioned history of what the schedule looked like at each historical forecast timestamp.
 
-For every T-30/T-14/T-7/T-3/T-1 horizon:
+Therefore the experiment is labeled:
 
-1. fit/predict the incumbent on the untouched canonical store;
-2. hard-assert frozen incumbent holdout MAE;
-3. choose between `NO_CONTEXT_EXTENSION`, `future_timing`, and `future_timing_attractiveness` on 2023/24 development only;
-4. freeze that choice;
-5. evaluate unchanged on 2024/25 and 2025/26;
-6. never alter production automatically.
+`SCHEDULE_AS_RECORDED_RETROSPECTIVE_PROXY`
 
-Even if a future-fixture variant improves both historical holdouts, the result remains **research evidence only** until historical schedule versioning is available.
+It is research evidence only and cannot justify production promotion.
+
+## Final result
+
+Canonical evidence:
+
+`ml/results/MATCH_CONTEXT_FUTURE_FIXTURE_V1_2026-10-18.md`
+
+| Horizon | Selected option | Mean incumbent MAE | Mean challenger MAE | Result |
+|---|---|---:|---:|---|
+| T-30 | `NO_CONTEXT_EXTENSION` | 1,867.8 | 1,867.8 | no extension |
+| T-14 | `NO_CONTEXT_EXTENSION` | 1,809.4 | 1,809.4 | no extension |
+| T-7 | `future_timing_attractiveness` | **1,790.0** | 1,790.9 | not proven |
+| T-3 | `NO_CONTEXT_EXTENSION` | 1,718.4 | 1,718.4 | no extension |
+| T-1 | `future_timing_attractiveness` | **1,697.3** | 1,712.4 | not proven |
+
+T-7 is effectively neutral/mixed: +0.13 MAE improvement in 2024/25 and -2.01 degradation in 2025/26.
+
+T-1 is unstable: -37.96 degradation in 2024/25 and +7.65 improvement in 2025/26.
+
+No horizon improves mean holdout MAE and no horizon improves both reference seasons.
+
+## Squad availability
+
+No governed historical point-in-time feed currently exists for:
+
+- injuries;
+- suspensions;
+- expected XI;
+- key-player availability.
+
+Do **not** backfill squad features from present-day or final-season sources. Add them only after a reliable historical PIT source exists.
+
+## Decision
+
+1. Keep the existing opponent / pair / sporting / table / past-congestion context unchanged.
+2. Do not add Future Fixture Context v1 to Structural Prior.
+3. Do not create historical schedule versioning solely to rescue this weak challenger.
+4. Do not add squad context without a real PIT source.
+5. Mark workstream **c) Context meczu — rozbudować** as audited/tested for the currently available safe data.
+6. Move active development to **d) Live demand — najmocniej rozwinąć**.
 
 ## Implementation
 
