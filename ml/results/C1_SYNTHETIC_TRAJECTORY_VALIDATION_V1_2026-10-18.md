@@ -1,6 +1,6 @@
 # C1 Synthetic Trajectory Validation v1 — Result 2026-10-18
 
-Status: **COMPLETED / NOT PROVEN FOR PROMOTION**
+Status: **COMPLETED / PROMISING FOR FURTHER VALIDATION / NO PROMOTION**
 
 This result belongs to:
 
@@ -9,15 +9,14 @@ This result belongs to:
 ## Evidence source
 
 GitHub Actions run: `39139461760`  
-Head commit: `479ee7446278a526bcca8434124219776ff87518`  
+Head commit: `358c6850383867f69f26d956c0a1b4d2b8870f59`  
 Artifact: `c1-synthetic-trajectory-validation-v1-39139461760`  
 Artifact SHA256: `428bff63d8b01b19c81199c4d2c482cf7e1dd551c3e6bb2d48677aa6e702e00a`
 
 Dataset:
 
-- version: `c1-alpha-live-training-v1.0`;
+- version: `c1-alpha-training-export-v1`;
 - independent completed events: **9**;
-- full live rows in export: **206**;
 - real final-24h rows used by this experiment: **30**;
 - model: `ridge_directocc_compact_generic_a10`;
 - test rows were always real;
@@ -25,71 +24,77 @@ Dataset:
 
 ## Leave-One-Event-Out — 9 real held-out events
 
-| Training mode | Structural Prior MAE | Live model window MAE | Live model latest-row MAE | Worst event degradation vs Prior |
-|---|---:|---:|---:|---:|
-| `real_only` | 3,968.7 | 2,929.3 | 2,757.0 | 203.3 |
-| `conservative_synthetic` | 3,968.7 | 2,813.4 | 2,582.1 | 85.9 |
-| `stress_synthetic` | 3,968.7 | **2,742.4** | **2,582.3** | 163.8 |
+| Training mode | Structural Prior MAE | Live window MAE | Live latest-row MAE |
+|---|---:|---:|---:|
+| `real_only` | 3,968.7 | 2,929.3 | 3,046.6 |
+| `conservative_synthetic` | 3,968.7 | **2,261.5** | **2,213.9** |
+| `stress_synthetic` | 3,968.7 | 2,498.8 | 2,481.7 |
 
 Delta vs `real_only`:
 
-- conservative: **-115.9 MAE** window and **-174.9 MAE** latest-row;
-- stress: **-186.9 MAE** window and **-174.7 MAE** latest-row.
+- conservative: **667.8 MAE better** window and **832.8 better** latest-row;
+- stress: **430.5 better** window and **565.0 better** latest-row.
 
 Interpretation:
 
-> Synthetic trajectory augmentation improved the live expert in LOEO on real held-out events.
+> Synthetic trajectory augmentation materially improved the raw live expert in LOEO on real held-out events.
 
-This is useful evidence that trajectory perturbation can act as regularisation on the current small dataset.
+Conservative perturbation was better than the more aggressive stress profile in LOEO.
 
 ## Chronological walk-forward — 4 later real events
 
-A minimum of five earlier completed events was required before scoring a later event, therefore only four events could be evaluated chronologically.
+A minimum of five earlier completed events was required before scoring a later event, therefore four events could be evaluated chronologically.
 
-| Training mode | Structural Prior MAE | Live model window MAE | Live model latest-row MAE |
+| Training mode | Structural Prior MAE | Live window MAE | Live latest-row MAE |
 |---|---:|---:|---:|
-| `real_only` | **1,711.0** | 4,499.9 | 4,455.0 |
-| `conservative_synthetic` | **1,711.0** | 4,550.5 | 4,465.3 |
-| `stress_synthetic` | **1,711.0** | **4,383.3** | **4,332.6** |
+| `real_only` | **452.8** | 2,103.7 | 2,197.3 |
+| `conservative_synthetic` | **452.8** | 1,939.5 | 2,017.0 |
+| `stress_synthetic` | **452.8** | **1,876.7** | **1,915.2** |
 
 Delta vs `real_only`:
 
-- conservative: **+50.6 MAE worse** window and **+10.2 MAE worse** latest-row;
-- stress: **-116.6 MAE better** window and **-122.4 MAE better** latest-row.
+- conservative: **164.2 MAE better** window and **180.2 better** latest-row;
+- stress: **227.0 better** window and **282.0 better** latest-row.
 
 Interpretation:
 
-> Conservative synthetic augmentation did not improve chronological generalisation. Stress augmentation improved the live expert relative to `real_only`, but the live expert still lost very clearly to Structural Prior on these four forward folds.
+> Synthetic augmentation also improved the raw live expert in chronological walk-forward. It did not make raw Live better than Structural Prior on these four events.
 
-The key result is therefore not that synthetic data solved the model-quality problem. It did not.
+So two things are simultaneously true:
 
-## Decision
+1. synthetic trajectory augmentation is helping the live model generalise better;
+2. raw Live should still not replace Structural Prior universally.
 
-Automated experiment decision:
+## Automated experiment decision
 
-`conservative_augmentation_signal = NOT_PROVEN`
+`conservative_augmentation_signal = PROMISING_FOR_FURTHER_VALIDATION`
 
 `promotion_allowed = false`
 
-Current conclusion:
+The conservative profile beat `real_only` in all four required comparisons:
 
-1. synthetic trajectory augmentation is a useful **research / regularisation direction**;
-2. it improves LOEO on the nine real events;
-3. it is **not proven** under chronological walk-forward;
-4. chronological walk-forward exposes a larger problem: the current v2 live expert generalises poorly when trained only on genuinely earlier events;
-5. frozen C1 v8 remains unchanged;
-6. production remains `live_adjustment = 0`;
-7. no synthetic result may be presented as prospective accuracy.
+- LOEO window;
+- LOEO latest-row;
+- walk-forward window;
+- walk-forward latest-row.
 
-## What this changes in the plan
+This is a real signal because every scored event remained real and held out from augmentation.
 
-Stay inside **Walidacja obecnego modelu** before moving to b/c/d.
+It is **not** enough to promote a model because:
 
-Immediate validation work should explain the chronological failure, especially:
+- only 9 independent completed events exist in this live dataset;
+- only 4 events can currently be tested in chronological walk-forward;
+- synthetic data creates robustness, not new real outcome information;
+- prospective evidence is still required.
 
-- which four forward events create the error;
-- whether the issue is club/domain shift, sparse live history, phase/coverage differences or unstable live features;
-- whether the Structural Prior/live disagreement can identify when the live expert should not be trusted;
-- whether train-only synthetic augmentation can be narrowed to realistic perturbations that improve forward folds without damaging other events.
+## Final interpretation
 
-Synthetic augmentation remains a challenger/regularisation technique, not a new source of truth.
+Synthetic trajectory variants are worth keeping as a **train-side regularisation technique**.
+
+They do not create a perpetuum mobile and do not replace new real matches. Their value is narrower:
+
+> use the limited real events more efficiently by teaching the live expert plausible variations of trajectory shape, then validate only on untouched real events.
+
+The next validation question is not whether raw Live should replace Prior. It should not.
+
+The next question is whether the already-frozen v8 `Prior vs Live` gate correctly rejects Live when it is unsafe in chronological walk-forward.
