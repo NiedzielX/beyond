@@ -3,8 +3,8 @@
 
 The held-out/test event is always 100% real. Synthetic rows are generated only
 from training events and preserve each training event's real final attendance.
-The augmentation perturbs observable trajectory features to test whether modest
-observation-space variation improves generalisation.
+Synthetic rows are regularisation evidence only; they never count as independent
+matches and are never used as test rows.
 
 This experiment does not change the frozen C1 v8 package or production.
 """
@@ -113,7 +113,9 @@ def _augment_event(
             if synthetic_first is not None and removed is not None and capacity > 0:
                 inventory_noise = float(rng.normal(0.0, profile.inventory_sigma_capacity * capacity))
                 synthetic_removed = removed * motion_factor
-                synthetic_available = float(np.clip(synthetic_first - synthetic_removed + inventory_noise, 0.0, capacity))
+                synthetic_available = float(
+                    np.clip(synthetic_first - synthetic_removed + inventory_noise, 0.0, capacity)
+                )
                 variant.at[idx, "available_total"] = synthetic_available
                 if synthetic_first > 0:
                     variant.at[idx, "available_index"] = synthetic_available / synthetic_first
@@ -122,7 +124,9 @@ def _augment_event(
 
             for feature in MOTION_FEATURES:
                 if feature in variant.columns:
-                    row_factor = motion_factor * float(np.clip(rng.lognormal(0.0, profile.motion_sigma / 3.0), 0.75, 1.35))
+                    row_factor = motion_factor * float(
+                        np.clip(rng.lognormal(0.0, profile.motion_sigma / 3.0), 0.75, 1.35)
+                    )
                     variant.at[idx, feature] = _scale_value(variant.at[idx, feature], row_factor)
 
             for feature in PCT_MOTION_FEATURES:
@@ -142,7 +146,9 @@ def _augment_event(
 
             hours = _finite_float(variant.at[idx, "hours_to_kickoff"])
             if hours is not None:
-                variant.at[idx, "hours_to_kickoff"] = float(np.clip(hours + hours_shift, 0.0, WINDOW_HOURS))
+                variant.at[idx, "hours_to_kickoff"] = float(
+                    np.clip(hours + hours_shift, 0.0, WINDOW_HOURS)
+                )
 
             for feature in DROPOUT_FEATURES:
                 if feature in variant.columns and rng.random() < profile.dropout_probability:
@@ -156,7 +162,9 @@ def _augment_event(
 
 
 def augment_training(train: pd.DataFrame, profile: SyntheticProfile, seed: int) -> pd.DataFrame:
-    base = train.copy()
+    # Always normalise the index. LOEO / walk-forward filters preserve source
+    # indices and weighting must operate on row positions, not stale labels.
+    base = train.copy().reset_index(drop=True)
     base["is_synthetic"] = 0.0
     base["synthetic_profile"] = "real"
     base["synthetic_variant_no"] = 0
@@ -165,16 +173,19 @@ def augment_training(train: pd.DataFrame, profile: SyntheticProfile, seed: int) 
 
     rng = np.random.default_rng(seed)
     parts = [base]
-    for _, event_frame in train.groupby("ticket_event_id", sort=True):
+    for _, event_frame in base.groupby("ticket_event_id", sort=True):
         parts.extend(_augment_event(event_frame.copy(), profile, rng))
     return pd.concat(parts, ignore_index=True, sort=False)
 
 
 def training_weights(frame: pd.DataFrame, synthetic_weight_share: float) -> np.ndarray:
+    # Defensive reset is intentional: the function may also be called directly
+    # on a filtered DataFrame by future experiments.
+    frame = frame.reset_index(drop=True)
     weights = np.zeros(len(frame), dtype=float)
-    for _, indices in frame.groupby("ticket_event_id").groups.items():
+    for _, indices in frame.groupby("ticket_event_id", sort=False).groups.items():
         idx = np.asarray(list(indices), dtype=int)
-        synthetic = frame.loc[idx, "is_synthetic"].astype(float).to_numpy() > 0.5
+        synthetic = frame.iloc[idx]["is_synthetic"].astype(float).to_numpy() > 0.5
         real_idx = idx[~synthetic]
         synthetic_idx = idx[synthetic]
         if len(synthetic_idx) == 0 or synthetic_weight_share <= 0.0:
@@ -182,6 +193,7 @@ def training_weights(frame: pd.DataFrame, synthetic_weight_share: float) -> np.n
             continue
         weights[real_idx] = (1.0 - synthetic_weight_share) / max(len(real_idx), 1)
         weights[synthetic_idx] = synthetic_weight_share / len(synthetic_idx)
+
     mean = float(np.mean(weights))
     if mean <= 0:
         raise RuntimeError("Invalid zero training weights")
@@ -194,6 +206,8 @@ def fit_predict(
     profile: SyntheticProfile,
     seed: int,
 ) -> np.ndarray:
+    train = train.reset_index(drop=True)
+    test = test.reset_index(drop=True)
     features = [column for column in COMPACT_NUMERIC if column in train.columns and column in test.columns]
     augmented = augment_training(train, profile, seed)
     model = pipeline(features, club_aware=False, model=Ridge(alpha=10.0), scale=True)
@@ -213,10 +227,12 @@ def fit_predict(
 
 
 def _event_metrics(test: pd.DataFrame, pred: np.ndarray) -> dict[str, Any]:
-    ordered = test.copy().sort_values("as_of_at")
+    ordered = test.copy().sort_values("as_of_at").reset_index(drop=True)
     actual = ordered["actual_attendance"].astype(float).to_numpy()
     prior = ordered["prior_p50"].astype(float).to_numpy()
     pred = np.asarray(pred, dtype=float)
+    if len(pred) != len(ordered):
+        raise RuntimeError(f"Prediction length mismatch: predictions={len(pred)} rows={len(ordered)}")
     prior_error = np.abs(prior - actual)
     model_error = np.abs(pred - actual)
     return {
@@ -256,7 +272,9 @@ def _aggregate(folds: list[dict[str, Any]], name: str) -> dict[str, Any]:
         "latest_relative_improvement": (prior_latest - model_latest) / prior_latest if prior_latest else 0.0,
         "window_improvement_rate": float(np.mean([row["window_improved"] for row in folds])),
         "latest_improvement_rate": float(np.mean([row["latest_improved"] for row in folds])),
-        "worst_event_degradation": float(max(row["model_window_mae"] - row["prior_window_mae"] for row in folds)),
+        "worst_event_degradation": float(
+            max(row["model_window_mae"] - row["prior_window_mae"] for row in folds)
+        ),
         "folds": folds,
     }
 
@@ -264,8 +282,13 @@ def _aggregate(folds: list[dict[str, Any]], name: str) -> dict[str, Any]:
 def evaluate_loeo(frame: pd.DataFrame, profile: SyntheticProfile) -> dict[str, Any]:
     folds: list[dict[str, Any]] = []
     for held_out in sorted(int(value) for value in frame["ticket_event_id"].unique()):
-        train = frame[frame["ticket_event_id"] != held_out].copy()
-        test = frame[frame["ticket_event_id"] == held_out].copy().sort_values("as_of_at")
+        train = frame[frame["ticket_event_id"] != held_out].copy().reset_index(drop=True)
+        test = (
+            frame[frame["ticket_event_id"] == held_out]
+            .copy()
+            .sort_values("as_of_at")
+            .reset_index(drop=True)
+        )
         pred = fit_predict(train, test, profile, SEED + held_out * 101 + len(profile.name))
         folds.append(_event_metrics(test, pred))
     result = _aggregate(folds, profile.name)
@@ -276,7 +299,9 @@ def evaluate_loeo(frame: pd.DataFrame, profile: SyntheticProfile) -> dict[str, A
 def _event_kickoff_map(frame: pd.DataFrame) -> dict[int, pd.Timestamp]:
     tmp = frame.copy()
     tmp["as_of_at"] = pd.to_datetime(tmp["as_of_at"], utc=True)
-    tmp["_kickoff"] = tmp["as_of_at"] + pd.to_timedelta(tmp["hours_to_kickoff"].astype(float), unit="h")
+    tmp["_kickoff"] = tmp["as_of_at"] + pd.to_timedelta(
+        tmp["hours_to_kickoff"].astype(float), unit="h"
+    )
     return {
         int(event_id): pd.Timestamp(group["_kickoff"].median())
         for event_id, group in tmp.groupby("ticket_event_id")
@@ -291,8 +316,13 @@ def evaluate_walk_forward(frame: pd.DataFrame, profile: SyntheticProfile) -> dic
         earlier = ordered_events[:position]
         if len(earlier) < MIN_WALK_FORWARD_TRAIN_EVENTS:
             continue
-        train = frame[frame["ticket_event_id"].isin(earlier)].copy()
-        test = frame[frame["ticket_event_id"] == held_out].copy().sort_values("as_of_at")
+        train = frame[frame["ticket_event_id"].isin(earlier)].copy().reset_index(drop=True)
+        test = (
+            frame[frame["ticket_event_id"] == held_out]
+            .copy()
+            .sort_values("as_of_at")
+            .reset_index(drop=True)
+        )
         pred = fit_predict(train, test, profile, SEED + held_out * 307 + len(profile.name))
         metrics = _event_metrics(test, pred)
         metrics["training_event_count"] = len(earlier)
@@ -300,7 +330,8 @@ def evaluate_walk_forward(frame: pd.DataFrame, profile: SyntheticProfile) -> dic
         folds.append(metrics)
     result = _aggregate(folds, profile.name)
     result["validation"] = (
-        f"Chronological walk-forward; minimum {MIN_WALK_FORWARD_TRAIN_EVENTS} earlier events; test event never augmented"
+        f"Chronological walk-forward; minimum {MIN_WALK_FORWARD_TRAIN_EVENTS} earlier events; "
+        "test event never augmented"
     )
     return result
 
@@ -325,7 +356,9 @@ def _decision(loeo: list[dict[str, Any]], walk: list[dict[str, Any]]) -> dict[st
             "beats_real_walk_window": walk_row["model_window_mae"] < base_walk["model_window_mae"],
             "beats_real_walk_latest": walk_row["model_latest_mae"] < base_walk["model_latest_mae"],
         })
-    conservative = next(row for row in comparisons if row["profile"] == "conservative_synthetic")
+    conservative = next(
+        row for row in comparisons if row["profile"] == "conservative_synthetic"
+    )
     robust_signal = all(
         conservative[key]
         for key in (
@@ -337,10 +370,13 @@ def _decision(loeo: list[dict[str, Any]], walk: list[dict[str, Any]]) -> dict[st
     )
     return {
         "comparison": comparisons,
-        "conservative_augmentation_signal": "PROMISING_FOR_FURTHER_VALIDATION" if robust_signal else "NOT_PROVEN",
+        "conservative_augmentation_signal": (
+            "PROMISING_FOR_FURTHER_VALIDATION" if robust_signal else "NOT_PROVEN"
+        ),
         "promotion_allowed": False,
         "reason": (
-            "Synthetic augmentation is train-only regularisation. It may become a challenger only if it improves real held-out events; prospective validation is still required."
+            "Synthetic augmentation is train-only regularisation. It may become a challenger only "
+            "if it improves real held-out events; prospective validation is still required."
         ),
     }
 
@@ -359,7 +395,7 @@ def main() -> None:
         (frame["hours_to_kickoff"].astype(float) >= 0.0)
         & (frame["hours_to_kickoff"].astype(float) <= WINDOW_HOURS)
         & (frame["prior_horizon"] == "T-1")
-    ].copy()
+    ].copy().reset_index(drop=True)
     frame["as_of_at"] = pd.to_datetime(frame["as_of_at"], utc=True)
     if frame["ticket_event_id"].nunique() < 6:
         raise RuntimeError("Synthetic validation requires at least 6 independent completed events")
@@ -389,7 +425,9 @@ def main() -> None:
         "decision": _decision(loeo, walk),
     }
     args.output.parent.mkdir(parents=True, exist_ok=True)
-    args.output.write_text(json.dumps(report, indent=2, ensure_ascii=False, default=str) + "\n")
+    args.output.write_text(
+        json.dumps(report, indent=2, ensure_ascii=False, default=str) + "\n"
+    )
     print(json.dumps({
         "experiment": report["experiment"],
         "event_count": report["event_count"],
