@@ -62,7 +62,7 @@ jobs:
           python -m py_compile ml/features/structural_prior_feature_store_v1.py
 
       - name: Run unit checks
-        run: python ml/test_pre_live_baseline_optimization_v1.py
+        run: python -m ml.test_pre_live_baseline_optimization_v1
 
       - name: Run a2 stage-1 baseline optimization
         run: |
