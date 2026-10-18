@@ -117,7 +117,8 @@ def fit_t7_historical_candidate(
         - rows[spec.baseline_column].astype(float).to_numpy() / capacity
     )
     estimator = HistGradientBoostingRegressor(**T7_CONFIG)
-    estimator.fit(matrix, target, sample_weight=np.ones(len(rows), dtype=float))
+    # Exact Stage-3 contract: do not pass uniform sample_weight here.
+    estimator.fit(matrix, target)
     return T7HistoricalCandidate(
         preprocessor=preprocessor,
         estimator=estimator,
