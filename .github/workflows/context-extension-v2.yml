@@ -1,0 +1,94 @@
+name: C2 Context Extension v2
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - "ml/context_extension_v2.py"
+      - "ml/run_context_extension_v2.py"
+      - "ml/test_context_extension_v2.py"
+      - "ml/CONTEXT_EXTENSION_V2.md"
+      - "ml/current_season_residual_regime_v1.py"
+      - "ml/t7_robust_estimator_v1.py"
+      - "ml/pre_live_baseline_optimization_v1.py"
+      - "ml/demand_engine/structural_prior_runtime.py"
+      - "ml/features/structural_prior_feature_store_v1.py"
+      - "ml/artifacts/structural_prior_runtime_v1/historical_runtime_v1.csv.gz"
+      - "ml/artifacts/structural_prior_runtime_v1/manifest.json"
+      - ".github/workflows/context-extension-v2.yml"
+  push:
+    branches:
+      - main
+    paths:
+      - "ml/context_extension_v2.py"
+      - "ml/run_context_extension_v2.py"
+      - "ml/test_context_extension_v2.py"
+      - "ml/CONTEXT_EXTENSION_V2.md"
+      - "ml/current_season_residual_regime_v1.py"
+      - "ml/t7_robust_estimator_v1.py"
+      - "ml/pre_live_baseline_optimization_v1.py"
+      - "ml/demand_engine/structural_prior_runtime.py"
+      - "ml/features/structural_prior_feature_store_v1.py"
+      - "ml/artifacts/structural_prior_runtime_v1/historical_runtime_v1.csv.gz"
+      - "ml/artifacts/structural_prior_runtime_v1/manifest.json"
+      - ".github/workflows/context-extension-v2.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: c2-context-extension-v2-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  validate-and-score:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install pinned runtime
+        run: |
+          python -m pip install --upgrade pip
+          pip install numpy==2.3.5 pandas==2.2.3 scikit-learn==1.8.0 joblib==1.5.3
+
+      - name: Compile
+        run: |
+          python -m py_compile ml/context_extension_v2.py
+          python -m py_compile ml/run_context_extension_v2.py
+          python -m py_compile ml/test_context_extension_v2.py
+          python -m py_compile ml/current_season_residual_regime_v1.py
+          python -m py_compile ml/t7_robust_estimator_v1.py
+          python -m py_compile ml/pre_live_baseline_optimization_v1.py
+          python -m py_compile ml/demand_engine/structural_prior_runtime.py
+          python -m py_compile ml/features/structural_prior_feature_store_v1.py
+
+      - name: Unit checks
+        run: python -m ml.test_context_extension_v2
+
+      - name: Run C2 context extension v2
+        run: |
+          python -m ml.run_context_extension_v2 \
+            --historical-runtime ml/artifacts/structural_prior_runtime_v1/historical_runtime_v1.csv.gz \
+            --manifest ml/artifacts/structural_prior_runtime_v1/manifest.json \
+            --output /tmp/context-extension-v2.json
+
+      - name: Print scorecard
+        run: |
+          jq '{experiment,promotion_allowed,horizons:[.horizons[]|{horizon,selected_candidate_id,signal,mean_reference_baseline_mae,mean_reference_candidate_mae,mean_reference_mae_improvement,both_reference_seasons_improve}]}' \
+            /tmp/context-extension-v2.json
+
+      - name: Upload evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: c2-context-extension-v2-${{ github.run_id }}
+          path: /tmp/context-extension-v2.json
+          if-no-files-found: error
+          retention-days: 30
