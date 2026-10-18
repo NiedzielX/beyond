@@ -3,15 +3,16 @@
 
 Goal: strengthen b) Aktualny sezon without changing the frozen production model.
 
-The adjustment measures a home club's current-season home attendance level against
-its own pre-current-season home history, shrinks the signal when only a few current
-season home matches exist, and applies a bounded fraction of that signal to the
-incumbent Structural Prior prediction.
+The frozen Structural Prior is fitted and scored on the canonical feature store
+*before* challenger-only current-season columns are added. This prevents the
+challenger experiment from silently changing the incumbent feature contract.
 
 Selection protocol:
 - choose one fixed adjustment variant per horizon on 2023/24 development only;
-- freeze that variant;
+- choose NO_ADJUSTMENT when no non-zero variant beats the incumbent on development;
+- freeze that choice;
 - evaluate unchanged on 2024/25 and 2025/26 rolling holdouts;
+- hard-fail if incumbent holdout MAE does not reproduce the frozen benchmark;
 - no automatic promotion.
 """
 from __future__ import annotations
@@ -25,7 +26,10 @@ from typing import Any, Literal
 import numpy as np
 import pandas as pd
 
-from ml.demand_engine.freeze_structural_prior_artifacts import _canonical_matches
+from ml.demand_engine.freeze_structural_prior_artifacts import (
+    EXPECTED_HOLDOUT_MAE,
+    _canonical_matches,
+)
 from ml.demand_engine.structural_prior_runtime import fit_structural_prior_runtime
 from ml.features.structural_prior_feature_store_v1 import build_feature_store, quality_report
 
@@ -38,6 +42,7 @@ HOLDOUTS = [
 HORIZONS = ["T-30", "T-14", "T-7", "T-3", "T-1"]
 MIN_CURRENT_SEASON_HOME_MATCHES = 2
 MAX_ADJUSTMENT_SHARE_OF_CAPACITY = 0.20
+BENCHMARK_ATOL = 1e-6
 
 
 @dataclass(frozen=True)
@@ -88,11 +93,12 @@ def load_feature_store(path: Path) -> pd.DataFrame:
     report = quality_report(store)
     if report["status"] != "PASS":
         raise RuntimeError(f"feature store quality failed: {report}")
-    return add_current_season_signals(store)
+    return store
 
 
 def add_current_season_signals(frame: pd.DataFrame) -> pd.DataFrame:
-    out = frame.copy()
+    """Add challenger-only signals after incumbent prediction is already fixed."""
+    out = frame.copy().reset_index(drop=True)
     history_n = out["home_history_n"].astype(float)
     season_n = out["season_home_n"].fillna(0).astype(float)
     history_mean = out["home_attendance_mean"].astype(float)
@@ -104,8 +110,6 @@ def add_current_season_signals(frame: pd.DataFrame) -> pd.DataFrame:
     valid = prior_n > 0
     prior_mean.loc[valid] = prior_sum.loc[valid] / prior_n.loc[valid]
 
-    # Point-in-time fallbacks remain historical: previous-season mean first,
-    # then the all-history mean available before kickoff.
     prior_mean = prior_mean.fillna(out["prev_season_home_mean"].astype(float))
     prior_mean = prior_mean.fillna(history_mean)
 
@@ -181,6 +185,26 @@ def apply_adjustment(
     }
 
 
+def no_adjustment_result(
+    rows: pd.DataFrame,
+    incumbent_prediction: np.ndarray,
+    incumbent_metrics: dict[str, float | int],
+) -> dict[str, Any]:
+    return {
+        "variant": "NO_ADJUSTMENT",
+        "config": None,
+        "metrics": incumbent_metrics,
+        "diagnostics": {
+            "eligible_adjustment_rows": 0,
+            "eligible_adjustment_share": 0.0,
+            "mean_abs_applied_adjustment": 0.0,
+            "median_abs_applied_adjustment": 0.0,
+            "max_abs_applied_adjustment": 0.0,
+        },
+        "prediction": np.asarray(incumbent_prediction, dtype=float),
+    }
+
+
 def score_variant(
     rows: pd.DataFrame,
     incumbent_prediction: np.ndarray,
@@ -192,28 +216,71 @@ def score_variant(
         "config": asdict(variant),
         "metrics": metrics(rows["target_attendance"], adjusted),
         "diagnostics": diagnostics,
+        "prediction": adjusted,
     }
 
 
-def evaluate_horizon(frame: pd.DataFrame, horizon: str) -> dict[str, Any]:
-    development_model = fit_structural_prior_runtime(frame, horizon, DEV_TRAIN)
-    development = eligible(frame, horizon, DEV_SEASON)
-    development = development[development[development_model.spec.baseline_column].notna()].copy()
-    dev_incumbent = development_model.predict(development)
-    dev_incumbent_metrics = metrics(development["target_attendance"], dev_incumbent)
+def public_result(row: dict[str, Any]) -> dict[str, Any]:
+    return {key: value for key, value in row.items() if key != "prediction"}
 
-    dev_variants = [score_variant(development, dev_incumbent, variant) for variant in VARIANTS]
-    selected = min(dev_variants, key=lambda row: (row["metrics"]["mae"], row["variant"]))
-    selected_variant = next(variant for variant in VARIANTS if variant.id == selected["variant"])
+
+def verify_frozen_incumbent(horizon: str, season: str, value: float) -> None:
+    expected = float(EXPECTED_HOLDOUT_MAE[horizon][season])
+    if not np.isclose(value, expected, rtol=0.0, atol=BENCHMARK_ATOL):
+        raise RuntimeError(
+            f"incumbent benchmark mismatch {horizon}/{season}: actual={value} expected={expected}"
+        )
+
+
+def evaluate_horizon(frame: pd.DataFrame, horizon: str) -> dict[str, Any]:
+    # Fit incumbent on the untouched canonical store. Challenger-only columns are
+    # intentionally absent here so the incumbent feature contract cannot change.
+    development_model = fit_structural_prior_runtime(frame, horizon, DEV_TRAIN)
+    development_base = eligible(frame, horizon, DEV_SEASON)
+    development_base = development_base[
+        development_base[development_model.spec.baseline_column].notna()
+    ].copy().reset_index(drop=True)
+    dev_incumbent = development_model.predict(development_base)
+    dev_incumbent_metrics = metrics(development_base["target_attendance"], dev_incumbent)
+    development = add_current_season_signals(development_base)
+
+    nonzero_candidates = [
+        score_variant(development, dev_incumbent, variant) for variant in VARIANTS
+    ]
+    best_nonzero = min(
+        nonzero_candidates,
+        key=lambda row: (row["metrics"]["mae"], row["variant"]),
+    )
+    no_adjustment = no_adjustment_result(development, dev_incumbent, dev_incumbent_metrics)
+    selected = min(
+        [no_adjustment, *nonzero_candidates],
+        key=lambda row: (row["metrics"]["mae"], row["variant"]),
+    )
+    selected_variant = None
+    if selected["variant"] != "NO_ADJUSTMENT":
+        selected_variant = next(
+            variant for variant in VARIANTS if variant.id == selected["variant"]
+        )
 
     holdout_results: dict[str, Any] = {}
     for test_season, train_seasons in HOLDOUTS:
         model = fit_structural_prior_runtime(frame, horizon, train_seasons)
-        test = eligible(frame, horizon, test_season)
-        test = test[test[model.spec.baseline_column].notna()].copy()
-        incumbent_prediction = model.predict(test)
-        incumbent_metrics = metrics(test["target_attendance"], incumbent_prediction)
-        adjusted_prediction, diagnostics = apply_adjustment(test, incumbent_prediction, selected_variant)
+        test_base = eligible(frame, horizon, test_season)
+        test_base = test_base[test_base[model.spec.baseline_column].notna()].copy().reset_index(drop=True)
+        incumbent_prediction = model.predict(test_base)
+        incumbent_metrics = metrics(test_base["target_attendance"], incumbent_prediction)
+        verify_frozen_incumbent(horizon, test_season, float(incumbent_metrics["mae"]))
+        test = add_current_season_signals(test_base)
+
+        if selected_variant is None:
+            adjusted_prediction = incumbent_prediction
+            diagnostics = no_adjustment_result(
+                test, incumbent_prediction, incumbent_metrics
+            )["diagnostics"]
+        else:
+            adjusted_prediction, diagnostics = apply_adjustment(
+                test, incumbent_prediction, selected_variant
+            )
         adjusted_metrics = metrics(test["target_attendance"], adjusted_prediction)
         holdout_results[test_season] = {
             "training_seasons": train_seasons,
@@ -226,7 +293,10 @@ def evaluate_horizon(frame: pd.DataFrame, horizon: str) -> dict[str, Any]:
     holdout_deltas = [row["mae_delta_vs_incumbent"] for row in holdout_results.values()]
     incumbent_mean = float(np.mean([row["incumbent"]["mae"] for row in holdout_results.values()]))
     adjusted_mean = float(np.mean([row["adjusted"]["mae"] for row in holdout_results.values()]))
-    if all(delta > 0 for delta in holdout_deltas):
+
+    if selected_variant is None:
+        signal = "NO_ADJUSTMENT_SELECTED"
+    elif all(delta > 0 for delta in holdout_deltas):
         signal = "PROMISING_CONSISTENT_HOLDOUT_IMPROVEMENT"
     elif adjusted_mean < incumbent_mean:
         signal = "MIXED_BUT_POSITIVE_MEAN"
@@ -240,9 +310,16 @@ def evaluate_horizon(frame: pd.DataFrame, horizon: str) -> dict[str, Any]:
             "season": DEV_SEASON,
             "training_seasons": DEV_TRAIN,
             "incumbent": dev_incumbent_metrics,
-            "selected_variant": selected,
-            "candidate_count": len(dev_variants),
-            "top_candidates": sorted(dev_variants, key=lambda row: row["metrics"]["mae"])[:5],
+            "selected_variant": public_result(selected),
+            "best_nonzero_variant": public_result(best_nonzero),
+            "candidate_count": len(VARIANTS),
+            "top_nonzero_candidates": [
+                public_result(row)
+                for row in sorted(
+                    nonzero_candidates,
+                    key=lambda row: row["metrics"]["mae"],
+                )[:5]
+            ],
         },
         "holdouts": holdout_results,
         "mean_holdout_incumbent_mae": incumbent_mean,
@@ -262,8 +339,14 @@ def main() -> None:
     frame = load_feature_store(args.historical_runtime)
     results = [evaluate_horizon(frame, horizon) for horizon in HORIZONS]
 
-    consistent = [row for row in results if row["signal"] == "PROMISING_CONSISTENT_HOLDOUT_IMPROVEMENT"]
-    positive_mean = [row for row in results if row["mean_holdout_mae_delta"] > 0]
+    consistent = [
+        row for row in results
+        if row["signal"] == "PROMISING_CONSISTENT_HOLDOUT_IMPROVEMENT"
+    ]
+    positive_mean = [
+        row for row in results
+        if row["mean_holdout_mae_delta"] > BENCHMARK_ATOL
+    ]
 
     report = {
         "experiment": "current-season-adjustment-v1",
@@ -276,6 +359,8 @@ def main() -> None:
             "minimum_current_season_home_matches": MIN_CURRENT_SEASON_HOME_MATCHES,
             "max_adjustment_share_of_capacity": MAX_ADJUSTMENT_SHARE_OF_CAPACITY,
             "candidate_variants": len(VARIANTS),
+            "no_adjustment_candidate": True,
+            "frozen_incumbent_benchmark_asserted": True,
             "point_in_time_safe": True,
             "automatic_promotion": False,
             "production_changed": False,
@@ -284,6 +369,10 @@ def main() -> None:
         "summary": {
             "consistent_holdout_improvement_horizons": [row["horizon"] for row in consistent],
             "positive_mean_holdout_improvement_horizons": [row["horizon"] for row in positive_mean],
+            "no_adjustment_selected_horizons": [
+                row["horizon"] for row in results
+                if row["signal"] == "NO_ADJUSTMENT_SELECTED"
+            ],
             "all_horizons_consistent": len(consistent) == len(HORIZONS),
             "promotion_allowed": False,
         },
