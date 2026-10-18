@@ -49,7 +49,7 @@ Na czterech późniejszych realnych eventach:
 | `conservative_synthetic` | **452.8** | 1,939.5 | 2,017.0 |
 | `stress_synthetic` | **452.8** | **1,876.7** | **1,915.2** |
 
-Syntetyka poprawia więc raw Live również chronologicznie, ale sam raw Live nadal nie powinien automatycznie zastępować Structural Prior.
+Syntetyka poprawia raw Live również chronologicznie, ale sam raw Live nadal nie powinien automatycznie zastępować Structural Prior.
 
 ### Finalna logika v8 — sprawdzona chronologicznie
 
@@ -65,10 +65,21 @@ Wynik dla `real_only`:
 
 Czyli na obecnych czterech forward eventach v8 poprawnie rozpoznało, że Live jest niewiarygodne i nie pogorszyło forecastu.
 
+### Forward-event diagnostic
+
+Dodatkowa diagnoza tych samych czterech forward eventów pokazała:
+
+- 3 latest-row underpredictions i 1 overprediction raw Live;
+- brak jednej grupy cech, której usunięcie naprawiałoby wszystkie eventy;
+- `motion_velocity` pomaga jako lokalny diagnostic m.in. na Legia – Wisła, ale nie jest stabilnym globalnym rozwiązaniem;
+- usunięcie `inventory_level` jest mocno szkodliwe w agregacie;
+- problem jest lepiej opisany jako small-sample / event-specific distribution shift i interakcje niż jako jeden zepsuty feature.
+
 Canonical evidence:
 
 - `ml/results/C1_SYNTHETIC_TRAJECTORY_VALIDATION_V1_2026-10-18.md`;
-- `ml/results/C1_WALK_FORWARD_POLICY_VALIDATION_V1_2026-10-18.md`.
+- `ml/results/C1_WALK_FORWARD_POLICY_VALIDATION_V1_2026-10-18.md`;
+- `ml/results/C1_FORWARD_EVENT_DIAGNOSTIC_V1_2026-10-18.md`.
 
 ### Wniosek z Walidacji obecnego modelu
 
@@ -78,10 +89,9 @@ Na dzisiejszym materiale:
 2. raw Live ma realny sygnał, ale nie jest stabilne jako universal replacement;
 3. train-only synthetic trajectory augmentation realnie poprawia raw Live na realnych held-out eventach;
 4. zamrożona bramka v8 potrafi odciąć Live, kiedy jest niewiarygodne;
-5. nadal nie mamy prospective scored events, więc nie znamy jeszcze prawdziwego prospective MAE;
-6. v8 pozostaje frozen i `live_adjustment = 0`.
-
-**Walidacja historyczna na aktualnie dostępnych danych jest wystarczająca, żeby przejść do b) Aktualny sezon, jednocześnie zbierając prospective evidence w tle.**
+5. forward diagnostic nie uzasadnia globalnego usunięcia żadnej grupy compact features;
+6. nadal nie mamy prospective scored events, więc nie znamy jeszcze prawdziwego prospective MAE;
+7. v8 pozostaje frozen i `live_adjustment = 0`.
 
 ## a) Dane historyczne — dopracować, nie przebudowywać
 
@@ -94,16 +104,43 @@ Na dzisiejszym materiale:
 
 ## b) Aktualny sezon — wzmocnić
 
-Status: **NASTĘPNY AKTYWNY DEVELOPMENT.**
+Status: **PRZETESTOWANE / NOT PROVEN / NIE PROMOWAĆ.**
 
-- dodać wyraźny current season adjustment;
-- mocniej brać pod uwagę ostatnie mecze domowe;
-- mierzyć, czy klub w tym sezonie sprzedaje lepiej / gorzej niż jego historyczna norma;
-- aktualizować ten adjustment po każdym kolejnym meczu.
+Current Season Adjustment v1 został zaimplementowany i oceniony z poprawnie odizolowanym incumbentem.
 
-**Cel:** model szybciej reaguje na zmianę realiów w danym sezonie.
+Protocol:
+
+- 18 non-zero wariantów + `NO_ADJUSTMENT`;
+- wybór na 2023/24 development;
+- zamrożony wybór na 2024/25 i 2025/26 reference holdouts;
+- exact frozen benchmark Structural Prior jest hard-asserted.
+
+Wynik:
+
+| Horizon | Wybrana opcja | Mean incumbent MAE | Mean adjusted MAE |
+|---|---|---:|---:|
+| T-30 | `NO_ADJUSTMENT` | 1,867.8 | 1,867.8 |
+| T-14 | `NO_ADJUSTMENT` | 1,809.4 | 1,809.4 |
+| T-7 | `season_r3-k6-a25` | **1,790.0** | 1,844.3 |
+| T-3 | `NO_ADJUSTMENT` | 1,718.4 | 1,718.4 |
+| T-1 | `NO_ADJUSTMENT` | 1,697.3 | 1,697.3 |
+
+T-7 non-zero wariant pogarsza oba holdouty (~52 i ~57 MAE). Na pozostałych horyzontach selector poprawnie wybiera `NO_ADJUSTMENT` już na development.
+
+Wniosek:
+
+- nie dokładamy dodatkowej post-model korekty current-season;
+- bieżący sezon pozostaje używany przez obecne Structural Prior features;
+- nie tunujemy dalej tej samej idei pod exposed reference seasons;
+- production bez zmian.
+
+Canonical evidence:
+
+`ml/results/CURRENT_SEASON_ADJUSTMENT_V1_2026-10-18.md`
 
 ## c) Context meczu — rozbudować
+
+Status: **NASTĘPNY AKTYWNY DEVELOPMENT.**
 
 - dodać siłę / atrakcyjność przeciwnika;
 - future fixtures: czy za kilka dni jest atrakcyjniejszy mecz;
@@ -128,12 +165,12 @@ Status: **NASTĘPNY AKTYWNY DEVELOPMENT.**
 # Kolejność developmentu
 
 1. **Walidacja obecnego modelu — historyczna część wykonana, prospective trwa**
-2. **b) Aktualny sezon — wzmocnić — AKTYWNE**
-3. **c) Context meczu — rozbudować**
+2. **b) Aktualny sezon — wzmocnić — PRZETESTOWANE / NOT PROVEN**
+3. **c) Context meczu — rozbudować — AKTYWNE**
 4. **d) Live demand — najmocniej rozwinąć**
 5. **a) Dane historyczne — dopracować, nie przebudowywać**
 
-Skrót:
+Skrót pozostaje:
 
 `Walidacja -> b -> c -> d -> tuning a`
 
@@ -150,13 +187,13 @@ Skrót:
 
 ## b) Aktualny sezon
 
-**TAK, ale częściowo — teraz wzmacniamy.**
+**TAK w incumbent features; dodatkowy explicit adjustment przetestowany i odrzucony.**
 
-Bieżący sezon i ostatnie mecze są już używane w części features, ale nie mamy jeszcze wystarczająco wyraźnej warstwy current season adjustment.
+Bieżący sezon i ostatnie mecze pozostają używane w Structural Prior. Current Season Adjustment v1 nie wykazał dodatkowej wartości ponad incumbent.
 
 ## c) Context meczu
 
-**CZĘŚCIOWO.**
+**CZĘŚCIOWO — teraz rozwijamy.**
 
 Mamy część danych o formie, tabeli, przeciwniku i terminarzu. Future fixtures / cannibalization oraz skład nie są jeszcze pełnoprawnymi kontrolowanymi features.
 
