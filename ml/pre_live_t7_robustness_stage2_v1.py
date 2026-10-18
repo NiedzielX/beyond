@@ -11,7 +11,6 @@ Stage-2 objective:
 from __future__ import annotations
 
 import argparse
-import hashlib
 import json
 from dataclasses import asdict, dataclass
 from pathlib import Path
@@ -71,6 +70,16 @@ HIST31_CONFIG = {
     "l2_regularization": 1.0,
     "random_state": RANDOM_SEED,
 }
+
+# Canonical Stage-1 T-7 Hist31 values. Stage 2 must reproduce these exactly
+# before any blend/cap evidence is accepted. This catches fit-contract drift
+# such as omitting the explicit uniform sample_weight used in Stage 1.
+EXPECTED_STAGE1_HIST31_MAE = {
+    "2023/2024": 2379.4562743080337,
+    "2024/2025": 1672.1378964152464,
+    "2025/2026": 1770.2165629066017,
+}
+EXPECTED_STAGE1_HIST31_ATOL = 1e-9
 
 
 @dataclass(frozen=True)
@@ -133,7 +142,9 @@ def fit_hist31(store: pd.DataFrame, training_seasons: list[str]) -> FittedHist31
     )
 
     estimator = HistGradientBoostingRegressor(**HIST31_CONFIG)
-    estimator.fit(x_train, target)
+    # Exact Stage-1 contract: even uniform weights are passed explicitly.
+    sample_weight = np.ones(len(rows), dtype=float)
+    estimator.fit(x_train, target, sample_weight=sample_weight)
     return FittedHist31(
         preprocessor=preprocessor,
         estimator=estimator,
@@ -180,6 +191,17 @@ def _verify_known_incumbent(season: str, mae: float) -> None:
             )
 
 
+def _verify_stage1_hist31(season: str, mae: float) -> None:
+    expected = EXPECTED_STAGE1_HIST31_MAE.get(season)
+    if expected is None:
+        return
+    if not np.isclose(mae, expected, rtol=0.0, atol=EXPECTED_STAGE1_HIST31_ATOL):
+        raise RuntimeError(
+            f"T-7 Stage-1 Hist31 reproduction mismatch {season}: "
+            f"actual={mae} expected={expected}"
+        )
+
+
 def score_fold(
     store: pd.DataFrame,
     test_season: str,
@@ -193,13 +215,14 @@ def score_fold(
 
     incumbent_runtime = fit_structural_prior_runtime(store, HORIZON, training_seasons)
     incumbent_prediction = incumbent_runtime.predict(test)
-    incumbent_metrics = metrics(
-        test["target_attendance"].astype(float).to_numpy(), incumbent_prediction
-    )
+    actual = test["target_attendance"].astype(float).to_numpy()
+    incumbent_metrics = metrics(actual, incumbent_prediction)
     _verify_known_incumbent(test_season, float(incumbent_metrics["mae"]))
 
     hist31_runtime = fit_hist31(store, training_seasons)
     hist31_prediction = hist31_runtime.predict(test)
+    hist31_metrics = metrics(actual, hist31_prediction)
+    _verify_stage1_hist31(test_season, float(hist31_metrics["mae"]))
     capacity = test["capacity"].astype(float).to_numpy()
 
     scored: dict[str, Any] = {}
@@ -228,6 +251,7 @@ def score_fold(
         "incumbent_model_spec_id": spec.model_spec_id,
         "hist31_config": HIST31_CONFIG,
         "incumbent_mae": float(incumbent_metrics["mae"]),
+        "hist31_mae": float(hist31_metrics["mae"]),
         "pure_hist31_candidate_id": pure_hist31.id,
         "candidates": scored,
     }
@@ -379,21 +403,15 @@ def main() -> None:
 
     selected_candidate = next(c for c in candidates if c.id == selected_id)
     pure_hist31 = next(c for c in candidates if c.alpha == 1.0 and c.cap_fraction is None)
+    incumbent_candidate = next(c for c in candidates if c.id == "incumbent")
+
+    if selected_id not in {"incumbent", pure_hist31.id}:
+        reference_candidates = [incumbent_candidate, pure_hist31, selected_candidate]
+    else:
+        reference_candidates = [incumbent_candidate, pure_hist31]
 
     reference_folds = [
-        score_fold(
-            store,
-            season,
-            train,
-            [
-                next(c for c in candidates if c.id == "incumbent"),
-                pure_hist31,
-                selected_candidate,
-            ] if selected_id not in {"incumbent", pure_hist31.id} else [
-                next(c for c in candidates if c.id == "incumbent"),
-                pure_hist31,
-            ],
-        )
+        score_fold(store, season, train, reference_candidates)
         for season, train in REFERENCE_HOLDOUTS
     ]
 
@@ -439,6 +457,8 @@ def main() -> None:
             "result_document": "ml/results/PRE_LIVE_BASELINE_OPTIMIZATION_V1_2026-10-18.md",
             "selected_challenger": "model-hist_absolute_31",
             "hist31_config": HIST31_CONFIG,
+            "expected_hist31_mae": EXPECTED_STAGE1_HIST31_MAE,
+            "reproduction_atol": EXPECTED_STAGE1_HIST31_ATOL,
         },
         "input": {
             "historical_runtime_path": str(args.historical_runtime),
