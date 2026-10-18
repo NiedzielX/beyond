@@ -16,6 +16,8 @@ Nie optymalizujemy developmentu pod „zamknięcie” kolejnych literek roadmapy
 
 Negatywny wynik jednego challengera nie zamyka całego workstreamu.
 
+Niższe średnie MAE również nie wystarcza do promocji, jeśli challenger tworzy nieakceptowalny tail risk.
+
 ## Docelowa architektura
 
 ### Pre-Live Model v2
@@ -26,9 +28,9 @@ Negatywny wynik jednego challengera nie zamyka całego workstreamu.
 
 `Pre-Live v2 + live trajectory + inventory + time-to-kickoff + reliability -> live delta / revised forecast`
 
-## Nowa kolejność developmentu
+## Kolejność developmentu
 
-1. **a2 — Historical / Structural Prior optimization**
+1. **a2 — Historical / Structural Prior optimization — ACTIVE**
 2. **b2 — Current-season regime**
 3. **c2 — Match context**
 4. **Freeze Pre-Live v2**
@@ -67,6 +69,8 @@ Production:
 
 `live_adjustment = 0`
 
+Current Structural Prior bundle pozostaje production incumbent do explicit promotion.
+
 ## Co już ma Structural Prior
 
 Current feature store zawiera już część a/b/c:
@@ -88,97 +92,197 @@ Dlatego nowe eksperymenty muszą testować **nową informację lub lepszą repre
 
 # 1. a2 — Historical / Structural Prior optimization
 
-Status: **ACTIVE NEXT**.
+Status: **ACTIVE / STAGE 1 COMPLETE / STAGE 2 NEXT**.
 
 Cel:
 
 > **Wycisnąć możliwie najmocniejszy baseline z obecnego historycznego evidence zanim zaczniemy uczyć kolejne warstwy korekcyjne.**
 
-## 1.1 Feature contribution / ablation
+## 1.1 Stage 1 — Pre-Live Baseline Optimization v1 — COMPLETED
 
-Dla każdego horyzontu osobno zmierzyć contribution grup:
+Canonical evidence:
 
-- home demand history;
-- current-season demand features obecne już w Prior;
-- opponent demand;
-- pair history;
-- sporting form;
-- table context;
-- calendar / timing;
-- rest / congestion;
-- importance interactions;
-- capacity/normalization-related signals.
+`ml/results/PRE_LIVE_BASELINE_OPTIMIZATION_V1_2026-10-18.md`
 
-Wymagania:
+Run:
 
-- incumbent benchmark hard-asserted;
-- jedna zmiana kontraktu naraz, chyba że testujemy z góry zdefiniowaną grupę;
-- brak usuwania features wyłącznie na podstawie in-sample importance;
-- decyzja na podstawie development + holdout evidence.
+`39156711796`
 
-## 1.2 Recency weighting
+Protocol:
 
-Przetestować jawne candidate policies:
+- development train: 2021/22 + 2022/23;
+- candidate selection: 2023/24 only;
+- holdout 1: 2024/25, train through 2023/24;
+- holdout 2: 2025/26, train through 2024/25;
+- only incumbent + development-selected candidate scored on holdouts;
+- exact frozen incumbent assertions;
+- feature completeness gate;
+- one change at a time;
+- no automatic promotion.
 
-- uniform;
-- linear recency;
-- exponential decay;
-- bounded newer-season emphasis.
+Tested candidate families:
 
-Każda policy musi mieć zamrożone parametry przed final holdout scoringiem.
+- feature-group ablation;
+- recency weighting;
+- selected model-family challengers.
 
-## 1.3 Model-family challengers
+### Stage-1 summary
 
-Obecni championi:
+| Horizon | Dev-selected candidate | Mean incumbent MAE | Mean selected MAE | Mean improvement | Decision |
+|---|---|---:|---:|---:|---|
+| T-30 | `ablate-rest_congestion` | 1,867.82 | 1,864.11 | +3.71 | retain incumbent |
+| T-14 | `recency-linear_075` | 1,809.45 | 1,798.25 | +11.19 | retain incumbent; mixed seasons |
+| T-7 | `model-hist_absolute_31` | 1,789.98 | **1,721.18** | **+68.81** | stage-2 robustness candidate |
+| T-3 | `incumbent` | **1,718.39** | 1,718.39 | 0.00 | retain incumbent |
+| T-1 | `recency-linear_075` | **1,697.28** | 1,707.36 | -10.07 | retain incumbent |
 
-- ExtraTrees;
-- GradientBoosting;
-- HistGradientBoosting.
+### Stage-1 conclusions
 
-Przetestować challengers, jeżeli implementacja pozostaje reprodukowalna:
+#### T-30
+
+Ablating rest/congestion improves both reference seasons numerically, but only by +7.25 and +0.17 MAE. The event improvement rate remains below 50%, one median worsens, and worst-event degradation reaches +1,162.
+
+**Decision: no champion change.**
+
+#### T-14
+
+Linear newer-season weighting improves 2024/25 by +31.38 MAE but worsens 2025/26 by -9.00. Mean is +11.19.
+
+**Decision: directional recency evidence only; no champion change and no holdout retuning.**
+
+#### T-7
+
+`model-hist_absolute_31` is the only material stage-1 lead:
+
+- development improvement: **+97.36 MAE**;
+- 2024/25 improvement: **+105.55 MAE**;
+- 2025/26 improvement: **+32.06 MAE**;
+- mean reference improvement: **+68.81 MAE**;
+- median AE improves both reference seasons;
+- p90 improves on 2024/25 and is roughly neutral on 2025/26.
+
+However:
+
+- worst degradation 2024/25: **+3,685.74** on `Śląsk Wrocław – Raków`;
+- worst degradation 2025/26: **+4,233.11** on `Lech – Arka Gdynia`.
+
+**Decision: advance to robustness stage 2, no champion change yet.**
+
+#### T-3
+
+Incumbent wins development.
+
+**Decision: retain incumbent.**
+
+#### T-1
+
+Linear recency wins development but mean reference MAE is **10.07 worse** and reference seasons disagree.
+
+**Decision: challenger not proven; retain incumbent.**
+
+## 1.2 Stage 2 — T-7 Hist31 robustness / fixed blend — NEXT
+
+Question:
+
+> Can we keep a meaningful part of the T-7 Hist31 MAE improvement while reducing severe event-level degradation?
+
+Required candidates must be predeclared before scoring reference holdouts.
+
+At minimum test:
+
+- incumbent only;
+- fixed incumbent/Hist31 blends;
+- Hist31 only.
+
+Recommended fixed challenger form:
+
+`prediction(alpha) = (1-alpha) * incumbent + alpha * hist31`
+
+with a small predeclared alpha set such as:
+
+- 0.25;
+- 0.50;
+- 0.75;
+- 1.00.
+
+Selection:
+
+- 2023/24 development only;
+- primary metric MAE;
+- exact deterministic tie rule;
+- tail diagnostics reported but reference holdouts may not choose alpha.
+
+Required output:
+
+- MAE;
+- median AE;
+- p90 AE;
+- bias;
+- WAPE;
+- event improvement rate;
+- worst-event degradation;
+- exact worst-event identity;
+- development-selected alpha;
+- unchanged result on both reference seasons.
+
+No automatic promotion.
+
+## 1.3 Remaining a2 research after T-7 stage 2
+
+Stage 1 does not exhaust a2.
+
+Still justified:
+
+### Additional model-family comparison
+
+Where technically appropriate and pinned/reproducible, evaluate:
 
 - CatBoost;
 - LightGBM;
 - XGBoost;
-- regularized linear/GAM-style baseline;
-- ensemble wyłącznie z niezależnie zwalidowanych kandydatów.
+- regularized linear / GAM-style alternatives;
+- validated ensembles.
 
-Nie promować modelu tylko dlatego, że jest bardziej złożony.
+Do not add dependencies only for complexity. Each family must have a clear reason and the same evidence protocol.
 
-## 1.4 Horizon-specific optimization
+### Feature contribution follow-up
 
-T-30/T-14/T-7/T-3/T-1 mogą mieć inne:
+Stage-1 ablation is evidence about current model behavior, not proof that removed information is globally useless.
 
-- feature subsets;
-- estimator;
-- recency weighting;
-- regularization;
-- calibration.
+Follow up only where:
 
-Nie wymuszać jednego wspólnego modelu dla wygody technicznej.
+- effect is material;
+- development and references are directionally coherent;
+- a better representation of the feature group is plausible.
 
-## 1.5 Residual / club calibration
+### Recency weighting follow-up
 
-Sprawdzić, czy incumbent zostawia stabilny club-specific residual.
+T-14 shows mild mixed evidence that newer-season weighting may matter.
 
-Każda kalibracja:
+Do not tune weights against exposed references. Any next recency experiment must predeclare a new policy family and select only on development.
 
-- PIT-safe;
-- shrinkowana przy małej próbce;
-- oceniana out-of-sample;
-- nie może być prostym memorizingiem klubu/sezonu.
+### Residual / club calibration
+
+Check for stable PIT-safe club residual structure.
+
+Any calibration must:
+
+- shrink low sample sizes;
+- avoid club memorization;
+- be evaluated out-of-sample;
+- report per-club and tail behavior.
 
 ## Exit condition a2
-
-Nie ma jednego z góry ustalonego „winnera”.
 
 a2 kończy się dopiero, gdy:
 
 - główne feature groups mają contribution evidence;
 - sensowne recency policies zostały sprawdzone;
-- co najmniej current model family + uzasadnione challengers zostały porównane;
+- current model families + uzasadnione challengers zostały porównane;
+- material leads mają robustness/tail analysis;
 - per-horizon champion jest jawnie wybrany;
-- pełny scorecard i artefakty są zapisane.
+- pełny scorecard i artefakty są zapisane;
+- champion changes, jeśli jakiekolwiek, przechodzą explicit freeze/promotion step.
 
 ---
 
@@ -207,13 +311,13 @@ Wniosek:
 
 > **Nie promujemy tego mechanizmu. Nie uznajemy b) za zakończone.**
 
-## 2.1 Residual regime index — priorytet
+## 2.1 Residual regime index — priority after a2
 
 Po zamrożeniu championa z a2 zbudować historyczny PIT residual:
 
 `residual = actual attendance - incumbent prediction available before that match`
 
-oraz wariant ratio:
+oraz:
 
 `demand_ratio = actual / expected`
 
@@ -258,7 +362,7 @@ Workstream można uznać za wystarczająco przebadany dopiero po:
 - sample-size diagnostics;
 - per-horizon result;
 - per-season holdout result;
-- decision based on full scorecard.
+- explicit decision from the full scorecard.
 
 ---
 
@@ -399,17 +503,11 @@ Nie uczymy d2 przeciwko baseline, który równolegle się zmienia.
 
 Status: **AFTER PRE-LIVE v2 FREEZE; live infrastructure and frozen C1 prospective collection continue now**.
 
-## 5.1 Nie ograniczamy się do pięciu checkpointów
+## 5.1 Continuous time
 
 T-30/T-14/T-7/T-3/T-1 służą do mierzenia jakości.
 
-Nowy live model może aktualizować forecast przy każdym meaningful snapshotcie.
-
-Feature:
-
-`continuous time_to_kickoff`
-
-musi umożliwiać wykorzystanie np. T-32, T-25, T-20, T-11.5, T-4.2.
+Nowy live model może aktualizować forecast przy każdym meaningful snapshotcie poprzez continuous `time_to_kickoff`.
 
 ## 5.2 Start od pierwszego usable sales evidence
 
@@ -417,15 +515,13 @@ Jeżeli sprzedaż ruszyła przed T-30, zbieramy i wykorzystujemy wcześniejsze t
 
 ## 5.3 Preferowane target formulations
 
-Testować co najmniej:
-
 ### A. Delta vs Pre-Live
 
 `target = final attendance - Pre-Live v2 prediction`
 
 ### B. Remaining demand
 
-Model ma przewidywać, ile demand pozostało od aktualnego stanu do kickoffu.
+Model przewiduje, ile demand pozostało od aktualnego stanu do kickoffu.
 
 ### C. Reliability-weighted blend
 
@@ -470,7 +566,7 @@ Nie retunować v8 jako część d2.
 
 ---
 
-# 6. Current C1 evidence — zachować jako boundary
+# 6. Current C1 evidence — boundary
 
 Current historical evidence:
 
@@ -505,6 +601,7 @@ Każdy material challenger raportuje co najmniej:
 - WAPE, jeśli meaningful;
 - p90 AE / tail metric;
 - worst-event degradation vs incumbent;
+- exact worst-event identity for material challengers;
 - share events improved;
 - result per horizon;
 - result per season;
@@ -567,15 +664,8 @@ CI green does not mean CD to production.
 
 # 9. Immediate next task
 
-**Start a2 — Pre-Live Model v2 baseline optimization.**
+**Implement T-7 Hist31 robustness / fixed-blend stage 2.**
 
-First implementation should build a reproducible per-horizon baseline optimization harness that can run:
+Do not modify the current production T-7 champion yet.
 
-- feature-group ablation;
-- recency-weight challengers;
-- current incumbent model specs;
-- selected model-family challengers;
-- one standardized scorecard;
-- exact incumbent regression assertions.
-
-Do not start a new d2 learned live model before the Pre-Live v2 freeze unless the work is purely infrastructure/prospective data collection and does not change the learned production path.
+Stage 2 must be development-selected, fully reproducible and specifically test whether the +68.81 mean reference MAE lead can be retained with materially safer event-level behavior.
