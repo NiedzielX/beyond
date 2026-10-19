@@ -172,7 +172,12 @@ jobs:
           done
           fetch_export "v7-final24" /tmp/c1-final24.json
 
-          jq -e '.eventCount == 9' /tmp/c1-events.json >/dev/null
+          echo 'C1 events payload metadata:'
+          jq -c '{ok,eventCount,eventsLength:(.events | length)}' /tmp/c1-events.json
+          echo 'C1 final24 payload metadata:'
+          jq -c '{ok,eventCount,liveRowCount,liveRowsLength:(.liveRows | length)}' /tmp/c1-final24.json
+
+          # Canonical Stage-0 frozen replay gate: final24 contract remains 9 events / 30 rows.
           jq -e '.ok == true and .eventCount == 9 and .liveRowCount == 30' \
             /tmp/c1-final24.json >/dev/null
 
