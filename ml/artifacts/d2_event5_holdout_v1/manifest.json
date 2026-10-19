@@ -1,0 +1,84 @@
+{
+  "artifact_version": "d2-event5-holdout-2026-10-19-v1",
+  "status": "COMPLETED_ONE_PASS_HOLDOUT",
+  "production_change": false,
+  "promotion_allowed": false,
+  "post_holdout_retuning_allowed": false,
+  "holdout_event_id": 5,
+  "holdout": {
+    "home_team": "Lech Poznań",
+    "away_team": "Korona Kielce",
+    "kickoff_at": "2026-10-18T15:30:00+00:00",
+    "actual_attendance": 37407.0,
+    "stadium_capacity": 43269.0,
+    "live_row_count": 4,
+    "used_for_training": false,
+    "used_for_model_selection": false,
+    "used_for_policy_selection": false
+  },
+  "frozen_lineage": {
+    "pre_live_freeze_id": "pre-live-v2-historical-candidate-2026-10-18-v1",
+    "stage1_expert_id": "ridge-a10",
+    "stage2_package_id": "d2-stage2-p2-observation-maturity-2026-10-19-v1",
+    "stage2_policy_id": "P2-observation-maturity",
+    "development_event_ids": [1, 3, 4, 8, 9, 12, 13, 14, 17],
+    "development_event_count": 9,
+    "development_row_count": 30
+  },
+  "pre_live_anchor": {
+    "structural_t1_base_p50": 29737.928348814108,
+    "frozen_v2_p50": 27574.478348814107,
+    "b2_correction_seats": -2163.4500000000007,
+    "prior_completed_same_season_home_matches": 5,
+    "regime_ewma_residual_fraction": -0.11894098185696676,
+    "structural_base_absolute_error": 7669.071651185892,
+    "frozen_v2_absolute_error": 9832.521651185893
+  },
+  "scores": {
+    "frozen_v2": {
+      "latest_error": 9832.521651185893,
+      "window_mae": 9832.521651185893
+    },
+    "raw_ridge": {
+      "latest_error": 6652.812733733994,
+      "window_mae": 6170.353012099837,
+      "latest_improvement_vs_frozen": 3179.7089174518987,
+      "window_improvement_vs_frozen": 3662.168639086056
+    },
+    "p2_governed_ridge": {
+      "latest_error": 6652.812733733994,
+      "window_mae": 7263.16332598907,
+      "latest_improvement_vs_frozen": 3179.7089174518987,
+      "window_improvement_vs_frozen": 2569.358325196823,
+      "latest_improvement_vs_raw_ridge": 0.0
+    }
+  },
+  "c1_v8_prospective_comparator": {
+    "package_version": "c1-shadow-v8-frozen-2026-10-16-n9",
+    "latest_selected_expert": "PRIOR",
+    "latest_reason_code": "insufficient_disagreement",
+    "latest_prior_error": 7669.071651185892,
+    "latest_live_error": 9309.620021692925,
+    "latest_policy_error": 7669.071651185892,
+    "window_prior_mae": 7669.071651185892,
+    "window_live_mae": 8495.325027130002,
+    "window_policy_mae": 7669.071651185892,
+    "reconstructed_after_outcome": false
+  },
+  "canonical_evidence": {
+    "workflow_run_id": 39310995137,
+    "main_commit_sha": "0239d40b99158ff2a31b8bfa9a8433f7bac6ad75",
+    "artifact_name": "d2-event5-holdout-v1-39310995137",
+    "artifact_id": 12215538287,
+    "artifact_zip_sha256": "2857f1cb8a0bff9b0cac41bc36520ae840df91ef1400d0b6c4c7b90938b9c867",
+    "split_manifest_sha256": "5591880cff101ed316c4acae87fb0cb549ef9d5a987126b63245e154adb5a822",
+    "development_stage0_json_sha256": "bb8a7c8ef3c719bca0c54da8961aea92d8484168b6493c768fe88c53f316985a",
+    "development_stage0_csv_sha256": "ec7aef2f458ae1db2fdaced7e0a051fe8b9035eccdb3764b0f640c6078aa6954",
+    "holdout_json_sha256": "3938ee164781f9272ce64087e4aa6ff9871b5bd7fb41e6e671f1316a86e6a0e7",
+    "holdout_rows_csv_sha256": "e57b441fc37d4d6bb42c807c16ea55617c4d3a88f7312024e402e7b6cd1e47f1",
+    "c1_comparator_json_sha256": "a82fdb30d3532e0344af524053ded9bad0f19485cef6b04daadce9b133d67685",
+    "stage2_manifest_sha256": "8d04defd1400ca9aadd19abba8b4ba8a0f3ed8c2bad56d8c0b88c5aa79cf7083"
+  },
+  "decision": "HOLDOUT_COMPLETE_KEEP_D2_FROZEN_PROSPECTIVE_ACCUMULATION",
+  "next_step": "Keep d2 frozen and score later eligible completed events append-only. Track Structural T-1 base, Frozen-v2/b2, raw Ridge, P2 and persisted C1 comparator independently. No retuning from event 5."
+}
