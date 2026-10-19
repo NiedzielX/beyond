@@ -116,7 +116,8 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          response=$(curl -fsS -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
+          response=$(curl --retry 4 --retry-all-errors --retry-delay 2 -fsS \
+            -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
             "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=beyond-c1-alpha-training")
           token=$(printf '%s' "$response" | jq -r '.value')
           test -n "$token"
@@ -129,13 +130,49 @@ jobs:
         run: |
           set -euo pipefail
           base='https://adchzwqboeekhokapxqi.supabase.co/functions/v1/c1_alpha_training_export_v1'
+
+          fetch_export() {
+            local version="$1"
+            local output="$2"
+            local attempts=5
+            local attempt=1
+            local code=''
+
+            while [ "$attempt" -le "$attempts" ]; do
+              code=$(curl -sS \
+                --connect-timeout 20 \
+                --max-time 90 \
+                -H "Authorization: Bearer $C1_ALPHA_OIDC_TOKEN" \
+                -o "$output" \
+                -w '%{http_code}' \
+                "$base?version=$version" || true)
+
+              if [ "$code" = "200" ] && jq -e '.ok == true' "$output" >/dev/null 2>&1; then
+                echo "Fetched $version on attempt $attempt"
+                return 0
+              fi
+
+              echo "C1 export attempt $attempt/$attempts failed version=$version http=$code" >&2
+              if [ -s "$output" ]; then
+                jq -c '{ok,error,message,eventCount,liveRowCount}' "$output" 2>/dev/null >&2 \
+                  || head -c 1000 "$output" >&2 \
+                  || true
+                echo >&2
+              fi
+              sleep $((attempt * 2))
+              attempt=$((attempt + 1))
+            done
+
+            echo "C1 export failed after $attempts attempts version=$version last_http=$code" >&2
+            return 1
+          }
+
           for part in events attendance sporting aliases; do
-            curl -fsS -H "Authorization: Bearer $C1_ALPHA_OIDC_TOKEN" \
-              "$base?version=v7-$part" -o "/tmp/c1-$part.json"
-            jq -e '.ok == true' "/tmp/c1-$part.json" >/dev/null
+            fetch_export "v7-$part" "/tmp/c1-$part.json"
           done
-          curl -fsS -H "Authorization: Bearer $C1_ALPHA_OIDC_TOKEN" \
-            "$base?version=v7-final24" -o /tmp/c1-final24.json
+          fetch_export "v7-final24" /tmp/c1-final24.json
+
+          jq -e '.eventCount == 9' /tmp/c1-events.json >/dev/null
           jq -e '.ok == true and .eventCount == 9 and .liveRowCount == 30' \
             /tmp/c1-final24.json >/dev/null
 
