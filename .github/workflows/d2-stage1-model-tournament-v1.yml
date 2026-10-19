@@ -7,6 +7,8 @@ on:
       - "ml/d2_stage1_model_tournament_v1.py"
       - "ml/run_d2_stage1_model_tournament_v1.py"
       - "ml/test_d2_stage1_model_tournament_v1.py"
+      - "ml/d2_stage1_payload_split_v1.py"
+      - "ml/test_d2_stage1_payload_split_v1.py"
       - "ml/D2_STAGE1_MODEL_TOURNAMENT_V1.md"
       - "ml/requirements-d2-tsfm-v1.txt"
       - "ml/d2_live_replay_anchor_v1.py"
@@ -22,6 +24,8 @@ on:
       - "ml/d2_stage1_model_tournament_v1.py"
       - "ml/run_d2_stage1_model_tournament_v1.py"
       - "ml/test_d2_stage1_model_tournament_v1.py"
+      - "ml/d2_stage1_payload_split_v1.py"
+      - "ml/test_d2_stage1_payload_split_v1.py"
       - "ml/D2_STAGE1_MODEL_TOURNAMENT_V1.md"
       - "ml/requirements-d2-tsfm-v1.txt"
       - "ml/d2_live_replay_anchor_v1.py"
@@ -63,11 +67,15 @@ jobs:
           python -m py_compile ml/d2_stage1_model_tournament_v1.py
           python -m py_compile ml/run_d2_stage1_model_tournament_v1.py
           python -m py_compile ml/test_d2_stage1_model_tournament_v1.py
+          python -m py_compile ml/d2_stage1_payload_split_v1.py
+          python -m py_compile ml/test_d2_stage1_payload_split_v1.py
           python -m py_compile ml/d2_live_replay_anchor_v1.py
           python -m py_compile ml/run_d2_live_replay_anchor_v1.py
 
       - name: Unit / leakage / contract checks
-        run: python -m ml.test_d2_stage1_model_tournament_v1
+        run: |
+          python -m ml.test_d2_stage1_model_tournament_v1
+          python -m ml.test_d2_stage1_payload_split_v1
 
   evaluate-main:
     if: github.event_name != 'pull_request'
@@ -125,7 +133,7 @@ jobs:
           echo "::add-mask::$token"
           echo "C1_ALPHA_OIDC_TOKEN=$token" >> "$GITHUB_ENV"
 
-      - name: Fetch frozen C1 replay source payloads
+      - name: Fetch current append-only C1 replay exports
         shell: bash
         run: |
           set -euo pipefail
@@ -172,32 +180,38 @@ jobs:
           done
           fetch_export "v7-final24" /tmp/c1-final24.json
 
-          echo 'C1 events payload metadata:'
+          echo 'Current append-only C1 events payload metadata:'
           jq -c '{ok,eventCount,eventsLength:(.events | length)}' /tmp/c1-events.json
-          echo 'C1 final24 payload metadata:'
+          echo 'Current append-only C1 final24 payload metadata:'
           jq -c '{ok,eventCount,liveRowCount,liveRowsLength:(.liveRows | length)}' /tmp/c1-final24.json
 
-          # Canonical Stage-0 frozen replay gate: final24 contract remains 9 events / 30 rows.
-          jq -e '.ok == true and .eventCount == 9 and .liveRowCount == 30' \
-            /tmp/c1-final24.json >/dev/null
-
-      - name: Compose unchanged d2 Stage 0 input
-        shell: bash
+      - name: Freeze exact 9-event Stage 1 development rows and separate new holdouts
         run: |
-          set -euo pipefail
-          jq -n \
-            --slurpfile events /tmp/c1-events.json \
-            --slurpfile attendance /tmp/c1-attendance.json \
-            --slurpfile sporting /tmp/c1-sporting.json \
-            --slurpfile aliases /tmp/c1-aliases.json \
-            --slurpfile live /tmp/c1-final24.json \
-            '{version:"d2-stage1-c1-replay-payload-v1",eventCount:$events[0].eventCount,events:$events[0].events,attendance:$attendance[0].attendance,sportingMatches:$sporting[0].sportingMatches,aliases:$aliases[0].aliases,liveRows:$live[0].liveRows,liveRowCount:$live[0].liveRowCount,sampling:$live[0].sampling}' \
-            > /tmp/d2-stage1-input.json
+          python -m ml.d2_stage1_payload_split_v1 \
+            --events /tmp/c1-events.json \
+            --attendance /tmp/c1-attendance.json \
+            --sporting /tmp/c1-sporting.json \
+            --aliases /tmp/c1-aliases.json \
+            --live /tmp/c1-final24.json \
+            --training-contract ml/artifacts/c1_shadow_v8/training_contract_v1.json \
+            --output-frozen /tmp/d2-stage1-frozen-input.json \
+            --output-split-manifest /tmp/d2-stage1-split-manifest.json
 
-      - name: Rebuild exact Frozen Pre-Live v2 Stage 0 anchor
+      - name: Hard frozen development split gate
+        run: |
+          jq -e '
+            .frozen_development.event_count == 9
+            and .frozen_development.live_row_count == 30
+            and .rules.new_holdouts_used_for_stage1_selection == false
+            and (.new_holdout_candidates.event_ids | index(5)) != null
+          ' /tmp/d2-stage1-split-manifest.json >/dev/null
+          jq -e '.eventCount == 9 and .liveRowCount == 30' \
+            /tmp/d2-stage1-frozen-input.json >/dev/null
+
+      - name: Rebuild exact Frozen Pre-Live v2 Stage 0 anchor on frozen development rows
         run: |
           python -m ml.run_d2_live_replay_anchor_v1 \
-            --input /tmp/d2-stage1-input.json \
+            --input /tmp/d2-stage1-frozen-input.json \
             --structural-artifact-dir ml/artifacts/structural_prior_runtime_v1 \
             --freeze-manifest ml/artifacts/pre_live_v2_historical_candidate_v1/manifest.json \
             --c1-training-contract ml/artifacts/c1_shadow_v8/training_contract_v1.json \
@@ -244,6 +258,7 @@ jobs:
 
       - name: Hash Stage 1 evidence
         run: |
+          sha256sum /tmp/d2-stage1-split-manifest.json
           sha256sum /tmp/d2-stage0-anchor.json
           sha256sum /tmp/d2-stage0-anchor.csv
           sha256sum /tmp/d2-stage1-model-tournament-v1.json
@@ -254,6 +269,7 @@ jobs:
         with:
           name: d2-stage1-model-tournament-v1-${{ github.run_id }}
           path: |
+            /tmp/d2-stage1-split-manifest.json
             /tmp/d2-stage0-anchor.json
             /tmp/d2-stage0-anchor.csv
             /tmp/d2-stage1-model-tournament-v1.json
