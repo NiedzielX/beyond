@@ -1,0 +1,20 @@
+{
+  "registry_version": "d2-prospective-registry-v1",
+  "frozen_package_id": "d2-stage2-p2-observation-maturity-2026-10-19-v1",
+  "development_event_ids": [1, 3, 4, 8, 9, 12, 13, 14, 17],
+  "scored_prospective_events": [
+    {
+      "ticket_event_id": 5,
+      "status": "COMPLETED_ONE_PASS_HOLDOUT",
+      "evidence_manifest": "ml/artifacts/d2_event5_holdout_v1/manifest.json",
+      "workflow_run_id": 39310995137
+    }
+  ],
+  "rules": {
+    "development_events_are_never_prospective": true,
+    "scored_events_are_never_rescored_as_unseen": true,
+    "new_outcomes_are_not_added_to_ridge_training": true,
+    "new_outcomes_do_not_change_p2": true,
+    "registry_update_requires_persisted_evidence_cycle": true
+  }
+}
