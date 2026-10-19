@@ -1,0 +1,117 @@
+{
+  "audit_version": "d2-prospective-capacity-audit-2026-10-19-v1",
+  "source_project_ref": "adchzwqboeekhokapxqi",
+  "competition_key": "ekstraklasa",
+  "season": "2026/2027",
+  "purpose": "Provide an explicit audited capacity lineage for prospective d2 events whose home clubs may fall outside the frozen nine-event Stage-0 compatibility audit. The frozen development/Stage-0 audit remains unchanged.",
+  "source_contract": "private.structural_prior_capacity_registry_v1 rows valid from 2026-07-01 with no current valid_to; target ticket_event capacity must match this snapshot exactly.",
+  "scope": "All 11 home club slugs currently tracked by ticket_events for Ekstraklasa as of 2026-10-19.",
+  "clubs": {
+    "cracovia": {
+      "club_key": "cracovia",
+      "capacity": 15016,
+      "valid_from": "2026-07-01",
+      "valid_to": null,
+      "verification_status": "verified",
+      "source_name": "Zarząd Infrastruktury Sportowej w Krakowie — Stadion Cracovii",
+      "source_url": "https://zis.krakow.pl/stadion-cracovii-im-jozefa-pilsudskiego?parent=baza-obiektow-sportowych"
+    },
+    "gkskatowice": {
+      "club_key": "gkskatowice",
+      "capacity": 15048,
+      "valid_from": "2026-07-01",
+      "valid_to": null,
+      "verification_status": "verified",
+      "source_name": "Miasto Katowice — Arena Katowice",
+      "source_url": "https://katowice.eu/dla-mieszkanca/aktualnosci?ItemID=7461&ListID=75169dcb-89ef-46cd-a876-165c1e838909"
+    },
+    "gornikzabrze": {
+      "club_key": "gornikzabrze",
+      "capacity": 28236,
+      "valid_from": "2026-07-01",
+      "valid_to": null,
+      "verification_status": "verified",
+      "source_name": "Górnik Zabrze — Arena Zabrze",
+      "source_url": "https://www.gornikzabrze.pl/klub/stadion"
+    },
+    "jagiellonia": {
+      "club_key": "jagiellonia",
+      "capacity": 22372,
+      "valid_from": "2026-07-01",
+      "valid_to": null,
+      "verification_status": "verified",
+      "source_name": "Chorten Arena / Stadion Białystok",
+      "source_url": "https://stadion.bialystok.pl/en/business_offer/tournaments-and-matches/"
+    },
+    "lech": {
+      "club_key": "lech",
+      "capacity": 43269,
+      "valid_from": "2026-07-01",
+      "valid_to": null,
+      "verification_status": "verified",
+      "source_name": "Lech Poznań official stadium page",
+      "source_url": "https://www.lechpoznan.pl/pl/ul-bulgarska"
+    },
+    "legia": {
+      "club_key": "legia",
+      "capacity": 31006,
+      "valid_from": "2026-07-01",
+      "valid_to": null,
+      "verification_status": "carry_forward",
+      "source_name": "Beyond verified-capacity history v1",
+      "source_url": "repo://ml/data/STADIUM_CAPACITY_HISTORY_V1.md"
+    },
+    "pogonszczecin": {
+      "club_key": "pogonszczecin",
+      "capacity": 21163,
+      "valid_from": "2026-07-01",
+      "valid_to": null,
+      "verification_status": "verified",
+      "source_name": "Pogoń Szczecin official stadium page",
+      "source_url": "https://ovh.pogonszczecin.pl/klub/stadion"
+    },
+    "slaskwroclaw": {
+      "club_key": "slask_wroclaw",
+      "capacity": 43708,
+      "valid_from": "2026-07-01",
+      "valid_to": null,
+      "verification_status": "verified",
+      "source_name": "Śląsk Wrocław ticketing / Tarczyński Arena technical data",
+      "source_url": "https://bilety.slaskwroclaw.pl/CMS?page=dojazd"
+    },
+    "wisla_plock": {
+      "club_key": "wisla_plock",
+      "capacity": 15004,
+      "valid_from": "2026-07-01",
+      "valid_to": null,
+      "verification_status": "verified",
+      "source_name": "Wisła Płock official stadium page",
+      "source_url": "https://wisla-plock.pl/klub/stadion/"
+    },
+    "wislakrakow": {
+      "club_key": "wisla_krakow",
+      "capacity": 33130,
+      "valid_from": "2026-07-01",
+      "valid_to": null,
+      "verification_status": "verified",
+      "source_name": "Zarząd Infrastruktury Sportowej w Krakowie",
+      "source_url": "https://zis.krakow.pl/stadion-miejski-im-henryka-reymana-w-krakowie"
+    },
+    "zaglebie_lubin": {
+      "club_key": "zaglebie_lubin",
+      "capacity": 16086,
+      "valid_from": "2026-07-01",
+      "valid_to": null,
+      "verification_status": "verified",
+      "source_name": "Zagłębie Lubin — KGHM Zagłębie Arena",
+      "source_url": "https://www.zaglebie.com/Klub"
+    }
+  },
+  "rules": [
+    "This prospective audit is additive and does not replace ml/artifacts/d2_stage0_capacity_audit_v1.json for frozen 9/30 development reconstruction.",
+    "A prospective target event must have an exact matching club_slug entry and stadium_capacity value before model scoring.",
+    "Capacity is not inferred from attendance, inventory, or venue name.",
+    "A club/capacity outside this snapshot requires a new reviewed audit version rather than silent fallback.",
+    "Legia remains explicitly carry_forward; all other entries are verified in the underlying capacity registry."
+  ]
+}
