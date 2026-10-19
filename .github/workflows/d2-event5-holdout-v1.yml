@@ -5,6 +5,7 @@ on:
   pull_request:
     paths:
       - "ml/d2_event5_holdout_v1.py"
+      - "ml/run_d2_event5_holdout_v1.py"
       - "ml/test_d2_event5_holdout_v1.py"
       - "ml/artifacts/d2_event5_c1_v8_prospective_score_v1.json"
       - "ml/artifacts/d2_stage2_p2_observation_maturity_v1/manifest.json"
@@ -19,6 +20,7 @@ on:
       - main
     paths:
       - "ml/d2_event5_holdout_v1.py"
+      - "ml/run_d2_event5_holdout_v1.py"
       - "ml/test_d2_event5_holdout_v1.py"
       - "ml/artifacts/d2_event5_c1_v8_prospective_score_v1.json"
       - "ml/artifacts/d2_stage2_p2_observation_maturity_v1/manifest.json"
@@ -53,6 +55,7 @@ jobs:
       - name: Compile holdout scorer
         run: |
           python -m py_compile ml/d2_event5_holdout_v1.py
+          python -m py_compile ml/run_d2_event5_holdout_v1.py
           python -m py_compile ml/test_d2_event5_holdout_v1.py
       - name: Unit / no-leakage / freeze-contract checks
         run: |
@@ -154,7 +157,7 @@ jobs:
 
       - name: Score frozen d2 package on event5 exactly once
         run: |
-          python -m ml.d2_event5_holdout_v1 \
+          python -m ml.run_d2_event5_holdout_v1 \
             --events /tmp/c1-events.json \
             --attendance /tmp/c1-attendance.json \
             --sporting /tmp/c1-sporting.json \
