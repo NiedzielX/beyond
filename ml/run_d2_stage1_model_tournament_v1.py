@@ -4,8 +4,16 @@
 The implementation module keeps model loading injectable for unit tests. The
 canonical workflow uses this runner so the Hugging Face model weights cannot
 silently drift behind a mutable `main` ref.
+
+Chronos family members may collapse singleton axes differently when
+`prediction_length == 1`. The canonical adapter below normalizes both one-step
+and multi-step quantile outputs without weakening shape validation.
 """
 from __future__ import annotations
+
+from typing import Any
+
+import numpy as np
 
 import ml.d2_stage1_model_tournament_v1 as impl
 
@@ -36,7 +44,65 @@ def load_pinned_chronos_pipeline(model_id: str):
     )
 
 
+def normalize_quantile_output_canonical(
+    quantiles: Any,
+    prediction_length: int,
+    batch_size: int,
+) -> list[np.ndarray]:
+    """Normalize Chronos-2/Bolt quantiles, including singleton horizons.
+
+    Canonical per-series output is always `(prediction_length, 3)` for
+    p10/p50/p90. Singleton batch/horizon axes may be omitted by model/runtime
+    combinations, but all non-singleton dimensions remain hard validated.
+    """
+    if isinstance(quantiles, list):
+        items = [impl._to_numpy(item) for item in quantiles]
+    else:
+        arr = impl._to_numpy(quantiles)
+        if arr.ndim < 2:
+            raise RuntimeError(f"unexpected Chronos quantile rank {arr.shape}")
+        if arr.shape[0] != batch_size:
+            raise RuntimeError(
+                f"unexpected Chronos batch axis shape={arr.shape} expected={batch_size}"
+            )
+        items = [arr[index] for index in range(batch_size)]
+
+    normalized: list[np.ndarray] = []
+    for item in items:
+        arr = np.asarray(item, dtype=float)
+        # Remove only redundant singleton axes. For prediction_length=1 this
+        # may legitimately leave a single quantile vector `(3,)`.
+        arr = np.squeeze(arr)
+        if arr.ndim == 1:
+            if prediction_length == 1 and arr.shape == (len(impl.QUANTILE_LEVELS),):
+                arr = arr.reshape(1, len(impl.QUANTILE_LEVELS))
+            else:
+                raise RuntimeError(
+                    f"unexpected one-dimensional Chronos quantile shape {arr.shape} "
+                    f"prediction_length={prediction_length}"
+                )
+        if arr.ndim != 2:
+            raise RuntimeError(f"unexpected per-series Chronos quantile shape {arr.shape}")
+        if arr.shape == (prediction_length, len(impl.QUANTILE_LEVELS)):
+            pass
+        elif arr.shape == (len(impl.QUANTILE_LEVELS), prediction_length):
+            arr = arr.T
+        else:
+            raise RuntimeError(
+                f"cannot normalize Chronos quantiles shape={arr.shape} "
+                f"prediction_length={prediction_length}"
+            )
+        normalized.append(arr.astype(float))
+
+    if len(normalized) != batch_size:
+        raise RuntimeError(
+            f"Chronos result batch size changed actual={len(normalized)} expected={batch_size}"
+        )
+    return normalized
+
+
 impl.load_chronos_pipeline = load_pinned_chronos_pipeline
+impl.normalize_quantile_output = normalize_quantile_output_canonical
 
 
 if __name__ == "__main__":
