@@ -7,7 +7,10 @@ from pathlib import Path
 import pandas as pd
 
 from ml.d2_prospective_outcome_readiness_v1 import (
+    EVIDENCE_DELAYED_LABEL,
+    EVIDENCE_TRUE_PROSPECTIVE,
     EXPECTED_READINESS_EXPORT_VERSION,
+    STAGE2_FREEZE_CUTOFF_AT,
     STATUS_FUTURE,
     STATUS_GRACE,
     STATUS_MISSING_CAPACITY,
@@ -16,6 +19,7 @@ from ml.d2_prospective_outcome_readiness_v1 import (
     STATUS_READY,
     build_readiness_report,
     classify_events,
+    evidence_class,
     verify_readiness_export,
 )
 from ml.d2_prospective_score_v1 import (
@@ -75,6 +79,20 @@ class D2ProspectiveOutcomeReadinessV1Test(unittest.TestCase):
                 "events": events,
             })
 
+    def test_evidence_class_is_relative_to_frozen_stage2_cutoff(self) -> None:
+        self.assertEqual(
+            STAGE2_FREEZE_CUTOFF_AT,
+            pd.Timestamp("2026-10-19T19:11:01Z"),
+        )
+        self.assertEqual(
+            evidence_class("2026-10-19T17:00:00Z"),
+            EVIDENCE_DELAYED_LABEL,
+        )
+        self.assertEqual(
+            evidence_class("2026-10-24T15:30:00Z"),
+            EVIDENCE_TRUE_PROSPECTIVE,
+        )
+
     def test_completed_missing_outcome_with_96_snapshots_is_visible_blocker(self) -> None:
         rows = classify_events(
             events=[self._event(
@@ -88,16 +106,20 @@ class D2ProspectiveOutcomeReadinessV1Test(unittest.TestCase):
         )
         self.assertEqual(len(rows), 1)
         self.assertEqual(rows[0]["readiness_status"], STATUS_MISSING_OUTCOME)
+        self.assertEqual(rows[0]["evidence_class"], EVIDENCE_DELAYED_LABEL)
+        self.assertFalse(rows[0]["counts_toward_true_prospective_promotion_evidence"])
         self.assertEqual(rows[0]["final24_snapshot_count"], 96)
         self.assertFalse(rows[0]["actual_attendance_present"])
 
     def test_verified_outcome_and_live_rows_is_ready(self) -> None:
         rows = classify_events(
-            events=[self._event(20, "2026-10-19T17:00:00Z", actual=13456)],
+            events=[self._event(24, "2026-10-24T17:00:00Z", actual=13456)],
             scored_ids=set(),
-            as_of_at=pd.Timestamp("2026-10-19T20:30:00Z"),
+            as_of_at=pd.Timestamp("2026-10-24T20:30:00Z"),
         )
         self.assertEqual(rows[0]["readiness_status"], STATUS_READY)
+        self.assertEqual(rows[0]["evidence_class"], EVIDENCE_TRUE_PROSPECTIVE)
+        self.assertTrue(rows[0]["counts_toward_true_prospective_promotion_evidence"])
 
     def test_completed_outcome_without_live_rows_is_blocked(self) -> None:
         rows = classify_events(
@@ -152,28 +174,38 @@ class D2ProspectiveOutcomeReadinessV1Test(unittest.TestCase):
         )
         self.assertEqual([row["ticket_event_id"] for row in rows], [20])
 
-    def test_report_never_estimates_attendance(self) -> None:
+    def test_report_never_estimates_attendance_and_separates_evidence_classes(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / "registry.json"
             path.write_text(json.dumps(self._registry()))
             report = build_readiness_report(
                 readiness_export={
                     "version": EXPECTED_READINESS_EXPORT_VERSION,
-                    "eventCount": 1,
-                    "events": [self._event(
-                        20,
-                        "2026-10-19T17:00:00Z",
-                        actual=None,
-                        final24=96,
-                    )],
+                    "eventCount": 2,
+                    "events": [
+                        self._event(
+                            20,
+                            "2026-10-19T17:00:00Z",
+                            actual=None,
+                            final24=96,
+                        ),
+                        self._event(
+                            24,
+                            "2026-10-24T17:00:00Z",
+                            actual=14000,
+                            final24=80,
+                        ),
+                    ],
                 },
                 registry_path=path,
-                as_of_at=pd.Timestamp("2026-10-19T21:00:00Z"),
+                as_of_at=pd.Timestamp("2026-10-24T21:00:00Z"),
             )
         self.assertFalse(report["attendance_estimation_performed"])
         self.assertEqual(report["readiness_export_version"], EXPECTED_READINESS_EXPORT_VERSION)
         self.assertEqual(report["blocked_completed_event_ids"], [20])
-        self.assertEqual(report["ready_event_ids"], [])
+        self.assertEqual(report["ready_event_ids"], [24])
+        self.assertEqual(report["true_prospective_ready_event_ids"], [24])
+        self.assertEqual(report["delayed_label_ready_event_ids"], [])
         self.assertEqual(report["events"][0]["readiness_status"], STATUS_MISSING_OUTCOME)
         self.assertEqual(report["events"][0]["final24_snapshot_count"], 96)
 
