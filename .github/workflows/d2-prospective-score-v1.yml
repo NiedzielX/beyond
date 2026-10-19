@@ -9,6 +9,8 @@ on:
       - "ml/d2_prospective_score_v1.py"
       - "ml/run_d2_prospective_score_v1.py"
       - "ml/test_d2_prospective_score_v1.py"
+      - "ml/d2_prospective_outcome_readiness_v1.py"
+      - "ml/test_d2_prospective_outcome_readiness_v1.py"
       - "ml/artifacts/d2_prospective_registry_v1.json"
       - "ml/artifacts/d2_stage2_p2_observation_maturity_v1/manifest.json"
       - "ml/d2_stage1_model_tournament_v1.py"
@@ -24,6 +26,8 @@ on:
       - "ml/d2_prospective_score_v1.py"
       - "ml/run_d2_prospective_score_v1.py"
       - "ml/test_d2_prospective_score_v1.py"
+      - "ml/d2_prospective_outcome_readiness_v1.py"
+      - "ml/test_d2_prospective_outcome_readiness_v1.py"
       - "ml/artifacts/d2_prospective_registry_v1.json"
       - "ml/artifacts/d2_stage2_p2_observation_maturity_v1/manifest.json"
       - "ml/d2_stage1_model_tournament_v1.py"
@@ -59,9 +63,12 @@ jobs:
           python -m py_compile ml/d2_prospective_score_v1.py
           python -m py_compile ml/run_d2_prospective_score_v1.py
           python -m py_compile ml/test_d2_prospective_score_v1.py
+          python -m py_compile ml/d2_prospective_outcome_readiness_v1.py
+          python -m py_compile ml/test_d2_prospective_outcome_readiness_v1.py
       - name: Unit / registry / no-leakage checks
         run: |
           python -m ml.test_d2_prospective_score_v1
+          python -m ml.test_d2_prospective_outcome_readiness_v1
 
   score:
     if: github.event_name != 'pull_request'
@@ -121,6 +128,27 @@ jobs:
           done
           fetch_export "v7-final24" /tmp/c1-final24.json
           jq -c '{ok,eventCount,liveRowCount,liveRowsLength:(.liveRows|length)}' /tmp/c1-final24.json
+
+      - name: Evaluate prospective outcome readiness
+        run: |
+          python -m ml.d2_prospective_outcome_readiness_v1 \
+            --events /tmp/c1-events.json \
+            --live /tmp/c1-final24.json \
+            --registry ml/artifacts/d2_prospective_registry_v1.json \
+            --output-json /tmp/d2-prospective-outcome-readiness-v1.json
+
+      - name: Hard readiness safety gate
+        run: |
+          jq -e '
+            .status == "READINESS_EVALUATED"
+            and .production_change == false
+            and .model_change == false
+            and .policy_change == false
+            and .attendance_estimation_performed == false
+            and .frozen_package_id == "d2-stage2-p2-observation-maturity-2026-10-19-v1"
+            and (.development_event_ids | sort) == [1,3,4,8,9,12,13,14,17]
+            and ([.events[].ticket_event_id] | all(. as $id | ([1,3,4,5,8,9,12,13,14,17] | index($id) | not)))
+          ' /tmp/d2-prospective-outcome-readiness-v1.json >/dev/null
 
       - name: Reconstruct immutable 9/30 Ridge training lineage
         run: |
@@ -190,13 +218,18 @@ jobs:
             and ([.scored_events[].ticket_event_id] | all(. as $id | ([1,3,4,5,8,9,12,13,14,17] | index($id) | not)))
           ' /tmp/d2-prospective-score-v1.json >/dev/null
 
-      - name: Print prospective status
+      - name: Print prospective readiness and scoring status
         run: |
+          echo 'Outcome readiness:'
+          jq '{as_of_at,status_counts,ready_event_ids,blocked_completed_event_ids,events}' \
+            /tmp/d2-prospective-outcome-readiness-v1.json
+          echo 'Frozen d2 scoring:'
           jq '{status,current_export,new_candidate_event_ids,scored_events,blocked_events,decision_boundary}' \
             /tmp/d2-prospective-score-v1.json
 
       - name: Hash prospective evidence
         run: |
+          sha256sum /tmp/d2-prospective-outcome-readiness-v1.json
           sha256sum /tmp/d2-prospective-split-manifest.json
           sha256sum /tmp/d2-prospective-development-stage0.json
           sha256sum /tmp/d2-prospective-development-stage0.csv
@@ -210,6 +243,7 @@ jobs:
         with:
           name: d2-prospective-score-v1-${{ github.run_id }}
           path: |
+            /tmp/d2-prospective-outcome-readiness-v1.json
             /tmp/d2-prospective-split-manifest.json
             /tmp/d2-prospective-development-stage0.json
             /tmp/d2-prospective-development-stage0.csv
