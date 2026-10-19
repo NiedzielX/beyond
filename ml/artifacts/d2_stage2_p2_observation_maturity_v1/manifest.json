@@ -1,0 +1,82 @@
+{
+  "artifact_version": "d2-stage2-p2-observation-maturity-2026-10-19-v1",
+  "status": "FROZEN_RESEARCH_CANDIDATE",
+  "production_change": false,
+  "promotion_allowed": false,
+  "pre_live_freeze_id": "pre-live-v2-historical-candidate-2026-10-18-v1",
+  "stage1_expert_id": "ridge-a10",
+  "stage1_expert_retuned": false,
+  "stage2_policy_id": "P2-observation-maturity",
+  "development": {
+    "event_ids": [1, 3, 4, 8, 9, 12, 13, 14, 17],
+    "event_count": 9,
+    "row_count": 30,
+    "independent_unit": "event",
+    "validation": "LOEO_STAGE1_RIDGE_THEN_CAUSAL_POLICY",
+    "reserved_holdout_event_id": 5,
+    "reserved_holdout_used_for_selection": false
+  },
+  "stage1_contract": {
+    "target": "target_live_delta_occupancy",
+    "model": "Ridge",
+    "alpha": 10.0,
+    "median_imputation_within_training_fold": true,
+    "missing_indicators": true,
+    "standardization": true,
+    "event_balanced_weights": true,
+    "max_raw_live_correction_occupancy": 0.1
+  },
+  "policy_contract": {
+    "observation_index_weights": {
+      "1": 0.25,
+      "2": 0.6,
+      "3_plus": 1.0
+    },
+    "time_to_kickoff_caps": {
+      "gt_18h": 0.75,
+      "gt_12h_le_18h": 0.9,
+      "le_12h": 1.0
+    },
+    "reliability_formula": "min(observation_index_weight,time_weight)",
+    "forecast_formula": "frozen_pre_live_v2 + reliability * ridge_delta"
+  },
+  "advancement_gates": {
+    "min_retained_latest_uplift": 0.5,
+    "min_retained_window_uplift": 0.5,
+    "min_worst_degradation_reduction": 0.25,
+    "latest_mae_must_beat_frozen_v2": true,
+    "window_mae_must_beat_frozen_v2": true
+  },
+  "metrics": {
+    "frozen_v2_latest_mae": 4128.012628960847,
+    "raw_ridge_latest_mae": 3320.3922579543546,
+    "p2_latest_mae": 3240.98832774145,
+    "p2_latest_improvement_vs_frozen": 887.0243012193969,
+    "p2_retained_latest_uplift_share": 1.0983183845572737,
+    "frozen_v2_window_mae": 4128.012628960846,
+    "raw_ridge_window_mae": 3619.185330638812,
+    "p2_window_mae": 3657.652928009208,
+    "p2_window_improvement_vs_frozen": 470.35970095163793,
+    "p2_retained_window_uplift_share": 0.9243952898419509,
+    "raw_ridge_worst_latest_event_degradation": 4326.9000000000015,
+    "p2_worst_latest_event_degradation": 1081.7249999999985,
+    "p2_worst_degradation_reduction_share": 0.7500000000000004,
+    "raw_ridge_p90_latest_event_degradation": 1683.08604896643,
+    "p2_p90_latest_event_degradation": 1034.0510489664289,
+    "p2_mean_reliability": 0.6816666666666668
+  },
+  "canonical_evidence": {
+    "workflow_run_id": 39308629738,
+    "main_commit_sha": "4dc653f0f021c4b05aecadc985d55b69afa1dc11",
+    "artifact_name": "d2-stage2-reliability-gating-v1-39308629738",
+    "artifact_id": 12214478156,
+    "artifact_zip_sha256": "b4ae9183f398a8cd13542390ce05734f050697e903d34242d793b28854bf9296",
+    "split_manifest_sha256": "5591880cff101ed316c4acae87fb0cb549ef9d5a987126b63245e154adb5a822",
+    "stage0_json_sha256": "bb8a7c8ef3c719bca0c54da8961aea92d8484168b6493c768fe88c53f316985a",
+    "stage0_csv_sha256": "ec7aef2f458ae1db2fdaced7e0a051fe8b9035eccdb3764b0f640c6078aa6954",
+    "stage2_json_sha256": "1190e3ef033d31323d94b67a4055b06aa3c9fedfd353c0065c9cbe67d5c07a53",
+    "stage2_predictions_csv_sha256": "37de034c59bfb47e2aaec6f6ee4185f69228e0272baa13f319d35c4aad65bd83"
+  },
+  "decision": "STAGE2_RELIABILITY_POLICY_SELECTED",
+  "next_step": "Score reserved event 5 Lech Poznan vs Korona Kielce once as chronological holdout without retuning."
+}

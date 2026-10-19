@@ -9,10 +9,10 @@ Read first in a cold session:
 1. `AI_BOOTSTRAP.md`;
 2. `ml/MODEL_ACCURACY_DEVELOPMENT_INSTRUCTIONS_V2.md`;
 3. this file;
-4. `ml/results/D2_STAGE1_MODEL_TOURNAMENT_V1_2026-10-19.md`;
-5. `ml/D2_STAGE2_RELIABILITY_GATING_V1.md`;
-6. `ml/artifacts/pre_live_v2_historical_candidate_v1/manifest.json`;
-7. `ml/results/PRE_LIVE_V2_HISTORICAL_FREEZE_V1_2026-10-18.md`.
+4. `ml/results/D2_STAGE2_RELIABILITY_GATING_V1_2026-10-19.md`;
+5. `ml/artifacts/d2_stage2_p2_observation_maturity_v1/manifest.json`;
+6. `ml/results/D2_STAGE1_MODEL_TOURNAMENT_V1_2026-10-19.md`;
+7. `ml/artifacts/pre_live_v2_historical_candidate_v1/manifest.json`.
 
 ## North star
 
@@ -24,15 +24,15 @@ Current architecture:
 
 then:
 
-`Frozen Pre-Live v2 + reliability * frozen Ridge live residual -> d2 forecast`
+`Frozen Pre-Live v2 + P2 reliability * frozen Ridge live residual -> d2 forecast`
 
 Canonical sequence:
 
-`a2 CLOSED -> b2 CLOSED -> c2 historical CLOSED -> Pre-Live v2 FROZEN -> d2 Stage 0 DONE -> d2 Stage 1 DONE -> d2 Stage 2 ACTIVE`
+`a2 CLOSED -> b2 CLOSED -> c2 historical CLOSED -> Pre-Live v2 FROZEN -> d2 Stage 0 DONE -> d2 Stage 1 DONE -> d2 Stage 2 FROZEN -> EVENT 5 HOLDOUT ACTIVE`
 
 Current active workstream:
 
-**d2 Stage 2 — reliability / tail-risk governance around the frozen Stage-1 Ridge research lead.**
+**One-pass chronological holdout evaluation on event 5 Lech Poznań–Korona Kielce.**
 
 ---
 
@@ -100,8 +100,6 @@ Final historical bases:
 
 T-7 fixed audit improves 4/4 rolling folds, mean **+104.66 MAE**.
 
-Do not reopen on the same exposed references without materially new data or hypothesis.
-
 ## b2 — CLOSED / FROZEN INTO PRE-LIVE V2
 
 Same-season own-model residual regime is frozen for T-7/T-3/T-1 and activates only after at least 3 earlier completed same-season home matches.
@@ -111,8 +109,6 @@ Four-fold mean gains:
 - T-7: **+51.47**;
 - T-3: **+70.44**;
 - T-1: **+69.54**.
-
-Known max harmful historical event regression: **+2,760.55 seats**.
 
 ## c2 historical — CLOSED FOR CURRENT DATA
 
@@ -136,162 +132,145 @@ Development lineage:
 - 30 final-24h rows;
 - exact Frozen-v2 anchor on every row.
 
-Diagnostic event-level anchor MAE on this specific replay set:
+Diagnostic event MAE on this replay set:
 
 - legacy Structural Prior: `3968.73`;
 - Frozen Pre-Live v2: `4128.01`.
 
-This small live-specific comparison does not reopen historical b2.
-
 ---
 
-# d2 Stage 1 — COMPLETE
+# d2 Stage 1 — COMPLETE / FROZEN EXPERT
 
 Canonical result:
 
 `ml/results/D2_STAGE1_MODEL_TOURNAMENT_V1_2026-10-19.md`
 
-Research lead:
+Frozen expert:
 
 `ridge-a10`
 
-Frozen Stage-1 model contract:
+Contract:
 
 - target: `target_live_delta_occupancy`;
 - Ridge `alpha=10.0`;
-- numeric live features from existing PIT-safe C1/d2 contract;
-- median imputation within training fold;
+- median imputation within train fold;
 - missing indicators;
 - standardization;
-- event-balanced sample weights;
-- final raw correction clipped to +/-10pp occupancy;
-- event-level LOEO selection.
+- event-balanced weights;
+- event-level LOEO;
+- raw correction capped at +/-10pp occupancy.
 
-## Stage-1 metrics
+Stage-1 development metrics:
 
 | Metric | Frozen v2 | Ridge | Improvement |
 |---|---:|---:|---:|
 | Latest-row MAE | 4,128.01 | **3,320.39** | **+807.62 / 19.56%** |
-| Event-balanced window MAE | 4,128.01 | **3,619.19** | **+508.83 / 12.33%** |
+| Window MAE | 4,128.01 | **3,619.19** | **+508.83 / 12.33%** |
 
-Latest event improvement rate:
+Worst latest-event degradation:
 
-`6/9 = 66.7%`
-
-Mean absolute revision:
-
-`1,737.45 seats`
-
-Critical risk:
-
-`worst latest-event degradation = +4,326.90 seats`
-
-Interpretation:
-
-> Stage 1 proves useful live signal, but raw Ridge is not safe enough for promotion because tail risk remains large.
-
-Canonical run:
-
-`39256585339`
-
-Artifact ID:
-
-`12187853899`
-
-Artifact ZIP SHA256:
-
-`c494ba609f3c9ee376e8285a9af975cc78d813337bd219fbaf94c7a9a336c6de`
+`+4326.90 seats`
 
 ---
 
-# Chronos / Time-Series Foundation Models
+# d2 Stage 2 — COMPLETE / FROZEN
 
-Stage 1 tested zero-shot:
+Canonical result:
 
-- `amazon/chronos-2`;
-- `amazon/chronos-bolt-small`.
+`ml/results/D2_STAGE2_RELIABILITY_GATING_V1_2026-10-19.md`
 
-Both used only causal public `available_share_of_capacity` trajectory as TSFM input. Final attendance never entered the TSFM context.
+Frozen manifest:
 
-Latest MAE:
+`ml/artifacts/d2_stage2_p2_observation_maturity_v1/manifest.json`
 
-- plain Ridge: **3,320.39**;
-- Ridge + Chronos-2: 3,428.25;
-- Ridge + Bolt-small: 3,428.08.
+Frozen package ID:
+
+`d2-stage2-p2-observation-maturity-2026-10-19-v1`
+
+Selected policy:
+
+`P2-observation-maturity`
+
+Canonical run:
+
+`39308629738`
+
+Artifact ID:
+
+`12214478156`
+
+Artifact ZIP SHA256:
+
+`b4ae9183f398a8cd13542390ce05734f050697e903d34242d793b28854bf9296`
+
+## P2 metrics
+
+| Metric | Frozen v2 | Raw Ridge | Frozen P2 |
+|---|---:|---:|---:|
+| Latest-row MAE | 4,128.01 | 3,320.39 | **3,240.99** |
+| Window MAE | 4,128.01 | **3,619.19** | 3,657.65 |
+| Worst latest-event degradation | 0 | 4,326.90 | **1,081.72** |
+| p90 latest-event degradation | 0 | 1,683.09 | **1,034.05** |
+
+P2:
+
+- improves latest MAE vs Frozen v2 by **887.02 seats / 21.49%**;
+- improves latest MAE vs raw Ridge by another **79.40 seats / 2.39%**;
+- retains **92.44%** of raw Ridge window uplift;
+- reduces worst latest-event degradation by **75%**;
+- is the only policy passing all predeclared gates.
+
+## Frozen reliability policy
+
+Observation-index reliability:
+
+- observation 1: `0.25`;
+- observation 2: `0.60`;
+- observation 3+: `1.00`.
+
+Time-to-kickoff cap:
+
+- >18h: `0.75`;
+- >12h and <=18h: `0.90`;
+- <=12h: `1.00`.
+
+Final:
+
+`reliability = min(observation_index_weight, time_weight)`
+
+Do not retune this policy on event 5.
+
+---
+
+# Chronos / TSFM
 
 Decision:
 
 `TSFM_STAGE1 = NOT_PROVEN_VS_RIDGE`
 
-Close this Stage-1 challenger. Do not fine-tune Chronos or add Lag-Llama/NeuralProphet on the same 9-event development lineage.
+Chronos-2 and Bolt-small improved Frozen v2 but lost to plain Ridge. Do not fine-tune or add Lag-Llama/NeuralProphet on the same exposed development lineage.
 
 ---
 
-# d2 Stage 2 — ACTIVE
+# Reserved chronological holdout — ACTIVE
 
-Canonical contract:
+Event:
 
-`ml/D2_STAGE2_RELIABILITY_GATING_V1.md`
+- ID `5`;
+- **Lech Poznań vs Korona Kielce**;
+- kickoff `2026-10-18T15:30:00Z`;
+- actual attendance `37,407`;
+- capacity `43,269`;
+- 4 final-24h live rows.
 
-Objective:
+This event was excluded from Stage-1 and Stage-2 selection.
 
-> **Keep a meaningful share of Ridge's average MAE uplift while materially reducing worst-event degradation.**
-
-Preferred architecture:
-
-`final_forecast(t) = frozen_pre_live_v2(t) + reliability(t) * ridge_delta(t)`
-
-Stage 2 governs the frozen Ridge expert. It does not retune Ridge itself.
-
-Allowed compact policy families:
-
-1. Frozen-v2 only;
-2. raw Ridge;
-3. observation-maturity gate;
-4. disagreement/correction-magnitude shrinkage;
-5. data-quality gate;
-6. compact combined reliability policy.
-
-Candidate reliability signals must be PIT-safe and may include:
-
-- observation count / span;
-- hours to kickoff;
-- trajectory stability;
-- velocity / acceleration;
-- Ridge/Frozen-v2 disagreement;
-- proposed correction magnitude;
-- release/replenishment flags;
-- coverage-change flags;
-- unexplained inventory increases;
-- data gaps / signal-quality state.
-
-Stage-2 development boundary remains exactly the original 9 events / 30 rows.
-
----
-
-# Reserved chronological holdout — event 5
-
-New append-only completed event:
-
-- ID: `5`;
-- match: **Lech Poznań vs Korona Kielce**;
-- kickoff: `2026-10-18T15:30:00Z`;
-- actual attendance: `37,407`;
-- capacity: `43,269`;
-- final-24h live rows: `4`.
-
-This event was excluded from Stage-1 selection.
-
-Mandatory governance:
-
-> **Do not use event 5 to choose Stage-2 thresholds, features or policy. Freeze Stage 2 first, then score event 5 once.**
-
-After freeze, compare on event 5:
+Score once:
 
 1. Frozen Pre-Live v2;
 2. raw frozen `ridge-a10`;
-3. frozen Stage-2 governed Ridge;
-4. frozen C1 v8 where compatible.
+3. frozen P2 governed Ridge;
+4. frozen C1 v8 where contract-compatible.
 
 No retuning after opening the holdout.
 
@@ -307,7 +286,7 @@ Status:
 
 `EXPERIMENTAL_SHADOW`
 
-Keep C1 v8 frozen. It remains a prospective comparator and infrastructure source, not a model to silently retune into d2.
+Keep unchanged as comparator.
 
 ---
 
@@ -316,32 +295,27 @@ Keep C1 v8 frozen. It remains a prospective comparator and infrastructure source
 After event 5:
 
 - persist the result regardless of outcome;
-- score the frozen d2 candidate on each new eligible completed event;
-- keep prospective evidence append-only;
-- do not silently retrain using new outcomes;
-- start a separately versioned retraining cycle only when enough independent events exist;
-- require materially more prospective evidence before production promotion.
+- keep the d2 package frozen during the prospective evidence window;
+- score each new eligible completed event append-only;
+- do not silently retrain on new outcomes;
+- start a separately versioned retraining cycle only when materially more independent events exist;
+- require more genuinely prospective evidence before production promotion.
 
 ---
 
 # Engineering governance
 
-Full rules:
-
-`ml/MODEL_ACCURACY_DEVELOPMENT_INSTRUCTIONS_V2.md`
-
 Non-negotiable:
 
-- MAE primary, tail and bias mandatory;
-- event is independent evaluation unit;
+- event is the independent evaluation unit;
 - strict PIT semantics;
 - no random snapshot split;
-- exact model/feature/policy/data versions;
+- exact model/policy/data versions;
 - code + tests + CI + artifact + result doc + decision;
 - no silent retuning;
-- new holdouts validate frozen decisions and do not become tuning data retroactively;
+- a holdout validates a frozen package and does not become tuning data retroactively;
 - CI green != production promotion.
 
 ## Current development decision
 
-**Freeze Stage-1 `ridge-a10`. Build Stage-2 reliability/tail-risk governance only on the original 9-event/30-row development set. Do not tune on Lech–Korona event 5. Freeze Stage 2 first, then score event 5 once. Keep production and C1 v8 unchanged.**
+**Stage 2 is frozen as `d2-stage2-p2-observation-maturity-2026-10-19-v1`. Score event 5 exactly once, persist the result without retuning, then continue append-only prospective validation. Production and C1 v8 remain unchanged.**
