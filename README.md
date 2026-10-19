@@ -16,7 +16,9 @@ For every new AI / engineering session, read in this order:
 8. [`ml/DEMAND_FORECAST_DEVELOPMENT_PLAN_V2.md`](ml/DEMAND_FORECAST_DEVELOPMENT_PLAN_V2.md) — canonical accuracy roadmap;
 9. [`ml/LIVE_DEMAND_ENGINE_V1_PLAN.md`](ml/LIVE_DEMAND_ENGINE_V1_PLAN.md) — live-engine roadmap;
 10. [`ml/C1_V8_PROSPECTIVE_SHADOW_V1.md`](ml/C1_V8_PROSPECTIVE_SHADOW_V1.md) — frozen C1 prospective comparator;
-11. [`ml/MODEL_PROMOTION_GOVERNANCE_V1.md`](ml/MODEL_PROMOTION_GOVERNANCE_V1.md) — promotion gates.
+11. [`ml/SECTOR_DECISION_PRICING_V1.md`](ml/SECTOR_DECISION_PRICING_V1.md) — sector/pricing product contract;
+12. [`ml/NORTH_STAR.md`](ml/NORTH_STAR.md) — product/model objective;
+13. [`ml/MODEL_PROMOTION_GOVERNANCE_V1.md`](ml/MODEL_PROMOTION_GOVERNANCE_V1.md) — promotion gates.
 
 ## North star
 
