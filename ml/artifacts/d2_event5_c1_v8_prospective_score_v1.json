@@ -1,0 +1,30 @@
+{
+  "artifact_version": "d2-event5-c1-v8-prospective-score-2026-10-19-v1",
+  "source": "private.c1_shadow_v8_event_scores_v1",
+  "source_project_ref": "adchzwqboeekhokapxqi",
+  "retrieval_mode": "read_only_existing_prospective_score",
+  "reconstructed_after_outcome": false,
+  "ticket_event_id": 5,
+  "package_version": "c1-shadow-v8-frozen-2026-10-16-n9",
+  "actual_attendance": 37407,
+  "prediction_row_count": 7,
+  "representative_bucket_count": 4,
+  "latest_as_of_at": "2026-10-18T13:49:09.413507+00:00",
+  "latest_selected_expert": "PRIOR",
+  "latest_reason_code": "insufficient_disagreement",
+  "latest_prior_error": 7669.071651185892,
+  "latest_live_error": 9309.620021692925,
+  "latest_policy_error": 7669.071651185892,
+  "window_prior_mae": 7669.071651185892,
+  "window_live_mae": 8495.325027130003,
+  "window_policy_mae": 7669.071651185892,
+  "latest_policy_improves_prior": false,
+  "window_policy_improves_prior": false,
+  "scored_at": "2026-10-19T07:13:31.510984+00:00",
+  "governance": {
+    "prospective_only": true,
+    "source_predictions_persisted_pre_outcome": true,
+    "no_backfill": true,
+    "use_as_comparator_only": true
+  }
+}
