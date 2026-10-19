@@ -20,9 +20,17 @@ Workflow:
 
 `.github/workflows/d2-prospective-score-v1.yml`
 
-Scorer:
+Frozen scorer:
 
 `ml/d2_prospective_score_v1.py`
+
+Readiness classifier:
+
+`ml/d2_prospective_outcome_readiness_v1.py`
+
+Evidence-class contract:
+
+`ml/d2_prospective_evidence_class_v1.py`
 
 Canonical compatibility runner:
 
@@ -38,58 +46,123 @@ Triggers:
 - relevant pushes to `main`;
 - daily cron `05:23 UTC`.
 
-The scorer never writes model state or commits results automatically. It produces evidence artifacts only. A separate reviewed evidence cycle must persist a newly scored event and register it as exposed.
+The workflow never writes model state or commits results automatically. It produces evidence artifacts only. A separate reviewed evidence cycle must persist a newly scored event and register it as exposed.
 
-### Initial green run
+## Two separate export contracts
 
-Run:
+### Frozen scoring exports
 
-`39312944826`
+The existing `v7-*` C1 exports remain unchanged and continue to drive model scoring/reconstruction.
 
-Main SHA:
+In particular, `v7-events` intentionally contains only events with verified outcomes. Do not loosen this frozen training/evidence contract to improve observability.
 
-`5ce2e8e7bfd5b197510108f441c11a75257fd0c8`
+### Additive readiness feed
 
-Artifact ID:
+Readiness uses a separate route:
 
-`12215847975`
+`d2-readiness -> public.export_d2_prospective_readiness_v1()`
 
-Artifact ZIP SHA256:
+This read-only feed exposes all tracked Ekstraklasa ticket events with:
 
-`ca470b8f18eddabb8c9f4664baff75a776bb6e64d3e50379f6836c22f3b795cc`
+- LEFT JOIN verified attendance outcome;
+- audited home capacity when available;
+- raw final-24h snapshot count from `public.snapshots`;
+- outcome/capacity provenance;
+- no attendance inference from inventory.
 
-Current exporter:
+This separation ensures that an event waiting for truth data is visible without changing any frozen model-scoring export.
 
-- 10 events;
-- 34 live rows.
+## Evidence classes — mandatory
 
-Result:
+Frozen Stage-2 evidence cutoff:
 
-`NO_NEW_ELIGIBLE_EVENTS`
+`2026-10-19T19:11:01Z`
 
-Reason:
+This is the end of the canonical Stage-2 main CI run that selected/froze P2.
 
-- frozen development remains exact 9 events / 30 rows;
-- event 5 is already registered as exposed;
-- no later completed event currently exists in the exporter.
+Every unregistered event is classified from kickoff time as one of:
 
-This confirms the scheduled scorer does not accidentally re-consume event 5 as unseen evidence.
+### `DELAYED_LABEL_HOLDOUT`
+
+`kickoff_at <= Stage-2 freeze cutoff`
+
+The event was not used in development, but it had already kicked off before the frozen package was canonically established.
+
+It may still be useful as delayed-label / chronological diagnostic evidence, but it **does not count as genuinely post-freeze prospective evidence for production promotion**.
+
+### `TRUE_POST_FREEZE_PROSPECTIVE`
+
+`kickoff_at > Stage-2 freeze cutoff`
+
+This is the class that can accumulate as genuine forward evidence for eventual promotion decisions.
+
+Never combine these classes into one headline prospective sample size.
+
+## Readiness states
+
+Every non-development, non-registered tracked event receives one state:
+
+- `READY_FOR_PROSPECTIVE_SCORE`;
+- `BLOCKED_MISSING_OUTCOME`;
+- `BLOCKED_NO_FINAL24_LIVE_ROWS`;
+- `BLOCKED_MISSING_CAPACITY`;
+- `WAITING_POST_MATCH_GRACE`;
+- `FUTURE_NOT_DUE`.
+
+The post-match grace period is **3 hours**, aligned with the trusted outcome-sync boundary.
+
+Mandatory rule:
+
+> **Never estimate actual attendance from seat-map inventory to unblock scoring.**
+
+## Current readiness discovery
+
+The additive feed currently exposes **21 tracked Ekstraklasa events**.
+
+It revealed completed events that the outcome-gated `v7-events` export correctly did not expose yet.
+
+Notable current blockers include:
+
+- event `15` — GKS Katowice vs Pogoń Szczecin — 96 raw final-24h snapshots — outcome missing;
+- event `18` — Cracovia vs Legia Warszawa — 51 raw final-24h snapshots — outcome missing;
+- event `11` — Górnik Zabrze vs Piast Gliwice — 96 raw final-24h snapshots — outcome missing;
+- event `19` — KGHM Zagłębie Lubin vs Jagiellonia Białystok — 96 raw final-24h snapshots — outcome missing;
+- event `20` — Wisła Płock vs Radomiak Radom — verified capacity `15,004`, 96 raw final-24h snapshots — outcome missing.
+
+All five kicked off before the Stage-2 freeze cutoff, so if/when trusted outcomes arrive they are **delayed-label holdouts**, not true post-freeze prospective evidence.
+
+The first currently tracked matches that can qualify as true post-freeze prospective evidence are later fixtures such as event `10` / `16` and subsequent events, provided their live trajectory and verified outcome eventually meet the frozen scoring contract.
+
+## Trusted outcome pipeline
+
+Outcome sync already exists:
+
+`supabase/sql/ticket_event_outcome_history_sync_v1.sql`
+
+Operational rules:
+
+- source = `ml_home_attendance_history_v2`;
+- exact `club_slug + kickoff_at` matching;
+- only Ekstraklasa;
+- only after kickoff + 3 hours;
+- never overwrite an existing outcome;
+- hourly cron at minute `17`.
+
+A `BLOCKED_MISSING_OUTCOME` event remains blocked until trusted outcome data enters this pipeline. Do not manually derive truth from ticket inventory.
 
 ## Objective
 
-Accumulate genuinely prospective independent evidence for the frozen d2 package without silently turning new outcomes into training data.
+Accumulate honest independent evidence for the frozen d2 package without silently turning new outcomes into training data or overstating retrospective/delayed labels as prospective validation.
 
-The active question is no longer:
+The active question is:
 
-> Which model or policy should win on the existing data?
+> **Does the already-frozen package continue to improve forecasting on genuinely new post-freeze completed events, and which component helps or hurts when it fails?**
 
-It is:
-
-> **Does the already-frozen package continue to improve forecasting on new independent completed events, and which component helps or hurts when it fails?**
+Delayed-label holdouts may supplement diagnosis but must be reported separately.
 
 ## Frozen components
 
-Do not change during the prospective evidence window:
+Do not change during the evidence window:
 
 - Pre-Live v2 freeze ID: `pre-live-v2-historical-candidate-2026-10-18-v1`;
 - Stage-1 expert: `ridge-a10`;
@@ -118,26 +191,27 @@ Final:
 
 `reliability = min(observation_index_weight, time_weight)`
 
-## Prospective unit
+## Scoring unit
 
 Independent unit:
 
 `completed ticket event / match`
 
-For every newly eligible completed event:
+For every newly scoreable event:
 
 - it must not be part of the frozen 9-event/30-row development set;
-- it must not already be present in the committed prospective registry;
+- it must not already be present in the committed registry;
 - it must not have been used to select Ridge or P2;
+- assign evidence class before interpretation;
 - score it once under the frozen contract;
-- persist the result regardless of whether it is favorable;
+- persist the result regardless of whether favorable;
 - do not modify the model/policy in the same evidence cycle.
 
-If no newly eligible event exists, the workflow must finish green as:
+If no newly eligible event exists, the model scorer may finish green as:
 
 `NO_NEW_ELIGIBLE_EVENTS`
 
-If prerequisites for a new event are missing, report the event as blocked; do not silently invent or coerce data.
+The readiness artifact must still show tracked future/blocking state independently.
 
 ## Required component scorecard
 
@@ -145,46 +219,38 @@ Persist each layer independently.
 
 ### Layer A — Structural T-1 base
 
-Persist:
-
 - base forecast;
 - absolute error;
 - source model ID.
 
 ### Layer B — Frozen Pre-Live v2 / b2
 
-Persist:
-
-- b2 correction seats;
-- b2 correction fraction;
+- b2 correction seats/fraction;
 - prior same-season home-match count;
-- Frozen-v2 forecast;
-- absolute error;
+- Frozen-v2 forecast/error;
 - incremental error change versus Structural base.
 
-This is mandatory because event 5 showed a prospective wrong-direction b2 correction of `-2163.45 seats`.
+This is mandatory because event 5 showed a wrong-direction b2 correction of `-2163.45 seats`.
 
 ### Layer C — Raw frozen Ridge
 
-Persist per row:
+Per row:
 
 - raw predicted delta occupancy;
-- governed/clipped delta occupancy;
-- revised forecast;
-- absolute error;
+- governed/clipped delta;
+- revised forecast/error;
 - incremental error change versus Frozen v2.
 
 ### Layer D — Frozen P2 governed Ridge
 
-Persist per row:
+Per row:
 
 - observation index;
 - time to kickoff;
 - P2 reliability;
 - applied delta;
-- revised forecast;
-- absolute error;
-- incremental error change versus raw Ridge and Frozen v2.
+- revised forecast/error;
+- incremental error versus raw Ridge and Frozen v2.
 
 ### Layer E — C1 v8 comparator
 
@@ -192,45 +258,33 @@ Use only when genuine pre-outcome persisted C1 v8 predictions/scores exist.
 
 Never reconstruct C1 after seeing the outcome and call it prospective evidence.
 
-Persist:
+## Required aggregate metrics
 
-- package ID;
-- chosen expert/reason;
-- latest error;
-- window error;
-- provenance proving pre-outcome persistence.
+Always separate:
 
-The automated d2 scorer leaves C1 as a separate evidence join so it cannot create a post-outcome comparator accidentally.
+1. delayed-label holdouts;
+2. true post-freeze prospective events.
 
-## Required metrics
+For each class report:
 
-At event level:
-
-- latest absolute error for every layer;
-- event-balanced trajectory/window MAE for every layer;
-- component incremental improvement/degradation;
-- final forecast bias;
-- maximum live revision;
-- P2 reliability activation profile.
-
-Across accumulated prospective events:
-
+- event count;
 - mean latest MAE;
 - median latest AE;
 - event-balanced window MAE;
 - bias;
-- p90 latest AE;
+- p90 latest AE where sample size permits;
 - worst event degradation by component;
 - event improvement rate;
 - cumulative component contribution:
   - Structural -> Frozen v2/b2;
   - Frozen v2 -> raw Ridge;
-  - raw Ridge -> P2;
-- club-level diagnostics only when sample size is sufficient.
+  - raw Ridge -> P2.
+
+Only the `TRUE_POST_FREEZE_PROSPECTIVE` class may satisfy production-promotion sample requirements.
 
 ## Event-5 baseline evidence
 
-First chronological holdout:
+First explicitly reserved chronological holdout:
 
 `ticket_event_id = 5`
 
@@ -252,31 +306,24 @@ This is one failure signal only.
 
 ### H1 — b2 negative overreaction
 
-Potential signal:
+Track:
 
-> The same-season residual layer may overreact negatively for some high-demand Lech matches.
-
-Do not declare H1 proven from event 5.
-
-Track prospectively:
-
-- sign of b2 correction;
-- magnitude;
-- base vs Frozen-v2 error;
+- sign/magnitude of b2 correction;
+- Structural vs Frozen-v2 error;
 - club;
 - opponent/context only as descriptive data unless already frozen PIT-safe.
 
+Do not declare H1 proven from event 5.
+
 ### H2 — P2 early conservatism cost
-
-Event 5 showed that P2 shrank useful early Ridge corrections and therefore worsened window MAE versus raw Ridge, while matching Ridge at the final mature observation.
-
-Do not tune P2 from this one event.
 
 Track:
 
 - raw Ridge vs P2 error by observation index;
-- whether P2 prevents harmful early corrections on other events;
-- aggregate risk/return trade-off prospectively.
+- whether P2 prevents harmful early corrections on later events;
+- aggregate risk/return trade-off separately by evidence class.
+
+Do not tune P2 from one/few events.
 
 ## Registry rule
 
@@ -286,7 +333,9 @@ Current registry:
 
 The registry is not a training set.
 
-Its purpose is to mark prospective events that are already exposed so they cannot be scored again as unseen evidence.
+Its purpose is to mark events already exposed/scored so they cannot be presented again as unseen evidence.
+
+When registering future events, persist their evidence class explicitly in the reviewed result/registry cycle.
 
 A newly scored event enters the registry only after:
 
@@ -299,26 +348,26 @@ The scheduled workflow has read-only repository permissions and cannot update th
 
 ## Reopening threshold
 
-Do not start a new challenger simply because one future event is bad.
+Do not start a new challenger because one event is bad.
 
 A separately versioned reopening/retraining cycle requires:
 
-1. materially more independent prospective events;
-2. a repeated, interpretable failure mode;
+1. materially more independent evidence, especially true post-freeze events;
+2. a repeated interpretable failure mode;
 3. a predeclared new hypothesis before retuning;
 4. frozen current package retained as benchmark;
 5. new train/development/forward split declared before evaluation.
 
-No event used as prospective validation may silently become a holdout again after tuning.
+No scored validation event may silently become unseen holdout again after tuning.
 
 ## Production promotion boundary
 
-Production promotion requires materially more than event 5.
+Production promotion requires materially more than event 5 or delayed-label holdouts.
 
 At minimum require:
 
-- multiple genuinely prospective independent events;
-- positive aggregate latest and trajectory MAE uplift;
+- multiple **TRUE_POST_FREEZE_PROSPECTIVE** independent events;
+- positive aggregate latest and trajectory MAE uplift on that class;
 - acceptable tail behavior;
 - no unresolved systematic component failure;
 - frozen reproducible package;
@@ -330,21 +379,22 @@ Production remains:
 
 ## CI/CD contract
 
-Every prospective scoring run must persist:
+Every scheduled scoring run must persist:
 
-- code version / main SHA;
-- exporter/data version;
-- event IDs;
+- code/main SHA;
+- frozen scoring export versions;
+- readiness export version;
+- Stage-2 freeze cutoff;
+- readiness/evidence class per surfaced event;
 - model/policy package IDs;
 - PIT assertions;
-- no-training/no-selection assertions;
-- machine-readable event-level JSON/CSV;
-- cumulative prospective summary when events exist;
+- no-training/no-selection/no-attendance-estimation assertions;
+- machine-readable readiness + scoring JSON/CSV;
 - SHA256 hashes;
 - run/artifact IDs;
-- human-readable result when a new event closes;
+- human-readable result when material evidence closes;
 - canonical state update when evidence materially changes interpretation.
 
 ## One-line instruction
 
-> **The scheduled frozen scorer is active. Keep the d2 package frozen; when a new eligible completed event appears, score it append-only, persist Structural base -> Frozen-v2/b2 -> raw Ridge -> P2 -> genuine persisted C1 comparator as separate layers, register it as exposed only after review, monitor the event-5 b2/P2 signals without tuning them, and only open a new versioned challenger after materially more independent prospective evidence.**
+> **Keep the d2 package frozen. Use the dedicated tracked-event readiness feed to surface missing prerequisites, never infer attendance from inventory, classify every event as delayed-label or true post-freeze prospective before interpretation, score newly eligible events append-only under the frozen package, and count only TRUE_POST_FREEZE_PROSPECTIVE events toward production-promotion evidence.**
