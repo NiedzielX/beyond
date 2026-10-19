@@ -17,7 +17,10 @@ from ml.d2_stage1_model_tournament_v1 import (
     governed_forecast,
     normalize_quantile_output,
 )
-from ml.run_d2_stage1_model_tournament_v1 import CHRONOS_MODEL_REVISIONS
+from ml.run_d2_stage1_model_tournament_v1 import (
+    CHRONOS_MODEL_REVISIONS,
+    ContextInputAdapter,
+)
 
 
 class FakeChronosListPipeline:
@@ -37,6 +40,29 @@ class FakeChronosListPipeline:
         return outputs, means
 
 
+class FakeTensor:
+    def __init__(self, values):
+        self.values = np.asarray(values, dtype=np.float32)
+
+
+class FakeBoltStrictPipeline:
+    """Mimic Bolt's requirement that list inputs have a tensor-like type."""
+
+    def predict_quantiles(self, inputs, prediction_length, quantile_levels):
+        self.inputs = list(inputs)
+        if not all(isinstance(value, FakeTensor) for value in self.inputs):
+            raise AssertionError("Bolt compatibility path requires converted contexts")
+        outputs = []
+        for value in self.inputs:
+            center = float(value.values[-1])
+            rows = np.tile(
+                np.array([center - 0.02, center, center + 0.02], dtype=float),
+                (prediction_length, 1),
+            )
+            outputs.append(rows[None, :, :])
+        return outputs, [np.asarray(row)[..., 1] for row in outputs]
+
+
 class D2Stage1TournamentV1Test(unittest.TestCase):
     def test_chronos_models_and_revisions_are_frozen(self) -> None:
         self.assertEqual(CHRONOS2_MODEL_ID, "amazon/chronos-2")
@@ -51,6 +77,26 @@ class D2Stage1TournamentV1Test(unittest.TestCase):
         )
         self.assertEqual(QUANTILE_LEVELS, (0.1, 0.5, 0.9))
         self.assertEqual(MIN_TSFM_REAL_CONTEXT_POINTS, 2)
+
+    def test_bolt_adapter_converts_context_element_type_without_changing_values(self) -> None:
+        strict = FakeBoltStrictPipeline()
+        adapter = ContextInputAdapter(
+            strict,
+            lambda inputs: [FakeTensor(value) for value in inputs],
+        )
+        contexts = [
+            np.array([0.40, 0.30], dtype=np.float32),
+            np.array([0.25, 0.20, 0.15], dtype=np.float32),
+        ]
+        outputs, _ = adapter.predict_quantiles(
+            contexts,
+            prediction_length=2,
+            quantile_levels=[0.1, 0.5, 0.9],
+        )
+        self.assertEqual(len(outputs), 2)
+        self.assertTrue(all(isinstance(value, FakeTensor) for value in strict.inputs))
+        np.testing.assert_allclose(strict.inputs[0].values, contexts[0])
+        np.testing.assert_allclose(strict.inputs[1].values, contexts[1])
 
     def test_causal_context_never_uses_future_row(self) -> None:
         rows = pd.DataFrame({
