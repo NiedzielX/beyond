@@ -5,13 +5,17 @@ The implementation module keeps model loading injectable for unit tests. The
 canonical workflow uses this runner so the Hugging Face model weights cannot
 silently drift behind a mutable `main` ref.
 
-Chronos family members may collapse singleton axes differently when
-`prediction_length == 1`. The canonical adapter below normalizes both one-step
-and multi-step quantile outputs without weakening shape validation.
+Compatibility adapters in this file are transport/runtime only:
+- Chronos family members may collapse singleton quantile axes differently;
+- Chronos-Bolt requires list inputs to contain torch.Tensor objects, while
+  Chronos-2 accepts the NumPy contexts emitted by the shared Stage-1 builder.
+
+No candidate, feature, parameter, split, target, or selection rule is changed
+by these adapters.
 """
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, Callable, Iterable
 
 import numpy as np
 
@@ -25,6 +29,52 @@ CHRONOS_MODEL_REVISIONS = {
 }
 
 
+class ContextInputAdapter:
+    """Adapt context-list element type while preserving all values/order.
+
+    The converter is injectable so PR validation can verify this compatibility
+    behavior without installing the heavyweight torch/Chronos runtime.
+    """
+
+    def __init__(
+        self,
+        pipeline: Any,
+        converter: Callable[[Iterable[Any]], list[Any]],
+    ) -> None:
+        self._pipeline = pipeline
+        self._converter = converter
+
+    def predict_quantiles(
+        self,
+        inputs: Iterable[Any],
+        *,
+        prediction_length: int,
+        quantile_levels: list[float],
+        **kwargs: Any,
+    ) -> Any:
+        converted = self._converter(inputs)
+        return self._pipeline.predict_quantiles(
+            converted,
+            prediction_length=prediction_length,
+            quantile_levels=quantile_levels,
+            **kwargs,
+        )
+
+
+def torch_context_converter(inputs: Iterable[Any]) -> list[Any]:
+    """Convert contexts to CPU float32 torch tensors for Chronos-Bolt."""
+    try:
+        import torch
+    except ImportError as exc:  # pragma: no cover - only canonical TSFM runtime
+        raise RuntimeError(
+            "Chronos-Bolt context conversion requires the pinned torch runtime"
+        ) from exc
+    return [
+        torch.as_tensor(np.asarray(value, dtype=np.float32), dtype=torch.float32)
+        for value in inputs
+    ]
+
+
 def load_pinned_chronos_pipeline(model_id: str):
     try:
         import torch
@@ -36,12 +86,18 @@ def load_pinned_chronos_pipeline(model_id: str):
     revision = CHRONOS_MODEL_REVISIONS.get(model_id)
     if revision is None:
         raise RuntimeError(f"no pinned revision declared for {model_id}")
-    return BaseChronosPipeline.from_pretrained(
+    pipeline = BaseChronosPipeline.from_pretrained(
         model_id,
         revision=revision,
         device_map="cpu",
         torch_dtype=torch.float32,
     )
+    # Chronos-Bolt's list-input path calls left_pad_and_stack_1D(), which
+    # explicitly asserts each context is a torch.Tensor. Keep Chronos-2 on the
+    # already-working NumPy path and adapt only Bolt.
+    if model_id == impl.CHRONOS_BOLT_MODEL_ID:
+        return ContextInputAdapter(pipeline, torch_context_converter)
+    return pipeline
 
 
 def normalize_quantile_output_canonical(
