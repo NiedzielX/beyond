@@ -14,6 +14,8 @@ on:
       - "ml/test_d2_prospective_outcome_readiness_v1.py"
       - "ml/d2_prospective_tag_scoring_evidence_v1.py"
       - "ml/test_d2_prospective_tag_scoring_evidence_v1.py"
+      - "ml/artifacts/d2_prospective_capacity_audit_v1.json"
+      - "ml/test_d2_prospective_capacity_audit_v1.py"
       - "ml/artifacts/d2_prospective_registry_v1.json"
       - "ml/artifacts/d2_stage2_p2_observation_maturity_v1/manifest.json"
       - "ml/d2_stage1_model_tournament_v1.py"
@@ -36,6 +38,8 @@ on:
       - "ml/test_d2_prospective_outcome_readiness_v1.py"
       - "ml/d2_prospective_tag_scoring_evidence_v1.py"
       - "ml/test_d2_prospective_tag_scoring_evidence_v1.py"
+      - "ml/artifacts/d2_prospective_capacity_audit_v1.json"
+      - "ml/test_d2_prospective_capacity_audit_v1.py"
       - "ml/artifacts/d2_prospective_registry_v1.json"
       - "ml/artifacts/d2_stage2_p2_observation_maturity_v1/manifest.json"
       - "ml/d2_stage1_model_tournament_v1.py"
@@ -78,11 +82,13 @@ jobs:
           python -m py_compile ml/test_d2_prospective_outcome_readiness_v1.py
           python -m py_compile ml/d2_prospective_tag_scoring_evidence_v1.py
           python -m py_compile ml/test_d2_prospective_tag_scoring_evidence_v1.py
-      - name: Unit / registry / no-leakage / evidence-class checks
+          python -m py_compile ml/test_d2_prospective_capacity_audit_v1.py
+      - name: Unit / registry / no-leakage / evidence-class / capacity checks
         run: |
           python -m ml.test_d2_prospective_score_v1
           python -m ml.test_d2_prospective_outcome_readiness_v1
           python -m ml.test_d2_prospective_tag_scoring_evidence_v1
+          python -m ml.test_d2_prospective_capacity_audit_v1
 
   score:
     if: github.event_name != 'pull_request'
@@ -213,7 +219,7 @@ jobs:
             --structural-artifact-dir ml/artifacts/structural_prior_runtime_v1 \
             --pre-live-manifest ml/artifacts/pre_live_v2_historical_candidate_v1/manifest.json \
             --stage2-manifest ml/artifacts/d2_stage2_p2_observation_maturity_v1/manifest.json \
-            --capacity-audit ml/artifacts/d2_stage0_capacity_audit_v1.json \
+            --capacity-audit ml/artifacts/d2_prospective_capacity_audit_v1.json \
             --registry ml/artifacts/d2_prospective_registry_v1.json \
             --output-json /tmp/d2-prospective-score-v1.json \
             --output-csv /tmp/d2-prospective-score-v1-rows.csv
@@ -269,6 +275,7 @@ jobs:
           sha256sum /tmp/d2-prospective-score-v1-rows.csv
           sha256sum /tmp/d2-prospective-score-v1-tagged.json
           sha256sum /tmp/d2-prospective-score-v1-rows-tagged.csv
+          sha256sum ml/artifacts/d2_prospective_capacity_audit_v1.json
           sha256sum ml/artifacts/d2_prospective_registry_v1.json
           sha256sum ml/artifacts/d2_stage2_p2_observation_maturity_v1/manifest.json
 
@@ -286,6 +293,7 @@ jobs:
             /tmp/d2-prospective-score-v1-rows.csv
             /tmp/d2-prospective-score-v1-tagged.json
             /tmp/d2-prospective-score-v1-rows-tagged.csv
+            ml/artifacts/d2_prospective_capacity_audit_v1.json
             ml/artifacts/d2_prospective_registry_v1.json
             ml/artifacts/d2_stage2_p2_observation_maturity_v1/manifest.json
           if-no-files-found: error
