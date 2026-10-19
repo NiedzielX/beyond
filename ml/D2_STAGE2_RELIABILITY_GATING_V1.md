@@ -2,7 +2,7 @@
 
 Last updated: **2026-10-19**
 
-Status: **NEXT ACTIVE D2 STAGE / DESIGN CONTRACT / NO PRODUCTION CHANGE**
+Status: **IMPLEMENTED CANDIDATE CONTRACT / AWAITING CANONICAL CI EVIDENCE / NO PRODUCTION CHANGE**
 
 Parent result:
 
@@ -11,6 +11,18 @@ Parent result:
 Frozen Stage-1 research lead:
 
 `ridge-a10`
+
+Implementation:
+
+`ml/d2_stage2_reliability_gating_v1.py`
+
+Tests:
+
+`ml/test_d2_stage2_reliability_gating_v1.py`
+
+Workflow:
+
+`.github/workflows/d2-stage2-reliability-gating-v1.yml`
 
 ## Objective
 
@@ -52,21 +64,30 @@ Stage 2 must not use event `5` Lech Poznań–Korona Kielce outcome or trajector
 
 Event `5` is reserved as a chronological/prospective holdout after Stage 2 is frozen.
 
+The workflow reconstructs the exact development rows by `(ticket_event_id, as_of_at)` identity from the committed C1 training contract and hard-fails if event `5` appears in the Stage-2 development set.
+
 ## Frozen prediction expert
 
 Base learned expert:
 
 `ridge-a10`
 
-Do not retune Ridge `alpha`, feature contract, preprocessing, or correction cap during Stage 2.
+Stage 2 reproduces the exact Stage-1 Ridge through the existing LOEO implementation and hard-checks its canonical metrics before evaluating any reliability policy.
 
-The purpose of Stage 2 is to govern the existing Stage-1 expert.
+Do not retune:
 
-If Ridge itself is changed, that is a new model challenger and must receive a new version outside this Stage-2 policy comparison.
+- Ridge `alpha=10.0`;
+- target `target_live_delta_occupancy`;
+- feature contract;
+- median-imputation behavior;
+- missing indicators;
+- standardization;
+- event-balanced weights;
+- +/-10pp occupancy raw correction cap.
+
+If any of these changes, that is a new model challenger and not Stage-2 policy tuning.
 
 ## Primary architecture
-
-Preferred form:
 
 `final_forecast(t) = frozen_pre_live_v2(t) + reliability(t) * ridge_delta(t)`
 
@@ -74,86 +95,99 @@ where:
 
 `0 <= reliability(t) <= 1`
 
-Allowed policy families:
-
-1. hard gate: use Ridge or Frozen v2;
-2. continuous shrinkage: multiply Ridge correction by a reliability weight;
-3. bounded piecewise shrinkage based on predeclared reliability states.
-
 No policy may use actual attendance or future snapshots at decision time.
 
-## Candidate reliability inputs
+## Causal Stage-2 state
 
-Use only signals already available PIT-safe at the exact forecast timestamp.
+Stage 2 derives only PIT-safe state available at the exact row as-of:
 
-Priority inputs:
+- `stage2_observation_index`: 1, 2, 3, ... within the event trajectory;
+- `stage2_observation_span_hours`: elapsed hours since the event's first Stage-2 observation;
+- `hours_to_kickoff`;
+- Stage-0 quality/release/coverage diagnostics;
+- the out-of-fold Ridge proposed correction itself.
 
-- valid observation count;
-- observation span;
-- hours to kickoff;
-- current inventory / available share;
-- trajectory velocity;
-- trajectory acceleration;
-- trajectory stability / volatility;
-- disagreement magnitude between Ridge and Frozen v2;
-- absolute proposed Ridge correction size;
-- release/replenishment flag;
-- sector coverage-change flag;
-- unexplained inventory increase flag;
-- data-gap flag;
-- signal-ready / feature-quality state;
-- matched sector count / coverage quality where present.
+Attendance outcome is used only for evaluation after reliability has been calculated.
 
-Potential secondary inputs, only if already PIT-valid in the existing feature contract:
+## Frozen Stage-2 policy tournament
 
-- sector consistency;
-- price-area consistency;
-- price coverage quality.
-
-Do not add new external context simply to rescue Stage 2.
-
-## Stage-2 policy tournament
-
-Keep the policy family deliberately small and predeclared.
-
-Minimum comparison:
+No threshold search is performed. The policies and thresholds below are fixed before canonical evidence scoring.
 
 ### P0 — Frozen Pre-Live v2
 
-`reliability = 0`
+`reliability = 0.00`
 
-### P1 — Raw Ridge
+Purpose: incumbent anchor baseline.
 
-`reliability = 1`
+### P1 — Raw frozen Ridge
 
-### P2 — Observation-maturity gate
+`reliability = 1.00`
 
-Reliability depends only on observation count / span / time-to-kickoff.
+Purpose: Stage-1 research-lead baseline.
 
-### P3 — Disagreement / correction-magnitude shrinkage
+### P2 — Observation maturity
 
-Large Ridge revisions receive lower weight unless live evidence quality is strong.
+Observation-index reliability:
 
-### P4 — Data-quality gate
+- first Stage-2 observation: `0.25`;
+- second observation: `0.60`;
+- third or later observation: `1.00`.
 
-Suppress or shrink Ridge when release/coverage/data-gap diagnostics indicate an unstable inventory interpretation.
+Time-to-kickoff cap:
 
-### P5 — Compact combined reliability policy
+- `hours_to_kickoff > 18`: maximum reliability `0.75`;
+- `12 < hours_to_kickoff <= 18`: maximum reliability `0.90`;
+- `hours_to_kickoff <= 12`: maximum reliability `1.00`.
 
-Combine only the strongest predeclared reliability factors from P2-P4.
+Final P2 weight:
 
-Do not create a large threshold zoo.
+`min(observation_index_weight, time_weight)`
+
+This policy uses no outcome information and no fitted thresholds.
+
+### P3 — Correction magnitude
+
+Use the already Stage-1-governed Ridge correction magnitude in occupancy points:
+
+- `abs(delta) <= 0.025`: reliability `1.00`;
+- `0.025 < abs(delta) <= 0.050`: reliability `0.80`;
+- `0.050 < abs(delta) <= 0.075`: reliability `0.55`;
+- `abs(delta) > 0.075`: reliability `0.35`.
+
+Rationale: large live revisions are the main known tail-risk mechanism and require stronger shrinkage.
+
+### P4 — Data quality
+
+Start from:
+
+`reliability = 1.00`
+
+Soft warning cap to `0.50` when any is true:
+
+- `release_activity_flag > 0.5`;
+- `sector_coverage_change_flag > 0.5`;
+- `max_visible_gap_hours > 12`.
+
+Hard warning cap to `0.25` when any is true:
+
+- `signal_ready < 0.5`;
+- `feature_quality_good < 0.5`;
+- `data_gap_detected > 0.5`;
+- `unexplained_inventory_increase_flag > 0.5`.
+
+Missing diagnostics use conservative contract defaults defined in code; no outcome-driven imputation is allowed.
+
+### P5 — Compact combined reliability
+
+`reliability = min(P2, P3, P4)`
+
+This deliberately conservative composition prevents a strong score from one dimension from overriding a known weakness in another.
+
+No additional policy variants or threshold grid are allowed in v1.
 
 ## Selection objective
 
 Stage 2 is not allowed to optimize mean MAE alone.
-
-Primary objective:
-
-1. retain a meaningful portion of Stage-1 MAE uplift;
-2. materially reduce worst-event degradation;
-3. avoid creating systematic bias;
-4. remain simple enough to reproduce and explain.
 
 Mandatory metrics:
 
@@ -163,26 +197,51 @@ Mandatory metrics:
 - retained share of raw Ridge uplift;
 - event improvement rate;
 - worst latest-event degradation;
-- p90 event degradation / tail metric where meaningful;
-- mean and max revision magnitude;
-- revision activation rate;
-- bias;
-- behavior by observation count and time-to-kickoff.
+- p90 latest-event degradation;
+- mean/max revision magnitude;
+- mean reliability;
+- full/zero reliability share;
+- row bias.
 
-## Advancement rule
+## Frozen advancement gates
 
-A Stage-2 policy may become the frozen d2 research candidate only if it:
+A Stage-2 policy P2-P5 is eligible only if all are true:
 
-- improves both latest-row and event-balanced window MAE versus Frozen v2;
-- reduces raw Ridge worst-event degradation materially;
-- does not depend on future/outcome information;
-- is stable under event-level LOEO;
-- has a fully versioned feature/policy contract;
-- is selected before event 5 is opened.
+1. latest-row MAE is better than Frozen v2;
+2. event-balanced window MAE is better than Frozen v2;
+3. retained latest-row uplift is at least **50%** of raw Ridge uplift;
+4. retained event-balanced window uplift is at least **50%** of raw Ridge uplift;
+5. worst latest-event degradation is reduced by at least **25%** relative to raw Ridge.
 
-If no policy improves the risk/return trade-off sufficiently:
+Constants:
 
-> retain raw Ridge as research lead, but do not promote it to prospective shadow deployment beyond controlled comparison.
+- `MIN_RETAINED_LATEST_UPLIFT = 0.50`;
+- `MIN_RETAINED_WINDOW_UPLIFT = 0.50`;
+- `MIN_WORST_DEGRADATION_REDUCTION = 0.25`.
+
+Among eligible policies, selection is deterministic:
+
+1. lowest latest-row MAE;
+2. lowest event-balanced window MAE;
+3. lowest worst latest-event degradation;
+4. policy ID.
+
+If no P2-P5 policy passes every gate:
+
+`RAW_RIDGE_RETAINED_NO_STAGE2_POLICY_PASSED`
+
+and `P1-raw-ridge` remains research lead without Stage-2 advancement.
+
+## Canonical Stage-1 reproduction gates
+
+Before policy scoring, Stage 2 must reproduce within `0.10 seat` tolerance:
+
+- Frozen-v2 latest MAE: `4128.01`;
+- raw Ridge latest MAE: `3320.39`;
+- raw Ridge event-balanced window MAE: `3619.19`;
+- raw Ridge worst latest-event degradation: `4326.90`.
+
+A failure means lineage/model drift and invalidates Stage-2 evidence.
 
 ## Event 5 holdout rule
 
@@ -195,16 +254,16 @@ Reserved holdout:
 - capacity `43,269`;
 - 4 final-24h live rows.
 
-The outcome is already known operationally, but for model-governance purposes it was not used in Stage-1 selection and must not be used in Stage-2 policy design.
+The outcome is already known operationally, but for model-governance purposes it was not used in Stage-1 selection and must not be used in Stage-2 policy design or selection.
 
-After Stage 2 is frozen, score in one pass:
+After canonical Stage 2 evidence is persisted and the decision is frozen, score in one pass:
 
 1. Frozen Pre-Live v2;
 2. raw frozen `ridge-a10`;
-3. frozen Stage-2 governed Ridge;
+3. frozen Stage-2 governed Ridge if a policy advances;
 4. frozen C1 v8 comparator where contract-compatible.
 
-Score the whole trajectory and the latest row.
+Score the whole trajectory and latest row.
 
 No retuning after opening the holdout.
 
@@ -231,6 +290,27 @@ Reopen TSFM research only when:
 - materially more independent trajectory events exist; or
 - a materially different TSFM hypothesis is predeclared before evaluation.
 
+## CI/CD evidence contract
+
+Canonical Stage-2 evidence requires:
+
+- committed implementation;
+- committed tests;
+- executable main-only workflow;
+- pinned numpy/pandas/scikit-learn/joblib runtime;
+- exact 9/30 split reconstruction;
+- explicit event-5 exclusion gate;
+- exact Stage-0 Frozen-v2 reconstruction;
+- exact Stage-1 Ridge metric reproduction;
+- machine-readable Stage-2 JSON;
+- row-level policy prediction CSV;
+- SHA256 evidence hashes;
+- uploaded workflow artifact;
+- committed human-readable result document;
+- canonical state docs updated in the same evidence cycle.
+
+No local-only result is canonical.
+
 ## Production boundary
 
 Always during Stage 2:
@@ -243,4 +323,4 @@ Always during Stage 2:
 
 ## One-line instruction
 
-> **Freeze Stage-1 `ridge-a10`; use only the original 9-event/30-row development lineage to design a compact reliability/shrinkage policy that preserves MAE uplift while reducing the +4.3k-seat tail failure. Do not inspect event 5 for policy selection. Freeze Stage 2 first, then score Lech–Korona once as an untouched chronological holdout.**
+> **Freeze Stage-1 `ridge-a10` exactly. Evaluate only P0-P5 above on the original 9-event/30-row development lineage, with the 50%/50% uplift-retention and 25% tail-reduction gates fixed in advance. Do not inspect event 5 for selection. Persist canonical CI evidence first; only then open Lech-Korona once as the chronological holdout.**
