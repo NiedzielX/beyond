@@ -9,16 +9,18 @@ For every new AI / engineering session, read in this order:
 1. [`AI_BOOTSTRAP.md`](AI_BOOTSTRAP.md) — cold-start state and immediate work order;
 2. [`ml/MODEL_ACCURACY_DEVELOPMENT_INSTRUCTIONS_V2.md`](ml/MODEL_ACCURACY_DEVELOPMENT_INSTRUCTIONS_V2.md) — canonical accuracy-first development rules;
 3. [`ml/CURRENT_MODEL.md`](ml/CURRENT_MODEL.md) — current forecasting state;
-4. [`ml/results/D2_EVENT5_HOLDOUT_V1_2026-10-19.md`](ml/results/D2_EVENT5_HOLDOUT_V1_2026-10-19.md) — first chronological d2 holdout;
-5. [`ml/artifacts/d2_event5_holdout_v1/manifest.json`](ml/artifacts/d2_event5_holdout_v1/manifest.json) — canonical holdout evidence manifest;
-6. [`ml/results/D2_STAGE2_RELIABILITY_GATING_V1_2026-10-19.md`](ml/results/D2_STAGE2_RELIABILITY_GATING_V1_2026-10-19.md) — frozen Stage-2 result;
-7. [`ml/artifacts/d2_stage2_p2_observation_maturity_v1/manifest.json`](ml/artifacts/d2_stage2_p2_observation_maturity_v1/manifest.json) — frozen d2 candidate;
-8. [`ml/results/D2_STAGE1_MODEL_TOURNAMENT_V1_2026-10-19.md`](ml/results/D2_STAGE1_MODEL_TOURNAMENT_V1_2026-10-19.md) — Stage-1 expert evidence;
-9. [`ml/artifacts/pre_live_v2_historical_candidate_v1/manifest.json`](ml/artifacts/pre_live_v2_historical_candidate_v1/manifest.json) — sealed Pre-Live v2 lineage;
-10. [`ml/DEMAND_FORECAST_DEVELOPMENT_PLAN_V2.md`](ml/DEMAND_FORECAST_DEVELOPMENT_PLAN_V2.md) — canonical roadmap;
-11. [`ml/LIVE_DEMAND_ENGINE_V1_PLAN.md`](ml/LIVE_DEMAND_ENGINE_V1_PLAN.md) — live-engine roadmap;
-12. [`ml/C1_V8_PROSPECTIVE_SHADOW_V1.md`](ml/C1_V8_PROSPECTIVE_SHADOW_V1.md) — frozen C1 comparator;
-13. [`ml/MODEL_PROMOTION_GOVERNANCE_V1.md`](ml/MODEL_PROMOTION_GOVERNANCE_V1.md) — promotion gates.
+4. [`ml/D2_PROSPECTIVE_ACCUMULATION_V1.md`](ml/D2_PROSPECTIVE_ACCUMULATION_V1.md) — active scheduled prospective scoring contract;
+5. [`ml/results/D2_PROSPECTIVE_SCORE_V1_INITIAL_2026-10-19.md`](ml/results/D2_PROSPECTIVE_SCORE_V1_INITIAL_2026-10-19.md) — first green prospective scorer run;
+6. [`ml/results/D2_EVENT5_HOLDOUT_V1_2026-10-19.md`](ml/results/D2_EVENT5_HOLDOUT_V1_2026-10-19.md) — first chronological d2 holdout;
+7. [`ml/artifacts/d2_event5_holdout_v1/manifest.json`](ml/artifacts/d2_event5_holdout_v1/manifest.json) — canonical holdout evidence manifest;
+8. [`ml/results/D2_STAGE2_RELIABILITY_GATING_V1_2026-10-19.md`](ml/results/D2_STAGE2_RELIABILITY_GATING_V1_2026-10-19.md) — frozen Stage-2 result;
+9. [`ml/artifacts/d2_stage2_p2_observation_maturity_v1/manifest.json`](ml/artifacts/d2_stage2_p2_observation_maturity_v1/manifest.json) — frozen d2 candidate;
+10. [`ml/results/D2_STAGE1_MODEL_TOURNAMENT_V1_2026-10-19.md`](ml/results/D2_STAGE1_MODEL_TOURNAMENT_V1_2026-10-19.md) — Stage-1 expert evidence;
+11. [`ml/artifacts/pre_live_v2_historical_candidate_v1/manifest.json`](ml/artifacts/pre_live_v2_historical_candidate_v1/manifest.json) — sealed Pre-Live v2 lineage;
+12. [`ml/DEMAND_FORECAST_DEVELOPMENT_PLAN_V2.md`](ml/DEMAND_FORECAST_DEVELOPMENT_PLAN_V2.md) — canonical roadmap;
+13. [`ml/LIVE_DEMAND_ENGINE_V1_PLAN.md`](ml/LIVE_DEMAND_ENGINE_V1_PLAN.md) — live-engine roadmap;
+14. [`ml/C1_V8_PROSPECTIVE_SHADOW_V1.md`](ml/C1_V8_PROSPECTIVE_SHADOW_V1.md) — frozen C1 comparator;
+15. [`ml/MODEL_PROMOTION_GOVERNANCE_V1.md`](ml/MODEL_PROMOTION_GOVERNANCE_V1.md) — promotion gates.
 
 ## North star
 
@@ -45,7 +47,7 @@ Frozen components:
 
 ## Current development state
 
-`a2 CLOSED -> b2 CLOSED -> c2 historical CLOSED -> Pre-Live v2 FROZEN -> d2 Stage 0 DONE -> Stage 1 FROZEN -> Stage 2 FROZEN -> EVENT 5 HOLDOUT COMPLETE -> PROSPECTIVE ACCUMULATION ACTIVE`
+`a2 CLOSED -> b2 CLOSED -> c2 historical CLOSED -> Pre-Live v2 FROZEN -> d2 Stage 0 DONE -> Stage 1 FROZEN -> Stage 2 FROZEN -> EVENT 5 HOLDOUT COMPLETE -> PROSPECTIVE ACCUMULATION ACTIVE / SCHEDULED`
 
 Production remains unchanged:
 
@@ -137,11 +139,38 @@ On event 5 P2 was conservative early and therefore had worse window MAE than raw
 
 No P2 changes are allowed from this result.
 
-## Active next phase — prospective accumulation
+## Active next phase — scheduled prospective accumulation
 
-Keep the package frozen and score every new eligible completed event append-only.
+Operational scorer:
 
-For every event preserve separate diagnostics for:
+- workflow: `.github/workflows/d2-prospective-score-v1.yml`;
+- scorer: `ml/d2_prospective_score_v1.py`;
+- frozen compatibility runner: `ml/run_d2_prospective_score_v1.py`;
+- exposure registry: `ml/artifacts/d2_prospective_registry_v1.json`;
+- daily schedule: `05:23 UTC`;
+- manual `workflow_dispatch` also available.
+
+First end-to-end run:
+
+- run `39312944826`;
+- main SHA `5ce2e8e7bfd5b197510108f441c11a75257fd0c8`;
+- artifact ID `12215847975`;
+- result: **`NO_NEW_ELIGIBLE_EVENTS`**;
+- exporter: `10 events / 34 live rows`;
+- frozen Ridge training: still exactly `9 events / 30 rows`;
+- event 5: correctly excluded because it is already registered as exposed.
+
+The scorer is evidence-only. It does **not**:
+
+- add prospective outcomes to Ridge training;
+- retune P2;
+- update the registry automatically;
+- commit model state;
+- promote production.
+
+When a new completed eligible event appears, the workflow scores it under the frozen package and uploads immutable evidence. A separate reviewed evidence cycle must persist the result and register the event as exposed.
+
+For every new event preserve separate diagnostics for:
 
 1. Structural T-1 base;
 2. Frozen Pre-Live v2 / b2;
