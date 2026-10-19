@@ -1,0 +1,221 @@
+name: d2 Prospective Score v1
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "23 5 * * *"
+  pull_request:
+    paths:
+      - "ml/d2_prospective_score_v1.py"
+      - "ml/run_d2_prospective_score_v1.py"
+      - "ml/test_d2_prospective_score_v1.py"
+      - "ml/artifacts/d2_prospective_registry_v1.json"
+      - "ml/artifacts/d2_stage2_p2_observation_maturity_v1/manifest.json"
+      - "ml/d2_stage1_model_tournament_v1.py"
+      - "ml/d2_stage2_reliability_gating_v1.py"
+      - "ml/d2_stage1_payload_split_v1.py"
+      - "ml/d2_live_replay_anchor_v1.py"
+      - "ml/run_d2_live_replay_anchor_v1.py"
+      - ".github/workflows/d2-prospective-score-v1.yml"
+  push:
+    branches:
+      - main
+    paths:
+      - "ml/d2_prospective_score_v1.py"
+      - "ml/run_d2_prospective_score_v1.py"
+      - "ml/test_d2_prospective_score_v1.py"
+      - "ml/artifacts/d2_prospective_registry_v1.json"
+      - "ml/artifacts/d2_stage2_p2_observation_maturity_v1/manifest.json"
+      - "ml/d2_stage1_model_tournament_v1.py"
+      - "ml/d2_stage2_reliability_gating_v1.py"
+      - "ml/d2_stage1_payload_split_v1.py"
+      - "ml/d2_live_replay_anchor_v1.py"
+      - "ml/run_d2_live_replay_anchor_v1.py"
+      - ".github/workflows/d2-prospective-score-v1.yml"
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: d2-prospective-score-v1-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install pinned core runtime
+        run: |
+          python -m pip install --upgrade pip
+          pip install numpy==2.3.5 pandas==2.2.3 scikit-learn==1.8.0 joblib==1.5.3
+      - name: Compile prospective scorer
+        run: |
+          python -m py_compile ml/d2_prospective_score_v1.py
+          python -m py_compile ml/run_d2_prospective_score_v1.py
+          python -m py_compile ml/test_d2_prospective_score_v1.py
+      - name: Unit / registry / no-leakage checks
+        run: |
+          python -m ml.test_d2_prospective_score_v1
+
+  score:
+    if: github.event_name != 'pull_request'
+    needs: validate
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install pinned core runtime
+        run: |
+          python -m pip install --upgrade pip
+          pip install numpy==2.3.5 pandas==2.2.3 scikit-learn==1.8.0 joblib==1.5.3
+
+      - name: Request C1 export OIDC token
+        shell: bash
+        run: |
+          set -euo pipefail
+          response=$(curl --retry 4 --retry-all-errors --retry-delay 2 -fsS \
+            -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
+            "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=beyond-c1-alpha-training")
+          token=$(printf '%s' "$response" | jq -r '.value')
+          test -n "$token"
+          test "$token" != "null"
+          echo "::add-mask::$token"
+          echo "C1_ALPHA_OIDC_TOKEN=$token" >> "$GITHUB_ENV"
+
+      - name: Fetch append-only C1 exports
+        shell: bash
+        run: |
+          set -euo pipefail
+          base='https://adchzwqboeekhokapxqi.supabase.co/functions/v1/c1_alpha_training_export_v1'
+          fetch_export() {
+            local version="$1"
+            local output="$2"
+            local attempts=5
+            local attempt=1
+            local code=''
+            while [ "$attempt" -le "$attempts" ]; do
+              code=$(curl -sS --connect-timeout 20 --max-time 90 \
+                -H "Authorization: Bearer $C1_ALPHA_OIDC_TOKEN" \
+                -o "$output" -w '%{http_code}' "$base?version=$version" || true)
+              if [ "$code" = "200" ] && jq -e '.ok == true' "$output" >/dev/null 2>&1; then
+                echo "Fetched $version on attempt $attempt"
+                return 0
+              fi
+              echo "C1 export attempt $attempt/$attempts failed version=$version http=$code" >&2
+              sleep $((attempt * 2))
+              attempt=$((attempt + 1))
+            done
+            return 1
+          }
+          for part in events attendance sporting aliases; do
+            fetch_export "v7-$part" "/tmp/c1-$part.json"
+          done
+          fetch_export "v7-final24" /tmp/c1-final24.json
+          jq -c '{ok,eventCount,liveRowCount,liveRowsLength:(.liveRows|length)}' /tmp/c1-final24.json
+
+      - name: Reconstruct immutable 9/30 Ridge training lineage
+        run: |
+          python -m ml.d2_stage1_payload_split_v1 \
+            --events /tmp/c1-events.json \
+            --attendance /tmp/c1-attendance.json \
+            --sporting /tmp/c1-sporting.json \
+            --aliases /tmp/c1-aliases.json \
+            --live /tmp/c1-final24.json \
+            --training-contract ml/artifacts/c1_shadow_v8/training_contract_v1.json \
+            --output-frozen /tmp/d2-prospective-frozen-development.json \
+            --output-split-manifest /tmp/d2-prospective-split-manifest.json
+          jq -e '
+            .frozen_development.event_count == 9
+            and .frozen_development.live_row_count == 30
+            and .rules.new_holdouts_used_for_stage1_selection == false
+          ' /tmp/d2-prospective-split-manifest.json >/dev/null
+
+      - name: Rebuild exact Frozen-v2 development Stage0 frame
+        run: |
+          python -m ml.run_d2_live_replay_anchor_v1 \
+            --input /tmp/d2-prospective-frozen-development.json \
+            --structural-artifact-dir ml/artifacts/structural_prior_runtime_v1 \
+            --freeze-manifest ml/artifacts/pre_live_v2_historical_candidate_v1/manifest.json \
+            --c1-training-contract ml/artifacts/c1_shadow_v8/training_contract_v1.json \
+            --capacity-audit ml/artifacts/d2_stage0_capacity_audit_v1.json \
+            --output-json /tmp/d2-prospective-development-stage0.json \
+            --output-csv /tmp/d2-prospective-development-stage0.csv
+          jq -e '
+            .status == "FROZEN_V2_EXACT_COMPATIBILITY_READY"
+            and .dataset.event_count == 9
+            and .dataset.row_count == 30
+          ' /tmp/d2-prospective-development-stage0.json >/dev/null
+
+      - name: Score new completed events under frozen d2 package
+        run: |
+          python -m ml.run_d2_prospective_score_v1 \
+            --events /tmp/c1-events.json \
+            --attendance /tmp/c1-attendance.json \
+            --sporting /tmp/c1-sporting.json \
+            --aliases /tmp/c1-aliases.json \
+            --live /tmp/c1-final24.json \
+            --development-stage0-csv /tmp/d2-prospective-development-stage0.csv \
+            --structural-artifact-dir ml/artifacts/structural_prior_runtime_v1 \
+            --pre-live-manifest ml/artifacts/pre_live_v2_historical_candidate_v1/manifest.json \
+            --stage2-manifest ml/artifacts/d2_stage2_p2_observation_maturity_v1/manifest.json \
+            --capacity-audit ml/artifacts/d2_stage0_capacity_audit_v1.json \
+            --registry ml/artifacts/d2_prospective_registry_v1.json \
+            --output-json /tmp/d2-prospective-score-v1.json \
+            --output-csv /tmp/d2-prospective-score-v1-rows.csv
+
+      - name: Hard frozen-prospective evidence gate
+        run: |
+          jq -e '
+            (.status == "NO_NEW_ELIGIBLE_EVENTS"
+              or .status == "COMPLETED_PROSPECTIVE_SCORING"
+              or .status == "NEW_EVENTS_BLOCKED_NO_SCORES")
+            and .production_change == false
+            and .promotion_allowed == false
+            and .model_training_on_prospective_outcomes == false
+            and .policy_retuning_performed == false
+            and .frozen_lineage.stage1_expert_id == "ridge-a10"
+            and .frozen_lineage.stage2_package_id == "d2-stage2-p2-observation-maturity-2026-10-19-v1"
+            and .frozen_lineage.stage2_policy_id == "P2-observation-maturity"
+            and (.development_event_ids | sort) == [1,3,4,8,9,12,13,14,17]
+            and (.registered_prospective_event_ids | index(5)) != null
+            and ([.scored_events[].ticket_event_id] | all(. as $id | ([1,3,4,5,8,9,12,13,14,17] | index($id) | not)))
+          ' /tmp/d2-prospective-score-v1.json >/dev/null
+
+      - name: Print prospective status
+        run: |
+          jq '{status,current_export,new_candidate_event_ids,scored_events,blocked_events,decision_boundary}' \
+            /tmp/d2-prospective-score-v1.json
+
+      - name: Hash prospective evidence
+        run: |
+          sha256sum /tmp/d2-prospective-split-manifest.json
+          sha256sum /tmp/d2-prospective-development-stage0.json
+          sha256sum /tmp/d2-prospective-development-stage0.csv
+          sha256sum /tmp/d2-prospective-score-v1.json
+          sha256sum /tmp/d2-prospective-score-v1-rows.csv
+          sha256sum ml/artifacts/d2_prospective_registry_v1.json
+          sha256sum ml/artifacts/d2_stage2_p2_observation_maturity_v1/manifest.json
+
+      - name: Upload prospective evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: d2-prospective-score-v1-${{ github.run_id }}
+          path: |
+            /tmp/d2-prospective-split-manifest.json
+            /tmp/d2-prospective-development-stage0.json
+            /tmp/d2-prospective-development-stage0.csv
+            /tmp/d2-prospective-score-v1.json
+            /tmp/d2-prospective-score-v1-rows.csv
+            ml/artifacts/d2_prospective_registry_v1.json
+            ml/artifacts/d2_stage2_p2_observation_maturity_v1/manifest.json
+          if-no-files-found: error
+          retention-days: 90
