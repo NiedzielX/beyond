@@ -9,8 +9,12 @@ tracked Ekstraklasa ticket events with:
 - audited capacity when available;
 - raw final-24h snapshot count.
 
-This module never estimates attendance from inventory and never mutates model,
-policy, registry or production state.
+This module also separates delayed-label holdouts from genuinely post-freeze
+prospective events. Both may be scored under the frozen package, but only
+post-freeze events may count as true forward evidence for promotion.
+
+It never estimates attendance from inventory and never mutates model, policy,
+registry or production state.
 """
 from __future__ import annotations
 
@@ -32,7 +36,13 @@ from ml.d2_live_replay_anchor_v1 import utc_timestamp
 
 EXPERIMENT = "d2-prospective-outcome-readiness-v1"
 EXPECTED_READINESS_EXPORT_VERSION = "d2-prospective-readiness-v1"
+# Canonical Stage-2 main run completed after this commit. Use the end of the
+# canonical CI run as the conservative boundary for genuinely forward events.
+STAGE2_FREEZE_CUTOFF_AT = pd.Timestamp("2026-10-19T19:11:01Z")
 POST_MATCH_GRACE_HOURS = 3.0
+
+EVIDENCE_DELAYED_LABEL = "DELAYED_LABEL_HOLDOUT"
+EVIDENCE_TRUE_PROSPECTIVE = "TRUE_POST_FREEZE_PROSPECTIVE"
 
 STATUS_READY = "READY_FOR_PROSPECTIVE_SCORE"
 STATUS_MISSING_OUTCOME = "BLOCKED_MISSING_OUTCOME"
@@ -50,6 +60,15 @@ def _valid_positive_number(value: Any) -> bool:
     except (TypeError, ValueError):
         return False
     return bool(np.isfinite(number) and number > 0.0)
+
+
+def evidence_class(kickoff_at: Any) -> str:
+    kickoff = utc_timestamp(kickoff_at)
+    return (
+        EVIDENCE_TRUE_PROSPECTIVE
+        if kickoff > STAGE2_FREEZE_CUTOFF_AT
+        else EVIDENCE_DELAYED_LABEL
+    )
 
 
 def verify_readiness_export(payload: dict[str, Any]) -> list[dict[str, Any]]:
@@ -90,6 +109,7 @@ def classify_events(
         rows = int(event.get("final24_snapshot_count") or 0)
         has_outcome = _valid_positive_number(event.get("actual_attendance"))
         has_capacity = _valid_positive_number(event.get("stadium_capacity"))
+        event_evidence_class = evidence_class(kickoff)
 
         if hours_since_kickoff < 0.0:
             status = STATUS_FUTURE
@@ -111,6 +131,10 @@ def classify_events(
             "away_team": event.get("away_team"),
             "kickoff_at": kickoff.isoformat(),
             "hours_since_kickoff": hours_since_kickoff,
+            "evidence_class": event_evidence_class,
+            "counts_toward_true_prospective_promotion_evidence": (
+                event_evidence_class == EVIDENCE_TRUE_PROSPECTIVE
+            ),
             "final24_snapshot_count": rows,
             "actual_attendance_present": has_outcome,
             "stadium_capacity_present": has_capacity,
@@ -138,9 +162,12 @@ def build_readiness_report(
     )
 
     status_counts: dict[str, int] = {}
+    evidence_class_counts: dict[str, int] = {}
     for row in rows:
         status = str(row["readiness_status"])
         status_counts[status] = status_counts.get(status, 0) + 1
+        event_class = str(row["evidence_class"])
+        evidence_class_counts[event_class] = evidence_class_counts.get(event_class, 0) + 1
 
     completed_attention = [
         row for row in rows
@@ -164,6 +191,7 @@ def build_readiness_report(
         "experiment": EXPERIMENT,
         "status": "READINESS_EVALUATED",
         "as_of_at": utc_timestamp(as_of_at).isoformat(),
+        "stage2_freeze_cutoff_at": STAGE2_FREEZE_CUTOFF_AT.isoformat(),
         "production_change": False,
         "model_change": False,
         "policy_change": False,
@@ -175,13 +203,25 @@ def build_readiness_report(
         "development_event_ids": list(EXPECTED_DEVELOPMENT_EVENT_IDS),
         "registered_prospective_event_ids": sorted(scored_ids),
         "status_counts": status_counts,
+        "evidence_class_counts": evidence_class_counts,
         "ready_event_ids": [int(row["ticket_event_id"]) for row in ready],
         "blocked_completed_event_ids": [int(row["ticket_event_id"]) for row in blockers],
+        "true_prospective_ready_event_ids": [
+            int(row["ticket_event_id"])
+            for row in ready
+            if row["evidence_class"] == EVIDENCE_TRUE_PROSPECTIVE
+        ],
+        "delayed_label_ready_event_ids": [
+            int(row["ticket_event_id"])
+            for row in ready
+            if row["evidence_class"] == EVIDENCE_DELAYED_LABEL
+        ],
         "events": rows,
         "decision_boundary": (
             "Read-only readiness only. Never derive actual attendance from seat-map inventory. "
-            "A BLOCKED_MISSING_OUTCOME event becomes scoreable only after a verified outcome "
-            "enters the trusted outcome pipeline."
+            "Delayed-label holdouts may be scored for diagnostic evidence but do not count as "
+            "true post-freeze prospective promotion evidence. A BLOCKED_MISSING_OUTCOME event "
+            "becomes scoreable only after a verified outcome enters the trusted outcome pipeline."
         ),
     }
 
@@ -212,7 +252,10 @@ def main() -> None:
         "readiness_export_event_count": report["readiness_export_event_count"],
         "ready_event_ids": report["ready_event_ids"],
         "blocked_completed_event_ids": report["blocked_completed_event_ids"],
+        "true_prospective_ready_event_ids": report["true_prospective_ready_event_ids"],
+        "delayed_label_ready_event_ids": report["delayed_label_ready_event_ids"],
         "status_counts": report["status_counts"],
+        "evidence_class_counts": report["evidence_class_counts"],
         "events": report["events"],
     }, indent=2, sort_keys=True))
 
