@@ -56,6 +56,7 @@ const ROUTES: Record<string, string> = {
   "v7-sporting": "export_c1_alpha_v7_sporting_v1",
   "v7-aliases": "export_c1_alpha_v7_aliases_v1",
   "v7-hybrid": "export_c1_alpha_v7_hybrid_v1",
+  "d2-readiness": "export_d2_prospective_readiness_v1",
 };
 
 Deno.serve(async (req: Request) => {
@@ -116,7 +117,7 @@ Deno.serve(async (req: Request) => {
   } catch (error) {
     return json({
       ok: false,
-      version: "c1-alpha-training-export-gateway-v5",
+      version: "c1-alpha-training-export-gateway-v6",
       error: String(error),
       repository: claims.repository,
       sha: claims.sha || null,
