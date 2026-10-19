@@ -10,24 +10,26 @@ Read in this order:
 
 1. `ml/MODEL_ACCURACY_DEVELOPMENT_INSTRUCTIONS_V2.md`;
 2. `ml/CURRENT_MODEL.md`;
-3. `ml/results/D2_EVENT5_HOLDOUT_V1_2026-10-19.md`;
-4. `ml/artifacts/d2_event5_holdout_v1/manifest.json`;
-5. `ml/results/D2_STAGE2_RELIABILITY_GATING_V1_2026-10-19.md`;
-6. `ml/artifacts/d2_stage2_p2_observation_maturity_v1/manifest.json`;
-7. `ml/results/D2_STAGE1_MODEL_TOURNAMENT_V1_2026-10-19.md`;
-8. `ml/artifacts/pre_live_v2_historical_candidate_v1/manifest.json`;
-9. `ml/LIVE_DEMAND_ENGINE_V1_PLAN.md`;
-10. `ml/DEMAND_FORECAST_DEVELOPMENT_PLAN_V2.md`;
-11. `ml/C1_V8_PROSPECTIVE_SHADOW_V1.md`;
-12. `ml/MODEL_PROMOTION_GOVERNANCE_V1.md`.
+3. `ml/D2_PROSPECTIVE_ACCUMULATION_V1.md`;
+4. `ml/results/D2_PROSPECTIVE_SCORE_V1_INITIAL_2026-10-19.md`;
+5. `ml/results/D2_EVENT5_HOLDOUT_V1_2026-10-19.md`;
+6. `ml/artifacts/d2_event5_holdout_v1/manifest.json`;
+7. `ml/results/D2_STAGE2_RELIABILITY_GATING_V1_2026-10-19.md`;
+8. `ml/artifacts/d2_stage2_p2_observation_maturity_v1/manifest.json`;
+9. `ml/results/D2_STAGE1_MODEL_TOURNAMENT_V1_2026-10-19.md`;
+10. `ml/artifacts/pre_live_v2_historical_candidate_v1/manifest.json`;
+11. `ml/LIVE_DEMAND_ENGINE_V1_PLAN.md`;
+12. `ml/DEMAND_FORECAST_DEVELOPMENT_PLAN_V2.md`;
+13. `ml/C1_V8_PROSPECTIVE_SHADOW_V1.md`;
+14. `ml/MODEL_PROMOTION_GOVERNANCE_V1.md`.
 
 ## Immediate objective
 
-> **Keep the frozen d2 package unchanged and accumulate genuinely prospective event-level evidence. Score each new completed eligible event append-only and preserve component diagnostics. Do not retrain from event 5.**
+> **Keep the frozen d2 package unchanged and let the scheduled prospective scorer accumulate genuinely new event-level evidence. Review and persist any new scored event separately; do not retrain from event 5 or from a newly scored event in the same evidence cycle.**
 
 ## Canonical sequence
 
-`a2 CLOSED -> b2 CLOSED -> c2 historical CLOSED -> Pre-Live v2 FROZEN -> d2 Stage 0 DONE -> Stage 1 FROZEN -> Stage 2 FROZEN -> EVENT 5 HOLDOUT COMPLETE -> PROSPECTIVE ACCUMULATION ACTIVE`
+`a2 CLOSED -> b2 CLOSED -> c2 historical CLOSED -> Pre-Live v2 FROZEN -> d2 Stage 0 DONE -> Stage 1 FROZEN -> Stage 2 FROZEN -> EVENT 5 HOLDOUT COMPLETE -> PROSPECTIVE ACCUMULATION ACTIVE / SCHEDULED`
 
 ## Frozen architecture
 
@@ -198,9 +200,58 @@ At observations 3 and 4 reliability was `1.0`; latest P2 = latest raw Ridge.
 
 Do not change P2 because of this event.
 
+## Prospective scorer — OPERATIONAL
+
+Contract:
+
+`ml/D2_PROSPECTIVE_ACCUMULATION_V1.md`
+
+Workflow:
+
+`.github/workflows/d2-prospective-score-v1.yml`
+
+Scorer:
+
+`ml/d2_prospective_score_v1.py`
+
+Compatibility runner:
+
+`ml/run_d2_prospective_score_v1.py`
+
+Registry:
+
+`ml/artifacts/d2_prospective_registry_v1.json`
+
+Schedule:
+
+`daily at 05:23 UTC`
+
+First green end-to-end run:
+
+- run `39312944826`;
+- main SHA `5ce2e8e7bfd5b197510108f441c11a75257fd0c8`;
+- artifact ID `12215847975`;
+- exporter state `10 events / 34 live rows`;
+- status `NO_NEW_ELIGIBLE_EVENTS`;
+- `new_candidate_event_ids=[]`;
+- `blocked_events=[]`.
+
+This confirms:
+
+- event 5 is permanently exposed and not re-scored as unseen;
+- Ridge training remains exact 9 events / 30 rows;
+- prospective outcomes are not added to training;
+- P2 is not retuned;
+- the scorer can finish green when no new event exists;
+- evidence artifacts are produced successfully.
+
+The scheduled workflow has read-only repository contents permission. It cannot silently commit, retrain, change the registry or promote production.
+
+When it finds a new eligible completed event, review and persist the evidence in a separate cycle, then explicitly add that event to the registry so it can never be reused as unseen evidence.
+
 ## Active next phase — prospective accumulation
 
-For each new eligible completed event, score the frozen package without retraining and persist separately:
+For each new eligible completed event, preserve separately:
 
 1. Structural T-1 base;
 2. Frozen Pre-Live v2 including b2;
@@ -258,4 +309,4 @@ No production promotion from one holdout.
 
 ## One-line instruction
 
-> **Event 5 is complete and may never be used for silent retuning. Keep `d2-stage2-p2-observation-maturity-2026-10-19-v1` frozen, score future completed events append-only with component-level diagnostics, monitor the b2 failure signal, and only open a new versioned challenger after materially more independent prospective evidence. Production remains unchanged.**
+> **The scheduled prospective scorer is active. Event 5 is complete and exposed. Keep `d2-stage2-p2-observation-maturity-2026-10-19-v1` frozen; review/persist each newly scored event separately with Structural -> b2 -> Ridge -> P2 -> genuine C1 diagnostics; register it as exposed after review; monitor the b2 failure signal without tuning; only open a new versioned challenger after materially more independent prospective evidence. Production remains unchanged.**

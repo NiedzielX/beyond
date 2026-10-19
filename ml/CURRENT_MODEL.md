@@ -9,12 +9,14 @@ Read first in a cold session:
 1. `AI_BOOTSTRAP.md`;
 2. `ml/MODEL_ACCURACY_DEVELOPMENT_INSTRUCTIONS_V2.md`;
 3. this file;
-4. `ml/results/D2_EVENT5_HOLDOUT_V1_2026-10-19.md`;
-5. `ml/artifacts/d2_event5_holdout_v1/manifest.json`;
-6. `ml/results/D2_STAGE2_RELIABILITY_GATING_V1_2026-10-19.md`;
-7. `ml/artifacts/d2_stage2_p2_observation_maturity_v1/manifest.json`;
-8. `ml/results/D2_STAGE1_MODEL_TOURNAMENT_V1_2026-10-19.md`;
-9. `ml/artifacts/pre_live_v2_historical_candidate_v1/manifest.json`.
+4. `ml/D2_PROSPECTIVE_ACCUMULATION_V1.md`;
+5. `ml/results/D2_PROSPECTIVE_SCORE_V1_INITIAL_2026-10-19.md`;
+6. `ml/results/D2_EVENT5_HOLDOUT_V1_2026-10-19.md`;
+7. `ml/artifacts/d2_event5_holdout_v1/manifest.json`;
+8. `ml/results/D2_STAGE2_RELIABILITY_GATING_V1_2026-10-19.md`;
+9. `ml/artifacts/d2_stage2_p2_observation_maturity_v1/manifest.json`;
+10. `ml/results/D2_STAGE1_MODEL_TOURNAMENT_V1_2026-10-19.md`;
+11. `ml/artifacts/pre_live_v2_historical_candidate_v1/manifest.json`.
 
 ## North star
 
@@ -30,11 +32,11 @@ then:
 
 Canonical sequence:
 
-`a2 CLOSED -> b2 CLOSED -> c2 historical CLOSED -> Pre-Live v2 FROZEN -> d2 Stage 0 DONE -> Stage 1 FROZEN -> Stage 2 FROZEN -> EVENT 5 HOLDOUT COMPLETE -> PROSPECTIVE ACCUMULATION ACTIVE`
+`a2 CLOSED -> b2 CLOSED -> c2 historical CLOSED -> Pre-Live v2 FROZEN -> d2 Stage 0 DONE -> Stage 1 FROZEN -> Stage 2 FROZEN -> EVENT 5 HOLDOUT COMPLETE -> PROSPECTIVE ACCUMULATION ACTIVE / SCHEDULED`
 
 Current active workstream:
 
-**Frozen prospective scoring on new independent completed events with component-level diagnostics.**
+**Frozen scheduled prospective scoring on new independent completed events with component-level diagnostics.**
 
 ---
 
@@ -274,6 +276,50 @@ Keep C1 v8 unchanged as comparator.
 
 ---
 
+# Prospective scorer — ACTIVE / SCHEDULED
+
+Contract:
+
+`ml/D2_PROSPECTIVE_ACCUMULATION_V1.md`
+
+Workflow:
+
+`.github/workflows/d2-prospective-score-v1.yml`
+
+Registry:
+
+`ml/artifacts/d2_prospective_registry_v1.json`
+
+Schedule:
+
+`05:23 UTC daily`
+
+Initial end-to-end evidence:
+
+- run `39312944826`;
+- main SHA `5ce2e8e7bfd5b197510108f441c11a75257fd0c8`;
+- artifact ID `12215847975`;
+- artifact ZIP SHA256 `ca470b8f18eddabb8c9f4664baff75a776bb6e64d3e50379f6836c22f3b795cc`;
+- exporter state `10 events / 34 live rows`;
+- result `NO_NEW_ELIGIBLE_EVENTS`;
+- new candidate IDs `[]`;
+- blocked IDs `[]`.
+
+This proves operationally that:
+
+- frozen Ridge training remains exact 9/30;
+- event 5 is registry-protected and not re-used as unseen;
+- prospective outcomes never enter Ridge training automatically;
+- P2 is not retuned;
+- no-new-event runs are valid green runs;
+- evidence artifacts and hashes are produced.
+
+The workflow is evidence-only and has read-only repository contents permission. It cannot commit, mutate the registry, retrain or promote production automatically.
+
+A newly scored event must be reviewed/persisted in a separate evidence cycle and explicitly registered as exposed.
+
+---
+
 # Active next phase — frozen prospective accumulation
 
 For every new eligible completed event, score without retraining:
@@ -308,4 +354,4 @@ Production promotion also requires materially more independent prospective event
 
 ## Current development decision
 
-**Keep `d2-stage2-p2-observation-maturity-2026-10-19-v1` frozen. Event 5 is complete and may not be used for retuning. Build/operate append-only prospective scoring with component diagnostics; monitor the b2 warning, but do not change b2/Ridge/P2 until a separately versioned evidence-based cycle is justified. Production remains unchanged.**
+**Keep `d2-stage2-p2-observation-maturity-2026-10-19-v1` frozen. The scheduled prospective scorer is active and currently has no new eligible event beyond registered event 5. Review/persist each future scored event separately, keep component diagnostics, and do not change b2/Ridge/P2 until a separately versioned evidence-based cycle is justified. Production remains unchanged.**
