@@ -2,9 +2,17 @@
 
 Last updated: **2026-10-19**
 
-Status: **ACTIVE EXPERIMENT / d2 / NO PRODUCTION CHANGE**
+Status: **COMPLETED / RESEARCH LEAD SELECTED / NO PRODUCTION CHANGE**
 
-Parent lineage:
+Canonical result:
+
+`ml/results/D2_STAGE1_MODEL_TOURNAMENT_V1_2026-10-19.md`
+
+Next stage:
+
+`ml/D2_STAGE2_RELIABILITY_GATING_V1.md`
+
+## Parent lineage
 
 - frozen Pre-Live v2: `pre-live-v2-historical-candidate-2026-10-18-v1`;
 - exact d2 Stage 0 replay: `ml/D2_LIVE_REPLAY_ANCHOR_V1.md`;
@@ -12,29 +20,31 @@ Parent lineage:
 
 ## Objective
 
-Run the first learned d2 tournament against the sealed Frozen Pre-Live v2 anchor.
+Stage 1 tested whether a compact learned live-residual model can improve final-attendance MAE relative to the sealed Frozen Pre-Live v2 anchor.
 
-Primary prediction target:
+Primary target:
 
 `target_live_delta_occupancy = actual_attendance / capacity - frozen_pre_live_v2_p50 / capacity`
 
-Final governed candidate:
+Governed forecast:
 
 `forecast = clip(frozen_pre_live_v2_p50 + live_delta * capacity, 0, capacity)`
 
-Every live correction is safety-capped to:
+Maximum raw Stage-1 correction:
 
 `+/-10 percentage points occupancy`
 
-This stage is research ranking only. It cannot promote production.
+Stage 1 is research ranking only and cannot promote production.
 
-## Evaluation boundary
+## Frozen development boundary
 
-Current independent completed-event evidence:
+Development events:
 
-- 9 events;
-- 30 final-24h live rows;
-- exact Frozen Pre-Live v2 anchor on every row.
+`[1, 3, 4, 8, 9, 12, 13, 14, 17]`
+
+Development rows:
+
+`30`
 
 Independent unit:
 
@@ -53,9 +63,37 @@ Rules:
 - no C1 v8 retraining;
 - no production write.
 
-## Core candidate set
+The append-only exporter later grew to 10 events / 34 rows. The original 9/30 development lineage was reconstructed by exact event + as-of identity so the new event could not contaminate Stage-1 selection.
 
-Predeclared candidates:
+## New holdout preserved outside selection
+
+Event ID:
+
+`5`
+
+Match:
+
+`Lech Poznań vs Korona Kielce`
+
+Kickoff:
+
+`2026-10-18T15:30:00Z`
+
+Actual attendance:
+
+`37,407`
+
+Capacity:
+
+`43,269`
+
+Live rows:
+
+`4`
+
+This event was not used for Stage-1 selection and must remain outside Stage-2 policy design.
+
+## Predeclared candidate set
 
 1. `frozen-v2-zero-correction`;
 2. `train-fold-bias`;
@@ -66,224 +104,126 @@ Predeclared candidates:
 7. `ridge-a10-plus-chronos2`;
 8. `ridge-a10-plus-bolt-small`.
 
-No open-ended model zoo is allowed in Stage 1.
+No open-ended model zoo was allowed.
 
-## Why Chronos is used as a trajectory model, not a direct attendance label model
+## Research lead
 
-The public seat-map trajectory and final attendance are related but not the same measured variable.
+Selected:
 
-Therefore Chronos is **not** given a synthetic time series such as:
+`ridge-a10`
 
-`inventory proxy -> inventory proxy -> final attendance`
+Contract:
 
-because that would mix incompatible measurement semantics and could create a misleading benchmark.
+- Ridge `alpha=10.0`;
+- numeric live features;
+- median imputation within training fold;
+- missing-value indicators;
+- standardization;
+- event-balanced weights;
+- target = capacity-normalized live residual;
+- correction clipped to +/-10pp occupancy.
 
-Instead the TSFM target is strictly observable at every context point:
+## Result summary
+
+| Candidate | Latest MAE | Latest improvement vs Frozen v2 | Window MAE | Window improvement | Event improvement rate | Worst latest-event degradation |
+|---|---:|---:|---:|---:|---:|---:|
+| Frozen v2 | 4,128.01 | 0.00 | 4,128.01 | 0.00 | 0.0% | 0.00 |
+| Train-fold bias | 4,655.98 | -527.97 | 4,655.98 | -527.97 | 22.2% | 1,554.36 |
+| Inventory extrapolation | 3,869.68 | +258.33 | 3,701.05 | +426.97 | 44.4% | 3,100.60 |
+| **Ridge `alpha=10`** | **3,320.39** | **+807.62** | **3,619.19** | **+508.83** | **66.7%** | **4,326.90** |
+| Huber | 4,567.83 | -439.81 | 5,135.08 | -1,007.07 | 22.2% | 4,370.80 |
+| HistGradientBoosting | 4,186.11 | -58.10 | 4,084.01 | +44.00 | 33.3% | 4,326.90 |
+| Ridge + Chronos-2 | 3,428.25 | +699.76 | 3,645.19 | +482.82 | 66.7% | 4,326.90 |
+| Ridge + Bolt-small | 3,428.08 | +699.93 | 3,658.58 | +469.43 | 66.7% | 4,326.90 |
+
+Ridge latest-row MAE improvement:
+
+`+807.62 seats / 19.56%`
+
+Ridge event-balanced window improvement:
+
+`+508.83 seats / 12.33%`
+
+Mean absolute Ridge revision:
+
+`1,737.45 seats`
+
+## Chronos / TSFM result
+
+Chronos was used only as a causal public inventory-trajectory forecaster.
+
+TSFM target:
 
 `available_share_of_capacity`
 
-Chronos forecasts the future public inventory-proxy trajectory toward kickoff.
+Final attendance / residual labels never entered Chronos context.
 
-The zero-shot terminal trajectory forecast then becomes an additional live feature for the supervised d2 residual model.
+Models:
 
-Final attendance / residual labels never enter Chronos context.
+- `amazon/chronos-2`, revision `95a9710e2596287d08352589f42634fa5abdf0a7`;
+- `amazon/chronos-bolt-small`, revision `0e96a1377adca89eebae3bbde4f859dc3b9f4b46`.
 
-## TSFM challengers
-
-### Chronos-2
-
-Model:
-
-`amazon/chronos-2`
-
-Pinned weight revision:
-
-`95a9710e2596287d08352589f42634fa5abdf0a7`
-
-Use:
-
-- zero-shot only;
-- univariate public inventory-proxy trajectory in Stage 1;
-- no fine-tuning;
-- no cross-learning between held-out events;
-- p10 / p50 / p90 terminal forecast.
-
-### Chronos-Bolt-small
-
-Model:
-
-`amazon/chronos-bolt-small`
-
-Pinned weight revision:
-
-`0e96a1377adca89eebae3bbde4f859dc3b9f4b46`
-
-Use:
-
-- zero-shot lightweight TSFM benchmark;
-- same causal trajectory contract as Chronos-2.
-
-Package:
+Runtime:
 
 `chronos-forecasting==2.3.2`
 
-Pinned runtime:
+TSFM-ready rows:
 
-`ml/requirements-d2-tsfm-v1.txt`
+`21/30`
 
-## Causal time-series construction
+Decision:
 
-Stage 0 already samples the final 24h trajectory on approximately 6h buckets.
+`TSFM_STAGE1 = NOT_PROVEN_VS_RIDGE`
 
-Stage 1 regularizes those observations onto a fixed 6h sequence.
+Both TSFM-assisted Ridge candidates improved Frozen v2, but both were worse than plain `ridge-a10`.
 
-For each forecast row:
+Therefore do not fine-tune Chronos or add NeuralProphet / Lag-Llama on the same 9-event development set.
 
-1. take only rows from the same event with `as_of_at <= current as_of_at`;
-2. derive 6h buckets from `hours_to_kickoff`;
-3. if an older bucket is missing, forward-fill only from an **older** observed value;
-4. never interpolate from a future/later observation;
-5. require at least **2 real observed context points** before a TSFM feature becomes ready;
-6. forecast the remaining number of 6h steps toward kickoff.
+Reopen TSFM only with materially more independent trajectory events or a materially new predeclared hypothesis.
 
-If fewer than two real context points exist:
+## Canonical evidence
 
-`tsfm_ready = 0`
+Workflow run:
 
-and the supervised model handles the missing TSFM values through train-fold imputation.
+`39256585339`
 
-## TSFM output features
+Main commit:
 
-Per TSFM family:
+`3e95f0025d381eb1bed4a2e00744466b17d21dea`
 
-- readiness flag;
-- real context-point count;
-- prediction steps to kickoff;
-- terminal available-share p50;
-- projected removed-share to kickoff;
-- p90-p10 uncertainty width;
-- out-of-physical-range flag.
+Artifact ID:
 
-The raw terminal p50 is retained in evidence; the supervised feature uses a physically clipped `[0,1]` terminal available share plus an explicit out-of-range flag.
+`12187853899`
 
-## Base live features
+Artifact ZIP SHA256:
 
-Reuse the existing PIT-safe C1 trajectory contract, but replace the prior layer with the exact Frozen Pre-Live v2 anchor.
+`c494ba609f3c9ee376e8285a9af975cc78d813337bd219fbaf94c7a9a336c6de`
 
-Key groups include:
+Stage-1 JSON SHA256:
 
-- frozen anchor P50 / expected occupancy;
-- capacity;
-- continuous time to kickoff;
-- available inventory level / normalized share;
-- removed-since-first / previous;
-- 6h / 24h velocities;
-- acceleration;
-- sector absorption/release where available;
-- coverage effects;
-- observation-window / gap diagnostics;
-- signal/data-quality flags.
+`a666c57631756245245511ec11b40673aa7fb2c6cbb23303fb019993130fae4c`
 
-## Learned model contracts
+Predictions CSV SHA256:
 
-### Ridge
+`df7cacd7a116c418f869ef6890f1bec289238c1af0f561e18a13b83c0b1f5783`
 
-- `alpha=10.0`;
-- median imputation with missing indicators;
-- standardization;
-- event-balanced weights.
+Full evidence and hashes:
 
-### Huber
+`ml/results/D2_STAGE1_MODEL_TOURNAMENT_V1_2026-10-19.md`
 
-- `epsilon=1.35`;
-- `alpha=0.01`;
-- `max_iter=1000`;
-- same imputation/scaling and event weights.
+## Critical interpretation
 
-### HistGradientBoosting
+Stage 1 proves a useful live signal exists on the development lineage.
 
-- absolute-error loss;
-- learning rate `0.05`;
-- `100` iterations;
-- max leaf nodes `7`;
-- min samples leaf `5`;
-- L2 `10.0`;
-- seed `42`;
-- event-balanced weights.
+It does **not** prove raw Ridge is safe.
 
-These parameters are frozen before the first real Stage-1 evidence run.
+Worst latest-event degradation remains:
 
-## Simple benchmarks
+`+4,326.90 seats`
 
-### Frozen-v2 zero correction
+Therefore the next work is not another model zoo. It is Stage 2 reliability/tail-risk governance:
 
-`forecast = frozen_pre_live_v2_p50`
-
-This is the primary incumbent for d2.
-
-### Train-fold bias
-
-Use only training-event residuals to estimate a constant occupancy correction.
-
-### Inventory linear extrapolation
-
-Use current public available inventory and the most local valid removal velocity to extrapolate availability to kickoff.
-
-This is only a transparent proxy benchmark; inventory is not treated as confirmed sales or attendance.
-
-## Accuracy scorecard
-
-Primary ranking metrics:
-
-1. latest-row MAE across the 9 independently held-out events;
-2. event-balanced trajectory-window MAE.
-
-Also mandatory:
-
-- improvement versus Frozen Pre-Live v2;
-- event improvement rate;
-- row bias;
-- worst latest-event degradation;
-- best latest-event improvement;
-- non-zero revision rate;
-- mean / max revision magnitude;
-- event-level latest result table.
-
-A research lead must improve both:
-
-- latest-row MAE;
-- event-balanced window MAE.
-
-Tie-break:
-
-1. lower latest-row MAE;
-2. lower event-balanced window MAE;
-3. lower worst-event degradation;
-4. deterministic candidate ID.
-
-This ranking does **not** equal production promotion.
-
-## TSFM interpretation rule
-
-Chronos-2 / Chronos-Bolt can advance only if their feature-assisted candidate improves the final attendance-residual leaderboard versus the matching non-TSFM Ridge benchmark.
-
-A good inventory-trajectory forecast alone is insufficient.
-
-If TSFM-assisted Ridge does not improve attendance MAE:
-
-> close the Stage-1 TSFM challenger, not d2 as a whole.
-
-If Chronos shows signal:
-
-Stage 2 may evaluate one materially richer Chronos formulation, such as covariate-informed Chronos-2 or fine-tuning, but only after the zero-shot result is persisted.
-
-## Why no NeuralProphet / Lag-Llama in Stage 1
-
-Stage 1 intentionally tests one modern TSFM family plus its lightweight sibling, not another model zoo.
-
-Chronos-2 is the primary TSFM challenger because it supports modern zero-shot forecasting and later covariate-informed extensions, while Chronos-Bolt provides a lighter benchmark under the same family/API.
-
-NeuralProphet and Lag-Llama remain optional future challengers only if the Chronos family or new data provides a reason to reopen the TSFM family.
+`final_forecast(t) = frozen_pre_live_v2(t) + reliability(t) * ridge_delta(t)`
 
 ## Production boundary
 
@@ -295,26 +235,29 @@ Always:
 - frozen C1 v8 unchanged;
 - Frozen Pre-Live v2 unchanged.
 
-With only 9 independently completed events, a Stage-1 winner is a **research lead**, not a production-ready champion.
-
 ## Files
 
 Implementation:
 
 `ml/d2_stage1_model_tournament_v1.py`
 
-Canonical pinned runner:
+Canonical runner:
 
 `ml/run_d2_stage1_model_tournament_v1.py`
 
+Frozen-development splitter:
+
+`ml/d2_stage1_payload_split_v1.py`
+
 Tests:
 
-`ml/test_d2_stage1_model_tournament_v1.py`
-
-TSFM dependencies:
-
-`ml/requirements-d2-tsfm-v1.txt`
+- `ml/test_d2_stage1_model_tournament_v1.py`;
+- `ml/test_d2_stage1_payload_split_v1.py`.
 
 Workflow:
 
 `.github/workflows/d2-stage1-model-tournament-v1.yml`
+
+## Immediate instruction
+
+> **Freeze `ridge-a10` exactly as selected. Do not use Lech–Korona event 5 to tune it or the next reliability policy. Build Stage 2 only on the original 9-event/30-row lineage, freeze the reliability policy, then open event 5 once as the first chronological holdout.**

@@ -7,218 +7,230 @@ Beyond Ticketing engineering workspace.
 For every new AI / engineering session, read in this order:
 
 1. [`AI_BOOTSTRAP.md`](AI_BOOTSTRAP.md) — cold-start state and immediate work order;
-2. [`ml/MODEL_ACCURACY_DEVELOPMENT_INSTRUCTIONS_V2.md`](ml/MODEL_ACCURACY_DEVELOPMENT_INSTRUCTIONS_V2.md) — canonical accuracy-first development rules, CI/CD and evidence requirements;
-3. [`ml/CURRENT_MODEL.md`](ml/CURRENT_MODEL.md) — current forecasting / product state;
-4. [`ml/artifacts/pre_live_v2_historical_candidate_v1/manifest.json`](ml/artifacts/pre_live_v2_historical_candidate_v1/manifest.json) — sealed Pre-Live v2 historical candidate lineage;
-5. [`ml/results/PRE_LIVE_V2_HISTORICAL_FREEZE_V1_2026-10-18.md`](ml/results/PRE_LIVE_V2_HISTORICAL_FREEZE_V1_2026-10-18.md) — exact freeze evidence;
-6. [`ml/DEMAND_FORECAST_DEVELOPMENT_PLAN_V2.md`](ml/DEMAND_FORECAST_DEVELOPMENT_PLAN_V2.md) — active accuracy roadmap;
-7. [`ml/LIVE_DEMAND_ENGINE_V1_PLAN.md`](ml/LIVE_DEMAND_ENGINE_V1_PLAN.md) — live runtime and d2 roadmap;
-8. [`ml/C1_V8_PROSPECTIVE_SHADOW_V1.md`](ml/C1_V8_PROSPECTIVE_SHADOW_V1.md) — frozen C1 prospective runtime/governance;
-9. [`ml/SECTOR_DECISION_PRICING_V1.md`](ml/SECTOR_DECISION_PRICING_V1.md) — E0 sector/pricing product contract;
-10. [`ml/NORTH_STAR.md`](ml/NORTH_STAR.md) — product/model objective;
-11. [`ml/MODEL_PROMOTION_GOVERNANCE_V1.md`](ml/MODEL_PROMOTION_GOVERNANCE_V1.md) — promotion gates.
+2. [`ml/MODEL_ACCURACY_DEVELOPMENT_INSTRUCTIONS_V2.md`](ml/MODEL_ACCURACY_DEVELOPMENT_INSTRUCTIONS_V2.md) — canonical accuracy-first development rules;
+3. [`ml/CURRENT_MODEL.md`](ml/CURRENT_MODEL.md) — current forecasting state;
+4. [`ml/results/D2_STAGE1_MODEL_TOURNAMENT_V1_2026-10-19.md`](ml/results/D2_STAGE1_MODEL_TOURNAMENT_V1_2026-10-19.md) — current d2 evidence and research lead;
+5. [`ml/D2_STAGE2_RELIABILITY_GATING_V1.md`](ml/D2_STAGE2_RELIABILITY_GATING_V1.md) — active next-stage contract;
+6. [`ml/artifacts/pre_live_v2_historical_candidate_v1/manifest.json`](ml/artifacts/pre_live_v2_historical_candidate_v1/manifest.json) — sealed Pre-Live v2 historical lineage;
+7. [`ml/results/PRE_LIVE_V2_HISTORICAL_FREEZE_V1_2026-10-18.md`](ml/results/PRE_LIVE_V2_HISTORICAL_FREEZE_V1_2026-10-18.md) — freeze evidence;
+8. [`ml/DEMAND_FORECAST_DEVELOPMENT_PLAN_V2.md`](ml/DEMAND_FORECAST_DEVELOPMENT_PLAN_V2.md) — canonical accuracy roadmap;
+9. [`ml/LIVE_DEMAND_ENGINE_V1_PLAN.md`](ml/LIVE_DEMAND_ENGINE_V1_PLAN.md) — live-engine roadmap;
+10. [`ml/C1_V8_PROSPECTIVE_SHADOW_V1.md`](ml/C1_V8_PROSPECTIVE_SHADOW_V1.md) — frozen C1 prospective comparator;
+11. [`ml/SECTOR_DECISION_PRICING_V1.md`](ml/SECTOR_DECISION_PRICING_V1.md) — sector/pricing product contract;
+12. [`ml/NORTH_STAR.md`](ml/NORTH_STAR.md) — product/model objective;
+13. [`ml/MODEL_PROMOTION_GOVERNANCE_V1.md`](ml/MODEL_PROMOTION_GOVERNANCE_V1.md) — promotion gates.
 
-## Current objective
+## North star
 
-The immediate model-development objective is:
+> **Reduce forecasting MAE as far as possible with honest, reproducible, point-in-time-safe evidence before treating the model as mature.**
 
-> **Reduce forecasting MAE as far as possible with honest, reproducible evidence before treating the model as mature.**
+Do not optimize for roadmap completion. Do not use new outcomes to rescue previously selected models or policies.
 
-Do not optimize for completing roadmap labels.
+## Canonical architecture
 
-The forecasting architecture is developed in two layers:
-
-### 1. Frozen Pre-Live Model v2 historical candidate
+### Frozen Pre-Live v2
 
 `history + proven current-season regime -> frozen pre-live anchor`
 
-Historical c2 context extension is currently:
+Historical c2:
 
 `NO_CONTEXT_ALL_HORIZONS`
-
-This means no additional historical c2 feature family survived the current PIT-safe five-season evaluation. It does **not** mean context has no value. Forward-only rivalry, verified absences, media/hype and similar signals remain prospective research/shadow inputs until genuine point-in-time evidence exists.
 
 Freeze ID:
 
 `pre-live-v2-historical-candidate-2026-10-18-v1`
 
-Canonical manifest:
+Historical reference mean MAE:
 
-`ml/artifacts/pre_live_v2_historical_candidate_v1/manifest.json`
+- T-30: `1867.82`;
+- T-14: `1809.45`;
+- T-7: `1691.40`;
+- T-3: `1682.63`;
+- T-1: `1661.52`.
 
-Manifest SHA256:
+### d2 Continuous Live Updater
 
-`44c911d1ac8b1bf6870ed31e1a636b9b8374d8c8da2d57ba3b4fb5b4aaba4d3c`
+Current target architecture:
 
-### 2. Continuous Live Updater v2
+`final_forecast(t) = frozen_pre_live_v2(t) + reliability(t) * ridge_delta(t)`
 
-`frozen Pre-Live v2 + live trajectory + inventory state + time-to-kickoff + reliability -> live delta / revised forecast`
+The live layer is continuous over time-to-kickoff. Named horizons remain evaluation checkpoints, not separate live models.
 
-The live layer must update the immutable frozen Pre-Live v2 anchor continuously rather than operate only at T-30/T-14/T-7/T-3/T-1.
-
-## Active development order
+## Current development state
 
 Canonical sequence:
 
-`a2 CLOSED -> b2 CLOSED -> c2 historical CLOSED -> Pre-Live v2 FROZEN -> d2 ACTIVE`
-
-Current active workstream:
-
-**d2 — Continuous Live Updater against frozen Pre-Live v2**.
-
-T-30/T-14/T-7/T-3/T-1 remain evaluation checkpoints; they are not the only valid model-update moments.
-
-## Workstream interpretation
+`a2 CLOSED -> b2 CLOSED -> c2 historical CLOSED -> Pre-Live v2 FROZEN -> d2 Stage 0 DONE -> d2 Stage 1 DONE -> d2 Stage 2 ACTIVE`
 
 Current status:
 
 - **a2 Historical data:** `CLOSED FOR CURRENT HISTORICAL DATA`;
 - **b2 Current season:** `CLOSED FOR CURRENT HISTORICAL DATA / FROZEN INTO PRE-LIVE V2`;
-- **c2 Historical match context:** `SUFFICIENTLY EVALUATED / NO HISTORICAL CONTEXT EXTENSION FROZEN`;
-- **Pre-Live v2 historical candidate:** `SEALED / REPRODUCIBLE / HISTORICAL CANDIDATE ONLY`;
-- **d2 Live demand:** `ACTIVE`.
+- **c2 Historical context:** `SUFFICIENTLY EVALUATED / NO HISTORICAL EXTENSION`;
+- **Pre-Live v2:** `SEALED / REPRODUCIBLE / HISTORICAL CANDIDATE ONLY`;
+- **d2 Stage 0:** `FROZEN_V2_EXACT_COMPATIBILITY_READY`;
+- **d2 Stage 1:** `COMPLETED / ridge-a10 RESEARCH LEAD`;
+- **d2 Stage 2:** `ACTIVE NEXT — RELIABILITY / TAIL-RISK GATING`.
 
-Mandatory interpretation rule:
+## d2 Stage 1 result
 
-> **A failed challenger closes the challenger, not the whole workstream.**
+Canonical result:
 
-The reason a2/b2/c2 are now closed for the current historical dataset is not that one idea failed. They were closed only after the realistic remaining hypotheses were tested, blocked by unavailable PIT-safe history, or explicitly deferred with rationale.
+`ml/results/D2_STAGE1_MODEL_TOURNAMENT_V1_2026-10-19.md`
 
-They may be reopened only for materially new data, a materially new hypothesis, or new genuine prospective evidence. Do not silently restart old grids against the same exposed historical references.
+Development lineage:
 
-## What was actually completed before the freeze
+- 9 independent completed events;
+- 30 final-24h live rows;
+- exact Frozen Pre-Live v2 anchor;
+- event-level LOEO;
+- event-balanced training weights.
 
-### a2 — historical baseline optimization
+Research lead:
 
-Completed evidence includes:
+`ridge-a10`
 
-- feature-group contribution / ablation;
-- explicit season-recency weighting;
-- internal estimator-family challengers;
-- CatBoost / LightGBM / XGBoost external family challengers for T-7;
-- horizon-specific optimization;
-- T-7 regularization and fixed temporal robustness;
-- stronger multi-fold selection for unresolved horizons;
-- persistent cross-season club calibration under two fixed formulations.
+Key metrics:
 
-Final historical base state:
+| Metric | Frozen v2 | Ridge | Improvement |
+|---|---:|---:|---:|
+| Latest-row MAE | 4,128.01 | **3,320.39** | **+807.62 / 19.56%** |
+| Event-balanced window MAE | 4,128.01 | **3,619.19** | **+508.83 / 12.33%** |
 
-- T-30: retained Structural Prior;
-- T-14: retained Structural Prior;
-- T-7: `hist31-leaf20-l2-1`;
-- T-3: retained Structural Prior;
-- T-1: retained Structural Prior.
+Ridge improves the latest row on **6/9 events**.
 
-T-7 fixed audit improves MAE in 4/4 rolling folds with mean improvement **+104.66 MAE**.
+Critical risk:
 
-### b2 — current-season regime
+`worst latest-event degradation = +4,326.90 seats`
 
-The successful formulation is same-season actual-vs-own-model residual state with strict PIT completion semantics:
+Therefore Ridge is a research lead, not a production champion.
 
-`prior kickoff + 3h <= current forecast as_of`
+Canonical Stage-1 run:
 
-Frozen b2 policies:
+`39256585339`
 
-- T-30: `NO_ADJUSTMENT`;
-- T-14: `NO_ADJUSTMENT`;
-- T-7: `ewma50-resid-k6-cap05-min3`;
-- T-3: `ewma50-resid-k2-cap05-min3`;
-- T-1: `ewma50-resid-k6-cap05-min3`.
+Artifact ID:
 
-Non-zero policies activate only after at least **3 earlier completed same-season home matches**.
+`12187853899`
 
-Final four-fold mean MAE improvements:
+Artifact ZIP SHA256:
 
-- T-7: **+51.47**;
-- T-3: **+70.44**;
-- T-1: **+69.54**.
+`c494ba609f3c9ee376e8285a9af975cc78d813337bd219fbaf94c7a9a336c6de`
 
-Known risk remains explicit: max harmful single-event regression observed in the fixed audit is **+2,760.55 seats**, and club-level uplift is heterogeneous.
+## Chronos / TSFM decision
 
-### c2 — historical match context
+Stage 1 tested:
 
-Historical context work included:
+- `amazon/chronos-2`;
+- `amazon/chronos-bolt-small`.
 
-- audit of already-existing opponent / pair / form / table / congestion features;
-- Future Fixture Context v1;
-- sequence-aware streak / points-acceleration features;
-- current-table stakes / pressure features;
-- sequence + stakes interaction.
+Both ran as zero-shot causal forecasters of public inventory trajectory and both improved Frozen v2 when added to Ridge.
 
-No historical c2 extension survived the frozen protocol. T-1 `sequence_stakes` won development but worsened both reference seasons, mean **-36.97 MAE** versus the frozen a2+b2 stack, so it was rejected without post-hoc rescue.
+However, neither improved the matching plain Ridge candidate:
 
-Forward-only context such as rivalry, verified absences and media/hype remains prospective research because complete historical PIT truth is unavailable.
+- Ridge: `3320.39` latest MAE;
+- Ridge + Chronos-2: `3428.25`;
+- Ridge + Bolt-small: `3428.08`.
 
-## Frozen Pre-Live v2 reference state
+Decision:
 
-Historical reference mean MAE across exposed 2024/25 + 2025/26:
+`TSFM_STAGE1 = NOT_PROVEN_VS_RIDGE`
 
-- T-30: `1867.82`;
-- T-14: `1809.45`;
-- T-7: **`1691.40`**;
-- T-3: **`1682.63`**;
-- T-1: **`1661.52`**.
+Do not fine-tune Chronos or add Lag-Llama / NeuralProphet on the same 9-event development set. Reopen the TSFM family only with materially more independent live events or a materially new predeclared hypothesis.
 
-Freeze CI verified:
+## d2 Stage 2 — active now
 
-- 5/5 unit tests PASS;
-- historical input hash PASS;
-- **20/20 exact horizon-season MAE reproduction cells PASS at tolerance `1e-9`**;
-- fresh manifest vs committed manifest byte-for-byte `cmp` PASS;
-- canonical manifest SHA lock PASS.
+Canonical contract:
 
-This is a historical candidate freeze, not a production promotion.
+`ml/D2_STAGE2_RELIABILITY_GATING_V1.md`
 
-## d2 — active now
+Objective:
 
-New learned live development must use the frozen Pre-Live v2 lineage as its anchor.
+> **Preserve as much of Ridge's MAE improvement as possible while materially reducing its tail risk.**
 
-Primary target direction:
+Stage 2 must govern the frozen Stage-1 Ridge rather than retune it.
 
-`live_delta = actual_attendance - frozen_pre_live_v2_p50`
+Primary form:
 
-or a capacity-normalized equivalent.
+`final_forecast = frozen_v2 + reliability * ridge_delta`
 
-Final learned candidate concept:
+Reliability may use only PIT-safe live evidence such as:
 
-`d2_p50 = frozen_pre_live_v2_p50 + predicted_live_delta`
+- observation count / span;
+- time-to-kickoff;
+- trajectory stability;
+- velocity / acceleration;
+- correction magnitude / disagreement with Frozen v2;
+- release / coverage-change flags;
+- data gaps and feature-quality signals.
 
-Start with one continuous model over time-to-kickoff rather than five fragmented horizon models.
+Stage 2 selection remains restricted to the original **9-event / 30-row development set**.
 
-Frozen C1 v8 remains `EXPERIMENTAL_SHADOW` and continues prospective evidence collection unchanged. It may be reused as a benchmark/data-infrastructure asset but must not be silently retuned into d2.
+## Untouched chronological holdout
+
+The append-only exporter now contains a new completed event:
+
+- event ID `5`;
+- **Lech Poznań vs Korona Kielce**;
+- kickoff: `2026-10-18T15:30:00Z`;
+- actual attendance: `37,407`;
+- capacity: `43,269`;
+- 4 final-24h live rows.
+
+This event was deliberately excluded from Stage-1 selection.
+
+Mandatory rule:
+
+> **Do not use event 5 to tune Ridge or Stage-2 reliability. Freeze Stage 2 first, then score Lech–Korona once as the first chronological/prospective holdout.**
+
+After Stage 2 is frozen, compare on event 5:
+
+1. Frozen Pre-Live v2;
+2. raw frozen `ridge-a10`;
+3. frozen Stage-2 governed Ridge;
+4. frozen C1 v8 where contract-compatible.
+
+No retuning after opening the holdout.
+
+## What happens after event 5
+
+- persist the result regardless of whether it is good or bad;
+- keep collecting new completed live events append-only;
+- score the frozen d2 candidate prospectively;
+- do not silently fold new outcomes into training;
+- require a materially larger independent sample before any production promotion.
 
 ## Production boundary
 
-Structural Prior remains the production incumbent.
+Production Structural Prior remains unchanged.
 
 Production remains:
 
 `live_adjustment = 0`
 
-The frozen Pre-Live v2 historical candidate does not automatically replace production runtime.
+Frozen Pre-Live v2 does not automatically replace production.
 
-Until genuinely prospective completed events are scored, do not present development replay as confirmed prospective live accuracy.
+Frozen C1 v8 remains `EXPERIMENTAL_SHADOW` and unchanged.
+
+No d2 result is a production promotion until explicit governance permits it.
 
 ## Engineering accuracy / CI/CD
 
-Model work must be fully reproducible.
-
-Every material challenger must have:
+Every material model or policy experiment must have:
 
 - committed code;
 - executable CI workflow;
-- pinned dependencies;
-- deterministic seeds where applicable;
-- explicit data / feature / model versions;
-- exact train/dev/holdout protocol;
+- pinned dependencies / external model revisions;
+- exact data/feature/model versions;
 - PIT and leakage checks;
-- incumbent benchmark assertions;
+- event-independent evaluation;
 - machine-readable evidence artifact;
-- run/artifact identifiers and hashes where available;
+- run/artifact IDs and hashes;
 - committed human-readable result;
-- explicit promote / reject / retain decision;
-- canonical documentation updated with the result.
+- explicit decision;
+- canonical docs update;
+- no production activation without an explicit promotion step.
 
-**Do not skip implementation details. Do not treat local/manual results as canonical. Do not silently retune against the same holdout.**
+Mandatory interpretation rule:
 
-See [`ml/MODEL_ACCURACY_DEVELOPMENT_INSTRUCTIONS_V2.md`](ml/MODEL_ACCURACY_DEVELOPMENT_INSTRUCTIONS_V2.md) for the full non-negotiable contract.
+> **A failed challenger closes the challenger, not the whole workstream. A new holdout validates a frozen decision; it does not become tuning data retroactively.**
