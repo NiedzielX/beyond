@@ -26,6 +26,12 @@ from typing import Any
 import numpy as np
 import pandas as pd
 
+from ml.d2_prospective_evidence_class_v1 import (
+    EVIDENCE_DELAYED_LABEL,
+    EVIDENCE_TRUE_PROSPECTIVE,
+    STAGE2_FREEZE_CUTOFF_AT,
+    evidence_class,
+)
 from ml.d2_prospective_score_v1 import (
     EXPECTED_DEVELOPMENT_EVENT_IDS,
     EXPECTED_STAGE2_PACKAGE,
@@ -36,13 +42,7 @@ from ml.d2_live_replay_anchor_v1 import utc_timestamp
 
 EXPERIMENT = "d2-prospective-outcome-readiness-v1"
 EXPECTED_READINESS_EXPORT_VERSION = "d2-prospective-readiness-v1"
-# Canonical Stage-2 main run completed after this commit. Use the end of the
-# canonical CI run as the conservative boundary for genuinely forward events.
-STAGE2_FREEZE_CUTOFF_AT = pd.Timestamp("2026-10-19T19:11:01Z")
 POST_MATCH_GRACE_HOURS = 3.0
-
-EVIDENCE_DELAYED_LABEL = "DELAYED_LABEL_HOLDOUT"
-EVIDENCE_TRUE_PROSPECTIVE = "TRUE_POST_FREEZE_PROSPECTIVE"
 
 STATUS_READY = "READY_FOR_PROSPECTIVE_SCORE"
 STATUS_MISSING_OUTCOME = "BLOCKED_MISSING_OUTCOME"
@@ -60,15 +60,6 @@ def _valid_positive_number(value: Any) -> bool:
     except (TypeError, ValueError):
         return False
     return bool(np.isfinite(number) and number > 0.0)
-
-
-def evidence_class(kickoff_at: Any) -> str:
-    kickoff = utc_timestamp(kickoff_at)
-    return (
-        EVIDENCE_TRUE_PROSPECTIVE
-        if kickoff > STAGE2_FREEZE_CUTOFF_AT
-        else EVIDENCE_DELAYED_LABEL
-    )
 
 
 def verify_readiness_export(payload: dict[str, Any]) -> list[dict[str, Any]]:
