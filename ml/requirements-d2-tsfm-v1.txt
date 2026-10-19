@@ -1,0 +1,10 @@
+# d2 Stage 1 TSFM runtime — canonical pinned top-level dependencies
+# Model weight revisions are pinned separately in run_d2_stage1_model_tournament_v1.py.
+chronos-forecasting==2.3.2
+torch==2.14.1
+transformers==5.20.1
+accelerate==1.14.0
+numpy==2.3.5
+pandas==2.2.3
+scikit-learn==1.8.0
+joblib==1.5.3

@@ -1,0 +1,220 @@
+name: d2 Stage1 Model Tournament v1
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - "ml/d2_stage1_model_tournament_v1.py"
+      - "ml/run_d2_stage1_model_tournament_v1.py"
+      - "ml/test_d2_stage1_model_tournament_v1.py"
+      - "ml/D2_STAGE1_MODEL_TOURNAMENT_V1.md"
+      - "ml/requirements-d2-tsfm-v1.txt"
+      - "ml/d2_live_replay_anchor_v1.py"
+      - "ml/run_d2_live_replay_anchor_v1.py"
+      - "ml/artifacts/d2_stage0_capacity_audit_v1.json"
+      - "ml/artifacts/pre_live_v2_historical_candidate_v1/manifest.json"
+      - "ml/artifacts/c1_shadow_v8/training_contract_v1.json"
+      - ".github/workflows/d2-stage1-model-tournament-v1.yml"
+  push:
+    branches:
+      - main
+    paths:
+      - "ml/d2_stage1_model_tournament_v1.py"
+      - "ml/run_d2_stage1_model_tournament_v1.py"
+      - "ml/test_d2_stage1_model_tournament_v1.py"
+      - "ml/D2_STAGE1_MODEL_TOURNAMENT_V1.md"
+      - "ml/requirements-d2-tsfm-v1.txt"
+      - "ml/d2_live_replay_anchor_v1.py"
+      - "ml/run_d2_live_replay_anchor_v1.py"
+      - "ml/artifacts/d2_stage0_capacity_audit_v1.json"
+      - "ml/artifacts/pre_live_v2_historical_candidate_v1/manifest.json"
+      - "ml/artifacts/c1_shadow_v8/training_contract_v1.json"
+      - ".github/workflows/d2-stage1-model-tournament-v1.yml"
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: d2-stage1-model-tournament-v1-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install pinned core runtime
+        run: |
+          python -m pip install --upgrade pip
+          pip install numpy==2.3.5 pandas==2.2.3 scikit-learn==1.8.0 joblib==1.5.3
+
+      - name: Compile Stage 1
+        run: |
+          python -m py_compile ml/d2_stage1_model_tournament_v1.py
+          python -m py_compile ml/run_d2_stage1_model_tournament_v1.py
+          python -m py_compile ml/test_d2_stage1_model_tournament_v1.py
+          python -m py_compile ml/d2_live_replay_anchor_v1.py
+          python -m py_compile ml/run_d2_live_replay_anchor_v1.py
+
+      - name: Unit / leakage / contract checks
+        run: python -m ml.test_d2_stage1_model_tournament_v1
+
+  evaluate-main:
+    if: github.event_name != 'pull_request'
+    needs: validate
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    env:
+      HF_HOME: /home/runner/.cache/huggingface
+      TOKENIZERS_PARALLELISM: "false"
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Cache pinned Hugging Face models
+        uses: actions/cache@v4
+        with:
+          path: /home/runner/.cache/huggingface
+          key: d2-tsfm-v1-chronos2-95a9710-bolt-small-0e96a13
+
+      - name: Install pinned d2 + TSFM runtime
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r ml/requirements-d2-tsfm-v1.txt
+          python - <<'PY'
+          import accelerate, joblib, numpy, pandas, sklearn, torch, transformers
+          import importlib.metadata
+          print({
+              "chronos_forecasting": importlib.metadata.version("chronos-forecasting"),
+              "torch": torch.__version__,
+              "transformers": transformers.__version__,
+              "accelerate": accelerate.__version__,
+              "numpy": numpy.__version__,
+              "pandas": pandas.__version__,
+              "sklearn": sklearn.__version__,
+              "joblib": joblib.__version__,
+          })
+          PY
+
+      - name: Request existing C1 training OIDC token
+        shell: bash
+        run: |
+          set -euo pipefail
+          response=$(curl -fsS -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
+            "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=beyond-c1-alpha-training")
+          token=$(printf '%s' "$response" | jq -r '.value')
+          test -n "$token"
+          test "$token" != "null"
+          echo "::add-mask::$token"
+          echo "C1_ALPHA_OIDC_TOKEN=$token" >> "$GITHUB_ENV"
+
+      - name: Fetch frozen C1 replay source payloads
+        shell: bash
+        run: |
+          set -euo pipefail
+          base='https://adchzwqboeekhokapxqi.supabase.co/functions/v1/c1_alpha_training_export_v1'
+          for part in events attendance sporting aliases; do
+            curl -fsS -H "Authorization: Bearer $C1_ALPHA_OIDC_TOKEN" \
+              "$base?version=v7-$part" -o "/tmp/c1-$part.json"
+            jq -e '.ok == true' "/tmp/c1-$part.json" >/dev/null
+          done
+          curl -fsS -H "Authorization: Bearer $C1_ALPHA_OIDC_TOKEN" \
+            "$base?version=v7-final24" -o /tmp/c1-final24.json
+          jq -e '.ok == true and .eventCount == 9 and .liveRowCount == 30' \
+            /tmp/c1-final24.json >/dev/null
+
+      - name: Compose unchanged d2 Stage 0 input
+        shell: bash
+        run: |
+          set -euo pipefail
+          jq -n \
+            --slurpfile events /tmp/c1-events.json \
+            --slurpfile attendance /tmp/c1-attendance.json \
+            --slurpfile sporting /tmp/c1-sporting.json \
+            --slurpfile aliases /tmp/c1-aliases.json \
+            --slurpfile live /tmp/c1-final24.json \
+            '{version:"d2-stage1-c1-replay-payload-v1",eventCount:$events[0].eventCount,events:$events[0].events,attendance:$attendance[0].attendance,sportingMatches:$sporting[0].sportingMatches,aliases:$aliases[0].aliases,liveRows:$live[0].liveRows,liveRowCount:$live[0].liveRowCount,sampling:$live[0].sampling}' \
+            > /tmp/d2-stage1-input.json
+
+      - name: Rebuild exact Frozen Pre-Live v2 Stage 0 anchor
+        run: |
+          python -m ml.run_d2_live_replay_anchor_v1 \
+            --input /tmp/d2-stage1-input.json \
+            --structural-artifact-dir ml/artifacts/structural_prior_runtime_v1 \
+            --freeze-manifest ml/artifacts/pre_live_v2_historical_candidate_v1/manifest.json \
+            --c1-training-contract ml/artifacts/c1_shadow_v8/training_contract_v1.json \
+            --capacity-audit ml/artifacts/d2_stage0_capacity_audit_v1.json \
+            --output-json /tmp/d2-stage0-anchor.json \
+            --output-csv /tmp/d2-stage0-anchor.csv
+
+      - name: Hard Stage 0 lineage gate
+        run: |
+          jq -e '
+            .status == "FROZEN_V2_EXACT_COMPATIBILITY_READY"
+            and .dataset.event_count == 9
+            and .dataset.row_count == 30
+            and .dataset.all_rows_exact_frozen_v2_anchor == true
+          ' /tmp/d2-stage0-anchor.json >/dev/null
+
+      - name: Run d2 Stage 1 LOEO tournament with Chronos-2 + Bolt-small
+        run: |
+          python -m ml.run_d2_stage1_model_tournament_v1 \
+            --input-csv /tmp/d2-stage0-anchor.csv \
+            --with-tsfm \
+            --output-json /tmp/d2-stage1-model-tournament-v1.json \
+            --output-predictions-csv /tmp/d2-stage1-model-tournament-v1-predictions.csv
+
+      - name: Hard Stage 1 evidence gate
+        run: |
+          jq -e '
+            .status == "COMPLETED_RESEARCH_TOURNAMENT"
+            and .production_change == false
+            and .promotion_allowed == false
+            and .frozen_c1_v8_changed == false
+            and .event_count == 9
+            and .row_count == 30
+            and .tsfm.enabled == true
+            and .tsfm.chronos2_ready_rows > 0
+            and .tsfm.bolt_ready_rows > 0
+            and (.candidates | length) == 8
+          ' /tmp/d2-stage1-model-tournament-v1.json >/dev/null
+
+      - name: Print concise Stage 1 leaderboard
+        run: |
+          jq '{research_lead_candidate_id,tsfm,candidates:[.candidates[]|{candidate_id,latest_row_mae:.scorecard.latest_row_mae,latest_mae_improvement:.scorecard.latest_mae_improvement,event_balanced_window_mae:.scorecard.event_balanced_window_mae,window_mae_improvement:.scorecard.window_mae_improvement,latest_event_improvement_rate:.scorecard.latest_event_improvement_rate,worst_latest_event_degradation:.scorecard.worst_latest_event_degradation,mean_abs_revision_seats:.scorecard.mean_abs_revision_seats}]}' \
+            /tmp/d2-stage1-model-tournament-v1.json
+
+      - name: Hash Stage 1 evidence
+        run: |
+          sha256sum /tmp/d2-stage0-anchor.json
+          sha256sum /tmp/d2-stage0-anchor.csv
+          sha256sum /tmp/d2-stage1-model-tournament-v1.json
+          sha256sum /tmp/d2-stage1-model-tournament-v1-predictions.csv
+
+      - name: Upload Stage 1 evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: d2-stage1-model-tournament-v1-${{ github.run_id }}
+          path: |
+            /tmp/d2-stage0-anchor.json
+            /tmp/d2-stage0-anchor.csv
+            /tmp/d2-stage1-model-tournament-v1.json
+            /tmp/d2-stage1-model-tournament-v1-predictions.csv
+          if-no-files-found: error
+          retention-days: 90

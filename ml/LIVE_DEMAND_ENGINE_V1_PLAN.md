@@ -11,7 +11,8 @@ Last updated: **2026-10-19**
 > **Phase C1 promotion — EVIDENCE-GATED**  
 > **Phase E0 — Sector / Price-area Decision Support MVP: IMPLEMENTED**  
 > **Pre-Live v2 historical candidate: FROZEN + SEALED**  
-> **d2 Continuous Live Updater: ACTIVE DEVELOPMENT**
+> **d2 Stage 0 Frozen-v2 replay compatibility: DONE / GREEN**  
+> **d2 Stage 1 live-residual + TSFM tournament: ACTIVE**
 
 The immediate model-quality roadmap is defined in:
 
@@ -19,6 +20,10 @@ The immediate model-quality roadmap is defined in:
 - `ml/DEMAND_FORECAST_DEVELOPMENT_PLAN_V2.md`;
 - `ml/CURRENT_MODEL.md`;
 - `AI_BOOTSTRAP.md`.
+
+Stage-1 implementation contract:
+
+`ml/D2_STAGE1_MODEL_TOURNAMENT_V1.md`
 
 ## Critical architecture state
 
@@ -149,6 +154,24 @@ Interpretation:
 - this does not prove it can identify future cases where Live is genuinely better;
 - prospective independent completed events remain necessary.
 
+## d2 Stage 0 evidence
+
+Stage 0 replays the exact existing 9-event / 30-row C1 live contract against the sealed Frozen Pre-Live v2 anchor.
+
+Current state:
+
+`FROZEN_V2_EXACT_COMPATIBILITY_READY`
+
+Main-only replay passed after the freeze-lineage stabilization work.
+
+Important diagnostic:
+
+- legacy Structural Prior anchor MAE on these 9 specific events: about `3969`;
+- Frozen Pre-Live v2 anchor MAE: about `4128`;
+- Frozen-v2 anchor is about `159` seats worse on this very small live replay set.
+
+This does not reopen b2: the b2 historical decision is supported by a much broader four-fold temporal audit. It does mean d2 must benchmark every live correction against the exact Frozen-v2 anchor and must not assume the anchor wins every live event.
+
 ## Existing live / decision infrastructure
 
 Already implemented:
@@ -162,7 +185,8 @@ Already implemented:
 - Roboticket price observations;
 - guarded sector / price-area recommendations;
 - dashboard decision support;
-- grouped event-level modelling/evaluation infrastructure.
+- grouped event-level modelling/evaluation infrastructure;
+- exact Frozen-v2 Stage-0 replay lineage.
 
 This infrastructure should be reused by d2 rather than rebuilt from scratch.
 
@@ -323,22 +347,62 @@ Live features must account for:
 - scrape anomalies;
 - true demand movement as far as it can be inferred safely.
 
-### 8. First d2 tournament
+### 8. First d2 tournament — active Stage 1
+
+Canonical contract:
+
+`ml/D2_STAGE1_MODEL_TOURNAMENT_V1.md`
 
 Primary baselines:
 
 1. frozen Pre-Live v2 / zero live correction;
 2. training-fold bias-only correction;
-3. simple trajectory extrapolation.
+3. inventory linear extrapolation.
 
 Focused learned candidates:
 
-- Ridge;
-- Huber / robust linear;
-- HistGradientBoosting with strong regularization;
-- optionally one shallow tree ensemble if sample size supports it.
+- Ridge `alpha=10`;
+- Huber robust linear;
+- strongly regularized HistGradientBoosting;
+- Ridge + Chronos-2 zero-shot trajectory features;
+- Ridge + Chronos-Bolt-small zero-shot trajectory features.
 
-Do not start with a large model zoo.
+#### Time-Series Foundation Model family
+
+Stage 1 explicitly includes:
+
+- `amazon/chronos-2`;
+- `amazon/chronos-bolt-small`.
+
+Both model-weight revisions are pinned in the canonical runner, and runtime dependencies are pinned in:
+
+`ml/requirements-d2-tsfm-v1.txt`
+
+Chronos does **not** receive final attendance as a historical time-series point.
+
+TSFM target:
+
+`available_share_of_capacity`
+
+Chronos forecasts the causal public inventory-proxy trajectory toward kickoff. Terminal p50 / uncertainty / projected-removal outputs become additional live features for the supervised attendance-residual model.
+
+Rules:
+
+- zero-shot only in Stage 1;
+- no fine-tuning with N=9;
+- no cross-learning from held-out outcomes;
+- final attendance labels never enter Chronos context;
+- at least 2 real live context observations are required for a TSFM-ready row;
+- missing historical 6h buckets may be filled only causally from an older observed value;
+- a good trajectory forecast is not sufficient: the TSFM challenger must improve final attendance MAE vs the matching Ridge benchmark.
+
+Why this ordering:
+
+- Chronos-2 is the modern higher-capability TSFM challenger;
+- Chronos-Bolt-small is the lighter same-family benchmark;
+- NeuralProphet / Lag-Llama are not added to Stage 1 because the current evidence does not justify a larger TSFM model zoo.
+
+If the Chronos family shows real attendance-MAE signal, a later Stage 2 may test one richer formulation such as covariate-informed Chronos-2 or fine-tuning after enough independent events exist.
 
 ### 9. Forecast refresh and audit trail
 
@@ -361,7 +425,7 @@ Every revision must preserve:
 Mandatory metrics:
 
 - event-level MAE vs frozen Pre-Live v2;
-- window MAE;
+- event-balanced window MAE;
 - latest-row MAE;
 - median AE;
 - bias;
@@ -376,6 +440,8 @@ Mandatory metrics:
 
 A live model is not promoted merely because it improves average MAE on a small development set.
 
+Stage-1 research lead eligibility requires positive improvement on both latest-row MAE and event-balanced window MAE. With N=9, that is still research ranking only.
+
 ## CI/CD requirements
 
 All new live challengers follow `ml/MODEL_ACCURACY_DEVELOPMENT_INSTRUCTIONS_V2.md`.
@@ -385,6 +451,7 @@ Do not skip:
 - source code;
 - CI workflow;
 - pinned runtime;
+- pinned external model revision for TSFM candidates;
 - deterministic seeds;
 - exact training events;
 - exact feature definitions;
@@ -435,4 +502,4 @@ No automatic production promotion exists.
 
 ## Immediate live-engine instruction
 
-> **Pre-Live v2 is frozen. Build d2 now as a continuous PIT-safe correction / remaining-demand / reliability layer against freeze ID `pre-live-v2-historical-candidate-2026-10-18-v1`. Keep frozen C1 v8 and prospective data collection running in parallel, preserve event-level validation independence, and do not mutate production or the frozen anchor without an explicit new version and promotion step.**
+> **Run d2 Stage 1 against the exact Frozen Pre-Live v2 anchor using event-independent LOEO. Benchmark compact live-residual models plus zero-shot Chronos-2 / Chronos-Bolt-small trajectory features; final ranking is attendance MAE, not trajectory aesthetics. Keep Frozen C1 v8 and production unchanged, persist exact runtime/model revisions, and treat any N=9 winner as a research lead only.**
