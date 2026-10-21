@@ -11,36 +11,51 @@ Last updated: **2026-10-21**
 > **Phase C1 promotion — EVIDENCE-GATED**  
 > **Phase E0 — Sector / Price-area Decision Support MVP: IMPLEMENTED**  
 > **Pre-Live v2 historical candidate: FROZEN + SEALED / TRACK A**  
-> **d2 Stage 0: DONE**  
-> **d2 Stage 1: DONE / ridge-a10 FROZEN**  
-> **d2 Stage 2: DONE / P2-observation-maturity FROZEN**  
-> **d2 prospective validation: ACTIVE IN TRACK A**  
+> **final24 d2 Stage 1: DONE / ridge-a10 FROZEN**  
+> **final24 d2 Stage 2: DONE / P2-observation-maturity FROZEN**  
+> **final24 prospective validation: ACTIVE / TRACK A**  
 > **Pre-Live v3 historical research candidate: FROZEN + SEALED / TRACK B**  
-> **d2-v3 Stage 0 anchor equivalence/replay: ACTIVE NEXT**
+> **final24 v2/v3 equivalence: PROVEN / CLOSED**  
+> **long72 data + anchor: FROZEN**  
+> **long72 Stage 1: DONE / inventory-linear-extrapolation**  
+> **long72 Stage 2: DONE / P2-observation-maturity SELECTED**  
+> **long72 historical research package: SEALED**  
+> **long72 forward scoring: ACTIVE NEXT**
 
 Canonical documents:
 
 - `ml/CURRENT_MODEL.md`;
 - `ml/DEMAND_FORECAST_DEVELOPMENT_PLAN_V2.md`;
-- `ml/MODEL_ACCURACY_DEVELOPMENT_INSTRUCTIONS_V2.md`;
-- `ml/results/PRE_LIVE_V3_HISTORICAL_FREEZE_V1_2026-10-21.md`;
-- `ml/artifacts/pre_live_v3_historical_candidate_v1/manifest.json`;
+- `ml/D2_LONG_HORIZON_LIVE_V1_PLAN.md`;
+- `ml/results/D2_LONG72_STAGE2_RELIABILITY_GATING_V1_2026-10-21.md`;
+- `ml/artifacts/d2_long72_stage2_p2_v1/manifest.json`;
+- `ml/results/D2_LONG72_STAGE1_MODEL_TOURNAMENT_V1_2026-10-21.md`;
+- `ml/results/D2_LONG72_ANCHOR_CONTRACT_V1_2026-10-21.md`;
+- `ml/results/D2_V3_STAGE0_ANCHOR_EQUIVALENCE_V1_2026-10-21.md`;
 - `ml/D2_PROSPECTIVE_ACCUMULATION_V1.md`;
 - `AI_BOOTSTRAP.md`.
 
 ## Two-track rule
 
-### Track A — frozen live validation
+### Track A — frozen final24 validation
 
-Keep the current v2/Ridge/P2 package unchanged and score new outcomes append-only.
+Keep:
+
+`Frozen Pre-Live v2 + P2 reliability * frozen ridge-a10 delta`
+
+Score new outcomes append-only. Do not mutate from outcomes.
 
 ### Track B — active model R&D
 
-Pre-Live v3 is now a sealed research anchor:
+Pre-Live v3 remains a research anchor.
 
-`pre-live-v3-historical-candidate-2026-10-21-v1`
+Current sealed historical early-live package:
 
-Active next work is to determine whether the final-24h live anchor actually changes under v3 before any unnecessary d2 retraining.
+`d2-long72-stage2-p2-observation-maturity-2026-10-21-v1`
+
+Active next work:
+
+`forward scoring without retuning`
 
 > **Production promotion waits for prospective evidence. R&D does not.**
 
@@ -52,11 +67,11 @@ Production remains:
 
 Structural Prior remains production incumbent.
 
-Neither frozen v2 nor frozen research v3 is production activation.
+Neither Track-A frozen validation nor Track-B historical package is automatic activation.
 
 ---
 
-# Track A — frozen v2 live stack
+# Track A — frozen final24 v2 stack
 
 Pre-Live v2:
 
@@ -66,19 +81,19 @@ Stage-1 expert:
 
 `ridge-a10`
 
-Stage-2 package:
-
-`d2-stage2-p2-observation-maturity-2026-10-19-v1`
-
 Stage-2 policy:
 
 `P2-observation-maturity`
 
-Frozen architecture:
+Package:
 
-`final_forecast(t) = frozen_pre_live_v2(t) + P2_reliability(t) * ridge_delta(t)`
+`d2-stage2-p2-observation-maturity-2026-10-19-v1`
 
-This stack remains the Track-A prospective benchmark.
+Architecture:
+
+`final_forecast(t) = frozen_pre_live_v2(t) + P2_final24(t) * ridge_delta(t)`
+
+This remains Track-A prospective benchmark.
 
 ---
 
@@ -88,251 +103,249 @@ Freeze ID:
 
 `pre-live-v3-historical-candidate-2026-10-21-v1`
 
-Manifest:
-
-`ml/artifacts/pre_live_v3_historical_candidate_v1/manifest.json`
-
 Manifest SHA256:
 
 `b8c1a3cb1ddb70e9f6b67a6bc1db23619f26a8c328bf4b78399fc262394ff70a`
 
-Changed horizons only:
+Changed horizons:
 
-### T-30
+- T-30: `0.75 current a2 + 0.25 XGBoost depth3`, `NO_ADJUSTMENT`;
+- T-7: `0.25 HGB + 0.25 CatBoost d4 + 0.50 LightGBM leaves15`, `ewma50-resid-k4-cap05-min2`.
 
-Historical:
+T-14/T-3/T-1 are exact v2 packages.
 
-`0.75 current a2 + 0.25 XGBoost depth3`
-
-Regime:
-
-`NO_ADJUSTMENT`
-
-### T-7
-
-Historical:
-
-`0.25 current a2/HGB + 0.25 CatBoost depth4 + 0.50 LightGBM leaves15`
-
-Regime:
-
-`ewma50-resid-k4-cap05-min2`
-
-### T-14 / T-3 / T-1
-
-Exact Frozen-v2 horizon package.
-
-This detail matters for live modeling: **v3 T-1 is intentionally identical to v2 T-1**.
+This matters because long72 currently uses T-3 and final24 uses T-1, so both are v2/v3 equivalent inside their current live windows.
 
 ---
 
-# d2 Stage 0 / Stage 1 / Stage 2 — current v2 lineage
+# Final24 v2/v3 equivalence — COMPLETE
 
-## Stage 0
+Run:
 
-Exact Frozen-v2 compatibility established on:
+`39636749440`
 
-- 9 independent events;
-- 30 final-24h rows;
-- exact frozen anchor lineage.
+Decision:
 
-## Stage 1
+`V3_FINAL24_ANCHOR_EXACTLY_EQUIVALENT_TO_V2`
 
-Expert:
+Maximum anchor delta:
 
-`ridge-a10`
+`0.0 seats`
 
-Development:
+Therefore no cosmetic final24 retraining occurred.
 
-- Frozen-v2 latest MAE `4128.01`;
-- Ridge latest MAE `3320.39`;
-- Ridge window MAE `3619.19`;
-- worst degradation `4326.90`.
+---
 
-Chronos-2 / Bolt-small did not beat plain Ridge.
+# Long72 foundation — COMPLETE
 
-`TSFM_STAGE1 = NOT_PROVEN_VS_RIDGE`
+Research export:
 
-## Stage 2
+`v8-long168`
 
-Policy:
+Coverage:
+
+- 13 events beyond 24h;
+- 10 beyond 48h;
+- 8 beyond 72h.
+
+Frozen learned threshold:
+
+`N = 9`
+
+Therefore learned window:
+
+`24–72h`
+
+72–168h remains diagnostic-only.
+
+Frozen long72 dataset:
+
+- run `39640723942`;
+- artifact `12365352293`;
+- SHA `2af6209484e7120f08541d82bc7bcd064b0f9ea46dd59bb5e7d2746cb35a214c`;
+- 14 events / 130 PIT-safe rows.
+
+Anchor:
+
+`T-3 checkpoint hold for 24–72h`
+
+No future checkpoint interpolation.
+
+---
+
+# Long72 Stage 1 — COMPLETE
+
+Run:
+
+`39642620259`
+
+Research expert:
+
+`inventory-linear-extrapolation`
+
+Overall 24–72h:
+
+- anchor MAE `3707.14`;
+- raw inventory MAE `3254.68`;
+- uplift `+452.46 / +12.21%`.
+
+But raw expert had high bias/tail risk and historical-subset heterogeneity.
+
+Stage 1 expert was therefore frozen for reliability testing, not forward use by itself.
+
+---
+
+# Long72 Stage 2 — COMPLETE
+
+Run:
+
+`39644319080`
+
+Artifact:
+
+`12366826274`
+
+Decision:
+
+`STAGE2_RELIABILITY_POLICY_SELECTED`
+
+Selected:
 
 `P2-observation-maturity`
 
-Development:
+Exact policy:
 
-- latest MAE `3240.99`;
-- latest uplift vs Frozen `887.02 / 21.49%`;
-- window MAE `3657.65`;
-- worst degradation `1081.72`.
+Observation maturity:
 
----
+- first row `0.25`;
+- second `0.60`;
+- third+ `1.00`.
 
-# d2-v3 Stage 0 — ACTIVE NEXT
+Time maturity:
 
-Before creating any new live-model tournament, prove whether the frozen v3 anchor changes the existing final-24h d2 development rows.
+- 60–72h `0.75`;
+- 48–60h `0.90`;
+- 24–48h `1.00`.
 
-## Exact input set
+Reliability:
 
-Reuse the exact frozen Stage-1 development identities:
+`min(observation_weight, time_weight)`
 
-- 9 events;
-- 30 final-24h rows;
-- exact event + `as_of_at` identity;
-- no newly completed event enters selection.
+Architecture:
 
-## Required comparison
+`long72_forecast(t) = frozen_T3_anchor + P2_long72(t) * inventory_extrapolation_delta(t)`
 
-For every row reconstruct:
+## Historical metrics
 
-1. Frozen Pre-Live v2 anchor;
-2. Frozen Pre-Live v3 research anchor;
-3. difference in seats;
-4. difference in occupancy share;
-5. resulting v2 live residual target;
-6. resulting v3 live residual target.
+Overall 24–72h:
 
-Hard assertions:
+- P2 MAE `3012.63`;
+- uplift vs anchor `+694.51 / +18.73%`;
+- event improvement rate `61.54%`;
+- bias `+917.05`;
+- worst degradation `1488.34`.
 
-- same event set;
-- same row set;
-- same capacities;
-- same actual-attendance labels;
-- no future outcome enters anchor construction;
-- no production write.
+24–48h:
 
-## Key equivalence hypothesis
+- uplift `+954.58 / +25.75%`.
 
-The existing d2 replay is final-24h and historically anchored on the T-1 Pre-Live package.
+48–72h:
 
-Because v3 T-1 is exactly v2 T-1, the predeclared hypothesis is:
+- uplift `+664.71 / +14.47%`;
+- event improvement rate `70%`.
 
-`H0: v3_anchor == v2_anchor for all frozen final-24h d2 rows`
+Compared with raw inventory:
 
-This must be tested, not assumed.
+- MAE improves by another `242.05 seats`;
+- worst degradation falls `52.00%`;
+- absolute bias falls `37.14%`.
 
-Possible decisions:
-
-### `V3_FINAL24_ANCHOR_EXACTLY_EQUIVALENT_TO_V2`
-
-If every row is identical within a hard numerical tolerance:
-
-- do **not** rerun a nominal d2 tournament merely because the Pre-Live version number changed;
-- retain current d2 target lineage for final-24h rows;
-- open the next live R&D cycle only for a materially different hypothesis, such as longer-than-24h live updating, new target formulation, learned reliability or richer PIT-safe signals.
-
-### `V3_FINAL24_ANCHOR_DIFFERS_FROM_V2`
-
-If any row differs:
-
-- create a new d2-v3 residual target;
-- rerun Stage-1 expert selection under event-level LOEO;
-- revalidate reliability/tail governance under new IDs;
-- retain v2/Ridge/P2 as benchmark.
+Both historical exposed subsets become positive.
 
 ---
 
-# If d2-v3 target differs — Stage 1
+# Long72 historical package — SEALED
 
-Primary benchmark:
+Package ID:
 
-`v3-zero-correction`
+`d2-long72-stage2-p2-observation-maturity-2026-10-21-v1`
 
-External benchmark:
+Manifest:
 
-frozen v2/Ridge/P2 package.
+`ml/artifacts/d2_long72_stage2_p2_v1/manifest.json`
 
-Candidate set must remain compact and materially differentiated, e.g.:
+Status:
 
-- Ridge;
-- Huber;
-- HGB / LightGBM / CatBoost where justified by sample size;
-- transparent inventory extrapolation;
-- predeclared ensemble only if it adds a distinct hypothesis.
+`FROZEN_HISTORICAL_RESEARCH_PACKAGE`
 
-No random snapshot split.
+Evidence class:
 
-Independent unit:
+`EXPOSED_HISTORICAL_R_AND_D`
 
-`event`
+Production allowed:
 
-Evaluation:
+`false`
 
-`LOEO / event-balanced`
+Prospective evidence required:
+
+`true`
 
 ---
 
-# Reliability / tail governance
+# Active next — long72 forward scoring
 
-If a new Stage-1 expert is warranted, reliability must be revalidated under a new policy ID.
+Build a separate scorer around the sealed package.
 
-Candidate PIT-safe signals may include:
+For every eligible `24<h<=72` row:
 
-- observation count;
-- observation span;
-- time to kickoff;
-- correction magnitude;
-- velocity / acceleration;
-- stability / quality flags;
-- disagreement magnitude.
+1. use PIT-safe T-3 anchor;
+2. use only same-event inventory observations available by row `as_of_at`;
+3. compute exact frozen inventory extrapolation correction;
+4. apply exact frozen P2 long72 reliability;
+5. clip forecast to `[0, capacity]`;
+6. persist package ID, event/as-of/snapshot/anchor/capacity lineage;
+7. create prediction without outcome access;
+8. score only later when trusted outcome is available.
 
-Existing P2 remains a benchmark, not an inherited policy.
+Evidence classes must separate:
 
----
+- delayed-label diagnostic;
+- true post-package-freeze prospective.
 
-# Prospective validation continues in Track A
-
-For each new completed event, persist:
-
-1. Structural T-1 base;
-2. Frozen Pre-Live v2;
-3. raw frozen Ridge;
-4. frozen P2;
-5. genuine persisted comparator where available.
-
-Evidence classes remain separate:
-
-- `DELAYED_LABEL_HOLDOUT`;
-- `TRUE_POST_FREEZE_PROSPECTIVE`.
-
-Do not use Track-A outcomes to mutate the frozen v2/Ridge/P2 package.
+Future outcomes may trigger a new challenger ID, but may not mutate the frozen package.
 
 ---
 
-# Continuous-time behavior
+# 72–168h / T-7-aware branch
 
-The live engine remains continuous over time-to-kickoff.
+Do not learn this band yet.
 
-Named T-30/T-14/T-7/T-3/T-1 are evaluation checkpoints, not separate product modes.
+Reopen only when:
 
-A future live engine extending beyond final-24h must explicitly define how the pre-live anchor transitions across horizons; that is a materially different hypothesis from the existing final-24h d2 contract.
+`independent events with >72h valid coverage >= 9`
 
----
-
-# Inventory interpretation
-
-Public availability is a proxy, not confirmed paid sales.
-
-Distinguish where possible:
-
-- genuine demand movement;
-- ticket releases;
-- sector openings/closures;
-- coverage changes;
-- scrape/data anomalies.
+Then create a separate package/target using the T-7-aware anchor. Do not extend the current long72 package in place.
 
 ---
 
-# Promotion boundary
+# Track-A prospective validation continues
 
-Historical/LOEO success is not production promotion.
+For each new completed final24 event, preserve:
 
-Promotion requires materially more genuine prospective evidence, positive aggregate uplift, acceptable tail risk/bias, reproducible frozen lineage and explicit reviewed activation.
+- Structural base;
+- Frozen Pre-Live v2;
+- raw frozen Ridge;
+- frozen final24 P2;
+- evidence class.
 
-Until then:
+Never use Track-A outcomes to mutate the frozen final24 package.
 
-`live_adjustment = 0`
+---
 
-## Immediate live-engine instruction
+# Engineering rule
 
-> **Keep v2/Ridge/P2 frozen in Track A. Pre-Live v3 is sealed in Track B. Run d2-v3 Stage 0 exact final-24h anchor equivalence before retraining anything; if v3 and v2 anchors are identical on the 9-event/30-row replay, do not create a cosmetic new live model version.**
+`code -> tests -> CI -> pinned inputs -> machine JSON -> artifact/hash -> result doc -> decision -> canonical docs`
+
+## One-line rule
+
+> **The historical 24–72h package is now T-3 + inventory extrapolation + P2 maturity. Freeze it, forward-score it without retuning, keep final24 Track A separate, and leave production at live_adjustment=0.**
