@@ -5,7 +5,9 @@ on:
   pull_request:
     paths:
       - "ml/d2_long72_anchor_contract_v1.py"
+      - "ml/run_d2_long72_anchor_contract_v1.py"
       - "ml/test_d2_long72_anchor_contract_v1.py"
+      - "ml/test_d2_long72_early_season_adapter_v1.py"
       - "supabase/sql/d2_capacity_registry_export_v1.sql"
       - "supabase/functions/c1_alpha_training_export_v1/index.ts"
       - ".github/workflows/d2-long72-anchor-contract-v1.yml"
@@ -14,7 +16,9 @@ on:
       - main
     paths:
       - "ml/d2_long72_anchor_contract_v1.py"
+      - "ml/run_d2_long72_anchor_contract_v1.py"
       - "ml/test_d2_long72_anchor_contract_v1.py"
+      - "ml/test_d2_long72_early_season_adapter_v1.py"
       - "supabase/sql/d2_capacity_registry_export_v1.sql"
       - "supabase/functions/c1_alpha_training_export_v1/index.ts"
       - ".github/workflows/d2-long72-anchor-contract-v1.yml"
@@ -38,8 +42,11 @@ jobs:
       - name: Compile and unit checks
         run: |
           python -m py_compile ml/d2_long72_anchor_contract_v1.py
+          python -m py_compile ml/run_d2_long72_anchor_contract_v1.py
           python -m py_compile ml/test_d2_long72_anchor_contract_v1.py
+          python -m py_compile ml/test_d2_long72_early_season_adapter_v1.py
           python -m ml.test_d2_long72_anchor_contract_v1
+          python -m ml.test_d2_long72_early_season_adapter_v1
       - name: Static support export checks
         run: |
           grep -q "export_d2_capacity_registry_v1" supabase/sql/d2_capacity_registry_export_v1.sql
@@ -95,7 +102,7 @@ jobs:
           fetch_export v8-long168 /tmp/long168.json
       - name: Build and freeze long72 data + anchor contract
         run: |
-          python -m ml.d2_long72_anchor_contract_v1 \
+          python -m ml.run_d2_long72_anchor_contract_v1 \
             --events /tmp/events.json \
             --attendance /tmp/attendance.json \
             --sporting /tmp/sporting.json \
