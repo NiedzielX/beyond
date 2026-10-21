@@ -1,0 +1,41 @@
+name: d2 Long72 Stage2 Package Seal v1
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - "ml/artifacts/d2_long72_stage2_p2_v1/manifest.json"
+      - "ml/test_d2_long72_stage2_package_v1.py"
+      - "ml/results/D2_LONG72_STAGE2_RELIABILITY_GATING_V1_2026-10-21.md"
+      - ".github/workflows/d2-long72-stage2-package-v1.yml"
+  push:
+    branches:
+      - main
+    paths:
+      - "ml/artifacts/d2_long72_stage2_p2_v1/manifest.json"
+      - "ml/test_d2_long72_stage2_package_v1.py"
+      - "ml/results/D2_LONG72_STAGE2_RELIABILITY_GATING_V1_2026-10-21.md"
+      - ".github/workflows/d2-long72-stage2-package-v1.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Validate immutable historical package manifest
+        run: |
+          python -m json.tool ml/artifacts/d2_long72_stage2_p2_v1/manifest.json >/dev/null
+          python -m ml.test_d2_long72_stage2_package_v1
+      - name: Static production and evidence boundary checks
+        run: |
+          grep -q 'FROZEN_HISTORICAL_RESEARCH_PACKAGE' ml/artifacts/d2_long72_stage2_p2_v1/manifest.json
+          grep -q '"production_allowed": false' ml/artifacts/d2_long72_stage2_p2_v1/manifest.json
+          grep -q '"prospective_evidence_required": true' ml/artifacts/d2_long72_stage2_p2_v1/manifest.json
+          grep -q 'P2-observation-maturity' ml/results/D2_LONG72_STAGE2_RELIABILITY_GATING_V1_2026-10-21.md
