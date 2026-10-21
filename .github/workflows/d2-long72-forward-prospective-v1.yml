@@ -1,0 +1,152 @@
+name: d2 Long72 Forward Prospective v1
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "17 * * * *"
+  pull_request:
+    paths:
+      - "ml/d2_long72_forward_materialize_v1.py"
+      - "ml/test_d2_long72_forward_materialize_v1.py"
+      - "supabase/sql/d2_long72_forward_prospective_v1.sql"
+      - "supabase/functions/d2_long72_forward_shadow_v1/index.ts"
+      - ".github/workflows/d2-long72-forward-prospective-v1.yml"
+  push:
+    branches:
+      - main
+    paths:
+      - "ml/d2_long72_forward_materialize_v1.py"
+      - "ml/test_d2_long72_forward_materialize_v1.py"
+      - "supabase/sql/d2_long72_forward_prospective_v1.sql"
+      - "supabase/functions/d2_long72_forward_shadow_v1/index.ts"
+      - ".github/workflows/d2-long72-forward-prospective-v1.yml"
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: |
+          python -m pip install --upgrade pip
+          pip install numpy==2.3.5 pandas==2.2.3 scikit-learn==1.8.0 joblib==1.5.3
+      - name: Compile and unit checks
+        run: |
+          python -m py_compile ml/d2_long72_forward_materialize_v1.py
+          python -m py_compile ml/test_d2_long72_forward_materialize_v1.py
+          python -m ml.test_d2_long72_forward_materialize_v1
+      - name: Static contract checks
+        run: |
+          grep -q "get_d2_long72_forward_inputs_v1" supabase/sql/d2_long72_forward_prospective_v1.sql
+          grep -q "insert_d2_long72_forward_predictions_v1" supabase/sql/d2_long72_forward_prospective_v1.sql
+          grep -q "score_d2_long72_forward_completed_events_v1" supabase/sql/d2_long72_forward_prospective_v1.sql
+          grep -q "d2_long72_forward_predictions_v1" supabase/sql/d2_long72_forward_prospective_v1.sql
+          grep -q "outcome already exists; prospective write rejected" supabase/sql/d2_long72_forward_prospective_v1.sql
+          grep -q 'AUDIENCE = "beyond-d2-long72-forward"' supabase/functions/d2_long72_forward_shadow_v1/index.ts
+          grep -q '"refs/heads/main"' supabase/functions/d2_long72_forward_shadow_v1/index.ts
+
+  prospective-main:
+    if: github.event_name != 'pull_request'
+    needs: validate
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: |
+          python -m pip install --upgrade pip
+          pip install numpy==2.3.5 pandas==2.2.3 scikit-learn==1.8.0 joblib==1.5.3
+      - name: Request main-only OIDC token
+        run: |
+          set -euo pipefail
+          response=$(curl --retry 4 --retry-all-errors --retry-delay 2 -fsS \
+            -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
+            "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=beyond-d2-long72-forward")
+          token=$(printf '%s' "$response" | jq -r '.value')
+          test -n "$token"
+          test "$token" != "null"
+          echo "::add-mask::$token"
+          echo "D2_LONG72_OIDC_TOKEN=$token" >> "$GITHUB_ENV"
+      - name: Fetch forward-only Long72 inputs
+        run: |
+          set -euo pipefail
+          url='https://adchzwqboeekhokapxqi.supabase.co/functions/v1/d2_long72_forward_shadow_v1'
+          code=$(curl --retry 4 --retry-all-errors --retry-delay 2 -sS \
+            --connect-timeout 20 --max-time 120 \
+            -H "Authorization: Bearer $D2_LONG72_OIDC_TOKEN" \
+            -o /tmp/d2-long72-forward-input.json -w '%{http_code}' "$url")
+          test "$code" = "200"
+          jq -e '.ok == true and .forward.outcomeAccessAllowed == false' \
+            /tmp/d2-long72-forward-input.json >/dev/null
+          jq '{version,package_id,requested_at,event_count:.forward.eventCount,live_row_count:.forward.liveRowCount}' \
+            /tmp/d2-long72-forward-input.json
+      - name: Materialize frozen Long72 forecasts
+        run: |
+          python -m ml.d2_long72_forward_materialize_v1 \
+            --input /tmp/d2-long72-forward-input.json \
+            --package-manifest ml/artifacts/d2_long72_stage2_p2_v1/manifest.json \
+            --structural-artifact-dir ml/artifacts/structural_prior_runtime_v1 \
+            --github-sha "${GITHUB_SHA}" \
+            --output /tmp/d2-long72-materialized.json
+          jq -e '
+            .status == "READY_FOR_PRE_OUTCOME_PERSISTENCE"
+            and .outcome_access_allowed == false
+            and .model_training_performed == false
+            and .production_change == false
+          ' /tmp/d2-long72-materialized.json >/dev/null
+      - name: Persist immutable pre-outcome forecasts
+        run: |
+          set -euo pipefail
+          url='https://adchzwqboeekhokapxqi.supabase.co/functions/v1/d2_long72_forward_shadow_v1'
+          jq '{
+            action:"persist",
+            package_id:.package_id,
+            requested_at:.requested_at,
+            observations:.observations
+          }' /tmp/d2-long72-materialized.json >/tmp/d2-long72-persist-request.json
+          code=$(curl --retry 4 --retry-all-errors --retry-delay 2 -sS \
+            --connect-timeout 20 --max-time 120 \
+            -H "Authorization: Bearer $D2_LONG72_OIDC_TOKEN" \
+            -H "Content-Type: application/json" \
+            --data-binary @/tmp/d2-long72-persist-request.json \
+            -o /tmp/d2-long72-persist-result.json -w '%{http_code}' "$url")
+          test "$code" = "200"
+          jq -e '.ok == true and .production_change == false' \
+            /tmp/d2-long72-persist-result.json >/dev/null
+          jq '{action,result}' /tmp/d2-long72-persist-result.json
+      - name: Score any completed precommitted events
+        run: |
+          set -euo pipefail
+          url='https://adchzwqboeekhokapxqi.supabase.co/functions/v1/d2_long72_forward_shadow_v1'
+          jq -n --arg package 'd2-long72-stage2-p2-observation-maturity-2026-10-21-v1' \
+            '{action:"score",package_id:$package}' >/tmp/d2-long72-score-request.json
+          code=$(curl --retry 4 --retry-all-errors --retry-delay 2 -sS \
+            --connect-timeout 20 --max-time 120 \
+            -H "Authorization: Bearer $D2_LONG72_OIDC_TOKEN" \
+            -H "Content-Type: application/json" \
+            --data-binary @/tmp/d2-long72-score-request.json \
+            -o /tmp/d2-long72-score-result.json -w '%{http_code}' "$url")
+          test "$code" = "200"
+          jq -e '.ok == true and .production_change == false' \
+            /tmp/d2-long72-score-result.json >/dev/null
+          jq '{action,result}' /tmp/d2-long72-score-result.json
+      - name: Upload prospective evidence cycle
+        uses: actions/upload-artifact@v4
+        with:
+          name: d2-long72-forward-prospective-v1-${{ github.run_id }}
+          path: |
+            /tmp/d2-long72-forward-input.json
+            /tmp/d2-long72-materialized.json
+            /tmp/d2-long72-persist-result.json
+            /tmp/d2-long72-score-result.json
+          if-no-files-found: error
+          retention-days: 90
