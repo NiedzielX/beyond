@@ -2,247 +2,224 @@
 
 Last updated: **2026-10-21**
 
-Status: **CANONICAL ACCURACY ROADMAP**
+Status: **SUPERSEDED EXECUTION VIEW — SEE `ml/MAE_RESEARCH_ROADMAP_V3.md` FOR CANONICAL STRATEGY**
+
+This file remains as the operational development-plan entry point, but the research strategy is now governed by `ml/MAE_RESEARCH_ROADMAP_V3.md`.
 
 ## North star
 
-> **Reduce forecasting MAE as far as possible with honest, reproducible, point-in-time-safe evidence before treating the model as mature.**
+> **Minimize true out-of-sample attendance-forecast MAE at decision-relevant horizons with honest, reproducible, point-in-time-safe evidence.**
 
-Rules:
+## Governing rules
 
 1. frozen evidence packages are immutable;
-2. exposed historical evidence must stay labeled exposed;
-3. a failed challenger closes the challenger, not the workstream;
-4. production promotion waits for genuine forward evidence;
-5. production remains `live_adjustment = 0` until explicit reviewed activation.
+2. previously opened historical holdouts remain exposed for all future variants;
+3. validation and R&D run in parallel;
+4. primary optimization objective is MAE;
+5. tail/bias/stability are guardrails;
+6. random row/snapshot split is not headline evidence;
+7. ensemble weights and hyperparameters must be learned inside training folds;
+8. production promotion is separate from research-champion selection;
+9. production remains `live_adjustment = 0` until explicit review and activation.
 
 ---
 
-# 1. Track A — frozen final24 prospective validation
+# 1. Evidence Lane
 
-Current package:
+## Final24
+
+Frozen package:
 
 `Frozen Pre-Live v2 + P2 reliability * frozen ridge-a10 delta`
-
-Pre-Live freeze:
-
-`pre-live-v2-historical-candidate-2026-10-18-v1`
-
-Final24 live package:
-
-`d2-stage2-p2-observation-maturity-2026-10-19-v1`
 
 Purpose:
 
 - delayed-label diagnostics;
 - true post-freeze prospective scoring;
-- eventual promotion evidence.
+- promotion evidence.
 
-Do not tune Track A from new outcomes.
+Do not tune from new outcomes.
 
----
+## Long72
 
-# 2. Track B — Pre-Live v3 research anchor
+Frozen package:
 
-Freeze:
+`d2-long72-stage2-p2-observation-maturity-2026-10-21-v1`
 
-`pre-live-v3-historical-candidate-2026-10-21-v1`
-
-Manifest:
-
-`ml/artifacts/pre_live_v3_historical_candidate_v1/manifest.json`
-
-Only T-30 and T-7 change from v2.
-
-20-cell mean historical MAE:
-
-`1934.04 -> 1924.64`, improvement `+9.39 / +0.49%`.
-
-V3 remains research-only.
-
-Final24 v2/v3 anchor equivalence is proven exactly, so do not rerun a cosmetic final24 model cycle.
-
----
-
-# 3. Long-horizon live R&D — COMPLETE THROUGH STAGE 2
-
-## Data contract
-
-Additive export:
-
-`v8-long168 -> export_d2_long_horizon_168_rows_v1`
-
-Coverage evidence:
-
-- 14 eligible labeled events;
-- 240 PIT-safe rows in final 168h;
-- 13 events beyond 24h;
-- 10 beyond 48h;
-- 8 beyond 72h.
-
-Inherited independent-event floor:
-
-`N=9`
-
-Therefore:
-
-- first learned window = final **72h**;
-- 72–168h = diagnostic-only for now.
-
-## Frozen long72 anchor/data contract
-
-Result:
-
-`ml/results/D2_LONG72_ANCHOR_CONTRACT_V1_2026-10-21.md`
-
-Dataset:
-
-- 14 events / 130 rows in 0–72h;
-- 24–72h modeling slice: 80 rows / 13 events;
-- 48–72h: 35 rows / 10 events.
-
-Anchor rule:
-
-- 0–24h -> T-1;
-- 24–72h -> T-3;
-- no future checkpoint use.
-
-Dataset SHA256:
-
-`2af6209484e7120f08541d82bc7bcd064b0f9ea46dd59bb5e7d2746cb35a214c`
-
-## Stage 1 — early-live expert
-
-Result:
-
-`ml/results/D2_LONG72_STAGE1_MODEL_TOURNAMENT_V1_2026-10-21.md`
-
-Research lead:
-
-`inventory-linear-extrapolation`
-
-Development:
+Historical development:
 
 - anchor MAE `3707.14`;
-- raw expert MAE `3254.68`;
-- uplift `+452.46 / +12.21%`.
+- package MAE `3012.63`;
+- uplift `+694.51 / +18.73%`.
 
-Raw expert had high bias/tail and temporal heterogeneity, so it was not frozen alone.
+Required next infrastructure:
 
-## Stage 2 — reliability/tail governance
-
-Result:
-
-`ml/results/D2_LONG72_STAGE2_RELIABILITY_GATING_V1_2026-10-21.md`
-
-Frozen research package:
-
-`d2-long72-stage2-p2-observation-maturity-2026-10-21-v1`
-
-Manifest:
-
-`ml/artifacts/d2_long72_stage2_p2_v1/manifest.json`
-
-Composition:
-
-- scope `24<h<=72`;
-- T-3 frozen checkpoint anchor;
-- Stage-1 inventory linear extrapolation;
-- Stage-1 cap `±0.10` occupancy;
-- Stage-2 `P2-observation-maturity` reliability.
-
-Development performance:
-
-- MAE `3707.14 -> 3012.63`;
-- uplift `+694.51 / +18.73%`;
-- 24–48h uplift `+954.58 / +25.75%`;
-- 48–72h uplift `+664.71 / +14.47%`;
-- worst degradation `1488.34`;
-- bias `+917.05`;
-- original exposed subset uplift `+103.55`;
-- later exposed subset uplift `+1640.04`.
-
-All Stage-2 gates passed.
-
-P4 data-quality remains a lower-tail-risk alternate but is not substituted because the frozen selector ranked eligible policies by overall MAE first.
+1. persist forecast before final attendance is known;
+2. preserve anchor/raw/P2/reliability/PIT lineage/code hashes;
+3. append outcome later;
+4. never recompute the prediction after label exposure;
+5. maintain append-only scorecard.
 
 ---
 
-# 4. Active priority — prospective long72 scoring
+# 2. Structural/global research baseline
 
-Do **not** run further same-sample policy tuning on the frozen 13-event Stage-2 evidence.
+Current multi-club historical core:
 
-Build append-only prospective evidence for:
+- Global Model v2.1;
+- 1,530 Ekstraklasa matches;
+- five complete seasons;
+- 7,650 PIT snapshots;
+- five horizons T-30/T-14/T-7/T-3/T-1;
+- residual architecture: club-history baseline + global learned correction.
 
-`d2-long72-stage2-p2-observation-maturity-2026-10-21-v1`
-
-For every newly completed eligible event with 24–72h PIT trajectory, preserve:
-
-1. event identity and kickoff;
-2. exact frozen T-3 anchor;
-3. raw inventory correction/forecast;
-4. frozen P2 reliability and forecast;
-5. input snapshot/as-of lineage;
-6. final attendance only when available;
-7. evidence class and whether forecast state existed before label exposure.
-
-Score:
-
-- event-balanced MAE;
-- 24–48h and 48–72h bands;
-- bias;
-- event improvement rate;
-- worst event degradation;
-- revision magnitude.
-
-Do not mutate the package from these outcomes.
+Historical 2024/25 and 2025/26 later-season results are already exposed. New challengers must not optimize repeatedly against them and then report them as unseen.
 
 ---
 
-# 5. 72–168h expansion
+# 3. Active MAE R&D priorities
 
-Keep the 72–168h band diagnostic-only until independent valid-event coverage reaches the predeclared floor:
+## Priority 1 — canonical rolling / forward evaluation
 
-`N >= 9`
+Historical/global:
 
-When it does:
+- rolling or expanding season/fixture origin;
+- no future-season training for an earlier evaluation fold;
+- persist fold definitions;
+- report per horizon, fold, club and aggregate.
 
-1. freeze exact event/as-of identities;
-2. define a PIT-safe anchor transition involving T-7;
-3. evaluate without reusing future checkpoints;
-4. create a new model/package ID if any target/anchor semantics change.
+Live:
 
-Do not lower the threshold to accelerate T-7 modeling.
+- complete-event independence;
+- LOEO diagnostic;
+- forward-event evaluation by kickoff;
+- no random snapshot split.
+
+## Priority 2 — MAE-native residual models
+
+Test a compact, predeclared candidate set:
+
+- current HistGBR/XGB controls;
+- LAD / median regression;
+- quantile regression `q=0.50`;
+- tree boosting with absolute-error / median objective;
+- robust regularized residual model.
+
+Primary selector: time-respecting MAE.
+
+## Priority 3 — uncertainty around `ΔMAE`
+
+Use event/fixture as the independent resampling unit.
+
+Report:
+
+- incumbent MAE;
+- challenger MAE;
+- absolute/relative `ΔMAE`;
+- interval for `ΔMAE`;
+- event-improvement rate;
+- per-club distribution.
+
+## Priority 4 — new PIT-safe context
+
+First hypothesis: fixture substitution / cannibalization.
+
+Features:
+
+- days to next home match;
+- next-opponent attractiveness;
+- next-match importance/competition;
+- fixture density 7/14/30d;
+- previous-home proximity.
+
+Then test:
+
+- verified absences;
+- rivalry / table stakes;
+- PIT weather forecast;
+- PIT-safe search/media/social attention.
+
+Every family requires ablation versus the same incumbent.
+
+## Priority 5 — forecast combination
+
+Test:
+
+1. mean;
+2. median;
+3. fixed convex weights;
+4. MAE-optimized convex weights inside train folds;
+5. regularized stacker only if simpler blends fail.
+
+Components should represent different information sources, not minor hyperparameter variants.
+
+## Priority 6 — live inventory over strong structural baseline
+
+The relevant question is no longer “does ticketing beat a weak baseline?”. It is:
+
+> **Does PIT inventory lower MAE after the strongest structural/global forecast has already explained historical demand?**
+
+Evaluate residual corrections and reliability/shrinkage over the strongest structural model.
+
+## Priority 7 — 72–168h
+
+Current readiness at last audit: `8/9` independent events beyond 72h.
+
+At `N>=9`:
+
+1. freeze event/as-of identities;
+2. define PIT-safe T-7 anchor transition;
+3. start with simple/regularized models;
+4. include MAE-native candidates;
+5. use event-safe and forward-event validation;
+6. create a separate package/version.
+
+`N=9` opens research; it does not imply promotion readiness.
+
+## Priority 8 — club calibration / shrinkage
+
+Because the global model already pools all clubs, test only modest club-specific calibration:
+
+- global only;
+- global + shrinkage home-club residual;
+- global + opponent calibration.
+
+Advance only if improvement survives forward/rolling evaluation and is not concentrated in one club.
 
 ---
 
-# 6. Context research — parallel
+# 4. Promotion boundary
 
-Historical c2 remains:
+Research champion != production.
 
-`NO_CONTEXT_ALL_HORIZONS`
+Production requires:
 
-Forward PIT-safe context collection can continue for verified rivalry, absences, sporting state, media/GDELT and valid hype/search/social signals.
-
-Do not backfill final-state knowledge.
-
----
-
-# 7. Promotion boundary
-
-Neither Pre-Live v3 nor the long72 P2 package is production-ready from historical LOEO evidence alone.
-
-Promotion requires materially more genuine prospective evidence, acceptable tail/bias behavior, frozen reproducible lineage and explicit reviewed activation.
+- genuine future evidence;
+- lower prospective MAE;
+- acceptable bias/tail behavior;
+- reproducible frozen lineage;
+- explicit reviewed activation.
 
 Until then:
 
 `live_adjustment = 0`
 
-## Immediate work order
+---
 
-1. **freeze and use the long72 P2 package exactly as specified**;
-2. build append-only prospective long72 scoring;
-3. continue final24 Track-A scoring independently;
-4. leave 72–168h diagnostic until `N>=9`;
-5. continue PIT-safe context collection;
-6. do not activate production.
+# 5. Immediate work order
+
+1. finish long72 two-phase prospective persistence/scoring;
+2. implement reusable rolling/forward validation utilities;
+3. run the MAE-native global residual tournament;
+4. add block-based `ΔMAE` uncertainty;
+5. materialize next-fixture/cannibalization features;
+6. run controlled feature ablations;
+7. run simple forecast-combination tournament;
+8. test live-ticket incremental residual uplift over the strongest structural forecast;
+9. keep final24/long72 prospective evidence collecting in parallel;
+10. trigger 72–168h research at `N>=9`;
+11. do not activate production automatically.
+
+## One-line handoff
+
+> **Evidence packages stay frozen; active development is a parallel MAE-first challenger program governed by forward validation, MAE-aligned losses, new PIT-safe information and forecast combination.**

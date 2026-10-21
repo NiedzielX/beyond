@@ -1,301 +1,215 @@
 # Beyond Ticketing — Core Product Status
 
-Last verified: **2026-10-14**  
-Purpose: canonical source of truth for the forecasting core. If another ML document conflicts with this file, this file wins until it is explicitly superseded.
+Last verified: **2026-10-21**
 
-> **North star:** build the best possible point-in-time model for final football attendance / ticket demand and its evolution toward kickoff. Predictive quality is the objective. Product features, Growth, Weather, Hype and evidence gates matter only when they improve, validate or communicate the forecast.
+Purpose: current product/model source of truth. Research strategy is governed by `ml/MAE_RESEARCH_ROADMAP_V3.md`; detailed package state is in `ml/CURRENT_MODEL.md`.
+
+> **North star:** minimize true out-of-sample attendance-forecast MAE early enough for clubs to act, while preserving point-in-time safety, reproducibility and honest evidence classes.
 
 ## Executive state
 
-Beyond now has a credible **global historical forecasting core**, not only a Lech-specific model.
+Beyond has three distinct forecasting layers that must not be conflated:
 
-Current state:
+1. a **global historical / structural core** trained across Ekstraklasa;
+2. **frozen live-ticket packages** collecting forward evidence;
+3. a separate **MAE-first challenger R&D lane** that continues without waiting for prospective labels.
 
-- historical Ekstraklasa ground truth: **1,530 matches / 5 complete seasons (2021/22–2025/26)**;
+Production does not automatically consume any research package.
+
+`live_adjustment = 0`
+
+until explicit reviewed activation.
+
+---
+
+## Global historical core
+
+Current research champion family: **Global Model v2.1**.
+
+Data:
+
+- 1,530 complete Ekstraklasa matches across 2021/22–2025/26;
 - 306 matches per season;
-- 2021/22–2024/25 historical layer independently reconciled against a pinned schedule/result reference;
-- one verified closed-doors match is retained as historical ground truth but excluded from default demand-model training;
-- canonical multi-season point-in-time feature artifact: **7,650 snapshots** (`1,530 matches × 5 horizons`);
-- horizons: **T-30d, T-14d, T-7d, T-3d, T-1d**;
-- current historical research champion candidate: **Global Model v2.1**;
-- architecture: **fixed club-history baseline + learned residual correction**;
-- selected model families: **HistGradientBoosting / XGBoost**, selected independently by horizon;
-- Global Model v2.1 improves MAE over the club-history baseline on **every horizon and both later seasons**;
-- v1.7 T-7 runtime recovery was already reconstructed and numerically verified in CI; it is no longer an unknown/missing artifact;
-- the production/live runtime is still separate from Global Model v2.1; v2.1 has **not** been promoted automatically;
-- Live Ticketing remains a separate prospective correction study with **8/20** eligible completed events in the existing promotion gate;
-- the 20-event Live Ticketing gate does **not** block historical model R&D.
+- 7,650 canonical PIT snapshots = 1,530 matches × five horizons;
+- horizons: T-30d, T-14d, T-7d, T-3d, T-1d.
 
-## Global Model v2.1 — current result
+Architecture:
 
-### Evaluation protocol
+`PIT historical state -> club-history baseline -> global learned residual -> structural P50`
 
-Model-family selection is separated from final historical holdouts:
+Selected model families in the frozen v2.1 historical experiment:
 
-1. candidate models train on **2021/22 + 2022/23**;
-2. model family is selected on **2023/24 only**;
-3. selected family is refit through 2023/24 and evaluated on **2024/25**;
-4. the same selected family is refit through 2024/25 and evaluated on **2025/26**;
-5. every feature is computed only from information available before the snapshot `as_of_at`;
-6. the target match outcome never enters its own feature state.
+- HistGradientBoosting at T-30/T-7/T-3/T-1;
+- XGBoost at T-14.
 
-This is a season-blocked, point-in-time protocol. Random train/test split is not accepted as headline evidence.
+Historical later-season results:
 
-### Holdout results
+| Horizon | 2024/25 baseline MAE | 2024/25 model MAE | 2025/26 baseline MAE | 2025/26 model MAE |
+|---|---:|---:|---:|---:|
+| T-30 | 2491.3 | **2092.6** | 2633.5 | **2061.5** |
+| T-14 | 2436.1 | **1998.5** | 2508.4 | **1979.6** |
+| T-7 | 2340.0 | **1800.5** | 2429.1 | **1896.4** |
+| T-3 | 2316.6 | **1785.3** | 2397.5 | **1851.7** |
+| T-1 | 2297.5 | **1749.6** | 2396.9 | **1833.7** |
 
-| Horizon | Selected model | 2024/25 baseline MAE | 2024/25 model MAE | Improvement | 2025/26 baseline MAE | 2025/26 model MAE | Improvement |
-|---|---|---:|---:|---:|---:|---:|---:|
-| T-30d | HistGradientBoosting | 2,491.3 | **2,092.6** | **16.0%** | 2,633.5 | **2,061.5** | **21.7%** |
-| T-14d | XGBoost | 2,436.1 | **1,998.5** | **18.0%** | 2,508.4 | **1,979.6** | **21.1%** |
-| T-7d | HistGradientBoosting | 2,340.0 | **1,800.5** | **23.1%** | 2,429.1 | **1,896.4** | **21.9%** |
-| T-3d | HistGradientBoosting | 2,316.6 | **1,785.3** | **22.9%** | 2,397.5 | **1,851.7** | **22.8%** |
-| T-1d | HistGradientBoosting | 2,297.5 | **1,749.6** | **23.8%** | 2,396.9 | **1,833.7** | **23.5%** |
+This is roughly 16–24% historical MAE improvement over the club-history baseline across the two later seasons.
 
-Interpretation: the global historical feature set contains a meaningful predictive signal beyond a reasonable club-specific attendance-history baseline. The improvement is not confined to one horizon or one holdout season.
+Important: these seasons have now been repeatedly inspected. They remain valuable historical evidence but are no longer unseen for new challenger development.
 
-## Current model architecture
+---
 
-For a match at a forecast checkpoint:
+## Current feature signal
 
-`Point-in-time historical state`
+Feature families already shown to contain useful signal include:
 
-→ `club-history baseline`
+- home attendance / demand history;
+- opponent demand;
+- home–opponent pair history;
+- timing / seasonality;
+- sporting state;
+- recent-vs-long-run demand trends.
 
-→ `global residual model`
+Current product conclusion:
 
-→ `historical P50 candidate`
+> **More predictive information has produced more reliable gains than decorative model complexity.**
 
-→ later: `validated live-ticket correction`
+New feature families enter the point forecast only after leakage-safe ablation demonstrates incremental MAE improvement.
 
-→ later: `calibrated P10 / P50 / P90`
+---
 
-The historical model and live-ticket signal are deliberately separate layers. Historical model development can use the large archive now; live-ticket uplift must continue to be validated prospectively.
+## Frozen final24 live package
 
-## Current baseline
+Current package:
 
-The historical fixed baseline is point-in-time and hierarchical:
+`Frozen Pre-Live v2 + P2 reliability * frozen ridge-a10 delta`
 
-1. if at least 5 prior home matches exist: rolling-5 home attendance;
-2. otherwise: available historical home mean;
-3. otherwise: current-season league median;
-4. otherwise: previous-season / prior league median fallback.
+Purpose:
 
-The learned model predicts the **residual error** of this baseline rather than replacing it blindly.
+- prospective validation;
+- delayed-label diagnostics;
+- eventual promotion evidence.
 
-Residual architecture currently generalises better than the tested direct-attendance challengers.
+It must not be retuned from future outcomes.
 
-## Feature Store v2.1
+Pre-Live v3 T-1 is exactly equivalent to v2 T-1 on the frozen replay, so no cosmetic final24 retrain is justified.
 
-The multi-season feature artifact contains **7,650 point-in-time snapshots**.
+---
 
-### Attendance / home-demand history
+## Frozen long72 live package
 
-- historical home attendance mean / median / last;
-- rolling 3 / 5 / 10 home attendance;
-- attendance dispersion / upper historical level;
-- current-season home attendance state;
-- previous-season home mean;
-- days since previous home match;
-- recent home trend vs long-run home mean;
-- home demand level relative to league median.
+Package:
 
-### Opponent demand
+`d2-long72-stage2-p2-observation-maturity-2026-10-21-v1`
 
-- opponent historical draw across all home clubs;
-- opponent recent draw vs long-run draw;
-- previous-season opponent demand;
-- exact **home–opponent pair history**;
-- pair attendance vs the host club's normal demand.
+Scope: `24<hours_to_kickoff<=72`
 
-### Timing / seasonality
+Architecture:
 
-- round;
-- season progress;
-- month;
-- weekday;
-- kickoff time;
-- weekend flag;
-- cyclical date/time encodings.
+- T-3 frozen anchor;
+- inventory-linear-extrapolation;
+- ±0.10 occupancy cap;
+- P2 observation-maturity reliability.
 
-### Sporting state
+Historical development:
 
-Reconstructed from matches completed before `as_of_at` in the current season:
+- anchor MAE `3707.14`;
+- package MAE `3012.63`;
+- uplift `+694.51 / +18.73%`.
 
-- matches played;
-- points / PPG;
-- goal-difference rate;
-- last-5 form;
-- rest days;
-- fixture congestion;
-- table position;
-- home-away PPG / position / form gaps.
+This is exposed historical research evidence, not production proof.
 
-### Future feature families
+---
 
-Weather, Hype and live ticket inventory are **challenger feature families**, not separate product goals. They enter P50 only if they reduce out-of-sample error under the same point-in-time benchmark.
+## Evidence Lane vs R&D Lane
 
-## Feature ablation — current signal
+### Evidence Lane
 
-T-7 ablation indicates:
+Frozen packages collect forward evidence without mutation.
 
-- removing attendance-history features materially worsens MAE;
-- removing calendar / seasonality worsens MAE;
-- removing sporting-state features worsens MAE, especially on 2024/25;
-- opponent context provides smaller but still useful incremental signal;
-- richer home–opponent pair history and recent-vs-long-run demand trends produced the material v2 → v2.1 improvement.
+Long72 must use two-phase persistence:
 
-The current conclusion is therefore **more predictive information > more decorative model complexity**.
+`forecast materialized before label -> label attached later -> errors appended`
 
-## Model families tested
+### MAE R&D Lane
 
-Historical / global work has now tested or documented:
+Development continues immediately and independently.
 
-- rolling attendance baselines;
-- opponent historical baselines;
-- Ridge / Elastic Net;
-- Huber robust regression;
-- Gradient Boosting;
-- HistGradientBoosting;
-- Extra Trees;
-- Random Forest;
-- XGBoost;
-- LightGBM;
-- CatBoost;
-- direct attendance targets;
-- residual targets;
-- log-ratio targets;
-- simple family-diverse ensembles;
-- earlier Lech-specific v1.3–v1.8 model generations.
+Current priority:
 
-### Rejected current challengers
+1. rolling / forward validation;
+2. MAE-native losses / median forecasts;
+3. uncertainty around `ΔMAE`;
+4. new PIT-safe fixture-cannibalization context;
+5. controlled context ablations;
+6. forecast combinations;
+7. live inventory as incremental residual over the strongest structural model;
+8. 72–168h learned model after `N>=9`;
+9. modest club-specific calibration only if it improves pooled generalization.
 
-Against the five-season Global Model v2 research setup, the following did not justify replacing the residual HistGBR/XGB architecture:
+---
 
-- raw CatBoost residual model;
-- CatBoost direct attendance;
-- CatBoost log-attendance;
-- HistGradientBoosting direct attendance;
-- XGBoost direct attendance;
-- log-ratio residual targets;
-- simple CatBoost / HistGBR / XGB ensembles selected on development MAE.
+## Next context hypothesis
 
-Some looked marginally better on development data but did not improve consistently on later seasons.
+The first new context family to test is **fixture substitution / cannibalization**.
 
-## The 12 questions we should always know
+Candidate features:
 
-### 1. What is the best historical model today?
+- days until next home match;
+- attractiveness/strength of next opponent;
+- next-match competition / importance;
+- fixture density over 7/14/30 days;
+- time since previous home match.
 
-**Global Model v2.1 research champion candidate.**
+Then test verified absences, rivalry/stakes, PIT weather forecasts and PIT-safe media/search/social attention.
 
-It uses a point-in-time club-history baseline plus a learned residual correction. HistGradientBoosting wins T-30/T-7/T-3/T-1; XGBoost wins T-14 under the current development protocol.
+---
 
-### 2. What is the training population?
+## Forecast combination direction
 
-**1,530 complete Ekstraklasa matches across 2021/22–2025/26.**
+Do not assume one single model must dominate.
 
-The model no longer depends only on Lech history.
+Combine materially different sources:
 
-### 3. Do we have a Feature Store?
+- global structural forecast;
+- MAE-native residual model;
+- new context forecast;
+- live inventory correction;
+- final24 live correction where relevant.
 
-We now have a **canonical v2 point-in-time contract** and a five-season v2.1 feature artifact containing **7,650 snapshots**.
+Test simple mean/median and convex blends before complex stacking. Learn weights only inside training folds.
 
-The legacy public `ml_feature_snapshots` table is not the canonical global store. A private v2 schema exists for canonical historical/live snapshots; full database materialisation of the five-season artifact is operational work and must not be confused with whether the feature definitions exist.
+---
 
-### 4. What is the target?
+## Validation state
 
-Current historical target: **final match attendance**.
+Historical/global development must now emphasize rolling/expanding time-respecting folds rather than repeatedly optimizing against already-opened later seasons.
 
-Live public inventory remains a demand/sales proxy, not guaranteed ticket sales. Do not label changes in public inventory as confirmed sales without club transaction data.
+Live research must keep the event as the independent unit and add forward-event views ordered by kickoff.
 
-### 5. What are the forecast horizons?
+Random row/snapshot splits are not accepted as headline evidence.
 
-Current historical matrix:
+---
 
-- T-30d;
-- T-14d;
-- T-7d;
-- T-3d;
-- T-1d.
+## 72–168h
 
-### 6. How is validation handled?
+Last audited valid independent-event coverage above 72h: `8`.
 
-Season-blocked and point-in-time:
+Predeclared research-start floor: `N>=9`.
 
-- 2021/22 + 2022/23 train candidate families;
-- 2023/24 selects the family;
-- 2024/25 and 2025/26 are later historical holdouts for the frozen v2.1 experiment;
-- all attendance/sporting/context features are restricted to information known before `as_of_at`.
+At `N>=9`, freeze exact event/as-of identities before opening results and create a new challenger package. The threshold starts research; it is not a production gate.
 
-For new iterations, avoid repeatedly tuning against the same historical holdouts. New challenger decisions must increasingly rely on rolling-season CV and genuinely future 2026/27 evidence.
+---
 
-### 7. What is current MAE by horizon?
+## Current modelling priority
 
-On 2025/26:
+The next modelling milestone is no longer “wait for prospective evidence”.
 
-- T-30d: **2,061.5**;
-- T-14d: **1,979.6**;
-- T-7d: **1,896.4**;
-- T-3d: **1,851.7**;
-- T-1d: **1,833.7**.
+It is:
 
-On 2024/25:
+> **Global structural model + forward validation + MAE-aligned challengers + new PIT-safe context + forecast combination, while frozen live packages collect prospective evidence in parallel.**
 
-- T-30d: **2,092.6**;
-- T-14d: **1,998.5**;
-- T-7d: **1,800.5**;
-- T-3d: **1,785.3**;
-- T-1d: **1,749.6**.
+## Production boundary
 
-### 8. How much does the global model beat the baseline?
+Research champion status never changes production by itself.
 
-Across the two later seasons and all five horizons: roughly **16–24% MAE improvement**.
-
-The best relative improvements are around T-7/T-3/T-1.
-
-### 9. What does the Live Ticketing challenger prove?
-
-Separately from Global Model v2.1, the current T-24 Live Ticketing study shows a positive but still small prospective signal:
-
-- LOCO baseline MAE: about 5,266;
-- bias-only control: about 5,174;
-- ticketing challenger: about 5,007;
-- current evidence set: **8 eligible completed events / 6 clubs**.
-
-It supports continued collection, not production promotion yet.
-
-### 10. Do we need to wait for 20 new matches before improving the model?
-
-**No.**
-
-The 20-event gate applies to prospective Live Ticketing promotion evidence only. Historical/global model R&D uses the multi-season archive immediately.
-
-### 11. Are Weather / Hype / Sporting automatically part of P50?
-
-No.
-
-Sporting state is currently useful inside Global Model v2.1 under the new five-season point-in-time feature contract. Earlier, separate Sporting/Match Context challengers against the small live-ticket study were rejected; these are different experiments and must not be conflated.
-
-Weather and Hype remain challenger families and require controlled ablation / future evidence before inclusion.
-
-### 12. What is the next modelling priority?
-
-1. reproduce Global Model v2.1 end-to-end in CI from canonical historical inputs;
-2. freeze v2.1 as the historical research champion;
-3. build calibrated P10/P50/P90 around the stronger point model;
-4. measure incremental live-ticket uplift **over v2.1**, not over the old weak baseline;
-5. test Weather and Hype against v2.1 with the same leakage-safe protocol;
-6. use 2026/27 future fixtures as prospective evidence for new challengers.
-
-## Immediate priority
-
-Do **not** spend the next sprint on Growth or additional product surfaces.
-
-The next milestone is:
-
-> **Global Model v2.1 → reproducible CI → probabilistic forecast → live-ticket incremental uplift over the new historical champion.**
-
-## Supporting evidence
-
-Primary current benchmark report: `ml/results/GLOBAL_MODEL_V2_2026-10-14.md`.
-
-Reproducible benchmark runner on the model branch: `ml/global_model_v21_benchmark.py`.
+Promotion requires genuine future evidence, reproducible frozen lineage, lower prospective MAE, acceptable bias/tail behavior and explicit reviewed activation.
