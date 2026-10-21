@@ -1,0 +1,113 @@
+{
+  "package_id": "d2-long72-stage2-p2-observation-maturity-2026-10-21-v1",
+  "status": "FROZEN_HISTORICAL_RESEARCH_PACKAGE",
+  "created_at": "2026-10-21",
+  "production_allowed": false,
+  "prospective_evidence_required": true,
+  "scope": {
+    "competition": "Ekstraklasa",
+    "hours_to_kickoff": {
+      "lower_exclusive": 24,
+      "upper_inclusive": 72
+    },
+    "independent_evaluation_unit": "event",
+    "historical_event_count": 13,
+    "historical_row_count": 80,
+    "evidence_class": "EXPOSED_HISTORICAL_R_AND_D"
+  },
+  "anchor": {
+    "rule": "T-3 checkpoint hold for 24<h<=72",
+    "pre_live_v2_freeze_id": "pre-live-v2-historical-candidate-2026-10-18-v1",
+    "pre_live_v3_freeze_id": "pre-live-v3-historical-candidate-2026-10-21-v1",
+    "v2_v3_equivalent_in_scope": true,
+    "future_checkpoint_use_allowed": false
+  },
+  "stage1_expert": {
+    "id": "inventory-linear-extrapolation",
+    "target": "occupancy residual vs frozen T-3 checkpoint anchor",
+    "maximum_raw_correction_occupancy": 0.1,
+    "selection_method": "event-level LOEO on exposed historical research evidence"
+  },
+  "stage2_reliability": {
+    "policy_id": "P2-observation-maturity",
+    "formula": "min(observation_weight, time_weight)",
+    "observation_weights": {
+      "first_observation": 0.25,
+      "second_observation": 0.6,
+      "third_and_later": 1.0
+    },
+    "time_to_kickoff_weights": {
+      "60_72h": 0.75,
+      "48_60h": 0.9,
+      "24_48h": 1.0
+    },
+    "reliability_bounds": [0.0, 1.0],
+    "outcome_labels_allowed_in_policy_logic": false
+  },
+  "frozen_long72_input": {
+    "workflow_run_id": 39640723942,
+    "artifact_id": 12365352293,
+    "artifact_zip_sha256": "83082cca46b6aa78fd744f59e9fd7eaaef6e7d33e8135817bda78a201b454561",
+    "contract_json_sha256": "0083b82be7de4599574b90ed0af44e1accd1a993c1d07b7f263bfbf01f3a1a27",
+    "dataset_csv_sha256": "2af6209484e7120f08541d82bc7bcd064b0f9ea46dd59bb5e7d2746cb35a214c"
+  },
+  "stage1_evidence": {
+    "workflow_run_id": 39642620259,
+    "artifact_id": 12365399256,
+    "artifact_zip_sha256": "e73ffe55d1c83b7a37fb50109c909f22d1a075a6b1de8f42c89364523399dfbb",
+    "json_sha256": "f19ea1378d0f8b07007bf45c2ab7f3fa20ebb3c53e32afa4548723336b71358a",
+    "predictions_csv_sha256": "33de331d2c3bf1e385f513c7fa7e28aa8b454a4d49cfe00d48163e6c083a6df5",
+    "research_lead_candidate_id": "inventory-linear-extrapolation"
+  },
+  "stage2_evidence": {
+    "workflow_run_id": 39644319080,
+    "artifact_id": 12366826274,
+    "artifact_zip_sha256": "c750cf385b2c6b6f05fabceaf68ff323a66235862967900419be421f7cdcb4ae",
+    "json_sha256": "a9daa834e15b4f313b15c3e809033b7d79e4ed4357f61a8f5071e6bf20359d8c",
+    "predictions_csv_sha256": "489ba62156f19d3b915fda1b9f1ef506fb81603d4286a01e8ad4b799c58bce4b",
+    "decision": "STAGE2_RELIABILITY_POLICY_SELECTED",
+    "selected_policy_id": "P2-observation-maturity"
+  },
+  "historical_metrics": {
+    "overall_24_72h": {
+      "anchor_mae": 3707.138173646611,
+      "stage1_raw_inventory_mae": 3254.6809517243155,
+      "package_mae": 3012.62892731916,
+      "package_mae_improvement_vs_anchor": 694.5092463274509,
+      "package_relative_improvement_vs_anchor": 0.18734377133946456,
+      "event_improvement_rate": 0.6153846153846154,
+      "event_balanced_bias": 917.046821756805,
+      "worst_event_degradation": 1488.344647038306
+    },
+    "band_24_48h": {
+      "anchor_mae": 3707.138173646611,
+      "package_mae": 2752.5603533624785,
+      "mae_improvement": 954.5778202841325,
+      "relative_improvement": 0.25749723252023815,
+      "worst_event_degradation": 1504.800000000001
+    },
+    "band_48_72h": {
+      "anchor_mae": 4592.383230965044,
+      "package_mae": 3927.674049897368,
+      "mae_improvement": 664.7091810676761,
+      "relative_improvement": 0.14474166192963692,
+      "event_improvement_rate": 0.7,
+      "worst_event_degradation": 2413.276414945376
+    },
+    "stability": {
+      "original_exposed_subset_mae_improvement": 103.55104110515367,
+      "later_exposed_subset_mae_improvement": 1640.0423746831248,
+      "raw_inventory_overall_worst_degradation_reduction_share": 0.519981730297908,
+      "raw_inventory_48_72_worst_degradation_reduction_share": 0.3550483244317237,
+      "raw_inventory_absolute_bias_reduction_share": 0.37142721248095734
+    }
+  },
+  "limitations": [
+    "All model and policy selection outcomes are exposed historical research evidence.",
+    "LOEO protects event independence but is not temporal or prospective validation.",
+    "This package does not replace the frozen final24 Track-A Ridge/P2 package.",
+    "The 72-168h learned band remains below the inherited N=9 independent-event threshold.",
+    "Production live_adjustment remains zero."
+  ],
+  "next": "forward scoring without retuning"
+}
