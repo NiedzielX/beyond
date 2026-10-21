@@ -1,0 +1,101 @@
+name: Pre-Live v3 Fixed Temporal Package v1
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - "ml/PRE_LIVE_V3_FIXED_TEMPORAL_PACKAGE_V1.md"
+      - "ml/pre_live_v3_fixed_temporal_package_v1.py"
+      - "ml/test_pre_live_v3_fixed_temporal_package_v1.py"
+      - "ml/pre_live_v3_regime_revalidation_v1.py"
+      - "ml/a2_external_ensemble_fixed_temporal_v1.py"
+      - "ml/current_season_residual_regime_v1.py"
+      - "ml/current_season_regime_maturity_stage2_v1.py"
+      - "ml/pre_live_v2_historical_freeze_v1.py"
+      - "ml/artifacts/structural_prior_runtime_v1/historical_runtime_v1.csv.gz"
+      - "ml/artifacts/structural_prior_runtime_v1/manifest.json"
+      - ".github/workflows/pre-live-v3-fixed-temporal-package-v1.yml"
+  push:
+    branches:
+      - main
+    paths:
+      - "ml/PRE_LIVE_V3_FIXED_TEMPORAL_PACKAGE_V1.md"
+      - "ml/pre_live_v3_fixed_temporal_package_v1.py"
+      - "ml/test_pre_live_v3_fixed_temporal_package_v1.py"
+      - "ml/pre_live_v3_regime_revalidation_v1.py"
+      - "ml/a2_external_ensemble_fixed_temporal_v1.py"
+      - "ml/current_season_residual_regime_v1.py"
+      - "ml/current_season_regime_maturity_stage2_v1.py"
+      - "ml/pre_live_v2_historical_freeze_v1.py"
+      - "ml/artifacts/structural_prior_runtime_v1/historical_runtime_v1.csv.gz"
+      - "ml/artifacts/structural_prior_runtime_v1/manifest.json"
+      - ".github/workflows/pre-live-v3-fixed-temporal-package-v1.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pre-live-v3-fixed-temporal-package-v1-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  validate-and-score:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install pinned runtime
+        run: |
+          python -m pip install --upgrade pip
+          pip install \
+            numpy==2.3.5 \
+            pandas==2.2.3 \
+            scikit-learn==1.8.0 \
+            joblib==1.5.3 \
+            catboost==1.2.10 \
+            lightgbm==4.7.0 \
+            xgboost==3.4.1
+
+      - name: Compile experiment code
+        run: |
+          python -m py_compile ml/pre_live_v3_fixed_temporal_package_v1.py
+          python -m py_compile ml/test_pre_live_v3_fixed_temporal_package_v1.py
+          python -m py_compile ml/pre_live_v3_regime_revalidation_v1.py
+          python -m py_compile ml/a2_external_ensemble_fixed_temporal_v1.py
+          python -m py_compile ml/current_season_residual_regime_v1.py
+          python -m py_compile ml/current_season_regime_maturity_stage2_v1.py
+          python -m py_compile ml/pre_live_v2_historical_freeze_v1.py
+
+      - name: Run unit checks
+        run: python -m ml.test_pre_live_v3_fixed_temporal_package_v1
+
+      - name: Run fixed-temporal package audit
+        run: |
+          python -m ml.pre_live_v3_fixed_temporal_package_v1 \
+            --historical-runtime ml/artifacts/structural_prior_runtime_v1/historical_runtime_v1.csv.gz \
+            --manifest ml/artifacts/structural_prior_runtime_v1/manifest.json \
+            --output /tmp/pre-live-v3-fixed-temporal-package-v1.json
+
+      - name: Print concise result
+        run: |
+          jq '{experiment,package_summary,horizons:(.horizons|with_entries(.value=.value.summary))}' \
+            /tmp/pre-live-v3-fixed-temporal-package-v1.json
+
+      - name: Hash evidence
+        run: sha256sum /tmp/pre-live-v3-fixed-temporal-package-v1.json
+
+      - name: Upload evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: pre-live-v3-fixed-temporal-package-v1-${{ github.run_id }}
+          path: /tmp/pre-live-v3-fixed-temporal-package-v1.json
+          if-no-files-found: error
+          retention-days: 90

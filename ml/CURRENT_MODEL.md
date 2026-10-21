@@ -2,7 +2,7 @@
 
 Last product-direction update: **2026-10-21**
 
-Status: **FROZEN V2 VALIDATION + ACTIVE PRE-LIVE V3 R&D**
+Status: **TRACK-A V2 FROZEN VALIDATION + TRACK-B V3 FROZEN RESEARCH CANDIDATE + D2-V3 NEXT**
 
 ## North star
 
@@ -12,23 +12,21 @@ Status: **FROZEN V2 VALIDATION + ACTIVE PRE-LIVE V3 R&D**
 
 ### Track A — frozen validation
 
-Current frozen research stack:
+Current forward-evidence stack remains unchanged:
 
-`Frozen Pre-Live v2 + P2 reliability * frozen Ridge live residual`
+`Frozen Pre-Live v2 + P2 reliability * frozen ridge-a10 delta`
 
-Track A is append-only evidence collection. It does not retrain from new outcomes.
+Track A continues append-only delayed-label / true-post-freeze scoring.
 
 ### Track B — active accuracy R&D
 
-Track B continues now under new versioned experiments and does **not** wait for a prospective event-count gate.
+A new historical/pre-live anchor is now sealed:
 
-Current Track-B state:
+`pre-live-v3-historical-candidate-2026-10-21-v1`
 
-- all-horizon external-family/heterogeneous-ensemble closure audit — COMPLETE;
-- T-30/T-7/T-1 fixed-temporal robustness — COMPLETE, all three PASS 4/4;
-- **active next: Pre-Live v3 historical-anchor + current-season-regime revalidation**;
-- PIT-safe context collection continues in parallel;
-- d2 will be rebuilt against v3 only if v3 later earns a freeze.
+Next active work:
+
+`d2-v3 — rebuild/revalidate live updater against Frozen Pre-Live v3 research anchor`
 
 > **Production promotion waits for prospective evidence. R&D does not.**
 
@@ -36,7 +34,7 @@ Current Track-B state:
 
 # Production boundary
 
-Production bundle:
+Production bundle remains:
 
 `structural-prior-runtime-v1-frozen-2026-10-15-t1`
 
@@ -44,11 +42,11 @@ Production remains:
 
 `live_adjustment = 0`
 
-No research evidence below automatically changes production.
+No research freeze below is production activation.
 
 ---
 
-# Frozen Pre-Live v2 — Track A
+# Track A — Frozen Pre-Live v2
 
 Freeze ID:
 
@@ -58,187 +56,166 @@ Freeze ID:
 |---|---|---|---|---:|
 | T-30 | Structural Prior | `NO_ADJUSTMENT` | `NO_CONTEXT` | 1,867.82 |
 | T-14 | Structural Prior | `NO_ADJUSTMENT` | `NO_CONTEXT` | 1,809.45 |
-| T-7 | `hist31-leaf20-l2-1` | `ewma50-resid-k6-cap05-min3` | `NO_CONTEXT` | **1,691.40** |
-| T-3 | Structural Prior | `ewma50-resid-k2-cap05-min3` | `NO_CONTEXT` | **1,682.63** |
-| T-1 | Structural Prior | `ewma50-resid-k6-cap05-min3` | `NO_CONTEXT` | **1,661.52** |
+| T-7 | `hist31-leaf20-l2-1` | `ewma50-resid-k6-cap05-min3` | `NO_CONTEXT` | 1,691.40 |
+| T-3 | Structural Prior | `ewma50-resid-k2-cap05-min3` | `NO_CONTEXT` | 1,682.63 |
+| T-1 | Structural Prior | `ewma50-resid-k6-cap05-min3` | `NO_CONTEXT` | 1,661.52 |
 
-This freeze remains sealed and unchanged.
-
----
-
-# a2 external/ensemble R&D — COMPLETE
-
-Closure result:
-
-`ml/results/A2_EXTERNAL_ENSEMBLE_CLOSURE_V1_2026-10-21.md`
-
-Run `39624170933`, artifact `12356162577`.
-
-Fixed-temporal robustness result:
-
-`ml/results/A2_EXTERNAL_ENSEMBLE_FIXED_TEMPORAL_V1_2026-10-21.md`
-
-Run `39625425854`, artifact `12356632426`.
-
-Result JSON SHA256:
-
-`e6532db4bccfe567dd1eeaf3196f74d1a41a78a66eea53bc975892868ff2c900`
-
-Artifact ZIP SHA256:
-
-`7d9cfe2609affcb35b7c99252d42231ce1e5e55b24fbb3bb1dfd3470a0226e4e`
-
-## Robust historical challengers
-
-### T-30
-
-`0.75 current a2 + 0.25 XGBoost depth3`
-
-Rolling-fold MAE gains:
-
-`+5.98 / +33.50 / +54.93 / +29.74`
-
-Mean:
-
-`+31.04 / 1.47%`
-
-Club-season cells improved `50/72`; worst event degradation `2,855.70`.
-
-### T-7
-
-`0.25 current a2/HGB + 0.25 CatBoost depth4 + 0.50 LightGBM leaves15`
-
-Rolling-fold gains:
-
-`+20.18 / +8.90 / +10.27 / +27.86`
-
-Mean:
-
-`+16.80 / 0.87%`
-
-Club-season cells improved `42/72`; worst event degradation `1,632.41`.
-
-### T-1
-
-`0.25 HGB hist31 + 0.50 CatBoost depth4 + 0.25 LightGBM leaves15`
-
-Rolling-fold gains:
-
-`+16.48 / +55.46 / +2.27 / +6.28`
-
-Mean:
-
-`+20.12 / 1.05%`
-
-Club-season cells improved `38/72`; worst event degradation `2,309.70`.
-
-Weakest paired-bootstrap P(improvement > 0) is `0.5196`, so T-1 in particular remains a modest-effect challenger rather than a proven large uplift.
-
-### Not advanced
-
-- T-14: current a2 retained after mixed exposed references;
-- T-3: current a2 retained after mixed exposed references.
-
-The bounded a2 external-family/ensemble gap is closed.
+This remains the anchor for the current frozen Ridge/P2 prospective-validation package.
 
 ---
 
-# Active Track-B candidate — Pre-Live v3
+# Track B — Frozen Pre-Live v3 research candidate
 
-Historical v3 candidate base:
+Freeze ID:
 
-| Horizon | Proposed historical v3 base |
-|---|---|
-| T-30 | robust T-30 ensemble |
-| T-14 | current a2 Structural Prior |
-| T-7 | robust T-7 ensemble |
-| T-3 | current a2 Structural Prior |
-| T-1 | robust T-1 ensemble |
+`pre-live-v3-historical-candidate-2026-10-21-v1`
 
-This is **not frozen yet**.
+Canonical manifest:
 
-Before any v3 freeze, current-season regime must be revalidated against the new historical anchors.
+`ml/artifacts/pre_live_v3_historical_candidate_v1/manifest.json`
 
-Why:
+Manifest SHA256:
 
-> b2 residual policies were selected relative to the old historical bases. Carrying them unchanged into v3 without an audit would change the meaning of the residual correction.
+`b8c1a3cb1ddb70e9f6b67a6bc1db23619f26a8c328bf4b78399fc262394ff70a`
 
-Required v3 experiment:
+Freeze run:
 
-1. new historical base only;
-2. old frozen b2 formulation applied unchanged on the new anchor as a fixed comparator;
-3. newly selected current-season-regime challenger under a declared temporal boundary;
-4. Frozen Pre-Live v2 as unchanged benchmark;
-5. no prospective event tuning;
-6. fixed-temporal validation before any new freeze ID.
+`39633561065`
 
-If v3 later freezes, d2 must be rebuilt/revalidated against the v3 anchor under a new d2 version.
+Artifact ID:
+
+`12360033160`
+
+Result:
+
+`ml/results/PRE_LIVE_V3_HISTORICAL_FREEZE_V1_2026-10-21.md`
+
+## Exact v3 contract
+
+| Horizon | Historical base | current-season regime | Historical c2 |
+|---|---|---|---|
+| T-30 | `0.75 current a2 + 0.25 XGBoost depth3` | `NO_ADJUSTMENT` | `NO_CONTEXT` |
+| T-14 | exact v2 T-14 base | `NO_ADJUSTMENT` | `NO_CONTEXT` |
+| T-7 | `0.25 current a2/HGB + 0.25 CatBoost depth4 + 0.50 LightGBM leaves15` | `ewma50-resid-k4-cap05-min2` | `NO_CONTEXT` |
+| T-3 | exact v2 T-3 base | `ewma50-resid-k2-cap05-min3` | `NO_CONTEXT` |
+| T-1 | exact v2 T-1 base | `ewma50-resid-k6-cap05-min3` | `NO_CONTEXT` |
+
+Reference mean MAE:
+
+- T-30: **1,825.49**;
+- T-14: **1,809.45**;
+- T-7: **1,670.60**;
+- T-3: **1,682.63**;
+- T-1: **1,661.52**.
+
+Compared with Frozen v2, only T-30 and T-7 change.
+
+## Package audit result
+
+20-cell mean MAE:
+
+- Frozen v2: `1934.04`;
+- v3: `1924.64`;
+- improvement: `+9.39 / +0.49%`.
+
+T-30 vs Frozen v2:
+
+`+5.98 / +33.50 / +54.93 / +29.74` MAE across the four rolling folds.
+
+T-7 vs Frozen v2:
+
+`+10.92 / +11.18 / +13.71 / +27.88`.
+
+T-14/T-3/T-1 reproduce v2 exactly.
+
+Important limitations:
+
+- gain is modest;
+- 2024/25 and 2025/26 are exposed historical references;
+- T-30/T-7 still have material event-level tail regressions;
+- v3 is a research anchor, not Track-A replacement or production.
 
 ---
 
-# Frozen d2 package — Track A
+# Why T-1 did not enter v3
 
-## Stage 1 expert
+The T-1 historical ensemble had passed the earlier 4/4 historical-anchor audit, but after current-season-regime revalidation the full package was mixed vs Frozen v2:
+
+- 2024/25: `+1.92` MAE;
+- 2025/26: `-15.39` MAE.
+
+Therefore v3 correctly retains the v2 T-1 package.
+
+---
+
+# Why T-7 b2 changed
+
+On the new T-7 anchor, development-only regime selection moved from the v2 policy:
+
+`ewma50-resid-k6-cap05-min3`
+
+to:
+
+`ewma50-resid-k4-cap05-min2`
+
+This was selected before the exposed references were opened.
+
+T-30 selected `NO_ADJUSTMENT` on the new anchor.
+
+---
+
+# Track A frozen d2 package
+
+Stage-1 expert:
 
 `ridge-a10`
 
-Development:
-
-- Frozen latest MAE `4128.01`;
-- Ridge latest `3320.39`;
-- latest uplift `807.62 / 19.56%`;
-- Ridge window `3619.19`;
-- worst latest-event degradation `4326.90`.
-
-## Stage 2 policy
-
-Package:
+Stage-2 package:
 
 `d2-stage2-p2-observation-maturity-2026-10-19-v1`
 
-Policy:
+Development summary:
 
-`P2-observation-maturity`
+- Frozen-v2 latest MAE `4128.01`;
+- raw Ridge latest `3320.39`;
+- P2 latest `3240.99`;
+- P2 window `3657.65`;
+- P2 worst degradation `1081.72`.
 
-Development:
+These remain tied to Frozen Pre-Live v2.
 
-- latest MAE `3240.99`;
-- uplift `887.02 / 21.49%`;
-- window MAE `3657.65`;
-- worst degradation `1081.72`.
-
-Frozen Ridge/P2 remain tied to Frozen Pre-Live v2 and are not retuned event by event.
+**Do not silently reuse Ridge/P2 against v3.**
 
 ---
 
-# Event 5 chronological holdout
+# Active Track-B next workstream — d2-v3
 
-Lech Poznań vs Korona Kielce, actual `37,407`.
+The live residual target changes because the anchor changed.
 
-| Layer | Latest error |
-|---|---:|
-| Structural T-1 base | 7,669.07 |
-| Frozen Pre-Live v2 | 9,832.52 |
-| Raw frozen Ridge | **6,652.81** |
-| Frozen P2 | **6,652.81** |
-| Persisted C1 v8 | 7,669.07 |
+Required next cycle:
 
-Event 5 is permanently exposed.
+1. reconstruct the frozen v3 anchor for the existing d2 replay rows;
+2. create a new `d2-v3` target relative to v3;
+3. keep the old v2/Ridge/P2 stack as benchmark;
+4. rerun a compact live-model tournament under event-level temporal/LOEO controls;
+5. revalidate reliability/tail governance under a new policy ID;
+6. do not use exposed forward outcomes as unseen selection data;
+7. no production write.
+
+The previous Stage-1 Chronos formulation remains closed unless the new anchor/target creates a materially different predeclared hypothesis.
 
 ---
 
 # Prospective evidence classes
 
-Stage-2 freeze cutoff:
+Stage-2 v2 cutoff:
 
 `2026-10-19T19:11:01Z`
 
-- `DELAYED_LABEL_HOLDOUT`: diagnostic only, not genuine forward promotion N;
-- `TRUE_POST_FREEZE_PROSPECTIVE`: may contribute to genuine forward promotion evidence.
+- `DELAYED_LABEL_HOLDOUT`: diagnostic only;
+- `TRUE_POST_FREEZE_PROSPECTIVE`: genuine forward-promotion evidence.
 
-Never combine these classes into one headline prospective sample size.
-
-Delayed-label evidence already shows frozen d2 is not uniformly beneficial match-by-match, including GKS–Pogoń and Cracovia–Legia. Those exposed outcomes may generate future hypotheses but cannot be used for post-hoc Ridge/P2 tuning and then treated as unseen evidence.
+Track-A prospective scoring continues against v2 while Track-B d2-v3 research proceeds separately.
 
 ---
 
@@ -248,10 +225,10 @@ Historical c2 remains:
 
 `NO_CONTEXT_ALL_HORIZONS`
 
-Forward PIT-safe collection/research continues for verified rivalry, absences, sporting context, media/GDELT and valid hype/search/social signals.
+Forward PIT-safe context collection continues for verified rivalry, absences, sporting state, media/GDELT and valid hype/search/social sources.
 
 ---
 
 # Immediate development decision
 
-> **Keep Frozen Pre-Live v2 / Ridge / P2 unchanged for Track-A validation. Active Track-B work is now the separately versioned Pre-Live v3 historical-anchor + current-season-regime revalidation. Do not wait for prospective N. Production remains unchanged.**
+> **Keep Frozen Pre-Live v2 / Ridge / P2 unchanged for Track-A validation. Pre-Live v3 is now a sealed Track-B research anchor. Active model R&D moves to a new d2-v3 rebuild/revalidation against v3, while production remains unchanged.**

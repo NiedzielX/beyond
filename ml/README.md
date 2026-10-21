@@ -12,108 +12,111 @@ This directory is the evaluation and evidence gate for Beyond forecasting models
 
 > **Reduce forecasting MAE as far as possible with honest, reproducible, point-in-time-safe evidence before treating the model as mature.**
 
-A challenger is not promoted because it is newer or more complex. It must improve the correct frozen benchmark under a declared temporal contract and survive the required robustness checks.
-
-## Two-track model-development rule
+## Two-track rule
 
 ### Track A — frozen validation
 
-Keep the current Frozen Pre-Live v2 / Ridge / P2 package unchanged while accumulating delayed-label and genuine post-freeze evidence.
+Keep Frozen Pre-Live v2 / Ridge / P2 unchanged while accumulating delayed-label and genuine post-freeze evidence.
 
 ### Track B — active R&D
 
-Continue model research immediately when an honest evaluation boundary exists.
+Pre-Live v3 is sealed as a separate research anchor:
 
-**Do not wait for a prospective event-count threshold to perform historical/model research that can be evaluated now.**
+`pre-live-v3-historical-candidate-2026-10-21-v1`
+
+Do not wait for prospective sample-count gates to perform research that can be evaluated honestly now.
 
 > **Production promotion waits for prospective evidence. R&D does not.**
 
-## Current historical benchmark
+## Current historical research freeze
 
-The active historical research benchmark is multi-club:
+Manifest:
 
-- five Ekstraklasa seasons: 2021/22–2025/26;
+[`artifacts/pre_live_v3_historical_candidate_v1/manifest.json`](./artifacts/pre_live_v3_historical_candidate_v1/manifest.json)
+
+Manifest SHA256:
+
+`b8c1a3cb1ddb70e9f6b67a6bc1db23619f26a8c328bf4b78399fc262394ff70a`
+
+Freeze result:
+
+[`results/PRE_LIVE_V3_HISTORICAL_FREEZE_V1_2026-10-21.md`](./results/PRE_LIVE_V3_HISTORICAL_FREEZE_V1_2026-10-21.md)
+
+Exact changes vs Frozen v2:
+
+- T-30: `0.75 current a2 + 0.25 XGBoost depth3`, no b2;
+- T-7: `0.25 current a2/HGB + 0.25 CatBoost depth4 + 0.50 LightGBM leaves15`, `ewma50-resid-k4-cap05-min2`.
+
+T-14/T-3/T-1 are exact v2 horizon packages.
+
+20-cell mean MAE:
+
+`1934.04 -> 1924.64`, gain `+9.39 / +0.49%`.
+
+T-30 and T-7 improved Frozen v2 in all four rolling folds under a fixed package.
+
+V3 remains research-only: exposed historical references and material tail risk are explicit limitations.
+
+## Current Track-A benchmark
+
+Pre-Live v2:
+
+[`artifacts/pre_live_v2_historical_candidate_v1/manifest.json`](./artifacts/pre_live_v2_historical_candidate_v1/manifest.json)
+
+Frozen live model:
+
+- `ridge-a10`;
+- `P2-observation-maturity`.
+
+Production remains:
+
+`live_adjustment = 0`
+
+## Active next experiment — d2-v3 Stage 0
+
+Do **not** retrain a live model simply because v3 has a new freeze ID.
+
+V3 T-1 is exactly the same as v2 T-1, while the current d2 development problem uses final-24h live rows.
+
+Therefore first run an exact 9-event / 30-row anchor equivalence replay:
+
+- v2 anchor per row;
+- v3 anchor per row;
+- seat and occupancy delta;
+- v2 residual target;
+- v3 residual target.
+
+If all rows are identical, do not create a cosmetic new Stage-1 model version. Move to a materially different live hypothesis instead.
+
+If they differ, create a new d2-v3 target and rerun event-level LOEO expert/reliability selection under new IDs.
+
+## Historical data contract
+
+Current historical research dataset:
+
+- 5 Ekstraklasa seasons: 2021/22–2025/26;
 - 1,530 matches;
-- 7,650 point-in-time feature snapshots;
-- horizons: T-30 / T-14 / T-7 / T-3 / T-1;
-- development selection season: 2023/24;
-- exposed reference seasons: 2024/25 and 2025/26.
-
-The reference seasons are no longer described as untouched after they have been opened. New experiments must label their evidence honestly.
-
-## Latest historical R&D result
-
-See:
-
-- [`results/A2_EXTERNAL_ENSEMBLE_CLOSURE_V1_2026-10-21.md`](./results/A2_EXTERNAL_ENSEMBLE_CLOSURE_V1_2026-10-21.md)
-- [`results/A2_EXTERNAL_ENSEMBLE_FIXED_TEMPORAL_V1_2026-10-21.md`](./results/A2_EXTERNAL_ENSEMBLE_FIXED_TEMPORAL_V1_2026-10-21.md)
-
-The bounded external-model/heterogeneous-ensemble audit is complete.
-
-Robust historical challengers:
-
-- T-30: `0.75 current a2 + 0.25 XGBoost depth3`;
-- T-7: `0.25 current a2/HGB + 0.25 CatBoost depth4 + 0.50 LightGBM leaves15`;
-- T-1: `0.25 HGB hist31 + 0.50 CatBoost depth4 + 0.25 LightGBM leaves15`.
-
-Each improved MAE in all four fixed rolling folds.
-
-This does **not** replace Frozen Pre-Live v2. The active next research cycle is a separately versioned Pre-Live v3 candidate with current-season-regime revalidation on the new anchors.
-
-## Current frozen benchmark
-
-Track-A source of truth remains:
-
-- [`CURRENT_MODEL.md`](./CURRENT_MODEL.md)
-- [`artifacts/pre_live_v2_historical_candidate_v1/manifest.json`](./artifacts/pre_live_v2_historical_candidate_v1/manifest.json)
-- [`LIVE_DEMAND_ENGINE_V1_PLAN.md`](./LIVE_DEMAND_ENGINE_V1_PLAN.md)
-- [`D2_PROSPECTIVE_ACCUMULATION_V1.md`](./D2_PROSPECTIVE_ACCUMULATION_V1.md)
-
-Production remains `live_adjustment = 0`.
+- 7,650 point-in-time horizon rows;
+- T-30 / T-14 / T-7 / T-3 / T-1;
+- exposed references 2024/25 and 2025/26 must always remain labeled exposed.
 
 ## Re-run rule
 
-Do not rebuild the feature store or rerun persisted experiments merely to rediscover current state.
+Do not rerun persisted evidence merely to recover context.
 
 Valid triggers include:
 
-- intentional new challenger evaluation;
-- model implementation/hyperparameter change;
-- target/ensemble change;
-- feature-contract change;
-- historical input/hash change;
-- source-data correction;
-- benchmark-protocol change;
+- intentional new challenger;
+- target/model/ensemble/policy change;
+- feature/source semantics change;
+- historical data/hash correction;
+- benchmark protocol change;
 - explicit reproduction request.
 
-## Historical benchmark v0.1 — retained for lineage
+## Engineering contract
 
-The original benchmark was Lech-only and is retained as model lineage, not as the current research state.
+`code -> tests -> CI -> artifact -> hashes -> result doc -> decision -> canonical docs`
 
-- Club: Lech Poznań.
-- Target: final match attendance.
-- Development seasons: `2022/2023`, `2023/2024`.
-- Holdout seasons used at that time: `2024/2025`, `2025/2026`.
-- Capacity-constrained attendance rows were excluded.
-- Attendance-history features were shifted so only already completed matches were visible.
-- Sporting context was pre-match only.
-- A model for a test season was trained only on matches before that season started.
-- CatBoost configuration was selected using development MAE only.
+A material change creates a new challenger/version.
 
-### v0.1 decision
-
-CatBoost was **not promoted**. On the then-holdout 32-match set it reached MAE `5,918` vs `5,318` for the incumbent and had a much larger negative bias (`-4,867` vs `-2,338`).
-
-That result remains historical lineage and has been superseded by the five-season Global Forecast / Structural Prior benchmark.
-
-## Promotion criteria
-
-A challenger should not be promoted if it improves a headline number while materially worsening MAE/WAPE, bias, temporal stability, club stability or tail risk.
-
-For probabilistic models the gate also includes pinball loss and P10–P90 empirical coverage.
-
-Historical robustness is not production promotion. Production requires separate genuine forward evidence and explicit reviewed activation.
-
-## Data contract
-
-Raw datasets are not treated as model outputs. Training and inference must use versioned, point-in-time feature contracts. Benchmark outputs belong in `ml/results/` and material experiments must persist machine-readable evidence, run/artifact IDs and hashes.
+Historical/LOEO improvement is not production promotion.

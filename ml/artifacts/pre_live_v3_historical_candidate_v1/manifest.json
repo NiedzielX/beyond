@@ -1,0 +1,494 @@
+{
+  "candidate_scope": "historical_pre_live_v3_mixed_horizon",
+  "evidence_sha256": {
+    "ml/results/A2_EXTERNAL_ENSEMBLE_CLOSURE_V1_2026-10-21.md": "5841aae2399bbc1603961958284ec83d16ead7635a580e054324468159a69057",
+    "ml/results/A2_EXTERNAL_ENSEMBLE_FIXED_TEMPORAL_V1_2026-10-21.md": "6bac3b73b686df201b5aa81600c0ecacf8d787c93ffd86fe29b18c58cd75bf28",
+    "ml/results/PRE_LIVE_V3_FIXED_TEMPORAL_PACKAGE_V1_2026-10-21.md": "278b1d6e13720081bb8148828e0a308d350cdec258f75f571542c0d4c3208dbc",
+    "ml/results/PRE_LIVE_V3_REGIME_REVALIDATION_V1_2026-10-21.md": "c9b9a0db6d5fd2374d009befb5092bec850cde1b0bf30c589453605f69f2c2a2"
+  },
+  "expected_final_mae": {
+    "T-1": {
+      "2022/2023": 1794.257779854,
+      "2023/2024": 2261.110393082,
+      "2024/2025": 1627.074638912,
+      "2025/2026": 1695.960636965
+    },
+    "T-14": {
+      "2022/2023": 1986.701536006,
+      "2023/2024": 2339.950499328,
+      "2024/2025": 1748.497051251,
+      "2025/2026": 1870.393553818
+    },
+    "T-3": {
+      "2022/2023": 1826.950300928,
+      "2023/2024": 2190.790001468,
+      "2024/2025": 1611.374341514,
+      "2025/2026": 1753.891494223
+    },
+    "T-30": {
+      "2022/2023": 2151.170512301,
+      "2023/2024": 2526.245203472,
+      "2024/2025": 1834.434818304,
+      "2025/2026": 1816.541318063
+    },
+    "T-7": {
+      "2022/2023": 1880.936411763,
+      "2023/2024": 2235.391355368,
+      "2024/2025": 1630.112559463,
+      "2025/2026": 1711.095982769
+    }
+  },
+  "experiment": "pre-live-v3-historical-freeze-v1",
+  "freeze_id": "pre-live-v3-historical-candidate-2026-10-21-v1",
+  "historical_context_extension": "NO_CONTEXT_ALL_HORIZONS",
+  "horizons": [
+    {
+      "contract": {
+        "current_season_regime": "NO_ADJUSTMENT",
+        "historical_base": "ensemble(current-a2-base=0.75,xgboost-l1-depth3-l2-5=0.25)",
+        "historical_context_extension": "NO_CONTEXT"
+      },
+      "folds": [
+        {
+          "final_mae": 2151.170512301,
+          "rows": 294,
+          "runtime_contract": {
+            "current_season_regime": "NO_ADJUSTMENT",
+            "historical_model_id": "v3-hist-t30-ensemble-current075-xgbd3-025"
+          },
+          "season": "2022/2023",
+          "training_seasons": [
+            "2021/2022"
+          ]
+        },
+        {
+          "final_mae": 2526.245203472,
+          "rows": 293,
+          "runtime_contract": {
+            "current_season_regime": "NO_ADJUSTMENT",
+            "historical_model_id": "v3-hist-t30-ensemble-current075-xgbd3-025"
+          },
+          "season": "2023/2024",
+          "training_seasons": [
+            "2021/2022",
+            "2022/2023"
+          ]
+        },
+        {
+          "final_mae": 1834.434818304,
+          "rows": 297,
+          "runtime_contract": {
+            "current_season_regime": "NO_ADJUSTMENT",
+            "historical_model_id": "v3-hist-t30-ensemble-current075-xgbd3-025"
+          },
+          "season": "2024/2025",
+          "training_seasons": [
+            "2021/2022",
+            "2022/2023",
+            "2023/2024"
+          ]
+        },
+        {
+          "final_mae": 1816.541318063,
+          "rows": 302,
+          "runtime_contract": {
+            "current_season_regime": "NO_ADJUSTMENT",
+            "historical_model_id": "v3-hist-t30-ensemble-current075-xgbd3-025"
+          },
+          "season": "2025/2026",
+          "training_seasons": [
+            "2021/2022",
+            "2022/2023",
+            "2023/2024",
+            "2024/2025"
+          ]
+        }
+      ],
+      "horizon": "T-30",
+      "mean_four_fold_mae": 2082.097963035,
+      "reference_mean_mae": 1825.488068183
+    },
+    {
+      "contract": {
+        "current_season_regime": "NO_ADJUSTMENT",
+        "historical_base": "structural-prior-runtime-v1-t14-hist-base",
+        "historical_context_extension": "NO_CONTEXT"
+      },
+      "folds": [
+        {
+          "final_mae": 1986.701536006,
+          "rows": 296,
+          "runtime_contract": {
+            "current_season_regime": "NO_ADJUSTMENT",
+            "historical_model_id": "v3-hist-retain-current-a2-t14",
+            "unchanged_from_frozen_v2": true
+          },
+          "season": "2022/2023",
+          "training_seasons": [
+            "2021/2022"
+          ]
+        },
+        {
+          "final_mae": 2339.950499328,
+          "rows": 297,
+          "runtime_contract": {
+            "current_season_regime": "NO_ADJUSTMENT",
+            "historical_model_id": "v3-hist-retain-current-a2-t14",
+            "unchanged_from_frozen_v2": true
+          },
+          "season": "2023/2024",
+          "training_seasons": [
+            "2021/2022",
+            "2022/2023"
+          ]
+        },
+        {
+          "final_mae": 1748.497051251,
+          "rows": 299,
+          "runtime_contract": {
+            "current_season_regime": "NO_ADJUSTMENT",
+            "historical_model_id": "v3-hist-retain-current-a2-t14",
+            "unchanged_from_frozen_v2": true
+          },
+          "season": "2024/2025",
+          "training_seasons": [
+            "2021/2022",
+            "2022/2023",
+            "2023/2024"
+          ]
+        },
+        {
+          "final_mae": 1870.393553818,
+          "rows": 303,
+          "runtime_contract": {
+            "current_season_regime": "NO_ADJUSTMENT",
+            "historical_model_id": "v3-hist-retain-current-a2-t14",
+            "unchanged_from_frozen_v2": true
+          },
+          "season": "2025/2026",
+          "training_seasons": [
+            "2021/2022",
+            "2022/2023",
+            "2023/2024",
+            "2024/2025"
+          ]
+        }
+      ],
+      "horizon": "T-14",
+      "mean_four_fold_mae": 1986.385660101,
+      "reference_mean_mae": 1809.445302535
+    },
+    {
+      "contract": {
+        "current_season_regime": "ewma50-resid-k4-cap05-min2",
+        "historical_base": "ensemble(current-a2-base=0.25,catboost-mae-depth4-l2-5=0.25,lightgbm-l1-leaves15-l2-5=0.50)",
+        "historical_context_extension": "NO_CONTEXT"
+      },
+      "folds": [
+        {
+          "final_mae": 1880.936411763,
+          "rows": 297,
+          "runtime_contract": {
+            "current_season_regime": "ewma50-resid-k4-cap05-min2",
+            "historical_model_id": "v3-hist-t7-ensemble-hgb025-catd4-025-lgbm15-050",
+            "regime_diagnostics": {
+              "active_rows_after_activation_gate": 252,
+              "active_share_after_activation_gate": 0.848484848,
+              "eligible_rows_before_activation_gate": 277,
+              "max_abs_correction_seats": 2255.25,
+              "mean_abs_correction_seats": 506.881191446,
+              "mean_abs_correction_share_capacity": 0.025767436,
+              "median_abs_correction_seats": 269.15,
+              "min_prior_home_matches": 2,
+              "rows_meeting_maturity_threshold": 259,
+              "share_meeting_maturity_threshold": 0.872053872
+            }
+          },
+          "season": "2022/2023",
+          "training_seasons": [
+            "2021/2022"
+          ]
+        },
+        {
+          "final_mae": 2235.391355368,
+          "rows": 297,
+          "runtime_contract": {
+            "current_season_regime": "ewma50-resid-k4-cap05-min2",
+            "historical_model_id": "v3-hist-t7-ensemble-hgb025-catd4-025-lgbm15-050",
+            "regime_diagnostics": {
+              "active_rows_after_activation_gate": 253,
+              "active_share_after_activation_gate": 0.851851852,
+              "eligible_rows_before_activation_gate": 278,
+              "max_abs_correction_seats": 2760.55,
+              "mean_abs_correction_seats": 564.642502094,
+              "mean_abs_correction_share_capacity": 0.025215088,
+              "median_abs_correction_seats": 285.416544585,
+              "min_prior_home_matches": 2,
+              "rows_meeting_maturity_threshold": 261,
+              "share_meeting_maturity_threshold": 0.878787879
+            }
+          },
+          "season": "2023/2024",
+          "training_seasons": [
+            "2021/2022",
+            "2022/2023"
+          ]
+        },
+        {
+          "final_mae": 1630.112559463,
+          "rows": 300,
+          "runtime_contract": {
+            "current_season_regime": "ewma50-resid-k4-cap05-min2",
+            "historical_model_id": "v3-hist-t7-ensemble-hgb025-catd4-025-lgbm15-050",
+            "regime_diagnostics": {
+              "active_rows_after_activation_gate": 248,
+              "active_share_after_activation_gate": 0.826666667,
+              "eligible_rows_before_activation_gate": 280,
+              "max_abs_correction_seats": 2141.85,
+              "mean_abs_correction_seats": 454.861033288,
+              "mean_abs_correction_share_capacity": 0.02171071,
+              "median_abs_correction_seats": 282.485883573,
+              "min_prior_home_matches": 2,
+              "rows_meeting_maturity_threshold": 261,
+              "share_meeting_maturity_threshold": 0.87
+            }
+          },
+          "season": "2024/2025",
+          "training_seasons": [
+            "2021/2022",
+            "2022/2023",
+            "2023/2024"
+          ]
+        },
+        {
+          "final_mae": 1711.095982769,
+          "rows": 303,
+          "runtime_contract": {
+            "current_season_regime": "ewma50-resid-k4-cap05-min2",
+            "historical_model_id": "v3-hist-t7-ensemble-hgb025-catd4-025-lgbm15-050",
+            "regime_diagnostics": {
+              "active_rows_after_activation_gate": 260,
+              "active_share_after_activation_gate": 0.858085809,
+              "eligible_rows_before_activation_gate": 284,
+              "max_abs_correction_seats": 2141.85,
+              "mean_abs_correction_seats": 495.22453919,
+              "mean_abs_correction_share_capacity": 0.024821052,
+              "median_abs_correction_seats": 417.885928257,
+              "min_prior_home_matches": 2,
+              "rows_meeting_maturity_threshold": 265,
+              "share_meeting_maturity_threshold": 0.874587459
+            }
+          },
+          "season": "2025/2026",
+          "training_seasons": [
+            "2021/2022",
+            "2022/2023",
+            "2023/2024",
+            "2024/2025"
+          ]
+        }
+      ],
+      "horizon": "T-7",
+      "mean_four_fold_mae": 1864.384077341,
+      "reference_mean_mae": 1670.604271116
+    },
+    {
+      "contract": {
+        "current_season_regime": "ewma50-resid-k2-cap05-min3",
+        "historical_base": "structural-prior-runtime-v1-t3-hist-full",
+        "historical_context_extension": "NO_CONTEXT"
+      },
+      "folds": [
+        {
+          "final_mae": 1826.950300928,
+          "rows": 297,
+          "runtime_contract": {
+            "current_season_regime": "ewma50-resid-k2-cap05-min3",
+            "historical_model_id": "v3-hist-retain-current-a2-t3",
+            "unchanged_from_frozen_v2": true
+          },
+          "season": "2022/2023",
+          "training_seasons": [
+            "2021/2022"
+          ]
+        },
+        {
+          "final_mae": 2190.790001468,
+          "rows": 297,
+          "runtime_contract": {
+            "current_season_regime": "ewma50-resid-k2-cap05-min3",
+            "historical_model_id": "v3-hist-retain-current-a2-t3",
+            "unchanged_from_frozen_v2": true
+          },
+          "season": "2023/2024",
+          "training_seasons": [
+            "2021/2022",
+            "2022/2023"
+          ]
+        },
+        {
+          "final_mae": 1611.374341514,
+          "rows": 300,
+          "runtime_contract": {
+            "current_season_regime": "ewma50-resid-k2-cap05-min3",
+            "historical_model_id": "v3-hist-retain-current-a2-t3",
+            "unchanged_from_frozen_v2": true
+          },
+          "season": "2024/2025",
+          "training_seasons": [
+            "2021/2022",
+            "2022/2023",
+            "2023/2024"
+          ]
+        },
+        {
+          "final_mae": 1753.891494223,
+          "rows": 303,
+          "runtime_contract": {
+            "current_season_regime": "ewma50-resid-k2-cap05-min3",
+            "historical_model_id": "v3-hist-retain-current-a2-t3",
+            "unchanged_from_frozen_v2": true
+          },
+          "season": "2025/2026",
+          "training_seasons": [
+            "2021/2022",
+            "2022/2023",
+            "2023/2024",
+            "2024/2025"
+          ]
+        }
+      ],
+      "horizon": "T-3",
+      "mean_four_fold_mae": 1845.751534533,
+      "reference_mean_mae": 1682.632917868
+    },
+    {
+      "contract": {
+        "current_season_regime": "ewma50-resid-k6-cap05-min3",
+        "historical_base": "structural-prior-runtime-v1-t1-hist-full",
+        "historical_context_extension": "NO_CONTEXT"
+      },
+      "folds": [
+        {
+          "final_mae": 1794.257779854,
+          "rows": 297,
+          "runtime_contract": {
+            "current_season_regime": "ewma50-resid-k6-cap05-min3",
+            "historical_model_id": "v3-hist-t1-ensemble-hgb025-catd4-050-lgbm15-025",
+            "unchanged_from_frozen_v2": true
+          },
+          "season": "2022/2023",
+          "training_seasons": [
+            "2021/2022"
+          ]
+        },
+        {
+          "final_mae": 2261.110393082,
+          "rows": 297,
+          "runtime_contract": {
+            "current_season_regime": "ewma50-resid-k6-cap05-min3",
+            "historical_model_id": "v3-hist-t1-ensemble-hgb025-catd4-050-lgbm15-025",
+            "unchanged_from_frozen_v2": true
+          },
+          "season": "2023/2024",
+          "training_seasons": [
+            "2021/2022",
+            "2022/2023"
+          ]
+        },
+        {
+          "final_mae": 1627.074638912,
+          "rows": 300,
+          "runtime_contract": {
+            "current_season_regime": "ewma50-resid-k6-cap05-min3",
+            "historical_model_id": "v3-hist-t1-ensemble-hgb025-catd4-050-lgbm15-025",
+            "unchanged_from_frozen_v2": true
+          },
+          "season": "2024/2025",
+          "training_seasons": [
+            "2021/2022",
+            "2022/2023",
+            "2023/2024"
+          ]
+        },
+        {
+          "final_mae": 1695.960636965,
+          "rows": 303,
+          "runtime_contract": {
+            "current_season_regime": "ewma50-resid-k6-cap05-min3",
+            "historical_model_id": "v3-hist-t1-ensemble-hgb025-catd4-050-lgbm15-025",
+            "unchanged_from_frozen_v2": true
+          },
+          "season": "2025/2026",
+          "training_seasons": [
+            "2021/2022",
+            "2022/2023",
+            "2023/2024",
+            "2024/2025"
+          ]
+        }
+      ],
+      "horizon": "T-1",
+      "mean_four_fold_mae": 1844.600862203,
+      "reference_mean_mae": 1661.517637938
+    }
+  ],
+  "input": {
+    "artifact_version": "structural-prior-runtime-v1-frozen-2026-10-15-t1",
+    "feature_contract": "structural-prior-pit-v1+verified-capacity-v1",
+    "feature_rows": 7650,
+    "historical_dataset_versions": [
+      "historical-multiclub-2021-25-v2.1",
+      "historical-multiclub-2025-26-v1"
+    ],
+    "historical_runtime_path": "ml/artifacts/structural_prior_runtime_v1/historical_runtime_v1.csv.gz",
+    "historical_runtime_sha256": "3c6b35142c6bd20a484f2aa758cd41284fd6f4c6db1353b138f81cf321161569",
+    "input_manifest_path": "ml/artifacts/structural_prior_runtime_v1/manifest.json",
+    "input_manifest_sha256": "251f377b9791209e380d287d37c28dd8f93e0973f17bfa3912e6c3b930378ba5",
+    "matches": 1530
+  },
+  "limitations": [
+    "The 2024/25 and 2025/26 reference seasons are exposed historical references, not fresh prospective validation.",
+    "The package-level MAE gain versus Frozen Pre-Live v2 is modest because only T-30 and T-7 change.",
+    "T-30 and T-7 retain material event-level tail degradation despite positive four-fold MAE.",
+    "Historical c2 remains no-context; forward-only context is not backfilled.",
+    "This research freeze does not replace the Track-A Frozen Pre-Live v2 / Ridge / P2 package or production behavior."
+  ],
+  "live_adjustment": 0,
+  "manifest_float_decimals": 9,
+  "next_workstream": "d2_v3_rebuild_against_frozen_pre_live_v3_research_anchor",
+  "parent_evidence": {
+    "fixed_package_artifact_id": 12358477269,
+    "fixed_package_json_sha256": "f7c665b861cbd9cc7a7d8fd859c8b97a174c65bdad8888b14dee2dc7b20ebf01",
+    "fixed_package_run_id": 39628607689,
+    "regime_revalidation_artifact_id": 12357223004,
+    "regime_revalidation_json_sha256": "020685afde0d3becd0bd115a020df558360f55931638ce8cf6b875312ca7def6",
+    "regime_revalidation_run_id": 39627633502
+  },
+  "production_change": false,
+  "production_promotion": false,
+  "runtime": {
+    "catboost": "1.2.10",
+    "joblib": "1.5.3",
+    "lightgbm": "4.7.0",
+    "numpy": "2.3.5",
+    "pandas": "2.2.3",
+    "scikit_learn": "1.8.0",
+    "xgboost": "3.4.1"
+  },
+  "selection_performed": false,
+  "source_sha256": {
+    "ml/a2_external_ensemble_closure_v1.py": "da386b97fd33e98d4cfe85b75ac48d5017c36427cf838234ba929ac0f855b17a",
+    "ml/a2_external_ensemble_fixed_temporal_v1.py": "3389b176c655710d1f0e310e8dba1f8187492813aea93eeb98f9f23e0548971c",
+    "ml/current_season_regime_fixed_temporal_audit_v1.py": "ea6719fb24aa0b09d633d8ac7e0c4fd9fd88d530d14a8934196afcd21895b337",
+    "ml/current_season_regime_maturity_stage2_v1.py": "75e5521d8c65b8fea7083c0ad4aa6ce761b512692a22c8029c6b6610f8c92086",
+    "ml/current_season_residual_regime_v1.py": "69b39ed06db38196b1d0a9e7ada99cf809214ae3e6bc52a68a6b98495b186147",
+    "ml/demand_engine/structural_prior_runtime.py": "534a72c5a4f16f816042b194e6684d61dffd6f82fde8be74337980e4bbb8c079",
+    "ml/features/structural_prior_feature_store_v1.py": "da0295fedaf66e0e0976a53394c78ec72aa05be106a58c2f92ba83883fb9ceb2",
+    "ml/pre_live_v2_historical_freeze_v1.py": "aaee6ab1e82e8fef9d693bf7e2fab9e731764878619db0403fb98da99b3ea1d2",
+    "ml/pre_live_v3_fixed_temporal_package_v1.py": "d856550df0e2270ad04473eaad1c242aaf118ff06ae92a0a7bf0ee5496357cd2",
+    "ml/pre_live_v3_regime_revalidation_v1.py": "bfc016da85542fd4259e3e760fc78102eccfd799ba1a40c93979b6509a3dc753"
+  },
+  "status": "FROZEN_HISTORICAL_RESEARCH_CANDIDATE",
+  "track_a_replacement": false
+}
