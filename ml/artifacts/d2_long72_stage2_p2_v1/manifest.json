@@ -1,0 +1,86 @@
+{
+  "package_id": "d2-long72-stage2-p2-observation-maturity-2026-10-21-v1",
+  "status": "FROZEN_HISTORICAL_RESEARCH_PACKAGE",
+  "production_promotion": false,
+  "production_change": false,
+  "scope": {
+    "hours_to_kickoff_lower_exclusive": 24,
+    "hours_to_kickoff_upper_inclusive": 72,
+    "independent_unit": "event",
+    "evidence_class": "historical_exposed_research"
+  },
+  "anchor": {
+    "rule": "T-3 frozen Pre-Live checkpoint hold for 24<h<=72",
+    "pre_live_v2_v3_equivalent_in_scope": true,
+    "future_checkpoint_use_allowed": false,
+    "frozen_dataset_sha256": "2af6209484e7120f08541d82bc7bcd064b0f9ea46dd59bb5e7d2746cb35a214c",
+    "frozen_contract_sha256": "0083b82be7de4599574b90ed0af44e1accd1a993c1d07b7f263bfbf01f3a1a27"
+  },
+  "stage1": {
+    "expert_id": "inventory-linear-extrapolation",
+    "target": "occupancy residual versus frozen T-3 anchor",
+    "correction_cap_occupancy": 0.1,
+    "validation": "LOEO_BY_EVENT",
+    "event_balanced": true,
+    "artifact_id": 12365399256,
+    "artifact_zip_sha256": "e73ffe55d1c83b7a37fb50109c909f22d1a075a6b1de8f42c89364523399dfbb",
+    "result_json_sha256": "f19ea1378d0f8b07007bf45c2ab7f3fa20ebb3c53e32afa4548723336b71358a",
+    "predictions_sha256": "33de331d2c3bf1e385f513c7fa7e28aa8b454a4d49cfe00d48163e6c083a6df5"
+  },
+  "stage2": {
+    "policy_id": "P2-observation-maturity",
+    "policy": {
+      "observation_index_weights": {
+        "1": 0.25,
+        "2": 0.6,
+        "3_plus": 1.0
+      },
+      "time_to_kickoff_weights": {
+        "60_72h": 0.75,
+        "48_60h": 0.9,
+        "24_48h": 1.0
+      },
+      "combination": "minimum(observation_weight,time_weight)"
+    },
+    "workflow_run_id": 39644319080,
+    "job_id": 119375984602,
+    "artifact_id": 12366826274,
+    "artifact_zip_sha256": "c750cf385b2c6b6f05fabceaf68ff323a66235862967900419be421f7cdcb4ae",
+    "result_json_sha256": "a9daa834e15b4f313b15c3e809033b7d79e4ed4357f61a8f5071e6bf20359d8c",
+    "predictions_sha256": "489ba62156f19d3b915fda1b9f1ef506fb81603d4286a01e8ad4b799c58bce4b"
+  },
+  "development_metrics": {
+    "anchor_event_balanced_mae_24_72h": 3707.138173646611,
+    "package_event_balanced_mae_24_72h": 3012.62892731916,
+    "mae_improvement_24_72h": 694.5092463274509,
+    "relative_improvement_24_72h": 0.18734377133946456,
+    "package_mae_24_48h": 2752.5603533624785,
+    "mae_improvement_24_48h": 954.5778202841325,
+    "package_mae_48_72h": 3927.674049897368,
+    "mae_improvement_48_72h": 664.7091810676761,
+    "event_improvement_rate_24_72h": 0.6153846153846154,
+    "worst_event_degradation_24_72h": 1488.344647038306,
+    "event_balanced_bias_24_72h": 917.046821756805,
+    "original_exposed_subset_uplift": 103.55104110515367,
+    "later_exposed_subset_uplift": 1640.0423746831248
+  },
+  "advancement_gates": {
+    "positive_uplift_24_72h": true,
+    "positive_uplift_24_48h": true,
+    "positive_uplift_48_72h": true,
+    "retained_uplift_share_each_view_minimum": 0.5,
+    "worst_degradation_reduction_minimum": 0.25,
+    "absolute_bias_reduction_minimum": 0.25,
+    "positive_original_exposed_subset": true,
+    "positive_later_exposed_subset": true
+  },
+  "limitations": [
+    "All development outcomes are historical exposed research evidence.",
+    "This package has no genuine post-freeze prospective evidence yet.",
+    "P4-data-quality has lower historical tail degradation but was not selected because the frozen selector ranks eligible policies by overall MAE first.",
+    "The 72-168h band remains diagnostic-only below the predeclared independent-event floor.",
+    "This package does not replace the separate frozen final24 Ridge/P2 Track-A package and does not activate production."
+  ],
+  "next": "append_only_prospective_scoring_of_frozen_long72_package",
+  "live_adjustment": 0
+}
