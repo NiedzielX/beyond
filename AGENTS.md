@@ -73,6 +73,18 @@ Continue from the first unfinished item:
 8. live-ticket incremental uplift over the strongest structural/global forecast;
 9. 72–168h challenger once coverage reaches `N>=9`.
 
+## Current live runtime operational state
+
+Live Forecast Orchestrator v1 and automatic frozen-artifact Structural Prior materialization for **T-30 / T-14** are deployed and live. Do not rebuild those models during a normal session.
+
+Operational runtime next step remains:
+
+- freeze executable current-event Structural Prior runtimes for **T-7 / T-3 / T-1**;
+- until those runtimes are available, these horizons remain **fail-closed**;
+- there is no legacy fallback.
+
+This operational task runs alongside the MAE R&D roadmap and must not be mistaken for model-selection work.
+
 ## Product principle
 
 Optimize for accurate prediction early enough for the club to act, not only the lowest T-1 error.
