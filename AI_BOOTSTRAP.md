@@ -27,14 +27,12 @@ Model complexity is secondary. Predictive information and future MAE are primary
 
 ### Global historical / structural core
 
-Beyond already has a global multi-club model:
-
 - 1,530 Ekstraklasa matches / five complete seasons;
 - 7,650 PIT snapshots;
 - T-30/T-14/T-7/T-3/T-1;
 - Global Model v2.1 residual architecture: club-history baseline + learned global residual correction.
 
-Historical 2024/25 and 2025/26 results have already influenced research. They remain useful exposed evidence but are not unseen for new challengers.
+2024/25 and 2025/26 are exposed historical research evidence for future challenger decisions.
 
 ### Frozen final24 live package
 
@@ -46,63 +44,76 @@ Do not mutate it from new outcomes.
 
 `d2-long72-stage2-p2-observation-maturity-2026-10-21-v1`
 
-Scope: `24 < hours_to_kickoff <= 72`
-
-Architecture:
-
-- frozen T-3 anchor;
-- `inventory-linear-extrapolation` expert;
-- correction cap `±0.10` occupancy;
-- `P2-observation-maturity` reliability.
-
 Historical development:
 
 - anchor MAE `3707.14`;
 - package MAE `3012.63`;
 - uplift `+694.51 / +18.73%`.
 
-Do not retune this package on the same development events.
+True forecast-before-label infrastructure is now operational.
 
-## Two lanes — always work in parallel
+Result:
+
+`ml/results/D2_LONG72_FORWARD_PROSPECTIVE_V1_2026-10-21.md`
+
+First reproducible pre-outcome evidence exists for events 10 and 16. No prospective MAE exists yet because outcomes are not available.
+
+Manual bootstrap rows remain auditable but are excluded from the official scorecard; only reproducible pipeline rows are scoreable.
+
+## Temporal validation contract — operational
+
+Use:
+
+`ml/temporal_validation_v1.py`
+
+It provides:
+
+- strict forward-event folds;
+- strict expanding-group/season folds;
+- `train_end < test_start` assertions;
+- deterministic fold manifests / SHA;
+- MAE, median AE, P90 AE, bias, RMSE;
+- event-balanced MAE.
+
+No new challenger should invent an ad-hoc random split when this contract applies.
+
+## Two lanes — always parallel
 
 ### Lane A — evidence
 
-Continue:
+Continue automatically:
 
 - final24 prospective scoring;
-- long72 forecast persistence before label exposure;
-- append-only outcome join;
-- MAE / band / bias / tail scorecards;
-- explicit evidence-class labeling.
-
-Lane A validates existing packages. It does not block new model work.
+- hourly long72 pre-outcome materialization;
+- immutable forecast persistence;
+- append-only outcome scoring when attendance becomes available.
 
 ### Lane B — MAE R&D
 
 Current priority order:
 
-1. canonical rolling / forward validation;
-2. MAE-native loss / q=0.5 challenger tournament;
-3. event/fixture-block uncertainty for `ΔMAE`;
-4. new PIT-safe context — especially next-home-fixture substitution/cannibalization;
-5. forecast combinations from materially different information sources;
-6. live-ticket residual uplift over the strongest structural/global forecast;
-7. 72–168h learned experiment once `N>=9` independent events;
-8. club-specific shrinkage/calibration only if it improves global generalization.
+1. **MAE-native challenger tournament using `temporal_validation_v1`**;
+2. event/fixture-block uncertainty for `ΔMAE`;
+3. PIT-safe next-home-fixture substitution/cannibalization;
+4. forecast combinations;
+5. live-ticket residual uplift over the strongest structural/global forecast;
+6. 72–168h learned experiment at `N>=9`;
+7. club shrinkage/calibration only if it improves global generalization.
 
-## Immediate work
+## Important MAE framing
 
-Do not wait for future matches.
+Do not claim the current Global v2.1 champion is squared-error-only.
 
-1. finish long72 two-phase forecast materialization -> outcome scoring;
-2. implement forward/rolling evaluation utilities and persist fold boundaries;
-3. run MAE-native residual challengers against the strongest global benchmark;
-4. add uncertainty around `ΔMAE` using event/fixture as the resampling unit;
-5. materialize PIT-safe next-match / fixture-density features;
-6. run controlled feature-family ablations;
-7. test mean / median / fixed convex / MAE-optimized convex forecast combinations;
-8. measure live inventory only as incremental information over the structural champion;
-9. continue prospective accumulation and long168 coverage in the background.
+Current incumbents already use MAE-aligned objectives:
+
+- HistGradientBoosting: `loss="absolute_error"`;
+- XGBoost: `objective="reg:absoluteerror"`.
+
+The next tournament must therefore test genuinely different L1/median estimators rather than merely rename the same loss:
+
+- `QuantileRegressor(q=0.50)` / regularized linear median;
+- other compact robust median residual challengers;
+- current HistGBR/XGB absolute-error models as controls.
 
 ## Hard boundaries
 
@@ -110,12 +121,12 @@ Never:
 
 - use random snapshot splits as headline evidence;
 - train an earlier forecast with future-season/event information;
-- call already inspected historical holdouts unseen;
-- use realized weather or final-state context at an earlier PIT cutoff;
-- retune frozen packages while keeping the same package ID;
+- call inspected historical holdouts unseen;
+- use realized future context at an earlier PIT cutoff;
+- retune frozen packages under the same ID;
 - learn ensemble weights on the evaluation fold;
 - promote from historical uplift alone;
-- stop R&D merely because prospective evidence is still accumulating.
+- stop R&D because prospective evidence is still accumulating.
 
 ## Production boundary
 
@@ -125,4 +136,4 @@ Production remains unchanged unless explicitly reviewed and activated:
 
 ## One-line instruction
 
-> **Keep frozen packages immutable for evidence; in parallel build new MAE-first challengers using forward validation, MAE-aligned losses, richer PIT-safe context and forecast combinations over the strongest global structural model.**
+> **Long72 prospective evidence and temporal validation are operational. Continue immediately with the MAE-native challenger tournament; evidence collection remains automatic in parallel.**

@@ -25,29 +25,38 @@ Never stop challenger R&D only because prospective labels are still accumulating
 
 ## Validation rule
 
-For new historical/global challengers:
+Use `ml/temporal_validation_v1.py` for new challenger evaluation where applicable.
 
-- use season-blocked / rolling / expanding-origin views;
+Historical/global:
+
+- strict season/group expanding folds;
 - no future-season data in earlier training folds;
-- persist fold identities;
+- persist exact fold identities + SHA;
 - no random row split as headline evidence.
 
-For live-ticket challengers:
+Live-ticket:
 
 - event is the independent unit;
+- strict forward-event validation by kickoff;
+- tied kickoff events cannot train each other;
 - LOEO is diagnostic, not sufficient by itself;
-- add forward-event validation by kickoff;
 - no random snapshot split as headline evidence.
 
 ## MAE rule
 
-Every serious point-forecast tournament should include MAE-aligned candidates where practical:
+Current Global v2.1 incumbents are already MAE-aligned:
 
-- median/LAD;
-- q=0.50 quantile regression;
-- absolute-error / quantile tree boosting.
+- HistGradientBoosting `loss="absolute_error"`;
+- XGBoost `objective="reg:absoluteerror"`.
 
-Evaluate by out-of-sample MAE, not training loss.
+Therefore the next tournament must test genuinely different L1/median estimators rather than pretend this is an MSE -> MAE conversion.
+
+Current active challenger priority:
+
+1. regularized linear median / `QuantileRegressor(q=0.50)`;
+2. compact robust median residual alternatives;
+3. current HistGBR/XGB absolute-error incumbents as controls;
+4. select by time-respecting out-of-sample MAE.
 
 ## Current frozen packages
 
@@ -59,31 +68,46 @@ Do not mutate:
 
 Any material model/feature/weight/target change creates a new challenger/version.
 
+## Long72 prospective state
+
+True forecast-before-label evidence is operational.
+
+- main workflow: `d2 Long72 Forward Prospective v1`;
+- hourly forward-only materialization;
+- immutable predictions;
+- outcome-only append scoring;
+- first reproducible pre-outcome events: 10 and 16;
+- manual bootstrap rows retained for audit but excluded from official scorecard.
+
+Do not reconstruct a missing forecast after attendance is known.
+
 ## Current MAE R&D priority
 
 Continue from the first unfinished item:
 
-1. long72 forecast-before-label persistence + append-only scoring;
-2. canonical rolling/forward validation utilities;
-3. MAE-native residual tournament;
-4. block/event uncertainty for `ΔMAE`;
-5. PIT-safe next-fixture/cannibalization features;
-6. controlled context ablations;
-7. forecast combination tournament;
-8. live-ticket incremental uplift over the strongest structural/global forecast;
-9. 72–168h challenger once coverage reaches `N>=9`.
+1. **MAE-native residual tournament using temporal-validation-v1**;
+2. event/fixture-block uncertainty for `ΔMAE`;
+3. PIT-safe next-fixture/cannibalization features;
+4. controlled context ablations;
+5. forecast combination tournament;
+6. live-ticket incremental uplift over the strongest structural/global forecast;
+7. 72–168h challenger once coverage reaches `N>=9`.
 
 ## Current live runtime operational state
 
-Live Forecast Orchestrator v1 and automatic frozen-artifact Structural Prior materialization for **T-30 / T-14** are deployed and live. Do not rebuild those models during a normal session.
+Live Forecast Orchestrator v1 is deployed.
 
-Operational runtime next step remains:
+Current Structural Prior runtime registry shows executable active runtimes for all five checkpoint horizons:
 
-- freeze executable current-event Structural Prior runtimes for **T-7 / T-3 / T-1**;
-- until those runtimes are available, these horizons remain **fail-closed**;
-- there is no legacy fallback.
+- T-30;
+- T-14;
+- T-7;
+- T-3;
+- T-1.
 
-This operational task runs alongside the MAE R&D roadmap and must not be mistaken for model-selection work.
+The older T-7/T-3/T-1 fail-closed bootstrap note is obsolete. Do not rebuild these runtimes during a normal modelling session unless a dedicated runtime trigger requires it.
+
+This operational state is separate from research model selection.
 
 ## Product principle
 
