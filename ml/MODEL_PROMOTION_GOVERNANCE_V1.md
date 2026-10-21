@@ -1,29 +1,67 @@
 # Beyond Ticketing — Model Promotion Governance v1
 
-Status: **active**  
-Production impact: **none**
+Last updated: **2026-10-21**
+
+Status: **ACTIVE / NO AUTOMATIC PRODUCTION IMPACT**
 
 ## Purpose
 
-Promotion Governance sits above Model Evidence Scorecard v1 and separates four stages:
+Promotion Governance separates:
 
 1. research signal;
 2. evidence gate;
 3. frozen candidate package;
-4. human review.
+4. human review;
+5. explicit production activation.
 
-Crossing the evidence gate never changes production P50 automatically.
+Crossing an evidence gate never changes production P50 automatically.
+
+## Primary promotion metric
+
+Primary point-forecast criterion:
+
+- challenger prospective MAE must be lower than incumbent prospective MAE on the declared evaluation population.
+
+Required guardrails:
+
+- signed bias;
+- median AE;
+- P90 AE;
+- worst-event degradation;
+- event-improvement rate;
+- club/horizon stability;
+- reproducible PIT-safe lineage.
+
+Guardrails may block promotion. They do not silently replace MAE as the primary optimization objective.
+
+## Evidence classes
+
+Promotion logic must distinguish:
+
+- `historical_exposed_research`;
+- `historical_forward_fold`;
+- `delayed_label_precommitted`;
+- `true_post_freeze_prospective`.
+
+Historical uplift alone is not production promotion evidence.
+
+Previously inspected historical holdouts must never be reclassified as unseen.
 
 ## Package creation rule
 
-A frozen candidate package can be created only when all conditions are true at the same time:
+A production-review candidate may be frozen only when all conditions are true:
 
+- a challenger/package was frozen before the decisive future labels were used;
+- forecast states were materialized before label exposure where the data flow allows it;
 - `decision_status = promotable`;
 - `evidence_signal = positive`;
-- promotion progress is at least 100%;
+- the declared prospective evidence gate is met;
 - challenger MAE is lower than incumbent MAE;
 - uplift versus incumbent is positive;
-- if a bias-control MAE exists, challenger MAE must also beat bias control.
+- if a bias-control MAE exists, challenger also beats the bias control;
+- PIT/lineage/reproducibility checks pass;
+- tail/bias guardrails are acceptable;
+- no automatic activation path exists.
 
 The package starts as `ready_for_review`.
 
@@ -31,70 +69,84 @@ The package starts as `ready_for_review`.
 
 Each package freezes:
 
-- category and candidate;
+- category and challenger/package ID;
 - primary validation protocol;
-- research-prior weight;
-- validation event and club counts;
-- promotion gate counts;
-- incumbent, bias-control and challenger MAE;
-- uplift metrics;
-- scorecard decision reason and next action;
+- evidence class;
+- evaluation population and dates;
+- event and club counts;
+- incumbent/challenger MAE;
+- absolute and relative `ΔMAE`;
+- uncertainty interval for `ΔMAE` when available;
+- median AE and P90 AE;
+- bias;
+- event-improvement rate;
+- worst-event degradation;
+- per-club/per-horizon diagnostics;
+- code/data/package hashes;
 - full scorecard row;
-- source-specific supporting research evidence.
+- decision reason and next action.
 
-Frozen evidence is protected by a database trigger. Later refreshes cannot rewrite it.
+Frozen evidence is immutable. Later refreshes cannot rewrite already-reviewed evidence.
 
-A newer qualifying package may supersede an older `ready_for_review` package for the same category, but reviewed packages are retained for audit history.
+## Uncertainty rule
+
+For serious promotion decisions, a point estimate of `ΔMAE` is not enough by itself.
+
+Where sample size permits, report uncertainty using the event/fixture as the independent resampling unit.
+
+Do not bootstrap trajectory rows as if they were independent matches.
 
 ## Manual review
 
-Internal service-role-only function:
-
-`review_model_promotion_candidate_v1(package_id, decision, reviewer, note)`
+Review remains explicit and auditable.
 
 Allowed decisions:
 
-- `approved_for_promotion`
-- `rejected`
+- `approved_for_promotion`;
+- `rejected`.
 
-Every decision is also appended to `model_promotion_review_log_v1` with reviewer and timestamp.
-
-The browser dashboard is read-only and cannot submit review decisions.
+Approval still does not activate production automatically.
 
 ## No automatic activation
 
-`auto_activation_allowed` is constrained to `false` at database level.
+`auto_activation_allowed` remains false.
 
-Therefore even `approved_for_promotion` does not change forecasts or activate a model. A separate explicit production-activation process would be required later.
+A separate explicit production-activation step is required after review.
 
-## Current state — 2026-10-14
+## Current frozen evidence lanes
 
-No real candidate package exists yet.
+### Final24
 
-Nearest category: **Live Ticketing**
+`Frozen Pre-Live v2 + P2 reliability * frozen ridge-a10 delta`
 
-- evidence: positive;
-- promotion evidence: **8 / 20** independent completed matches;
-- progress: **40%**;
-- current status: `collecting`.
+Status: prospective evidence accumulation.
 
-## Automation
+### Long72
 
-Internal pg_cron job:
+`d2-long72-stage2-p2-observation-maturity-2026-10-21-v1`
 
-`model_promotion_governance_6h`
+Historical development uplift:
 
-Schedule: `42 */6 * * *`
+`3707.14 -> 3012.63`, `+18.73%`.
 
-The job refreshes the evidence scorecard and then checks whether any category qualifies for a frozen review package. It does not send ChatGPT notifications and does not alter production P50.
+Status: historical-exposed research package; genuine prospective evidence still required.
 
-## Verification
+### Historical/global model
 
-A transactional dry-run temporarily simulated Ticketing at the 20-event gate and verified:
+Global Model v2.1 has strong historical later-season evidence but does not become production merely from those historical results.
 
-- first governance refresh created exactly one package;
-- second refresh created no duplicate;
-- manual review wrote an audit record;
-- `auto_activation_allowed` remained false;
-- the transaction was rolled back;
-- production state remained at zero packages and zero review decisions.
+Future challengers must increasingly use rolling/forward historical evaluation and genuine future 2026/27 evidence.
+
+## R&D separation
+
+Promotion gates must never become a reason to stop model development.
+
+Frozen packages collect evidence in the background while new challenger versions are developed under `ml/MAE_RESEARCH_ROADMAP_V3.md`.
+
+A new challenger must not overwrite or retune the frozen candidate it is trying to beat.
+
+## Production boundary
+
+Production remains unchanged until explicit reviewed activation:
+
+`live_adjustment = 0`

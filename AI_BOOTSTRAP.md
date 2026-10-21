@@ -6,156 +6,123 @@ Last updated: **2026-10-21**
 
 Read in this order:
 
-1. `ml/PROGRESS_TRACKING.md`;
-2. `ml/CURRENT_MODEL.md`;
-3. `ml/results/D2_LONG72_STAGE2_RELIABILITY_GATING_V1_2026-10-21.md`;
-4. `ml/artifacts/d2_long72_stage2_p2_v1/manifest.json`;
-5. `ml/results/D2_LONG72_STAGE1_MODEL_TOURNAMENT_V1_2026-10-21.md`;
-6. `ml/results/D2_LONG72_ANCHOR_CONTRACT_V1_2026-10-21.md`;
-7. `ml/results/D2_LONG_HORIZON_COVERAGE_AUDIT_V1_2026-10-21.md`;
-8. `ml/results/PRE_LIVE_V3_HISTORICAL_FREEZE_V1_2026-10-21.md`;
-9. `ml/artifacts/pre_live_v3_historical_candidate_v1/manifest.json`;
-10. `ml/artifacts/pre_live_v2_historical_candidate_v1/manifest.json`;
-11. `ml/D2_PROSPECTIVE_ACCUMULATION_V1.md`;
-12. `ml/DEMAND_FORECAST_DEVELOPMENT_PLAN_V2.md`;
-13. `ml/MODEL_ACCURACY_DEVELOPMENT_INSTRUCTIONS_V2.md`;
-14. `ml/LIVE_DEMAND_ENGINE_V1_PLAN.md`;
-15. `ml/MODEL_PROMOTION_GOVERNANCE_V1.md`.
+1. `ml/MAE_RESEARCH_ROADMAP_V3.md`;
+2. `ml/PROGRESS_TRACKING.md`;
+3. `ml/CURRENT_MODEL.md`;
+4. `ml/CORE_PRODUCT_STATUS.md`;
+5. `ml/MODEL_ACCURACY_DEVELOPMENT_INSTRUCTIONS_V2.md`;
+6. `ml/LIVE_DEMAND_ENGINE_V1_PLAN.md`;
+7. `ml/MODEL_PROMOTION_GOVERNANCE_V1.md`;
+8. only then open detailed result/manifests needed for the current task.
 
-## Immediate state
+Do not rebuild frozen historical benchmarks merely to recover context.
 
-### Track A — frozen final24 validation
+## North star
 
-Keep unchanged:
+> **Minimize true out-of-sample attendance-forecast MAE at decision-relevant horizons, using honest PIT-safe and reproducible evidence.**
+
+Model complexity is secondary. Predictive information and future MAE are primary.
+
+## Current architecture
+
+### Global historical / structural core
+
+Beyond already has a global multi-club model:
+
+- 1,530 Ekstraklasa matches / five complete seasons;
+- 7,650 PIT snapshots;
+- T-30/T-14/T-7/T-3/T-1;
+- Global Model v2.1 residual architecture: club-history baseline + learned global residual correction.
+
+Historical 2024/25 and 2025/26 results have already influenced research. They remain useful exposed evidence but are not unseen for new challengers.
+
+### Frozen final24 live package
 
 `Frozen Pre-Live v2 + P2 reliability * frozen ridge-a10 delta`
 
-### Track B — frozen research packages
+Do not mutate it from new outcomes.
 
-Pre-Live v3:
-
-`pre-live-v3-historical-candidate-2026-10-21-v1`
-
-Early-live long72 package:
+### Frozen long72 live package
 
 `d2-long72-stage2-p2-observation-maturity-2026-10-21-v1`
 
-Track-B long72 package is research-only and not production.
+Scope: `24 < hours_to_kickoff <= 72`
 
-## Long72 exact package
+Architecture:
 
-Scope:
+- frozen T-3 anchor;
+- `inventory-linear-extrapolation` expert;
+- correction cap `±0.10` occupancy;
+- `P2-observation-maturity` reliability.
 
-`24 < hours_to_kickoff <= 72`
-
-Anchor:
-
-Frozen T-3 checkpoint hold.
-
-Stage-1 expert:
-
-`inventory-linear-extrapolation`
-
-Correction cap:
-
-`±0.10 occupancy`
-
-Stage-2 policy:
-
-`P2-observation-maturity`
-
-Reliability:
-
-- observation #1 `0.25`;
-- observation #2 `0.60`;
-- observation #3+ `1.00`;
-- `60<h<=72` time weight `0.75`;
-- `48<h<=60` time weight `0.90`;
-- `24<h<=48` time weight `1.00`;
-- final reliability = minimum of observation/time weights.
-
-Frozen manifest:
-
-`ml/artifacts/d2_long72_stage2_p2_v1/manifest.json`
-
-## Long72 development evidence
-
-Frozen data:
-
-- 14 total events / 130 rows in 0–72h;
-- model-selection slice 24–72h: 80 rows / 13 events;
-- 48–72h: 35 rows / 10 events.
-
-Selected package:
+Historical development:
 
 - anchor MAE `3707.14`;
-- P2 MAE `3012.63`;
-- improvement `+694.51 / +18.73%`;
-- 24–48h improvement `+954.58 / +25.75%`;
-- 48–72h improvement `+664.71 / +14.47%`;
-- worst degradation `1488.34`;
-- bias `+917.05`.
+- package MAE `3012.63`;
+- uplift `+694.51 / +18.73%`.
 
-Historical exposed-subset diagnostics:
+Do not retune this package on the same development events.
 
-- original exposed subset `+103.55` MAE improvement;
-- later exposed subset `+1640.04`.
+## Two lanes — always work in parallel
 
-All of this is exposed development evidence, not unseen prospective validation.
+### Lane A — evidence
 
-## Why P2, not P4
+Continue:
 
-`P4-data-quality` has lower historical tail degradation but slightly worse overall MAE.
+- final24 prospective scoring;
+- long72 forecast persistence before label exposure;
+- append-only outcome join;
+- MAE / band / bias / tail scorecards;
+- explicit evidence-class labeling.
 
-The selector was frozen before results and ranks eligible Stage-2 policies by overall event-balanced MAE first. Therefore P2 is the selected package; do not switch to P4 post hoc.
+Lane A validates existing packages. It does not block new model work.
 
-## Immediate next work
+### Lane B — MAE R&D
 
-> **Stop tuning the frozen long72 package on the same historical events. Build/run append-only prospective scoring for future completed events with valid 24–72h trajectories.**
+Current priority order:
 
-For each new eligible event, preserve and score:
+1. canonical rolling / forward validation;
+2. MAE-native loss / q=0.5 challenger tournament;
+3. event/fixture-block uncertainty for `ΔMAE`;
+4. new PIT-safe context — especially next-home-fixture substitution/cannibalization;
+5. forecast combinations from materially different information sources;
+6. live-ticket residual uplift over the strongest structural/global forecast;
+7. 72–168h learned experiment once `N>=9` independent events;
+8. club-specific shrinkage/calibration only if it improves global generalization.
 
-1. frozen T-3 anchor;
-2. raw inventory extrapolation;
-3. frozen P2 long72 forecast;
-4. event/as-of/source lineage;
-5. outcome only after it becomes available.
+## Immediate work
 
-Do not mutate the package from these outcomes.
+Do not wait for future matches.
 
-Keep evidence classes explicit. A future event observed after the long72 freeze can become prospective evidence only if the forecast inputs/package were frozen before the label was used.
+1. finish long72 two-phase forecast materialization -> outcome scoring;
+2. implement forward/rolling evaluation utilities and persist fold boundaries;
+3. run MAE-native residual challengers against the strongest global benchmark;
+4. add uncertainty around `ΔMAE` using event/fixture as the resampling unit;
+5. materialize PIT-safe next-match / fixture-density features;
+6. run controlled feature-family ablations;
+7. test mean / median / fixed convex / MAE-optimized convex forecast combinations;
+8. measure live inventory only as incremental information over the structural champion;
+9. continue prospective accumulation and long168 coverage in the background.
 
-## Parallel work allowed now
+## Hard boundaries
 
-Do not block other R&D on prospective event count. Continue:
+Never:
 
-- prospective forecast persistence/scoring infrastructure;
-- source and data-quality hardening;
-- PIT-safe context ingestion;
-- dashboard/research observability;
-- 72–168h coverage accumulation;
-- reproducibility / CI / lineage improvements.
-
-## 72–168h boundary
-
-Keep `72–168h` diagnostic-only until independent-event coverage reaches the predeclared `N>=9` floor.
-
-Do not reduce the threshold to fit the current sample.
-
-## Final24 equivalence reminder
-
-Pre-Live v3 T-1 equals v2 T-1, so final24 d2 target remains exactly equivalent. Do not create a cosmetic v3 final24 retrain.
+- use random snapshot splits as headline evidence;
+- train an earlier forecast with future-season/event information;
+- call already inspected historical holdouts unseen;
+- use realized weather or final-state context at an earlier PIT cutoff;
+- retune frozen packages while keeping the same package ID;
+- learn ensemble weights on the evaluation fold;
+- promote from historical uplift alone;
+- stop R&D merely because prospective evidence is still accumulating.
 
 ## Production boundary
 
-Always:
+Production remains unchanged unless explicitly reviewed and activated:
 
-- Track-A v2/Ridge/P2 unchanged;
-- long72 package research-only;
-- Pre-Live v3 research-only;
-- production unchanged;
-- `live_adjustment = 0`.
+`live_adjustment = 0`
 
 ## One-line instruction
 
-> **The 24–72h package is frozen. Active work is prospective append-only scoring plus non-blocking data/context/observability R&D, not more same-sample tuning. Production remains unchanged.**
+> **Keep frozen packages immutable for evidence; in parallel build new MAE-first challengers using forward validation, MAE-aligned losses, richer PIT-safe context and forecast combinations over the strongest global structural model.**

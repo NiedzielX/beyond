@@ -2,7 +2,9 @@
 
 Last updated: **2026-10-21**
 
-Status: **FINAL24 TRACK-A FROZEN + LONG72 TRACK-B FROZEN RESEARCH PACKAGE + PROSPECTIVE SCORING NEXT**
+Status: **FROZEN LIVE EVIDENCE LANES + PARALLEL MAE-FIRST CHALLENGER R&D**
+
+Canonical strategy: `ml/MAE_RESEARCH_ROADMAP_V3.md`
 
 ## Production boundary
 
@@ -10,17 +12,17 @@ Production remains:
 
 `live_adjustment = 0`
 
-No package below is production activation.
+Nothing in this document activates production automatically.
 
 ---
 
-# Track A — frozen final24 validation
+# 1. Track A — frozen final24 evidence lane
 
 Pre-Live anchor:
 
 `pre-live-v2-historical-candidate-2026-10-18-v1`
 
-Frozen final24 live package:
+Frozen final24 package:
 
 `d2-stage2-p2-observation-maturity-2026-10-19-v1`
 
@@ -28,180 +30,32 @@ Architecture:
 
 `final_forecast(t) = frozen_pre_live_v2(t) + P2_reliability(t) * ridge_a10_delta(t)`
 
-Track A remains immutable while delayed-label and true post-freeze evidence accumulate.
+Track A is immutable while delayed-label and genuine post-freeze evidence accumulate.
+
+Pre-Live v3 T-1 is exactly equivalent to v2 T-1 on the frozen replay, so no cosmetic retrain is required.
 
 ---
 
-# Track B — Pre-Live v3 research anchor
-
-Freeze:
-
-`pre-live-v3-historical-candidate-2026-10-21-v1`
-
-Manifest:
-
-`ml/artifacts/pre_live_v3_historical_candidate_v1/manifest.json`
-
-Only T-30 and T-7 differ from v2. T-3 and T-1 remain identical to v2.
-
-Historical package improvement:
-
-`1934.04 -> 1924.64` mean 20-cell MAE, `+0.49%`.
-
-V3 remains research-only.
-
----
-
-# Final24 v2/v3 equivalence — CLOSED
-
-Result:
-
-`ml/results/D2_V3_STAGE0_ANCHOR_EQUIVALENCE_V1_2026-10-21.md`
-
-Decision:
-
-`V3_FINAL24_ANCHOR_EXACTLY_EQUIVALENT_TO_V2`
-
-On the frozen 9-event / 30-row final24 replay:
-
-- maximum anchor-seat delta: `0.0`;
-- residual target unchanged.
-
-Therefore final24 Ridge/P2 is not retrained or relabeled for v3.
-
----
-
-# Long-horizon live data contract
-
-Additive export:
-
-`v8-long168 -> export_d2_long_horizon_168_rows_v1`
-
-The existing `v7-final24` route remains unchanged.
-
-Coverage audit:
-
-- 14 eligible labeled events;
-- 240 PIT-safe rows in final 168h;
-- 13 events beyond 24h;
-- 10 beyond 48h;
-- 8 beyond 72h.
-
-Inherited independent-event floor:
-
-`N = 9`
-
-Decision:
-
-- learned live window: final **72h**;
-- 72–168h: diagnostic-only until `N>=9`.
-
----
-
-# Frozen long72 data + anchor contract
-
-Result:
-
-`ml/results/D2_LONG72_ANCHOR_CONTRACT_V1_2026-10-21.md`
-
-Artifact ID:
-
-`12365352293`
-
-Dataset SHA256:
-
-`2af6209484e7120f08541d82bc7bcd064b0f9ea46dd59bb5e7d2746cb35a214c`
-
-Dataset:
-
-- 14 events / 130 rows in 0–72h;
-- 24–72h modeling slice: 80 rows / 13 events;
-- 48–72h: 35 rows / 10 events.
-
-Checkpoint hold:
-
-- `0<h<=24` -> T-1;
-- `24<h<=72` -> T-3;
-- future checkpoint use forbidden.
-
-Same-season b2 replay is horizon-specific. Historical home matches without a reconstructable checkpoint forecast remain explicitly unforecastable rather than receiving invented sporting state.
-
----
-
-# Long72 Stage 1 — early-live expert
-
-Result:
-
-`ml/results/D2_LONG72_STAGE1_MODEL_TOURNAMENT_V1_2026-10-21.md`
-
-Scope:
-
-`24<h<=72`
-
-Validation:
-
-- event-level LOEO;
-- event-balanced;
-- no random snapshot split;
-- occupancy correction cap `±0.10`.
-
-Research lead:
-
-`inventory-linear-extrapolation`
-
-Development:
-
-- anchor MAE `3707.14`;
-- raw expert MAE `3254.68`;
-- uplift `+452.46 / +12.21%`.
-
-Raw expert was not frozen alone because of high bias, tail degradation and strong temporal-subset heterogeneity.
-
----
-
-# Long72 Stage 2 — frozen research package
-
-Package ID:
-
-`d2-long72-stage2-p2-observation-maturity-2026-10-21-v1`
-
-Manifest:
-
-`ml/artifacts/d2_long72_stage2_p2_v1/manifest.json`
-
-Result:
-
-`ml/results/D2_LONG72_STAGE2_RELIABILITY_GATING_V1_2026-10-21.md`
-
-Stage-2 run:
-
-`39644319080`
-
-Artifact ID:
-
-`12366826274`
+# 2. Frozen long72 evidence lane
 
 Package:
 
-1. scope `24<h<=72`;
-2. T-3 checkpoint anchor;
-3. Stage-1 expert `inventory-linear-extrapolation`;
-4. raw correction cap `±0.10` occupancy;
-5. Stage-2 reliability `P2-observation-maturity`.
+`d2-long72-stage2-p2-observation-maturity-2026-10-21-v1`
 
-P2 reliability:
+Scope:
 
-- observation #1 -> `0.25`;
-- observation #2 -> `0.60`;
-- observation #3+ -> `1.00`;
-- `60<h<=72` time weight `0.75`;
-- `48<h<=60` time weight `0.90`;
-- `24<h<=48` time weight `1.00`;
-- applied reliability = minimum of observation and time weights.
+`24 < hours_to_kickoff <= 72`
 
-Development metrics:
+Architecture:
 
-- overall anchor MAE `3707.14`;
+1. frozen T-3 checkpoint anchor;
+2. `inventory-linear-extrapolation` expert;
+3. raw correction cap `±0.10` occupancy;
+4. `P2-observation-maturity` reliability.
+
+Historical development metrics:
+
+- anchor MAE `3707.14`;
 - package MAE `3012.63`;
 - uplift `+694.51 / +18.73%`;
 - 24–48h uplift `+954.58 / +25.75%`;
@@ -210,54 +64,131 @@ Development metrics:
 - worst event degradation `1488.34`;
 - bias `+917.05`.
 
-Historical exposed-subset diagnostics:
-
-- original exposed subset: `+103.55` MAE improvement;
-- later exposed subset: `+1640.04`.
-
-P2 passed all predeclared Stage-2 gates.
-
-`P4-data-quality` remains a lower-tail-risk alternative, but is not substituted post hoc because the frozen selector ranked eligible policies by overall MAE first.
+These remain historical exposed research metrics.
 
 ---
 
-# Active next — append-only prospective long72 scoring
+# 3. Long72 prospective implementation contract
 
-Do not tune the frozen long72 package again on the same historical events.
+Use two phases.
 
-For each newly completed eligible event with valid 24–72h PIT trajectory, preserve and score:
+## Phase A — forecast materialization before label
 
-1. exact frozen T-3 anchor;
-2. raw inventory extrapolation;
-3. frozen P2 reliability and forecast;
-4. source snapshot / as-of lineage;
-5. final attendance only when available;
-6. evidence class and whether forecast state existed before label exposure.
+For each newly eligible event / as-of point, persist immutably:
 
-Report:
+- event ID;
+- kickoff;
+- `as_of_at`;
+- frozen T-3 anchor;
+- raw inventory extrapolation;
+- P2 observation/time reliability;
+- frozen P2 forecast;
+- source snapshot identity;
+- feature/data lineage;
+- package ID;
+- code/model/data hashes;
+- materialization timestamp.
 
-- event-balanced MAE;
-- 24–48h MAE;
-- 48–72h MAE;
+The materialized row must not depend on final attendance.
+
+## Phase B — outcome join after label
+
+After final attendance exists:
+
+- join it to the previously persisted forecast;
+- compute absolute and signed error;
+- append scorecard evidence;
+- do not recompute the forecast.
+
+This distinction is mandatory for genuine post-freeze prospective evidence.
+
+---
+
+# 4. Long72 scorecard
+
+Track:
+
+- event-balanced MAE 24–72h;
+- anchor MAE;
+- absolute and relative uplift;
+- 24–48h MAE/uplift;
+- 48–72h MAE/uplift;
 - bias;
+- median AE;
+- P90 AE;
 - event improvement rate;
-- worst event degradation;
-- revision magnitude.
+- worst-event degradation;
+- independent event count;
+- evidence class.
 
-Do not mutate the package from prospective outcomes.
-
----
-
-# 72–168h boundary
-
-Keep 72–168h diagnostic-only until independent-event coverage reaches:
-
-`N >= 9`
-
-Only then define a new PIT-safe anchor transition involving T-7 and create a separate model/package version.
+Keep historical-exposed and true prospective evidence separate.
 
 ---
 
-# Immediate instruction
+# 5. Live R&D does not wait for evidence accumulation
 
-> **Keep final24 v2/Ridge/P2 frozen in Track A. Keep Pre-Live v3 and the long72 P2 package frozen as research assets. Active work moves to append-only prospective scoring of long72; production remains unchanged.**
+Do not retune frozen Track A or long72 packages.
+
+Instead create new challenger IDs and develop in parallel.
+
+Priority live-R&D sequence:
+
+1. forward-event validation ordered by kickoff;
+2. MAE-native residual objectives;
+3. structural + live residual architecture;
+4. forecast combination between structural/context/live sources;
+5. reliability/shrinkage selected inside development folds;
+6. event-block uncertainty around `ΔMAE`.
+
+The relevant live-ticket question is:
+
+> **Does PIT live inventory lower MAE after the strongest structural/global forecast has already explained historical demand?**
+
+Do not use an obsolete weak baseline as the main benchmark.
+
+---
+
+# 6. 72–168h boundary
+
+Long-horizon export remains additive and PIT-safe.
+
+Last audited coverage above 72h:
+
+`8` independent events.
+
+Predeclared research-start floor:
+
+`N>=9`
+
+At the threshold:
+
+1. freeze exact event/as-of identities;
+2. define the PIT-safe T-7 anchor transition;
+3. open a separate challenger cycle;
+4. start with simple / strongly regularized and MAE-native candidates;
+5. use event-safe plus forward-event validation;
+6. do not modify long72 P2.
+
+`N=9` opens research only; it does not establish production readiness.
+
+---
+
+# 7. Production promotion
+
+Neither historical LOEO uplift nor a new R&D champion automatically changes production.
+
+Promotion requires:
+
+- genuine future evidence;
+- lower prospective MAE;
+- acceptable bias/tail behavior;
+- reproducible frozen lineage;
+- explicit reviewed activation.
+
+Until then:
+
+`live_adjustment = 0`
+
+## Immediate instruction
+
+> **Finish immutable long72 two-phase prospective scoring, but do not wait on labels. In parallel develop new live challengers as MAE-first residual/ensemble corrections over the strongest structural/global forecast.**
