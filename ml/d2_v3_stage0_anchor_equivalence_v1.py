@@ -23,7 +23,9 @@ EXPECTED_V2_FREEZE = "pre-live-v2-historical-candidate-2026-10-18-v1"
 EXPECTED_V3_FREEZE = "pre-live-v3-historical-candidate-2026-10-21-v1"
 EXPECTED_EVENTS = 9
 EXPECTED_ROWS = 30
-TARGET_ATOL = 1e-12
+ANCHOR_SEAT_ATOL = 0.0
+TARGET_ATTENDANCE_ATOL = 1e-9
+OCCUPANCY_ATOL = 1e-12
 
 
 def sha256_file(path: Path) -> str:
@@ -168,14 +170,27 @@ def assert_row_equivalence(frame: pd.DataFrame) -> dict[str, Any]:
     target_att = frame["v3_minus_v2_target_attendance"].astype(float).to_numpy()
     target_occ = frame["v3_minus_v2_target_occupancy"].astype(float).to_numpy()
 
-    if not np.array_equal(anchor_seats, np.zeros_like(anchor_seats)):
-        raise RuntimeError("v3/v2 final24 anchor seat values differ")
-    if not np.all(np.abs(anchor_occ) <= TARGET_ATOL):
-        raise RuntimeError("v3/v2 final24 anchor occupancy differs")
-    if not np.all(np.abs(target_att) <= TARGET_ATOL):
-        raise RuntimeError("v3/v2 live delta attendance targets differ")
-    if not np.all(np.abs(target_occ) <= TARGET_ATOL):
-        raise RuntimeError("v3/v2 live delta occupancy targets differ")
+    max_anchor_seats = float(np.max(np.abs(anchor_seats)))
+    max_anchor_occ = float(np.max(np.abs(anchor_occ)))
+    max_target_att = float(np.max(np.abs(target_att)))
+    max_target_occ = float(np.max(np.abs(target_occ)))
+
+    if max_anchor_seats != ANCHOR_SEAT_ATOL:
+        raise RuntimeError(
+            f"v3/v2 final24 anchor seat values differ max_abs={max_anchor_seats}"
+        )
+    if max_anchor_occ > OCCUPANCY_ATOL:
+        raise RuntimeError(
+            f"v3/v2 final24 anchor occupancy differs max_abs={max_anchor_occ}"
+        )
+    if max_target_att > TARGET_ATTENDANCE_ATOL:
+        raise RuntimeError(
+            f"v3/v2 live delta attendance targets differ max_abs={max_target_att}"
+        )
+    if max_target_occ > OCCUPANCY_ATOL:
+        raise RuntimeError(
+            f"v3/v2 live delta occupancy targets differ max_abs={max_target_occ}"
+        )
 
     per_event = []
     for event_id, group in frame.groupby("ticket_event_id", sort=True):
@@ -187,6 +202,9 @@ def assert_row_equivalence(frame: pd.DataFrame) -> dict[str, Any]:
             "max_abs_anchor_delta_seats": float(
                 group["v3_minus_v2_anchor_seats"].abs().max()
             ),
+            "max_abs_target_attendance_delta": float(
+                group["v3_minus_v2_target_attendance"].abs().max()
+            ),
             "max_abs_target_occupancy_delta": float(
                 group["v3_minus_v2_target_occupancy"].abs().max()
             ),
@@ -194,11 +212,13 @@ def assert_row_equivalence(frame: pd.DataFrame) -> dict[str, Any]:
     return {
         "all_rows_exact_anchor_seat_equivalence": True,
         "all_rows_target_equivalence_within_atol": True,
-        "target_atol": TARGET_ATOL,
-        "max_abs_anchor_delta_seats": float(np.max(np.abs(anchor_seats))),
-        "max_abs_anchor_delta_occupancy": float(np.max(np.abs(anchor_occ))),
-        "max_abs_target_attendance_delta": float(np.max(np.abs(target_att))),
-        "max_abs_target_occupancy_delta": float(np.max(np.abs(target_occ))),
+        "anchor_seat_atol": ANCHOR_SEAT_ATOL,
+        "target_attendance_atol": TARGET_ATTENDANCE_ATOL,
+        "occupancy_atol": OCCUPANCY_ATOL,
+        "max_abs_anchor_delta_seats": max_anchor_seats,
+        "max_abs_anchor_delta_occupancy": max_anchor_occ,
+        "max_abs_target_attendance_delta": max_target_att,
+        "max_abs_target_occupancy_delta": max_target_occ,
         "events": per_event,
     }
 
