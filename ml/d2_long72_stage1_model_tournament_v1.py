@@ -33,7 +33,7 @@ from sklearn.preprocessing import StandardScaler
 
 EXPERIMENT = "d2-long72-stage1-model-tournament-v1"
 STAGE = "d2-long72-stage1-early-live-loeo"
-EXPECTED_FULL_DATASET_SHA256 = "2af6209484e7120f08541d82bc7bcd064b0f9ea46dd59bb5e7d2746cb35a214c"
+EXPECTED_FULL_DATASET_SHA256 = "2af62094eec57aba3c3e8c96ed33d06cf611f9cd60b690d72e2deedbdf63ce17"
 EXPECTED_FULL_EVENT_COUNT = 14
 EXPECTED_FULL_ROW_COUNT = 130
 EXPECTED_EARLY_ROW_COUNT = 80
@@ -235,7 +235,7 @@ def fit_predict_learned(
     else:
         raise KeyError(spec.family)
 
-    with warnings.catch_warnings(record=True) as caught:
+    with warnings.catch_warnings(record=True):
         warnings.simplefilter("always", ConvergenceWarning)
         model.fit(train[columns], y, model__sample_weight=weights)
     return np.asarray(model.predict(test[columns]), dtype=float)
@@ -257,8 +257,7 @@ def inventory_linear_delta(test: pd.DataFrame) -> np.ndarray:
         test["velocity_since_previous"], errors="coerce"
     ).to_numpy(dtype=float)
     velocity = np.where(
-        np.isfinite(velocity_6h),
-        velocity_6h,
+        np.isfinite(velocity_6h), velocity_6h,
         np.where(np.isfinite(velocity_24h), velocity_24h, velocity_previous),
     )
     velocity = np.where(np.isfinite(velocity), velocity, 0.0)
@@ -299,16 +298,9 @@ def loeo_predictions(frame: pd.DataFrame, spec: CandidateSpec) -> pd.DataFrame:
             raw_delta = fit_predict_learned(spec, train, test)
         forecast, governed_delta = governed_forecast(test, raw_delta)
         out = test[[
-            "ticket_event_id",
-            "club_slug",
-            "home_team",
-            "away_team",
-            "kickoff_at",
-            "as_of_at",
-            "hours_to_kickoff",
-            "actual_attendance",
-            "stadium_capacity",
-            "anchor_p50",
+            "ticket_event_id", "club_slug", "home_team", "away_team",
+            "kickoff_at", "as_of_at", "hours_to_kickoff", "actual_attendance",
+            "stadium_capacity", "anchor_p50",
         ]].copy()
         out["candidate_id"] = spec.id
         out["raw_predicted_delta_occupancy"] = raw_delta
@@ -366,16 +358,12 @@ def band_score(predictions: pd.DataFrame, lower: float, upper: float) -> dict[st
         "event_balanced_mae": candidate_mae,
         "anchor_event_balanced_mae": anchor_mae,
         "mae_improvement": anchor_mae - candidate_mae,
-        "relative_mae_improvement": (
-            (anchor_mae - candidate_mae) / anchor_mae if anchor_mae > 0 else 0.0
-        ),
+        "relative_mae_improvement": ((anchor_mae - candidate_mae) / anchor_mae if anchor_mae > 0 else 0.0),
         "event_improvement_rate": float(np.mean(improvement > 0.0)),
         "worst_event_degradation": float(max(0.0, degradation.max())),
         "best_event_improvement": float(max(0.0, improvement.max())),
         "event_balanced_bias": float(per_event["bias"].mean()),
-        "event_balanced_mean_abs_revision_seats": float(
-            per_event["mean_abs_revision"].mean()
-        ),
+        "event_balanced_mean_abs_revision_seats": float(per_event["mean_abs_revision"].mean()),
         "row_median_absolute_error": float(rows["absolute_error"].median()),
         "row_p90_absolute_error": float(rows["absolute_error"].quantile(0.90)),
     }
@@ -408,9 +396,7 @@ def candidate_scorecard(predictions: pd.DataFrame) -> dict[str, Any]:
         "overall_24_72h": overall,
         "band_24_48h": band_24_48,
         "band_48_72h": band_48_72,
-        "original_stage1_exposed_subset": subgroup_score(
-            predictions, ORIGINAL_STAGE1_EVENT_IDS
-        ),
+        "original_stage1_exposed_subset": subgroup_score(predictions, ORIGINAL_STAGE1_EVENT_IDS),
         "later_exposed_subset": subgroup_score(predictions, LATER_EXPOSED_EVENT_IDS),
     }
 
