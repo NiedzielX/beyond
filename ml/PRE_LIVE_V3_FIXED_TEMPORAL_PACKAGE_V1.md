@@ -2,19 +2,35 @@
 
 Last updated: **2026-10-21**
 
-Status: **ACTIVE FIXED-CONFIG PACKAGE AUDIT**
+Status: **COMPLETED — V3_FIXED_PACKAGE_PASS**
 
-Parent result:
+Canonical result:
 
-`ml/results/PRE_LIVE_V3_REGIME_REVALIDATION_V1_2026-10-21.md`
+`ml/results/PRE_LIVE_V3_FIXED_TEMPORAL_PACKAGE_V1_2026-10-21.md`
+
+Workflow run:
+
+`39628607689`
+
+Artifact ID:
+
+`12358477269`
+
+Result JSON SHA256:
+
+`f7c665b861cbd9cc7a7d8fd859c8b97a174c65bdad8888b14dee2dc7b20ebf01`
+
+Artifact ZIP SHA256:
+
+`c190ffe229cb0eaedf65473338dad14ee83bb8768d335ce42d66ff7b3f1b8f02`
 
 ## Objective
 
 Audit the exact development-selected Pre-Live v3 package against full Frozen Pre-Live v2 across all four rolling seasons.
 
-There is **no tuning or selection in this audit**.
+There was **no tuning or selection in this audit**.
 
-## Exact package under audit
+## Exact package
 
 ### T-30 — changed
 
@@ -38,58 +54,61 @@ Current-season regime:
 
 ### T-14 / T-3 / T-1 — unchanged
 
-Use exact Frozen Pre-Live v2 horizon package.
+Exact Frozen Pre-Live v2 horizon package.
 
-This makes the candidate a mixed-horizon v3 package rather than an all-horizon rewrite.
+## Rolling result
 
-## Rolling folds
+### T-30
 
-1. train `2021/22` -> test `2022/23`;
-2. train `2021/22 + 2022/23` -> test `2023/24`;
-3. train through `2023/24` -> test `2024/25`;
-4. train through `2024/25` -> test `2025/26`.
+MAE improvement vs Frozen v2:
 
-Frozen Pre-Live v2 is hard-reproduced at tolerance `1e-9` in all 20 horizon-season cells.
+`+5.98 / +33.50 / +54.93 / +29.74`
 
-The T-30/T-7 exposed-reference MAEs from the parent v3 run are also hard reproduction gates.
+Decision:
 
-## Metrics
+`V3_HORIZON_FIXED_TEMPORAL_PASS`
 
-For every horizon/fold persist:
+### T-7
 
-- Frozen-v2 MAE / median AE / p90 AE / bias;
-- v3 candidate MAE / median AE / p90 AE / bias;
-- MAE improvement;
-- event improvement rate;
-- worst-event degradation;
-- paired bootstrap P(improvement > 0) and 95% interval;
-- harmful-regression counts >500 / >1000 / >2000 / >3000 seats.
+MAE improvement vs Frozen v2:
 
-Also persist full-package season and 20-cell aggregate summaries.
+`+10.92 / +11.18 / +13.71 / +27.88`
 
-## Decision gates
+Decision:
 
-The package passes only if:
+`V3_HORIZON_FIXED_TEMPORAL_PASS`
 
-1. T-30 improves Frozen v2 in all four rolling folds;
-2. T-7 improves Frozen v2 in all four rolling folds;
-3. T-14/T-3/T-1 reproduce Frozen v2 exactly;
-4. package mean MAE improves Frozen v2 across the full 20-cell matrix;
-5. no source/model/policy contract changed from the parent selection.
+### T-14 / T-3 / T-1
 
-Possible decisions:
+All 12 unchanged horizon-season cells reproduced Frozen v2 exactly.
 
-- `V3_FIXED_PACKAGE_PASS`;
-- `V3_FIXED_PACKAGE_REJECT`.
+Decision:
 
-A pass permits creation of a new **historical research freeze candidate**. It does not activate production and it does not move the existing v2/Ridge/P2 Track-A package.
+`UNCHANGED_FROZEN_V2_REPRODUCED`
 
-## Production boundary
+## Full package
 
-Always:
+20-cell mean MAE:
 
-- Frozen Pre-Live v2 remains unchanged as Track-A benchmark;
-- current frozen d2 remains tied to v2;
-- historical c2 remains `NO_CONTEXT_ALL_HORIZONS`;
-- `production_change = false`;
-- production `live_adjustment = 0`.
+- Frozen Pre-Live v2: `1934.04`;
+- v3 candidate: `1924.64`;
+- mean improvement: `+9.39`;
+- relative mean improvement: `+0.49%`.
+
+Decision:
+
+`V3_FIXED_PACKAGE_PASS`
+
+The effect is modest, but both changed horizons improve Frozen v2 in all four rolling folds under a fixed contract.
+
+## Next step
+
+Create and seal a new immutable historical research freeze candidate:
+
+`pre-live-v3-historical-candidate-2026-10-21-v1`
+
+The freeze must persist exact contracts, expected rolling MAEs, runtime/input/source hashes and parent evidence lineage.
+
+A v3 freeze remains research-only. Production and the current Track-A v2/Ridge/P2 package remain unchanged.
+
+If live-model work proceeds against v3, it must use a new d2 version. Frozen `ridge-a10` / P2 cannot be silently reused against a changed anchor.
