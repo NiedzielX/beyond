@@ -50,11 +50,25 @@ For every frozen final-24h row persist:
 - v3 target live delta attendance/occupancy;
 - target deltas.
 
+## Numerical equivalence rules
+
+The model-level anchor gate is strict:
+
+- anchor seat delta must be **exactly `0.0`** on all 30 rows.
+
+Derived values pass only within serialization-level tolerance after the Stage-0 CSV round-trip:
+
+- target-attendance delta: `<= 1e-9` seats;
+- occupancy-share delta: `<= 1e-12`;
+- anchor occupancy-share delta: `<= 1e-12`.
+
+These tolerances cover only floating-point text round-trip noise. They do not permit any non-zero anchor-seat change.
+
 ## Decisions
 
 ### `V3_FINAL24_ANCHOR_EXACTLY_EQUIVALENT_TO_V2`
 
-Requires all 30 rows to have exact zero anchor-seat delta and target difference within `1e-12`, after all lineage gates pass.
+Requires all lineage gates, exact zero anchor-seat delta on all 30 rows, and derived target differences within the declared serialization tolerances.
 
 Then:
 
@@ -70,7 +84,7 @@ Otherwise test a materially different final-24h target/reliability/feature hypot
 
 ### `V3_FINAL24_ANCHOR_DIFFERS_FROM_V2`
 
-If any lineage or row-level equality gate fails:
+If any lineage or model-level anchor equality gate fails:
 
 - create a new d2-v3 target;
 - rerun Stage-1 expert selection under event-level LOEO;
