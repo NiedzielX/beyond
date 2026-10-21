@@ -1,0 +1,79 @@
+name: MAE-Native Global Uncertainty v1
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - "ml/mae_native_global_uncertainty_v1.py"
+      - "ml/mae_native_global_tournament_v1.py"
+      - "ml/mae_delta_uncertainty_v1.py"
+      - "ml/temporal_validation_v1.py"
+      - "ml/artifacts/structural_prior_runtime_v1/historical_runtime_v1.csv.gz"
+      - ".github/workflows/mae-native-global-uncertainty-v1.yml"
+  push:
+    branches:
+      - main
+    paths:
+      - "ml/mae_native_global_uncertainty_v1.py"
+      - ".github/workflows/mae-native-global-uncertainty-v1.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  uncertainty:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install pinned research runtime
+        run: |
+          python -m pip install --upgrade pip
+          pip install numpy==2.3.5 pandas==2.2.3 scikit-learn==1.8.0 joblib==1.5.3
+      - name: Compile
+        run: |
+          python -m py_compile ml/mae_native_global_uncertainty_v1.py
+          python -m py_compile ml/mae_native_global_tournament_v1.py
+          python -m py_compile ml/mae_delta_uncertainty_v1.py
+      - name: Verify canonical history hash
+        run: |
+          echo "3c6b35142c6bd20a484f2aa758cd41284fd6f4c6db1353b138f81cf321161569  ml/artifacts/structural_prior_runtime_v1/historical_runtime_v1.csv.gz" | sha256sum -c -
+      - name: Run paired fixture-block uncertainty diagnostic
+        run: |
+          mkdir -p /tmp/mae-native-global-uncertainty-v1
+          python -m ml.mae_native_global_uncertainty_v1 \
+            --history ml/artifacts/structural_prior_runtime_v1/historical_runtime_v1.csv.gz \
+            --n-resamples 5000 \
+            --seed 42 \
+            --output-json /tmp/mae-native-global-uncertainty-v1/result.json
+          jq -e '
+            .status == "COMPLETED_HISTORICAL_FORWARD_UNCERTAINTY_DIAGNOSTIC"
+            and .evidence_class == "historical_forward_fold"
+            and .production_change == false
+            and .promotion_allowed == false
+            and .match_count == 1530
+            and .feature_row_count == 7650
+            and (.horizons | length) == 2
+          ' /tmp/mae-native-global-uncertainty-v1/result.json >/dev/null
+      - name: Show diagnostic
+        run: |
+          jq '[.horizons[] | {
+            horizon,
+            delta_mae,
+            interval:[.bootstrap.delta_mae_lower,.bootstrap.delta_mae_upper],
+            p_delta_mae_below_zero:.bootstrap.p_delta_mae_below_zero,
+            event_improvement_rate,
+            tournament_fold_wins_vs_incumbent,
+            tournament_selector_eligible,
+            decision
+          }]' /tmp/mae-native-global-uncertainty-v1/result.json
+      - name: Upload uncertainty evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: mae-native-global-uncertainty-v1-${{ github.run_id }}
+          path: /tmp/mae-native-global-uncertainty-v1/result.json
+          if-no-files-found: error
+          retention-days: 90
