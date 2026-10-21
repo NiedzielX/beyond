@@ -6,20 +6,21 @@ Last updated: **2026-10-21**
 
 Read in this order:
 
-1. `ml/CURRENT_MODEL.md`;
-2. `ml/results/D2_LONG72_STAGE2_RELIABILITY_GATING_V1_2026-10-21.md`;
-3. `ml/artifacts/d2_long72_stage2_p2_v1/manifest.json`;
-4. `ml/results/D2_LONG72_STAGE1_MODEL_TOURNAMENT_V1_2026-10-21.md`;
-5. `ml/results/D2_LONG72_ANCHOR_CONTRACT_V1_2026-10-21.md`;
-6. `ml/results/D2_LONG_HORIZON_COVERAGE_AUDIT_V1_2026-10-21.md`;
-7. `ml/results/PRE_LIVE_V3_HISTORICAL_FREEZE_V1_2026-10-21.md`;
-8. `ml/artifacts/pre_live_v3_historical_candidate_v1/manifest.json`;
-9. `ml/artifacts/pre_live_v2_historical_candidate_v1/manifest.json`;
-10. `ml/D2_PROSPECTIVE_ACCUMULATION_V1.md`;
-11. `ml/DEMAND_FORECAST_DEVELOPMENT_PLAN_V2.md`;
-12. `ml/MODEL_ACCURACY_DEVELOPMENT_INSTRUCTIONS_V2.md`;
-13. `ml/LIVE_DEMAND_ENGINE_V1_PLAN.md`;
-14. `ml/MODEL_PROMOTION_GOVERNANCE_V1.md`.
+1. `ml/PROGRESS_TRACKING.md`;
+2. `ml/CURRENT_MODEL.md`;
+3. `ml/results/D2_LONG72_STAGE2_RELIABILITY_GATING_V1_2026-10-21.md`;
+4. `ml/artifacts/d2_long72_stage2_p2_v1/manifest.json`;
+5. `ml/results/D2_LONG72_STAGE1_MODEL_TOURNAMENT_V1_2026-10-21.md`;
+6. `ml/results/D2_LONG72_ANCHOR_CONTRACT_V1_2026-10-21.md`;
+7. `ml/results/D2_LONG_HORIZON_COVERAGE_AUDIT_V1_2026-10-21.md`;
+8. `ml/results/PRE_LIVE_V3_HISTORICAL_FREEZE_V1_2026-10-21.md`;
+9. `ml/artifacts/pre_live_v3_historical_candidate_v1/manifest.json`;
+10. `ml/artifacts/pre_live_v2_historical_candidate_v1/manifest.json`;
+11. `ml/D2_PROSPECTIVE_ACCUMULATION_V1.md`;
+12. `ml/DEMAND_FORECAST_DEVELOPMENT_PLAN_V2.md`;
+13. `ml/MODEL_ACCURACY_DEVELOPMENT_INSTRUCTIONS_V2.md`;
+14. `ml/LIVE_DEMAND_ENGINE_V1_PLAN.md`;
+15. `ml/MODEL_PROMOTION_GOVERNANCE_V1.md`.
 
 ## Immediate state
 
@@ -110,18 +111,30 @@ The selector was frozen before results and ranks eligible Stage-2 policies by ov
 
 ## Immediate next work
 
-> **Stop tuning the frozen long72 package on the same historical events. Build append-only prospective scoring for future completed events with valid 24–72h trajectories.**
+> **Stop tuning the frozen long72 package on the same historical events. Build/run append-only prospective scoring for future completed events with valid 24–72h trajectories.**
 
 For each new eligible event, preserve and score:
 
 1. frozen T-3 anchor;
 2. raw inventory extrapolation;
 3. frozen P2 long72 forecast;
-4. outcome only after it becomes available.
+4. event/as-of/source lineage;
+5. outcome only after it becomes available.
 
 Do not mutate the package from these outcomes.
 
 Keep evidence classes explicit. A future event observed after the long72 freeze can become prospective evidence only if the forecast inputs/package were frozen before the label was used.
+
+## Parallel work allowed now
+
+Do not block other R&D on prospective event count. Continue:
+
+- prospective forecast persistence/scoring infrastructure;
+- source and data-quality hardening;
+- PIT-safe context ingestion;
+- dashboard/research observability;
+- 72–168h coverage accumulation;
+- reproducibility / CI / lineage improvements.
 
 ## 72–168h boundary
 
@@ -145,4 +158,4 @@ Always:
 
 ## One-line instruction
 
-> **The 24–72h package is frozen. Active work is prospective append-only scoring, not more same-sample tuning. Production remains unchanged.**
+> **The 24–72h package is frozen. Active work is prospective append-only scoring plus non-blocking data/context/observability R&D, not more same-sample tuning. Production remains unchanged.**
