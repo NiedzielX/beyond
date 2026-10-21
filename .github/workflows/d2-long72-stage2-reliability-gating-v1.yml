@@ -1,0 +1,129 @@
+name: d2 Long72 Stage2 Reliability Gating v1
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - "ml/d2_long72_stage2_reliability_gating_v1.py"
+      - "ml/test_d2_long72_stage2_reliability_gating_v1.py"
+      - "ml/results/D2_LONG72_STAGE1_MODEL_TOURNAMENT_V1_2026-10-21.md"
+      - ".github/workflows/d2-long72-stage2-reliability-gating-v1.yml"
+  push:
+    branches:
+      - main
+    paths:
+      - "ml/d2_long72_stage2_reliability_gating_v1.py"
+      - "ml/test_d2_long72_stage2_reliability_gating_v1.py"
+      - "ml/results/D2_LONG72_STAGE1_MODEL_TOURNAMENT_V1_2026-10-21.md"
+      - ".github/workflows/d2-long72-stage2-reliability-gating-v1.yml"
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: d2-long72-stage2-reliability-gating-v1-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install pinned runtime
+        run: |
+          python -m pip install --upgrade pip
+          pip install numpy==2.3.5 pandas==2.2.3 scikit-learn==1.8.0 joblib==1.5.3
+      - name: Compile and unit checks
+        run: |
+          python -m py_compile ml/d2_long72_stage2_reliability_gating_v1.py
+          python -m py_compile ml/test_d2_long72_stage2_reliability_gating_v1.py
+          python -m ml.test_d2_long72_stage2_reliability_gating_v1
+
+  evaluate-main:
+    if: github.event_name != 'pull_request'
+    needs: validate
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install pinned runtime
+        run: |
+          python -m pip install --upgrade pip
+          pip install numpy==2.3.5 pandas==2.2.3 scikit-learn==1.8.0 joblib==1.5.3
+
+      - name: Download immutable Stage1 artifact
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          curl --retry 4 --retry-all-errors --retry-delay 2 -fL \
+            -H "Authorization: Bearer $GH_TOKEN" \
+            -H "Accept: application/vnd.github+json" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            "https://api.github.com/repos/NiedzielX/beyond/actions/artifacts/12365399256/zip" \
+            -o /tmp/d2-long72-stage1.zip
+          echo 'e73ffe55d1c83b7a37fb50109c909f22d1a075a6b1de8f42c89364523399dfbb  /tmp/d2-long72-stage1.zip' | sha256sum -c -
+          mkdir -p /tmp/d2-long72-stage1
+          unzip -q /tmp/d2-long72-stage1.zip -d /tmp/d2-long72-stage1
+          test -f /tmp/d2-long72-stage1/d2-long72-stage1.json
+          test -f /tmp/d2-long72-stage1/d2-long72-stage1-predictions.csv
+          test -f /tmp/d2-long72-stage1/d2-long72-frozen/d2-long72-dataset.csv
+          test -f /tmp/d2-long72-stage1/d2-long72-frozen/d2-long72-contract.json
+          echo 'f19ea1378d0f8b07007bf45c2ab7f3fa20ebb3c53e32afa4548723336b71358a  /tmp/d2-long72-stage1/d2-long72-stage1.json' | sha256sum -c -
+          echo '33de331d2c3bf1e385f513c7fa7e28aa8b454a4d49cfe00d48163e6c083a6df5  /tmp/d2-long72-stage1/d2-long72-stage1-predictions.csv' | sha256sum -c -
+          echo '2af6209484e7120f08541d82bc7bcd064b0f9ea46dd59bb5e7d2746cb35a214c  /tmp/d2-long72-stage1/d2-long72-frozen/d2-long72-dataset.csv' | sha256sum -c -
+          echo '0083b82be7de4599574b90ed0af44e1accd1a993c1d07b7f263bfbf01f3a1a27  /tmp/d2-long72-stage1/d2-long72-frozen/d2-long72-contract.json' | sha256sum -c -
+          jq -e '
+            .status == "COMPLETED_RESEARCH_TOURNAMENT"
+            and .research_lead_candidate_id == "inventory-linear-extrapolation"
+            and .event_count == 13
+            and .row_count == 80
+            and .production_change == false
+          ' /tmp/d2-long72-stage1/d2-long72-stage1.json >/dev/null
+
+      - name: Run Stage2 reliability/tail governance
+        run: |
+          python -m ml.d2_long72_stage2_reliability_gating_v1 \
+            --dataset-csv /tmp/d2-long72-stage1/d2-long72-frozen/d2-long72-dataset.csv \
+            --stage1-predictions-csv /tmp/d2-long72-stage1/d2-long72-stage1-predictions.csv \
+            --output-json /tmp/d2-long72-stage2.json \
+            --output-predictions-csv /tmp/d2-long72-stage2-predictions.csv
+
+      - name: Hard evidence gate
+        run: |
+          jq -e '
+            .status == "COMPLETED_STAGE2_RELIABILITY_GATING"
+            and .production_change == false
+            and .promotion_allowed == false
+            and .stage1_expert_id == "inventory-linear-extrapolation"
+            and .policy_count == 6
+            and (.selection.selected_policy_id | length) > 0
+          ' /tmp/d2-long72-stage2.json >/dev/null
+
+      - name: Print policy table and hashes
+        run: |
+          jq '{selection,advancement_gates,policies:[.policies[]|{policy_id,selector_eligible,retained_overall_uplift_share,retained_24_48_uplift_share,retained_48_72_uplift_share,overall_worst_degradation_reduction_share,band_48_72_worst_degradation_reduction_share,absolute_bias_reduction_share,overall:.scorecard.overall_24_72h,band_24_48h:.scorecard.band_24_48h,band_48_72h:.scorecard.band_48_72h,original_subset:.scorecard.original_stage1_exposed_subset,later_subset:.scorecard.later_exposed_subset}]}' /tmp/d2-long72-stage2.json
+          sha256sum /tmp/d2-long72-stage2.json
+          sha256sum /tmp/d2-long72-stage2-predictions.csv
+
+      - name: Upload Stage2 evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: d2-long72-stage2-reliability-gating-v1-${{ github.run_id }}
+          path: |
+            /tmp/d2-long72-stage1/d2-long72-stage1.json
+            /tmp/d2-long72-stage1/d2-long72-stage1-predictions.csv
+            /tmp/d2-long72-stage1/d2-long72-frozen/d2-long72-contract.json
+            /tmp/d2-long72-stage1/d2-long72-frozen/d2-long72-dataset.csv
+            /tmp/d2-long72-stage2.json
+            /tmp/d2-long72-stage2-predictions.csv
+          if-no-files-found: error
+          retention-days: 90
