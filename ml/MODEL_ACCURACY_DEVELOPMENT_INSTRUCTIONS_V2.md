@@ -1,36 +1,91 @@
 # Beyond Ticketing — Model Accuracy Development Instructions v2
 
-Last updated: **2026-10-19**
+Last updated: **2026-10-21**
 
 Status: **CANONICAL DEVELOPMENT INSTRUCTION**
 
-This file defines how Beyond forecasting development must be conducted.
-
-The objective is not roadmap completion. It is:
+## Objective
 
 > **Reduce forecasting error as far as possible with honest, reproducible, point-in-time-safe evidence before treating the model as mature.**
 
-MAE is the primary development KPI. Tail risk, bias, event independence and prospective evidence remain mandatory constraints.
+Primary development KPI:
+
+`MAE`
+
+Mandatory constraints:
+
+- tail risk;
+- bias;
+- event independence;
+- point-in-time safety;
+- reproducibility;
+- honest treatment of exposed evidence;
+- no silent production activation.
+
+A failed challenger closes the challenger, not the workstream.
 
 ---
 
-## 1. Canonical architecture
+# 1. Parallel-track rule
 
-### Layer 1 — Frozen Pre-Live v2
+## Track A — frozen validation / promotion evidence
 
-Conceptually:
+Use the current frozen model/policy unchanged on new events.
 
-`historical demand + current-season regime + historically proven context -> pre-live forecast`
+Purpose:
 
-Current freeze:
+- measure real forward behavior;
+- preserve independent evidence;
+- support eventual production promotion;
+- diagnose component failures without post-hoc tuning.
+
+Track A may wait for future outcomes because they genuinely do not exist yet.
+
+## Track B — active accuracy R&D
+
+Continue research now whenever an honest evaluation boundary can be declared.
+
+Track B does **not** wait for a fixed prospective event count.
+
+A new versioned challenger may begin when at least one is true:
+
+- a bounded part of the original investigation remains incomplete;
+- a materially new model/target/ensemble hypothesis exists;
+- materially new independent historical data exists;
+- a new PIT-safe feature/source becomes available;
+- repeated prospective evidence suggests a failure mode.
+
+The current frozen package remains the benchmark.
+
+> **Production promotion waits for prospective evidence. R&D does not.**
+
+---
+
+# 2. Canonical frozen architecture — Track A
+
+## Frozen Pre-Live v2
+
+Freeze:
 
 `pre-live-v2-historical-candidate-2026-10-18-v1`
 
-Historical c2 contract:
+Concept:
+
+`historical demand + frozen current-season regime -> Frozen Pre-Live v2`
+
+Historical c2:
 
 `NO_CONTEXT_ALL_HORIZONS`
 
-### Layer 2 — frozen d2 live updater
+Frozen b2 policies:
+
+- T-30 `NO_ADJUSTMENT`;
+- T-14 `NO_ADJUSTMENT`;
+- T-7 `ewma50-resid-k6-cap05-min3`;
+- T-3 `ewma50-resid-k2-cap05-min3`;
+- T-1 `ewma50-resid-k6-cap05-min3`.
+
+## Frozen d2
 
 Stage-1 expert:
 
@@ -48,90 +103,23 @@ Architecture:
 
 `final_forecast(t) = frozen_pre_live_v2(t) + reliability(t) * ridge_delta(t)`
 
-The live layer revises a frozen pre-live anchor. It is not an unrelated second forecast against a moving baseline.
+Frozen P2:
+
+- observation 1 `0.25`;
+- observation 2 `0.60`;
+- observation 3+ `1.00`;
+- >18h cap `0.75`;
+- >12h <=18h cap `0.90`;
+- <=12h cap `1.00`;
+- final reliability = minimum of observation and time weights.
+
+These frozen IDs are evidence objects. Track-B experiments never mutate them.
 
 ---
 
-## 2. Current canonical status
+# 3. Current evidence state
 
-Sequence:
-
-`a2 CLOSED -> b2 CLOSED -> c2 historical CLOSED -> Pre-Live v2 FROZEN -> d2 Stage 0 DONE -> Stage 1 FROZEN -> Stage 2 FROZEN -> EVENT 5 HOLDOUT COMPLETE -> PROSPECTIVE ACCUMULATION ACTIVE`
-
-### a2 — historical optimization
-
-`CLOSED FOR CURRENT HISTORICAL DATA`
-
-Completed investigation includes:
-
-- feature-group ablation;
-- season-recency weighting;
-- internal estimator-family challengers;
-- CatBoost / LightGBM / XGBoost external families at T-7;
-- horizon-specific optimization;
-- T-7 fixed temporal robustness;
-- stronger multi-fold unresolved-horizon audits;
-- persistent cross-season club calibration under fixed formulations.
-
-Final historical bases:
-
-- T-30 Structural Prior;
-- T-14 Structural Prior;
-- T-7 `hist31-leaf20-l2-1`;
-- T-3 Structural Prior;
-- T-1 Structural Prior.
-
-T-7 improves 4/4 rolling folds, mean `+104.66 MAE`.
-
-### b2 — current-season regime
-
-`CLOSED FOR CURRENT HISTORICAL DATA / FROZEN INTO PRE-LIVE V2`
-
-Critical PIT rule:
-
-`prior kickoff + 3h <= current forecast as_of`
-
-Frozen policies:
-
-- T-30 `NO_ADJUSTMENT`;
-- T-14 `NO_ADJUSTMENT`;
-- T-7 `ewma50-resid-k6-cap05-min3`;
-- T-3 `ewma50-resid-k2-cap05-min3`;
-- T-1 `ewma50-resid-k6-cap05-min3`.
-
-Non-zero b2 activates only after at least 3 earlier completed same-season home matches.
-
-Historical fixed four-fold mean gains:
-
-- T-7 `+51.47`;
-- T-3 `+70.44`;
-- T-1 `+69.54`.
-
-Fresh prospective evidence now adds one warning: on event 5, T-1 b2 changed `29,737.93 -> 27,574.48`, worsening the final pre-live error by `2,163.45 seats`.
-
-Status of that observation:
-
-`PROSPECTIVE_FAILURE_SIGNAL_ONLY`
-
-Do **not** retune or reopen b2 from one event.
-
-### c2 — historical context
-
-`SUFFICIENTLY EVALUATED / NO HISTORICAL EXTENSION`
-
-Historical tests included sequence/streak and stakes/pressure context after the earlier future-fixture challenger.
-
-No c2 extension survived the frozen protocol.
-
-Forward-only rivalry, verified absences, media/hype/search/social remain prospective research when valid PIT sources exist.
-
-Never backfill them from final-state knowledge.
-
-### Frozen Pre-Live v2
-
-`SEALED / REPRODUCIBLE / HISTORICAL CANDIDATE ONLY`
-
-Reference mean MAE:
+Frozen Pre-Live v2 reference mean MAE:
 
 - T-30 `1867.82`;
 - T-14 `1809.45`;
@@ -139,184 +127,155 @@ Reference mean MAE:
 - T-3 `1682.63`;
 - T-1 `1661.52`.
 
-Freeze reproduces 20/20 horizon-season cells at tolerance `1e-9`.
+d2 Stage-1 development:
 
-### d2 Stage 0
-
-`FROZEN_V2_EXACT_COMPATIBILITY_READY`
-
-Frozen development lineage:
-
-- 9 events;
-- 30 final-24h rows;
-- exact Frozen-v2 anchor.
-
-### d2 Stage 1
-
-`COMPLETED / ridge-a10 FROZEN RESEARCH EXPERT`
-
-Development:
-
-- Frozen-v2 latest MAE `4128.01`;
+- Frozen latest MAE `4128.01`;
 - Ridge latest MAE `3320.39`;
-- latest uplift `807.62 / 19.56%`;
+- uplift `807.62 / 19.56%`;
 - Ridge window MAE `3619.19`;
-- window uplift `508.83 / 12.33%`;
 - worst latest-event degradation `4326.90`.
 
-### d2 Stage 2
-
-`COMPLETED / P2-observation-maturity FROZEN`
-
-Development:
+d2 Stage-2 development:
 
 - P2 latest MAE `3240.99`;
-- uplift vs Frozen v2 `887.02 / 21.49%`;
+- uplift vs Frozen `887.02 / 21.49%`;
 - P2 window MAE `3657.65`;
 - worst degradation `1081.72`;
-- worst degradation reduction vs raw Ridge `75%`;
-- retained raw-Ridge window uplift `92.44%`.
+- 75% reduction in raw-Ridge worst degradation.
 
-Only P2 passed all frozen Stage-2 advancement gates.
-
-### Event 5 holdout
-
-`COMPLETED_ONE_PASS_HOLDOUT`
-
-Canonical result:
-
-`ml/results/D2_EVENT5_HOLDOUT_V1_2026-10-19.md`
-
-Errors:
-
-- Structural T-1 base `7669.07`;
-- Frozen-v2 `9832.52`;
-- raw frozen Ridge latest `6652.81`;
-- raw Ridge window `6170.35`;
-- P2 latest `6652.81`;
-- P2 window `7263.16`;
-- persisted C1 v8 policy/latest `7669.07`.
-
-Event 5 is now exposed and may never be treated as unseen validation again.
+Event 5 is exposed and can never be reused as unseen validation.
 
 ---
 
-## 3. Historical workstream reopening rule
+# 4. Evidence classes
 
-Do not reopen a2/b2/c2 because later stages are difficult or because an exposed event suggests a post-hoc fix.
+Frozen Stage-2 cutoff:
 
-Historical or frozen work may be reopened only when at least one is true:
+`2026-10-19T19:11:01Z`
 
-- materially new independent data exists;
-- a materially new hypothesis exists that was not already tested;
-- repeated prospective evidence exposes a systematic failure mode;
-- previously unavailable PIT-safe context becomes reconstructable without leakage.
+## `DELAYED_LABEL_HOLDOUT`
 
-Any reopening requires a new explicit candidate/version and a new declared evaluation boundary.
+Kickoff at or before the cutoff, but truth became available later.
 
----
+Use for diagnostics, component-failure analysis and future hypothesis generation. Do not count it as true post-freeze promotion evidence.
 
-## 4. Historical optimization requirements
+## `TRUE_POST_FREEZE_PROSPECTIVE`
 
-A complete a2-style investigation may include:
+Kickoff after the cutoff.
 
-- feature-group ablation;
-- season recency weighting;
-- horizon-specific configurations;
-- HistGradientBoosting / GradientBoosting;
-- ExtraTrees / RandomForest;
-- CatBoost;
-- LightGBM;
-- XGBoost;
-- regularized linear / GAM-style baselines;
-- independently validated ensembles;
-- club calibration/hierarchy with low-sample shrinkage.
+This class may contribute to genuine forward promotion evidence.
 
-Do not assume the current champion family is theoretically optimal.
-
-However, do not re-run the same exposed grids without new evidence.
-
-Every dependency must be pinned in CI.
+Never combine both classes into one headline prospective N.
 
 ---
 
-## 5. Current-season regime requirements
+# 5. Historical model R&D rules
 
-Goal:
+Historical R&D uses strict chronological boundaries.
 
-> Detect whether the current season is systematically running above or below the model's own prior expectation.
+Required:
 
-Candidate signals may include:
+- no random split as headline evidence;
+- training only on earlier seasons/events;
+- development selection boundary declared before tuning;
+- exposed reference seasons never used to choose variants or ensemble weights;
+- all features reconstructable point-in-time;
+- horizon-specific metrics;
+- MAE plus median AE, bias, p90/worst event and stability;
+- deterministic/pinned dependencies.
 
-- mean/median residual;
-- actual/expected ratio;
-- EWMA residual;
-- rolling residuals;
-- robust residual variants.
+Historical data already available must be used now rather than waiting for prospective data.
 
-Low-sample evidence requires shrinkage and maturity gating.
+## a2 external-family / ensemble closure — COMPLETE
 
-Current frozen b2 is not to be changed during the prospective accumulation window.
+Canonical results:
 
-Prospective component diagnostics must explicitly compare:
+- `ml/results/A2_EXTERNAL_ENSEMBLE_CLOSURE_V1_2026-10-21.md`;
+- `ml/results/A2_EXTERNAL_ENSEMBLE_FIXED_TEMPORAL_V1_2026-10-21.md`.
 
-`Structural base -> Frozen Pre-Live v2/b2`
+The bounded external-family gap is closed.
 
-so wrong-direction b2 corrections remain visible instead of being hidden inside the final d2 score.
+Exact robust historical challengers passed positive MAE improvement in all four rolling folds:
 
-Potential hypothesis to monitor:
+- T-30: `0.75 current a2 + 0.25 XGBoost depth3`;
+- T-7: `0.25 current a2/HGB + 0.25 CatBoost depth4 + 0.50 LightGBM leaves15`;
+- T-1: `0.25 HGB hist31 + 0.50 CatBoost depth4 + 0.25 LightGBM leaves15`.
 
-> **Negative same-season residual correction may overreact on some high-demand Lech matches.**
+T-14 and T-3 retained current a2 after mixed exposed-reference evidence.
 
-Event 5 alone does not prove this hypothesis.
+Passing robustness does **not** mutate current a2 or Frozen Pre-Live v2.
+
+## Active historical R&D — Pre-Live v3
+
+The next versioned challenger must use the robust historical bases at T-30/T-7/T-1 and current a2 at T-14/T-3, then revalidate the current-season regime before any new freeze.
 
 ---
 
-## 6. Match-context requirements
+# 6. Current-season regime rules
 
-Context must explain why a specific match differs from the club/season baseline without duplicating existing opponent/pair/form/table/congestion features.
+Frozen b2 must remain unchanged in Track A.
 
-Potential future sources include:
+Component diagnostics must preserve:
 
-- rivalry/derby;
+`Structural/historical base -> b2 -> Pre-Live`
+
+so wrong-direction current-season corrections remain visible.
+
+## Pre-Live v3 requirement
+
+The old b2 policy may **not** be silently copied onto the new v3 historical anchors.
+
+Reason:
+
+> b2 is a residual-regime layer and its residuals were defined relative to the old historical bases.
+
+The v3 experiment must compare:
+
+1. new historical anchor only;
+2. old frozen b2 formulation applied unchanged on the new anchor as a fixed comparator;
+3. newly selected current-season-regime challenger under a declared historical temporal boundary;
+4. Frozen Pre-Live v2 as unchanged benchmark.
+
+No event-5 or later delayed-label/prospective d2 outcomes may be used for b2 selection.
+
+If the current-season layer does not add stable incremental value on a new historical anchor, `NO_ADJUSTMENT` is a valid v3 decision for that horizon.
+
+---
+
+# 7. c2/context rules
+
+Historical c2 remains:
+
+`NO_CONTEXT_ALL_HORIZONS`
+
+Forward context R&D is allowed now when sources are genuinely PIT-safe.
+
+Examples:
+
+- verified rivalry/derby;
 - verified injuries/suspensions;
 - expected XI/key-player availability;
+- sporting context;
 - media attention;
 - search/social/hype.
 
-Only PIT-valid sources are allowed.
+Rules:
 
-No historical reconstruction using later/final-state information.
-
----
-
-## 7. Frozen Pre-Live contract
-
-Any frozen pre-live candidate must persist:
-
-- feature contract;
-- model family/hyperparameters;
-- training protocol;
-- weighting/calibration;
-- data versions;
-- artifact/source hashes;
-- per-horizon IDs;
-- benchmark cells;
-- limitations.
-
-The live layer must never silently mutate its anchor.
-
-A material change requires a new freeze ID.
+- collect point-in-time;
+- never reconstruct historical values from later/final-state knowledge;
+- version source semantics;
+- test incremental value separately;
+- no integration unless out-of-sample MAE evidence supports it.
 
 ---
 
-## 8. Frozen d2 Stage-1 expert contract
+# 8. Frozen d2 Stage-1 expert contract
 
 Expert:
 
 `ridge-a10`
 
-Contract:
+Frozen Track-A contract:
 
 - target `target_live_delta_occupancy`;
 - Ridge `alpha=10.0`;
@@ -325,277 +284,155 @@ Contract:
 - missing indicators;
 - standardization;
 - event-balanced weights;
-- raw live correction clipped to +/-10pp occupancy.
+- raw correction clipped to +/-10pp occupancy.
 
-Do not change any of these during prospective accumulation.
+Do not change this package during Track-A prospective accumulation.
 
-A change creates a new versioned model challenger.
-
----
-
-## 9. Frozen P2 policy contract
-
-Policy:
-
-`P2-observation-maturity`
-
-Observation reliability:
-
-- observation 1 `0.25`;
-- observation 2 `0.60`;
-- observation 3+ `1.00`.
-
-Time-to-kickoff cap:
-
-- >18h `0.75`;
-- >12h <=18h `0.90`;
-- <=12h `1.00`.
-
-Final:
-
-`reliability = min(observation_weight, time_weight)`
-
-Do not modify these weights from event-5 evidence.
-
-Event 5 showed that P2 can sacrifice useful early correction on an event while still matching raw Ridge after maturity. Treat this as a prospective risk/return diagnostic, not a tuning cue.
+A changed target, estimator, feature contract, preprocessing or correction rule creates a new Track-B challenger.
 
 ---
 
-## 10. TSFM / Chronos boundary
+# 9. d2 after a new pre-live anchor
 
-Stage 1 tested zero-shot:
+The current Ridge/P2 package is tied to Frozen Pre-Live v2.
+
+If Pre-Live v3 earns a freeze, do **not** silently attach the old live model to the new anchor.
+
+Create a new d2 version and rebuild/revalidate the live residual layer relative to v3.
+
+Possible new d2 hypotheses include:
+
+- remaining-demand target;
+- alternative capacity-normalized residual target;
+- anchor-error direction/sign plus correction magnitude;
+- learned reliability;
+- compact heterogeneous live-model ensemble;
+- materially different trajectory representation.
+
+Requirements:
+
+1. new experiment/model ID;
+2. declared development set before fitting;
+3. frozen v2/Ridge/P2 retained as benchmark;
+4. exposed event labels recorded honestly;
+5. no claim that exposed events are unseen;
+6. no production write.
+
+Do not simply tune old Ridge/P2 thresholds event by event.
+
+---
+
+# 10. TSFM / Chronos boundary
+
+Stage-1 tested:
 
 - `amazon/chronos-2`;
 - `amazon/chronos-bolt-small`.
 
-Both forecast only causal public inventory trajectory.
-
-Latest MAE:
-
-- Ridge `3320.39`;
-- Ridge + Chronos-2 `3428.25`;
-- Ridge + Bolt-small `3428.08`.
+Both improved Frozen v2 when added to Ridge but lost to plain Ridge.
 
 Decision:
 
 `TSFM_STAGE1 = NOT_PROVEN_VS_RIDGE`
 
-Do not fine-tune Chronos or add Lag-Llama / NeuralProphet on the same exposed development/holdout set.
+Therefore:
 
-Reopen the family only with materially more independent trajectories or a materially new predeclared hypothesis.
+- no same-data fine-tuning to rescue that challenger;
+- no automatic Lag-Llama / NeuralProphet model zoo on the same formulation.
+
+TSFM may be reopened only when materially more independent trajectory data exists or a materially different predeclared use/target exists.
 
 ---
 
-## 11. Prospective accumulation contract — ACTIVE NOW
+# 11. Prospective scoring rules
 
-Canonical contract:
-
-`ml/D2_PROSPECTIVE_ACCUMULATION_V1.md`
-
-For every new eligible completed event:
+For every new Track-A event:
 
 1. score once under the frozen package;
 2. persist the result regardless of direction;
-3. do not train on the event in the same evidence cycle;
-4. preserve component-level diagnostics.
+3. do not train on that event in the same evidence cycle;
+4. preserve component diagnostics;
+5. register it as exposed after reviewed persistence.
 
 Mandatory layers:
 
 1. Structural T-1 base;
 2. Frozen Pre-Live v2 / b2;
 3. raw frozen Ridge;
-4. frozen P2 governed Ridge;
-5. persisted pre-outcome C1 comparator where available.
+4. frozen P2;
+5. genuine persisted C1 comparator where available.
 
-Mandatory event metrics:
+Mandatory metrics:
 
 - latest AE;
 - trajectory/window MAE;
-- incremental error change per layer;
+- component incremental error;
 - bias;
-- max live revision;
-- b2 correction direction/magnitude;
-- P2 reliability trajectory;
-- data-quality warnings.
-
-Mandatory accumulated metrics:
-
-- mean/median latest AE;
-- event-balanced window MAE;
-- bias;
-- p90 latest AE;
-- worst event degradation;
-- improvement rate;
-- cumulative contribution of b2, Ridge and P2;
-- club diagnostics only when sample size permits.
+- max revision;
+- correction direction/magnitude;
+- reliability trajectory;
+- data-quality warnings;
+- evidence class.
 
 ---
 
-## 12. Event independence / PIT safety
+# 12. Data-quality blockers
 
-Training rows may be `event x as_of_timestamp`, but the independent evaluation unit is the event.
+Missing attendance, capacity, fixture or source coverage is a data-contract problem.
 
 Rules:
 
-- all snapshots from one event stay together;
-- no random snapshot train/test split;
-- no future snapshot information;
-- no future match outcome information;
-- public inventory is a proxy, not confirmed paid sales;
-- ticket releases / coverage changes are not automatically demand;
-- synthetic rows never count as independent evidence.
-
-For prospective scoring, the event outcome may be used only after the forecast package has been frozen for that event.
+- fix trusted source coverage;
+- record provenance;
+- never infer attendance from inventory;
+- do not use data blockers as a reason to pause unrelated Track-B R&D.
 
 ---
 
-## 13. Accuracy scorecard
+# 13. Non-negotiable experiment/CI contract
 
-Primary metric:
+Every material experiment must have:
 
-`MAE`
-
-Every serious model/policy/prospective report should include where applicable:
-
-- latest-row MAE;
-- event-balanced trajectory-window MAE;
-- median AE;
-- bias;
-- p90/tail error;
-- worst-event degradation;
-- event improvement rate;
-- revision frequency;
-- mean/max revision magnitude;
-- behavior by observation count and time-to-kickoff;
-- event/row counts.
-
-For prospective accumulation also report component-level incremental contribution.
-
-A lower mean MAE with unacceptable tail risk must be called out explicitly.
-
----
-
-## 14. CI/CD — NON-NEGOTIABLE
-
-Every material experiment or prospective scoring pipeline must have:
-
-1. committed source code;
+1. source code;
 2. executable CI workflow;
-3. pinned runtime dependencies and external model revisions where relevant;
-4. syntax/import validation;
+3. pinned runtime/dependencies;
+4. syntax/import checks;
 5. deterministic seeds where applicable;
-6. explicit input data/artifact versions;
-7. explicit train/development/holdout/prospective boundary;
+6. exact input/data lineage;
+7. explicit train/development/reference or forward split;
 8. PIT assertions;
-9. incumbent/frozen benchmark assertions;
+9. frozen incumbent benchmark;
 10. machine-readable JSON/CSV evidence;
-11. run/artifact IDs and hashes;
-12. human-readable result in `ml/results/` when a material event/stage closes;
-13. explicit decision;
-14. canonical docs updated in the same development cycle;
-15. no production activation without explicit promotion.
+11. artifact name, run ID and hashes;
+12. human-readable result under `ml/results/`;
+13. explicit decision: advance / retain / reject / insufficient;
+14. canonical docs synchronized in the same evidence cycle;
+15. no production activation unless explicitly reviewed.
 
-Persist exact:
-
-- feature definitions;
-- source tables/files;
-- as-of rules;
-- missing/imputation/normalization behavior;
-- clipping/caps;
-- weights/shrinkage;
-- thresholds;
-- hyperparameters;
-- random seed;
-- train/development/holdout/prospective events;
-- exclusions and rationale;
-- model ID;
-- policy ID;
-- feature/data/benchmark versions;
-- limitations.
-
-If a material element changes, create a new version.
+A material change to target, feature set, source semantics, preprocessing, model family, hyperparameters, weighting, correction cap, split, exclusions or ensemble composition creates a new challenger/version.
 
 ---
 
-## 15. No silent retuning
+# 14. Promotion boundary
 
-Do not change a model, feature, threshold, policy or gate after seeing an event and continue calling that event unseen validation.
+Historical improvement alone is not production promotion.
 
-Event 5 is permanently exposed.
+Production requires:
 
-It may be used as:
+- materially more genuine `TRUE_POST_FREEZE_PROSPECTIVE` events;
+- positive aggregate latest/window uplift;
+- acceptable tail risk;
+- acceptable bias;
+- no unresolved systematic component failure;
+- frozen reproducible package;
+- explicit reviewed promotion.
 
-- regression evidence;
-- component failure evidence;
-- motivation for a future predeclared hypothesis.
-
-It may not be reused as fresh holdout evidence after tuning.
-
-Future prospective events follow the same rule once scored.
-
----
-
-## 16. Interpretation rule
-
-Mandatory:
-
-> **A failed challenger closes the challenger, not the whole workstream.**
-
-Also mandatory:
-
-> **One bad prospective event does not prove a failure mode, and one good prospective event does not prove production readiness.**
-
-Examples:
-
-- failed Current Season Adjustment v1 did not close b2;
-- failed Future Fixture Context v1 did not close c2;
-- Chronos losing to Ridge did not close d2;
-- event 5 b2 degradation does not automatically reopen b2;
-- event 5 d2 uplift does not automatically promote d2.
-
----
-
-## 17. Reopening / retraining gate
-
-A new candidate cycle may start only after:
-
-1. materially more independent prospective events exist;
-2. a repeated interpretable failure pattern is identified;
-3. a new hypothesis is declared before tuning;
-4. the frozen current package remains the benchmark;
-5. a new train/development/forward-evidence boundary is declared;
-6. exposed prospective events are labeled honestly.
-
-Do not gradually mutate the frozen package event by event.
-
----
-
-## 18. Production safety
-
-Production remains:
+Until then:
 
 `live_adjustment = 0`
 
-CI green != production promotion.
-
-Production promotion requires materially more genuinely prospective independent events, positive aggregate uplift, acceptable tail risk, no unresolved systematic failure, a frozen reproducible package and an explicit reviewed promotion decision.
-
 ---
 
-## 19. Immediate work order
+# 15. Immediate instruction
 
-1. Keep `d2-stage2-p2-observation-maturity-2026-10-19-v1` frozen.
-2. Do not retune from event 5.
-3. Implement/operate append-only prospective scoring for every new eligible completed event.
-4. Persist Structural base -> Frozen-v2/b2 -> raw Ridge -> P2 -> genuine persisted C1 comparator as separate layers.
-5. Track the event-5 b2 wrong-direction signal prospectively without changing b2.
-6. Track P2 early-conservatism cost versus tail-risk protection prospectively without changing P2.
-7. Maintain cumulative prospective MAE/tail/component dashboards/evidence.
-8. Open a separately versioned challenger only if materially more independent prospective evidence supports a specific hypothesis.
-9. Keep C1 v8 and production unchanged.
-
----
-
-## 20. One-line instruction for every new AI / engineering session
-
-> **Event 5 is complete and exposed. Keep Pre-Live v2, `ridge-a10` and `P2-observation-maturity` frozen; score each new completed event append-only with separate Structural -> b2 -> Ridge -> P2 -> persisted C1 diagnostics; monitor the event-5 b2/P2 signals without tuning; only open a new versioned challenger after materially more independent prospective evidence. Production remains unchanged.**
+> **Keep Pre-Live v2 / Ridge / P2 frozen for Track-A evidence. The a2 external/ensemble gap is closed with robust T-30/T-7/T-1 challengers. Active Track-B work is now a separately versioned Pre-Live v3 historical-anchor + current-season-regime revalidation. Do not silently inherit b2 onto the new anchors, do not use prospective sample-count gates to pause this R&D, and do not rebuild d2 until a v3 anchor actually earns a freeze. Production remains unchanged.**
