@@ -2,222 +2,378 @@
 
 Last updated: **2026-10-21**
 
-Status: **ACTIVE TRACK-B R&D / DATA CONTRACT FIRST / NO PRODUCTION CHANGE**
+Status: **TRACK-B R&D / LONG72 HISTORICAL PACKAGE SEALED / FORWARD SCORING NEXT / NO PRODUCTION CHANGE**
 
-Parent evidence:
+Canonical evidence:
 
 - `ml/results/D2_V3_STAGE0_ANCHOR_EQUIVALENCE_V1_2026-10-21.md`;
-- `ml/results/PRE_LIVE_V3_HISTORICAL_FREEZE_V1_2026-10-21.md`.
+- `ml/results/D2_LONG_HORIZON_COVERAGE_AUDIT_V1_2026-10-21.md`;
+- `ml/results/D2_LONG72_ANCHOR_CONTRACT_V1_2026-10-21.md`;
+- `ml/results/D2_LONG72_STAGE1_MODEL_TOURNAMENT_V1_2026-10-21.md`;
+- `ml/results/D2_LONG72_STAGE2_RELIABILITY_GATING_V1_2026-10-21.md`;
+- `ml/artifacts/d2_long72_stage2_p2_v1/manifest.json`.
 
 ## Why this workstream exists
 
-The current d2 problem uses only the final 24 hours before kickoff and anchors all live rows on T-1.
+The original d2 problem uses final24 only.
 
-The v2-v3 Stage-0 audit proved:
+The v2-v3 equivalence audit proved:
 
 `V3_FINAL24_ANCHOR_EXACTLY_EQUIVALENT_TO_V2`
 
-Therefore retraining the same final-24h problem under a new name would not be a material model change.
+Therefore a new final24 tournament solely because Pre-Live v3 exists would be cosmetic.
 
-The next useful question is different:
+Long-horizon R&D instead tests whether live ticket trajectory improves forecasts before final24.
 
-> **Can live ticket trajectory improve attendance forecasting earlier than 24 hours, where the new Pre-Live v3 T-7 anchor can actually matter?**
+## Production and Track-A boundary
 
-## Data-readiness audit — 2026-10-21
+Do not modify:
 
-Current Supabase snapshot history contains:
+`Frozen Pre-Live v2 + P2 reliability * frozen ridge-a10 delta`
 
-- 12,521 raw snapshot rows across 24 mapped ticket events;
-- 15 events with outcome labels in the broader snapshot table;
-- 14 labeled, capacity-resolved Ekstraklasa events eligible under the current C1 event/export rules.
+Production remains:
 
-For those 14 C1-eligible labeled Ekstraklasa events, using the same 6h bucket sampling and the existing PIT function `get_live_trajectory_features_v1_1_asof`:
+`live_adjustment = 0`
 
-- 13/14 have valid rows beyond 24h;
-- 10/14 have valid rows beyond 48h;
-- 8/14 have valid rows in 72–168h;
-- several events have 24–28 valid 6h-bucket rows inside the final 168h.
+Everything in this document remains Track-B research until separate forward/prospective evidence exists.
 
-Examples with near-full 7-day coverage:
+---
 
-- event 1 Lech–Raków;
-- event 3 Lech–Jagiellonia;
-- event 4 Lech–Radomiak;
-- event 5 Lech–Korona;
-- event 15 GKS Katowice–Pogoń;
-- event 18 Cracovia–Legia;
-- event 19 Zagłębie Lubin–Jagiellonia.
+# Stage A1 — additive earlier-live export — COMPLETE
 
-Event 11 Górnik–Piast reaches about 90h.
-
-The limiting factor is currently the export contract, not raw data retention.
-
-## Data integrity
-
-The earlier snapshots are not reconstructed from final state.
-
-The proposed export must use:
-
-- source snapshot `captured_at`;
-- point-in-time event kickoff stored/known at the request time where applicable;
-- verified stadium capacity under the same C1 eligibility rules;
-- `get_live_trajectory_features_v1_1_asof`;
-- `point_in_time_validated = true`;
-- non-null source feature snapshot;
-- no outcome value inside live features.
-
-Outcome is used only as the supervised target after the PIT live row is constructed.
-
-## Additive export contract
-
-Do **not** modify:
+Existing final24 export remains immutable:
 
 `v7-final24 -> export_c1_alpha_v7_final24_rows_v1`
 
-Create an additive research export:
+Additive research export:
 
 `v8-long168 -> export_d2_long_horizon_168_rows_v1`
 
-Sampling:
+Contract:
 
-- maximum window: 168h before kickoff;
-- cadence: 6h;
-- latest available source snapshot in each event x 6h bucket;
-- same eligible-event and verified-capacity rules as v7-final24;
-- same live PIT feature function.
+- max 168h before kickoff;
+- 6h buckets;
+- latest source snapshot per event x bucket;
+- same event/capacity eligibility as final24;
+- `get_live_trajectory_features_v1_1_asof`;
+- explicit coverage metadata;
+- service-role/main-only access.
 
-The payload must include:
+---
 
-- `ticket_event_id`;
-- `requested_snapshot_id`;
-- `requested_as_of_at`;
-- `hours_to_kickoff`;
-- `bucket_6h`;
-- PIT `features` JSON;
-- per-event coverage summary where practical;
-- top-level event/row counts and window/cadence metadata.
+# Stage A2 — coverage/readiness — COMPLETE
 
-Research export remains service-role/OIDC protected through the existing main-only training gateway.
+Run:
 
-## Coverage rule
+`39638563805`
 
-Do not pretend all events have a complete T-7 trajectory.
+Coverage:
 
-For every event persist:
+- 14 eligible labeled events;
+- 13 beyond 24h;
+- 10 beyond 48h;
+- 8 beyond 72h.
 
-- earliest valid hours-to-kickoff;
-- latest valid hours-to-kickoff;
-- count of valid 6h buckets;
-- coverage by windows:
-  - 0–24h;
-  - 24–48h;
-  - 48–72h;
-  - 72–168h.
+Frozen independent-event threshold:
 
-Missing earlier history is data availability, not zero demand.
+`N = 9`
 
-## Evidence boundary
+Decision:
 
-The original frozen final-24h development set remains:
+`BUILD_FIRST_LONG_HORIZON_MODEL_TO_72H`
 
-`1,3,4,8,9,12,13,14,17`
+Therefore:
 
-Newer labeled events already exposed in previous diagnostics/readiness work include:
+- 24–48h learned research allowed;
+- 48–72h learned research allowed;
+- 72–168h remains diagnostic only until N>=9.
 
-`5,11,15,18,19`
+Do not lower N=9 simply to open the T-7-aware window early.
 
-These labels are no longer unseen.
+---
 
-A long-horizon experiment must predeclare a chronological split and label every event as development/reference/exposed before model fitting.
+# Stage A3 — frozen 0–72h data + anchor — COMPLETE
 
-No random snapshot split.
+Run:
 
-Independent unit:
+`39640723942`
 
-`event`
+Artifact:
 
-## Stage A — coverage and baseline audit
+`12365352293`
 
-Before fitting a live correction model:
+Dataset SHA256:
 
-1. export all valid long-horizon rows;
-2. freeze event/as-of identities and coverage statistics;
-3. determine the honest earliest modeling window supported by event count;
-4. evaluate Pre-Live v2 and v3 anchor behavior at relevant checkpoints;
-5. define the anchor-transition rule before opening model results.
+`2af6209484e7120f08541d82bc7bcd064b0f9ea46dd59bb5e7d2746cb35a214c`
 
-Candidate initial modeling windows to compare:
+Frozen set:
 
-- final 48h;
-- final 72h;
-- final 168h.
+- 14 events;
+- 130 PIT-safe rows;
+- 0–24h: 50;
+- 24–48h: 45;
+- 48–72h: 35.
 
-The selection must balance earlier coverage against independent event count.
+Anchor rule:
 
-## Anchor-transition question
+- `0<h<=24` -> T-1 checkpoint hold;
+- `24<h<=72` -> T-3 checkpoint hold;
+- no future checkpoint interpolation.
 
-Unlike final-24h, a long-horizon live model crosses more than one Pre-Live checkpoint.
+Current-season replay uses exact kickoff-date capacity lineage and horizon-specific PIT forecastability.
 
-The anchor rule must be predeclared and reproducible.
+Because v2/v3 T-3 and T-1 are identical, the 0–72h anchor is valid under both freezes.
 
-Candidate approaches for a later experiment:
+---
 
-1. **checkpoint hold:** use the latest available frozen Pre-Live checkpoint at/as-of the live row;
-2. **piecewise transition:** move from T-7 toward T-3/T-1 only when the next checkpoint becomes valid;
-3. another deterministic PIT-safe mapping justified before evaluation.
+# Stage B1 — early-live expert selection — COMPLETE
 
-Do not interpolate using future checkpoint predictions that were not available at the row as-of time.
+Run:
 
-## Stage B — first long-horizon live benchmark
+`39642620259`
 
-Only after Stage A freezes the data and anchor rule.
+Artifact:
 
-Minimum baselines:
+`12365399256`
 
-- Pre-Live anchor only / zero live correction;
-- transparent inventory trajectory extrapolation;
-- existing final-24h Ridge applied only where its old contract is valid, as a reference rather than automatic long-horizon model.
+Scope:
 
-Any learned model must use event-level chronological/LOEO discipline and event-balanced metrics.
+`24<h<=72`
 
-Primary KPI:
+Validation:
 
-`MAE`
+`event-level LOEO on exposed historical evidence`
 
-Also report:
+Historical research lead:
 
-- median AE;
-- bias;
-- p90/worst event;
-- event improvement rate;
-- revision magnitude;
-- performance by hours-to-kickoff band;
-- coverage/missingness.
+`inventory-linear-extrapolation`
 
-## What not to do
+Overall:
 
-- do not mutate `v7-final24`;
-- do not relabel exposed events as unseen;
-- do not random-split snapshots;
-- do not forward-fill from future observations;
-- do not infer actual attendance from inventory;
-- do not automatically reuse final-24h Ridge/P2 outside its validated window;
-- do not activate production.
+- anchor MAE `3707.14`;
+- raw inventory MAE `3254.68`;
+- uplift `+452.46 / +12.21%`.
 
-## Immediate work order
+24–48h uplift:
 
-1. add/deploy `export_d2_long_horizon_168_rows_v1`;
-2. add gateway route `v8-long168` without changing existing routes;
-3. verify service-role/main-only access and payload counts;
-4. persist a machine-readable long-horizon coverage audit;
-5. freeze the data contract and chronological evidence split;
-6. only then start modeling.
+`+675.33 / +18.22%`
+
+48–72h uplift:
+
+`+675.68 / +14.71%`
+
+Raw inventory limitations:
+
+- only 46.15% of events improve overall;
+- bias `+1458.93 seats`;
+- worst degradation `3100.60 seats` overall;
+- worst degradation `3741.79 seats` in 48–72h;
+- original exposed subset worsens by `485.52 MAE`.
+
+Result:
+
+> Useful early-live signal, but raw expert alone is too unstable to freeze as a forward research package.
+
+---
+
+# Stage B2 — reliability / tail governance — COMPLETE
+
+Run:
+
+`39644319080`
+
+Artifact:
+
+`12366826274`
+
+Stage-2 JSON SHA256:
+
+`a9daa834e15b4f313b15c3e809033b7d79e4ed4357f61a8f5071e6bf20359d8c`
+
+Predictions SHA256:
+
+`489ba62156f19d3b915fda1b9f1ef506fb81603d4286a01e8ad4b799c58bce4b`
+
+Decision:
+
+`STAGE2_RELIABILITY_POLICY_SELECTED`
+
+Selected:
+
+`P2-observation-maturity`
+
+Other eligible policies:
+
+- P3 correction magnitude;
+- P4 data quality;
+- P5 combined reliability.
+
+P2 wins by lowest overall event-balanced MAE under the fixed selector.
+
+## Selected P2 metrics
+
+Overall 24–72h:
+
+- anchor MAE `3707.14`;
+- P2 MAE **`3012.63`**;
+- uplift **`+694.51 / +18.73%`**;
+- event improvement rate **`61.54%`**;
+- bias `+917.05 seats`;
+- worst degradation `1488.34 seats`.
+
+Versus raw Stage B1:
+
+- another `242.05 seats` lower MAE;
+- worst-event degradation reduced `52.00%`;
+- absolute bias reduced `37.14%`.
+
+24–48h:
+
+- MAE `2752.56`;
+- uplift `+954.58 / +25.75%`.
+
+48–72h:
+
+- MAE `3927.67`;
+- uplift `+664.71 / +14.47%`;
+- event improvement rate `70%`;
+- worst degradation `2413.28 seats`.
+
+Historical exposed subsets:
+
+- original subset `+103.55 MAE`;
+- later subset `+1640.04 MAE`.
+
+Both signs are positive after P2 gating.
+
+---
+
+# Stage B3 — historical package seal — COMPLETE
+
+Package:
+
+`d2-long72-stage2-p2-observation-maturity-2026-10-21-v1`
+
+Manifest:
+
+`ml/artifacts/d2_long72_stage2_p2_v1/manifest.json`
+
+Status:
+
+`FROZEN_HISTORICAL_RESEARCH_PACKAGE`
+
+Exact early-live package for `24<h<=72`:
+
+`T-3 anchor + P2 reliability * inventory-linear-extrapolation delta`
+
+P2 observation weights:
+
+- first `0.25`;
+- second `0.60`;
+- third+ `1.00`.
+
+P2 time weights:
+
+- 60–72h `0.75`;
+- 48–60h `0.90`;
+- 24–48h `1.00`.
+
+Reliability:
+
+`min(observation_weight, time_weight)`
+
+Package evidence class:
+
+`EXPOSED_HISTORICAL_R_AND_D`
+
+Production allowed:
+
+`false`
+
+Forward evidence required:
+
+`true`
+
+---
+
+# Stage C — forward scoring without retuning — NEXT
+
+Purpose:
+
+> Test whether the sealed historical package generalizes to genuinely later events while preserving exact package logic.
+
+## Forward-scoring contract requirements
+
+1. pin package ID + manifest hash;
+2. never refit inventory extrapolation from outcome labels;
+3. never change P2 weights after future results are observed;
+4. create/store row predictions at their actual as-of timestamps;
+5. preserve event, snapshot, capacity, anchor and package lineage;
+6. only score against attendance outcome after the prediction exists;
+7. keep event as independent scoring unit;
+8. report overall 24–72h plus 24–48h and 48–72h;
+9. report MAE, bias, event improvement rate, worst degradation and revision magnitude;
+10. classify evidence explicitly.
+
+## Evidence classes
+
+At minimum distinguish:
+
+- `DELAYED_LABEL_DIAGNOSTIC`: prediction lineage predates outcome availability, but event is not a clean post-package-freeze prospective sample;
+- `TRUE_POST_FREEZE_PROSPECTIVE`: event/predictions occur after the sealed package cutoff and package was unchanged before outcome.
+
+Do not count delayed-label diagnostics as true promotion evidence.
+
+## Frozen package must not learn from scoring
+
+Forward outcomes may:
+
+- reveal failure modes;
+- justify a future new challenger ID;
+- trigger a new research cycle.
+
+They may not:
+
+- alter the current package weights;
+- alter the current inventory expert;
+- alter the current selector retrospectively.
+
+---
+
+# Separate future branch — 72–168h / T-7-aware R&D
+
+The changed Pre-Live v3 T-7 package becomes materially relevant only beyond the current 72h learned boundary.
+
+Reopen this branch only when:
+
+`independent events with >72h valid coverage >= 9`
+
+Then create a separate versioned target/anchor experiment. Do not mutate the sealed long72 package.
+
+---
+
+# Evidence rules
+
+- no random snapshot split;
+- independent unit = event;
+- no future interpolation;
+- no outcome-derived live features;
+- no relabeling exposed historical events as unseen;
+- pinned inputs/hashes for every downstream experiment;
+- historical success is not production evidence;
+- new forward outcomes do not retune frozen packages.
+
+# Engineering rule
+
+Every material experiment:
+
+`source -> tests -> CI -> pinned inputs -> machine JSON -> artifact + hashes -> human result -> decision -> canonical docs`
 
 ## Production boundary
 
 Always:
 
 - Track-A v2/Ridge/P2 unchanged;
-- v3 research-only;
-- long-horizon work research-only;
+- Pre-Live v3 research-only;
+- long72 P2 package research-only until forward evidence exists;
 - production `live_adjustment = 0`.
