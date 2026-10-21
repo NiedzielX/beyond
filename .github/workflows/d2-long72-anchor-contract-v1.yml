@@ -1,0 +1,133 @@
+name: d2 Long72 Anchor Contract v1
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - "ml/d2_long72_anchor_contract_v1.py"
+      - "ml/test_d2_long72_anchor_contract_v1.py"
+      - "supabase/sql/d2_capacity_registry_export_v1.sql"
+      - "supabase/functions/c1_alpha_training_export_v1/index.ts"
+      - ".github/workflows/d2-long72-anchor-contract-v1.yml"
+  push:
+    branches:
+      - main
+    paths:
+      - "ml/d2_long72_anchor_contract_v1.py"
+      - "ml/test_d2_long72_anchor_contract_v1.py"
+      - "supabase/sql/d2_capacity_registry_export_v1.sql"
+      - "supabase/functions/c1_alpha_training_export_v1/index.ts"
+      - ".github/workflows/d2-long72-anchor-contract-v1.yml"
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: |
+          python -m pip install --upgrade pip
+          pip install numpy==2.3.5 pandas==2.2.3 scikit-learn==1.8.0 joblib==1.5.3
+      - name: Compile and unit checks
+        run: |
+          python -m py_compile ml/d2_long72_anchor_contract_v1.py
+          python -m py_compile ml/test_d2_long72_anchor_contract_v1.py
+          python -m ml.test_d2_long72_anchor_contract_v1
+      - name: Static support export checks
+        run: |
+          grep -q "export_d2_capacity_registry_v1" supabase/sql/d2_capacity_registry_export_v1.sql
+          grep -q '"v8-capacity": "export_d2_capacity_registry_v1"' supabase/functions/c1_alpha_training_export_v1/index.ts
+
+  evaluate-main:
+    if: github.event_name != 'pull_request'
+    needs: validate
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: |
+          python -m pip install --upgrade pip
+          pip install numpy==2.3.5 pandas==2.2.3 scikit-learn==1.8.0 joblib==1.5.3
+      - name: Request main-only OIDC token
+        run: |
+          set -euo pipefail
+          response=$(curl --retry 4 --retry-all-errors --retry-delay 2 -fsS \
+            -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
+            "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=beyond-c1-alpha-training")
+          token=$(printf '%s' "$response" | jq -r '.value')
+          test -n "$token"
+          test "$token" != "null"
+          echo "::add-mask::$token"
+          echo "C1_ALPHA_OIDC_TOKEN=$token" >> "$GITHUB_ENV"
+      - name: Fetch long72 input exports
+        run: |
+          set -euo pipefail
+          base='https://adchzwqboeekhokapxqi.supabase.co/functions/v1/c1_alpha_training_export_v1'
+          fetch_export() {
+            local version="$1" output="$2" attempt=1 code=''
+            while [ "$attempt" -le 5 ]; do
+              code=$(curl -sS --connect-timeout 20 --max-time 90 \
+                -H "Authorization: Bearer $C1_ALPHA_OIDC_TOKEN" \
+                -o "$output" -w '%{http_code}' "$base?version=$version" || true)
+              if [ "$code" = "200" ] && jq -e '.ok == true' "$output" >/dev/null 2>&1; then
+                echo "Fetched $version on attempt $attempt"
+                return 0
+              fi
+              sleep $((attempt * 2)); attempt=$((attempt + 1))
+            done
+            echo "Failed $version http=$code" >&2; return 1
+          }
+          fetch_export v7-events /tmp/events.json
+          fetch_export v7-attendance /tmp/attendance.json
+          fetch_export v7-sporting /tmp/sporting.json
+          fetch_export v7-aliases /tmp/aliases.json
+          fetch_export v8-capacity /tmp/capacity.json
+          fetch_export v8-long168 /tmp/long168.json
+      - name: Build and freeze long72 data + anchor contract
+        run: |
+          python -m ml.d2_long72_anchor_contract_v1 \
+            --events /tmp/events.json \
+            --attendance /tmp/attendance.json \
+            --sporting /tmp/sporting.json \
+            --aliases /tmp/aliases.json \
+            --capacity /tmp/capacity.json \
+            --long168 /tmp/long168.json \
+            --structural-artifact-dir ml/artifacts/structural_prior_runtime_v1 \
+            --v2-manifest ml/artifacts/pre_live_v2_historical_candidate_v1/manifest.json \
+            --v3-manifest ml/artifacts/pre_live_v3_historical_candidate_v1/manifest.json \
+            --output-json /tmp/d2-long72-contract.json \
+            --output-csv /tmp/d2-long72-dataset.csv
+          jq -e '
+            .status == "FROZEN_LONG72_DATA_AND_ANCHOR_CONTRACT"
+            and .dataset.event_count == 14
+            and .dataset.row_count == 130
+            and .dataset.rows_by_band."0_24h" == 50
+            and .dataset.rows_by_band."24_48h" == 45
+            and .dataset.rows_by_band."48_72h" == 35
+            and .anchor_rule.future_checkpoint_use_allowed == false
+            and .model_training_performed == false
+          ' /tmp/d2-long72-contract.json >/dev/null
+      - name: Print contract and hashes
+        run: |
+          jq '{status,window_hours,anchor_rule,dataset,replay,lineage,next}' /tmp/d2-long72-contract.json
+          sha256sum /tmp/d2-long72-contract.json
+          sha256sum /tmp/d2-long72-dataset.csv
+      - name: Upload frozen long72 dataset contract
+        uses: actions/upload-artifact@v4
+        with:
+          name: d2-long72-anchor-contract-v1-${{ github.run_id }}
+          path: |
+            /tmp/d2-long72-contract.json
+            /tmp/d2-long72-dataset.csv
+          if-no-files-found: error
+          retention-days: 90
