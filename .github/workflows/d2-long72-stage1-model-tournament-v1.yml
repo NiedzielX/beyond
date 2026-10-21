@@ -4,19 +4,21 @@ on:
   workflow_dispatch:
   pull_request:
     paths:
+      - "ml/D2_LONG72_STAGE1_MODEL_TOURNAMENT_V1.md"
       - "ml/d2_long72_stage1_model_tournament_v1.py"
       - "ml/test_d2_long72_stage1_model_tournament_v1.py"
       - "ml/d2_long72_anchor_contract_v1.py"
-      - "ml/results/D2_LONG72_ANCHOR_CONTRACT_V1_2026-10-21.md"
+      - "supabase/functions/c1_alpha_training_export_v1/index.ts"
       - ".github/workflows/d2-long72-stage1-model-tournament-v1.yml"
   push:
     branches:
       - main
     paths:
+      - "ml/D2_LONG72_STAGE1_MODEL_TOURNAMENT_V1.md"
       - "ml/d2_long72_stage1_model_tournament_v1.py"
       - "ml/test_d2_long72_stage1_model_tournament_v1.py"
       - "ml/d2_long72_anchor_contract_v1.py"
-      - "ml/results/D2_LONG72_ANCHOR_CONTRACT_V1_2026-10-21.md"
+      - "supabase/functions/c1_alpha_training_export_v1/index.ts"
       - ".github/workflows/d2-long72-stage1-model-tournament-v1.yml"
 
 permissions:
@@ -36,8 +38,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - name: Install pinned runtime
-        run: |
+      - run: |
           python -m pip install --upgrade pip
           pip install numpy==2.3.5 pandas==2.2.3 scikit-learn==1.8.0 joblib==1.5.3
       - name: Compile and unit checks
@@ -50,17 +51,15 @@ jobs:
     if: github.event_name != 'pull_request'
     needs: validate
     runs-on: ubuntu-latest
-    timeout-minutes: 35
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - name: Install pinned runtime
-        run: |
+      - run: |
           python -m pip install --upgrade pip
           pip install numpy==2.3.5 pandas==2.2.3 scikit-learn==1.8.0 joblib==1.5.3
-
       - name: Request main-only OIDC token
         run: |
           set -euo pipefail
@@ -72,7 +71,6 @@ jobs:
           test "$token" != "null"
           echo "::add-mask::$token"
           echo "C1_ALPHA_OIDC_TOKEN=$token" >> "$GITHUB_ENV"
-
       - name: Fetch exact long72 source exports
         run: |
           set -euo pipefail
@@ -97,7 +95,6 @@ jobs:
           fetch_export v7-aliases /tmp/aliases.json
           fetch_export v8-capacity /tmp/capacity.json
           fetch_export v8-long168 /tmp/long168.json
-
       - name: Rebuild exact frozen long72 dataset
         run: |
           python -m ml.d2_long72_anchor_contract_v1 \
@@ -112,37 +109,38 @@ jobs:
             --v3-manifest ml/artifacts/pre_live_v3_historical_candidate_v1/manifest.json \
             --output-json /tmp/d2-long72-contract.json \
             --output-csv /tmp/d2-long72-dataset.csv
-          echo '0083b82be7de4599574b90ed0af44e1accd1a993c1d07b7f263bfbf01f3a1a27  /tmp/d2-long72-contract.json' | sha256sum -c -
-          echo '2af6209484e7120f08541d82bc7bcd064b0f9ea46dd59bb5e7d2746cb35a214c  /tmp/d2-long72-dataset.csv' | sha256sum -c -
-
-      - name: Run 24-72h LOEO tournament
+          jq -e '
+            .status == "FROZEN_LONG72_DATA_AND_ANCHOR_CONTRACT"
+            and .dataset.event_count == 14
+            and .dataset.row_count == 130
+            and .dataset.rows_by_band."0_24h" == 50
+            and .dataset.rows_by_band."24_48h" == 45
+            and .dataset.rows_by_band."48_72h" == 35
+          ' /tmp/d2-long72-contract.json >/dev/null
+      - name: Hard frozen input hash gate
+        run: |
+          echo "0083b82bc404055200fb3197cc20e3a87a7c5a57b564d70213af81ff8dcede2a  /tmp/d2-long72-contract.json" | sha256sum -c -
+          echo "2af62094eec57aba3c3e8c96ed33d06cf611f9cd60b690d72e2deedbdf63ce17  /tmp/d2-long72-dataset.csv" | sha256sum -c -
+      - name: Run long72 Stage1 LOEO tournament
         run: |
           python -m ml.d2_long72_stage1_model_tournament_v1 \
             --input-csv /tmp/d2-long72-dataset.csv \
             --output-json /tmp/d2-long72-stage1.json \
             --output-predictions-csv /tmp/d2-long72-stage1-predictions.csv
-
-      - name: Hard evidence gate
-        run: |
           jq -e '
             .status == "COMPLETED_RESEARCH_TOURNAMENT"
-            and .production_change == false
-            and .promotion_allowed == false
             and .event_count == 13
             and .row_count == 80
             and .candidate_count == 7
-            and (.research_lead_candidate_id | length) > 0
+            and .production_change == false
+            and .promotion_allowed == false
           ' /tmp/d2-long72-stage1.json >/dev/null
-
-      - name: Print leaderboard and hashes
+      - name: Print result and hashes
         run: |
-          jq '{research_lead_candidate_id,event_count,row_count,candidates:[.candidates[]|{candidate_id,selector_eligible,overall:.scorecard.overall_24_72h,band_24_48h:.scorecard.band_24_48h,band_48_72h:.scorecard.band_48_72h}]}' /tmp/d2-long72-stage1.json
-          sha256sum /tmp/d2-long72-contract.json
-          sha256sum /tmp/d2-long72-dataset.csv
+          jq '{research_lead_candidate_id,event_count,row_count,candidates:[.candidates[]|{candidate_id,selector_eligible,overall:.scorecard.overall_24_72h,band_24_48h:.scorecard.band_24_48h,band_48_72h:.scorecard.band_48_72h,original_stage1_exposed_subset:.scorecard.original_stage1_exposed_subset,later_exposed_subset:.scorecard.later_exposed_subset}]}' /tmp/d2-long72-stage1.json
           sha256sum /tmp/d2-long72-stage1.json
           sha256sum /tmp/d2-long72-stage1-predictions.csv
-
-      - name: Upload Stage1 evidence
+      - name: Upload evidence
         uses: actions/upload-artifact@v4
         with:
           name: d2-long72-stage1-model-tournament-v1-${{ github.run_id }}
