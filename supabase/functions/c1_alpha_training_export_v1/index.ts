@@ -57,6 +57,7 @@ const ROUTES: Record<string, string> = {
   "v7-aliases": "export_c1_alpha_v7_aliases_v1",
   "v7-hybrid": "export_c1_alpha_v7_hybrid_v1",
   "v8-long168": "export_d2_long_horizon_168_rows_v1",
+  "v8-capacity": "export_d2_capacity_registry_v1",
   "d2-readiness": "export_d2_prospective_readiness_v1",
 };
 
@@ -86,9 +87,9 @@ Deno.serve(async (req: Request) => {
       ? (raw[0]?.[rpcName] ?? raw[0]?.payload ?? raw[0])
       : raw;
 
-    if (requestedVersion === "v7-attendance" || requestedVersion === "v7-sporting" || requestedVersion === "v7-aliases" || requestedVersion === "v7-hybrid") {
+    if (requestedVersion === "v7-attendance" || requestedVersion === "v7-sporting" || requestedVersion === "v7-aliases" || requestedVersion === "v7-hybrid" || requestedVersion === "v8-capacity") {
       const rowCount = Number(payload?.rowCount ?? 0);
-      if (rowCount < 1) throw new Error(`invalid C1 split payload rows=${rowCount}`);
+      if (rowCount < 1) throw new Error(`invalid split/support payload rows=${rowCount}`);
     } else {
       const eventCount = Number(payload?.eventCount ?? 0);
       if (eventCount < 2) throw new Error(`invalid C1 training payload events=${eventCount}`);
@@ -118,7 +119,7 @@ Deno.serve(async (req: Request) => {
   } catch (error) {
     return json({
       ok: false,
-      version: "c1-alpha-training-export-gateway-v7-long168",
+      version: "c1-alpha-training-export-gateway-v8-long72-support",
       error: String(error),
       repository: claims.repository,
       sha: claims.sha || null,
