@@ -1,6 +1,6 @@
 # Beyond Ticketing — Live Demand Engine v1 Plan
 
-Last updated: **2026-10-19**
+Last updated: **2026-10-21**
 
 ## Current position
 
@@ -15,19 +15,34 @@ Last updated: **2026-10-19**
 > **d2 Stage 1: DONE / ridge-a10 FROZEN**  
 > **d2 Stage 2: DONE / P2-observation-maturity FROZEN**  
 > **d2 Event 5 chronological holdout: COMPLETE**  
-> **d2 prospective accumulation: ACTIVE**
+> **d2 prospective validation: ACTIVE IN TRACK A**  
+> **Pre-Live v3 anchor/regime R&D: ACTIVE IN TRACK B**
 
 Canonical documents:
 
 - `ml/MODEL_ACCURACY_DEVELOPMENT_INSTRUCTIONS_V2.md`;
 - `ml/CURRENT_MODEL.md`;
 - `ml/DEMAND_FORECAST_DEVELOPMENT_PLAN_V2.md`;
+- `ml/results/A2_EXTERNAL_ENSEMBLE_FIXED_TEMPORAL_V1_2026-10-21.md`;
 - `ml/D2_PROSPECTIVE_ACCUMULATION_V1.md`;
 - `ml/results/D2_EVENT5_HOLDOUT_V1_2026-10-19.md`;
-- `ml/results/D2_STAGE2_RELIABILITY_GATING_V1_2026-10-19.md`;
 - `AI_BOOTSTRAP.md`.
 
-## Frozen architecture
+## Two-track rule
+
+### Track A — frozen live validation
+
+Keep the current v2/Ridge/P2 stack unchanged and score new outcomes append-only.
+
+### Track B — active model R&D
+
+Model development does **not** wait for a prospective sample-count threshold.
+
+Current priority is Pre-Live v3 anchor/regime research because the historical anchor has new robust challenger evidence. If v3 earns a freeze, d2 must be rebuilt/revalidated against that new anchor under a new d2 version.
+
+> **Production promotion waits for prospective evidence. R&D does not.**
+
+## Frozen architecture — Track A
 
 Pre-live:
 
@@ -136,29 +151,15 @@ Development result:
 - worst degradation `1081.72`;
 - 75% reduction in worst degradation vs raw Ridge.
 
-Only P2 passed all predeclared gates.
+Only P2 passed all predeclared Stage-2 gates.
 
 ---
 
 # Event 5 first chronological holdout — COMPLETE
 
-Canonical result:
-
-`ml/results/D2_EVENT5_HOLDOUT_V1_2026-10-19.md`
-
-Run:
-
-`39310995137`
-
-Artifact ID:
-
-`12215538287`
-
 Event:
 
 Lech Poznań vs Korona Kielce, actual `37,407`.
-
-## Holdout layer scorecard
 
 | Layer | Latest error | Window MAE |
 |---|---:|---:|
@@ -174,88 +175,85 @@ D2 latest improvement vs Frozen v2:
 
 `3179.71 seats / 32.34%`
 
-D2 latest improvement vs persisted C1 v8 policy:
-
-`1016.26 seats`
-
-## Holdout interpretation
-
-Positive:
-
-- the live Ridge layer materially corrected a severe Pre-Live v2 miss;
-- frozen d2 latest outperformed the persisted C1 v8 decision on this event;
-- P2 reached reliability `1.0` on mature observations as designed.
-
-Risk/diagnostic:
-
-- final d2 still underpredicted by `6652.81 seats`;
-- P2's early conservatism worsened trajectory-window MAE versus raw Ridge on this event;
-- frozen b2 moved the pre-live anchor down by `2163.45 seats`, worsening its error by the same amount versus Structural T-1 base.
-
-No tuning follows from these observations.
+Event 5 is permanently exposed and cannot become unseen validation again.
 
 ---
 
-# Prospective accumulation — ACTIVE NOW
+# Prospective validation — ACTIVE IN TRACK A
 
 Contract:
 
 `ml/D2_PROSPECTIVE_ACCUMULATION_V1.md`
 
-The live-engine workstream is now an evidence-collection system around a frozen package.
+For each new completed event, persist separately:
 
-For each new eligible completed event, compute and persist:
+1. Structural T-1 base;
+2. Frozen Pre-Live v2 / b2;
+3. raw frozen Ridge;
+4. frozen P2;
+5. genuine persisted pre-outcome C1 comparator where available.
 
-## A. Structural base
+Track:
 
-- T-1 base p50;
-- latest absolute error.
-
-## B. Frozen Pre-Live v2 / b2
-
-- b2 correction seats/fraction;
-- prior same-season home-match count;
-- Frozen-v2 p50;
-- absolute error;
-- incremental error change vs Structural base.
-
-## C. Raw frozen Ridge
-
-Per observation:
-
-- raw predicted live delta;
-- clipped/governed delta;
-- revised forecast;
-- absolute error.
-
-At event level:
-
-- latest error;
+- latest AE;
 - event-balanced window MAE;
-- improvement/degradation vs Frozen v2.
+- bias;
+- max revision;
+- b2 incremental effect;
+- Ridge incremental effect;
+- P2 incremental effect;
+- reliability trajectory;
+- data-quality warnings;
+- evidence class.
 
-## D. Frozen P2
+Evidence classes:
 
-Per observation:
+- `DELAYED_LABEL_HOLDOUT`;
+- `TRUE_POST_FREEZE_PROSPECTIVE`.
 
-- observation index;
-- time-to-kickoff;
-- reliability;
-- applied live delta;
-- revised forecast;
-- absolute error.
+Never combine them into one headline forward sample size.
 
-At event level:
+---
 
-- latest error;
-- window MAE;
-- incremental contribution vs raw Ridge and Frozen v2.
+# Delayed-label diagnostics
 
-## E. Frozen C1 v8 comparator
+Recovered labels show that frozen d2 does not improve every match:
 
-Use only real persisted pre-outcome evidence.
+- GKS Katowice–Pogoń: Frozen Pre-Live latest error about `1,356`, d2/P2 about `2,074`;
+- Cracovia–Legia: Frozen about `434`, d2/P2 about `1,068`.
 
-Never reconstruct C1 after the outcome and call it prospective.
+These are exposed diagnostics. Do not tune frozen Ridge/P2 from them and later call the same events unseen.
+
+Data/capacity/truth-source blockers should be repaired as data-contract work and must not block unrelated Track-B R&D.
+
+---
+
+# Active Track-B anchor work — Pre-Live v3
+
+The completed a2 external/ensemble robustness audit produced robust historical challengers at T-30, T-7 and T-1.
+
+If a new Pre-Live v3 anchor is built, current b2 must be revalidated against it before any freeze because current-season residuals are anchor-dependent.
+
+Do not silently move frozen d2 onto a new anchor.
+
+---
+
+# d2 next-generation research boundary
+
+A new versioned d2 challenger does **not** require waiting for N future events if it can be evaluated honestly under a declared boundary.
+
+Possible later formulations:
+
+- remaining-demand target;
+- alternative capacity-normalized residual target;
+- anchor-error direction/magnitude;
+- learned reliability;
+- compact heterogeneous live-model ensemble;
+- materially different trajectory/TSFM target.
+
+However, once Pre-Live v3 is the active anchor candidate, the cleanest next live-model cycle is to rebuild d2 after the v3 anchor decision so the live target is defined relative to the correct anchor.
+
+The old Ridge/P2 package remains frozen against v2 as the benchmark.
 
 ---
 
@@ -269,11 +267,10 @@ Every meaningful forecast revision should retain:
 
 - as-of timestamp;
 - source snapshot IDs;
-- Frozen-v2 lineage;
-- Ridge model ID;
-- P2 policy ID;
-- proposed raw correction;
-- P2 reliability;
+- anchor lineage;
+- live model ID;
+- reliability policy ID;
+- proposed correction;
 - applied correction;
 - forecast before/after;
 - quality/release/coverage warnings.
@@ -284,7 +281,7 @@ Every meaningful forecast revision should retain:
 
 Public availability is a proxy, not confirmed paid sales.
 
-The live engine must distinguish where possible:
+Distinguish where possible:
 
 - genuine demand movement;
 - ticket releases;
@@ -292,84 +289,15 @@ The live engine must distinguish where possible:
 - coverage changes;
 - scrape/data anomalies.
 
-Do not interpret every decrease/increase as pure demand.
-
----
-
-# Prospective failure hypotheses to monitor
-
-## H1 — b2 negative overreaction
-
-Event 5 signal:
-
-- Structural T-1 base `29737.93`;
-- Frozen-v2 `27574.48`;
-- b2 correction `-2163.45`;
-- actual `37407`.
-
-Status:
-
-`ONE PROSPECTIVE SIGNAL / NOT PROVEN`
-
-Track across future events. Do not retune now.
-
-## H2 — P2 early conservatism cost
-
-Event 5 showed useful early Ridge corrections were shrunk by P2.
-
-Status:
-
-`ONE HOLDOUT OBSERVATION / NOT A SYSTEMATIC FAILURE`
-
-Track raw Ridge vs P2 error by observation maturity prospectively.
-
----
-
-# Accuracy evaluation
-
-For every prospective event report:
-
-- latest AE per layer;
-- window MAE per live layer;
-- bias;
-- max live revision;
-- b2 incremental effect;
-- Ridge incremental effect;
-- P2 incremental effect;
-- reliability trajectory;
-- quality warnings.
-
-Across accumulated events report:
-
-- mean/median latest AE;
-- event-balanced window MAE;
-- bias;
-- p90/worst event;
-- event improvement rate;
-- cumulative component contribution.
-
----
-
-# Reopening / retraining gate
-
-Do not mutate the frozen package event by event.
-
-A new versioned challenger requires:
-
-1. materially more independent prospective events;
-2. repeated interpretable failure mode;
-3. hypothesis declared before tuning;
-4. frozen d2 retained as benchmark;
-5. new explicit train/development/forward split;
-6. honest labeling of already-exposed prospective events.
+Do not interpret every inventory decrease/increase as pure demand.
 
 ---
 
 # Production promotion
 
-One event-5 holdout is insufficient.
+Historical/LOEO evidence and a small number of holdouts are insufficient for production promotion.
 
-Promotion requires materially more prospective evidence, positive aggregate uplift, acceptable tail risk, no unresolved systematic failure, a frozen reproducible package and explicit reviewed approval.
+Promotion requires materially more genuine prospective evidence, positive aggregate uplift, acceptable tail risk/bias, a frozen reproducible package and explicit reviewed approval.
 
 Until then:
 
@@ -377,4 +305,4 @@ Until then:
 
 ## Immediate live-engine instruction
 
-> **Keep `d2-stage2-p2-observation-maturity-2026-10-19-v1` frozen. Build/operate append-only prospective scoring for new completed events, persist Structural -> b2 -> Ridge -> P2 -> genuine C1 diagnostics separately, monitor the event-5 b2/P2 signals without tuning them, and only open a new versioned challenger after materially more independent evidence.**
+> **Keep `d2-stage2-p2-observation-maturity-2026-10-19-v1` frozen in Track A and continue append-only prospective scoring. Do not use prospective sample-count gates to pause Track-B R&D. Active model work is the Pre-Live v3 anchor/regime cycle; if v3 later freezes, rebuild d2 against that anchor under a new version instead of silently reusing Ridge/P2.**
