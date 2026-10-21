@@ -12,19 +12,20 @@ from ml.d2_long72_stage1_model_tournament_v1 import (
 
 def test_early_frame_keeps_only_24_72h() -> None:
     rows = []
-    # Build exact expected contract shape: 13 early events / 80 rows plus one
-    # final24-only event so the full input has 14 event IDs.
+    # Exact early contract shape: 13 early events / 80 rows. Counts >=5 create
+    # a 48-72h observation when spaced by 6h; exactly 10 events meet that rule.
     event_ids = [1, 3, 4, 5, 8, 9, 11, 12, 14, 15, 17, 18, 19]
     counts = [8, 8, 8, 8, 2, 5, 8, 1, 6, 8, 2, 8, 8]
     for event_id, count in zip(event_ids, counts):
         for index in range(count):
             rows.append({
                 "ticket_event_id": event_id,
-                "hours_to_kickoff": 30.0 + index,
+                "hours_to_kickoff": 30.0 + 6.0 * index,
                 "anchor_horizon": "T-3",
             })
     assert len(rows) == 80
-    # Pad final24 rows to full 130 and ensure 14 full event IDs.
+
+    # Pad final24 rows to full 130 and ensure the full contract has 14 events.
     for index in range(50):
         rows.append({
             "ticket_event_id": 13 if index == 0 else event_ids[index % len(event_ids)],
@@ -32,13 +33,10 @@ def test_early_frame_keeps_only_24_72h() -> None:
             "anchor_horizon": "T-1",
         })
     frame = pd.DataFrame(rows)
-    # Ensure exactly 10 events have 48-72h rows by moving three events below 48h.
-    for event_id in (8, 12, 17):
-        mask = frame["ticket_event_id"] == event_id
-        frame.loc[mask & (frame["hours_to_kickoff"] > 24), "hours_to_kickoff"] = 36.0
     early = early_frame(frame)
     assert len(early) == 80
     assert early["ticket_event_id"].nunique() == 13
+    assert early.loc[early["hours_to_kickoff"] > 48, "ticket_event_id"].nunique() == 10
     assert (early["hours_to_kickoff"] > 24).all()
     assert (early["hours_to_kickoff"] <= 72).all()
 
