@@ -58,6 +58,7 @@ const ROUTES: Record<string, string> = {
   "v7-hybrid": "export_c1_alpha_v7_hybrid_v1",
   "v8-long168": "export_d2_long_horizon_168_rows_v1",
   "v8-capacity": "export_d2_capacity_registry_v1",
+  "v9-long72-forward": "export_d2_long72_forward_rows_v1",
   "d2-readiness": "export_d2_prospective_readiness_v1",
 };
 
@@ -87,7 +88,28 @@ Deno.serve(async (req: Request) => {
       ? (raw[0]?.[rpcName] ?? raw[0]?.payload ?? raw[0])
       : raw;
 
-    if (requestedVersion === "v7-attendance" || requestedVersion === "v7-sporting" || requestedVersion === "v7-aliases" || requestedVersion === "v7-hybrid" || requestedVersion === "v8-capacity") {
+    if (requestedVersion === "v9-long72-forward") {
+      const eventCount = Number(payload?.eventCount ?? 0);
+      const liveRowCount = Number(payload?.liveRowCount ?? 0);
+      if (eventCount < 0 || liveRowCount < 0) {
+        throw new Error("invalid long72 forward counts");
+      }
+      if (payload?.version !== "d2-long72-forward-rows-v1") {
+        throw new Error(`invalid long72 forward version=${payload?.version}`);
+      }
+      if (payload?.packageId !== "d2-long72-stage2-p2-observation-maturity-2026-10-21-v1") {
+        throw new Error(`invalid long72 forward package=${payload?.packageId}`);
+      }
+      if (payload?.outcomeAccessAllowed !== false) {
+        throw new Error("long72 forward export must remain outcome-free");
+      }
+      if ((Array.isArray(payload?.events) ? payload.events.length : 0) !== eventCount) {
+        throw new Error("long72 forward eventCount mismatch");
+      }
+      if ((Array.isArray(payload?.liveRows) ? payload.liveRows.length : 0) !== liveRowCount) {
+        throw new Error("long72 forward liveRowCount mismatch");
+      }
+    } else if (requestedVersion === "v7-attendance" || requestedVersion === "v7-sporting" || requestedVersion === "v7-aliases" || requestedVersion === "v7-hybrid" || requestedVersion === "v8-capacity") {
       const rowCount = Number(payload?.rowCount ?? 0);
       if (rowCount < 1) throw new Error(`invalid split/support payload rows=${rowCount}`);
     } else {
@@ -119,7 +141,7 @@ Deno.serve(async (req: Request) => {
   } catch (error) {
     return json({
       ok: false,
-      version: "c1-alpha-training-export-gateway-v8-long72-support",
+      version: "c1-alpha-training-export-gateway-v9-long72-forward",
       error: String(error),
       repository: claims.repository,
       sha: claims.sha || null,
