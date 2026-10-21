@@ -8,66 +8,43 @@ Status: **CANONICAL ACCURACY ROADMAP**
 
 > **Reduce forecasting MAE as far as possible with honest, reproducible, point-in-time-safe evidence before treating the model as mature.**
 
-Two rules are mandatory:
+Rules:
 
 1. frozen evidence packages are immutable;
-2. **R&D does not wait for prospective sample-count gates when honest research can be run now.**
-
-A failed challenger closes the challenger, not the workstream.
+2. exposed historical evidence must stay labeled exposed;
+3. a failed challenger closes the challenger, not the workstream;
+4. production promotion waits for genuine forward evidence;
+5. production remains `live_adjustment = 0` until explicit reviewed activation.
 
 ---
 
-# 1. Parallel tracks
+# 1. Track A — frozen final24 prospective validation
 
-## Track A — frozen validation / promotion evidence
-
-Current stack:
+Current package:
 
 `Frozen Pre-Live v2 + P2 reliability * frozen ridge-a10 delta`
+
+Pre-Live freeze:
+
+`pre-live-v2-historical-candidate-2026-10-18-v1`
+
+Final24 live package:
+
+`d2-stage2-p2-observation-maturity-2026-10-19-v1`
 
 Purpose:
 
 - delayed-label diagnostics;
-- true post-freeze prospective evidence;
-- eventual production-promotion evidence.
+- true post-freeze prospective scoring;
+- eventual promotion evidence.
 
-Track A remains unchanged.
-
-## Track B — active accuracy R&D
-
-A new pre-live research anchor is now sealed:
-
-`pre-live-v3-historical-candidate-2026-10-21-v1`
-
-Active next work:
-
-`d2-v3 — rebuild/revalidate live updater against Frozen Pre-Live v3`
-
-> **Production promotion waits for prospective evidence. R&D does not.**
+Do not tune Track A from new outcomes.
 
 ---
 
-# 2. Track-A frozen v2
+# 2. Track B — Pre-Live v3 research anchor
 
-Pre-Live v2:
-
-`pre-live-v2-historical-candidate-2026-10-18-v1`
-
-Frozen d2:
-
-`d2-stage2-p2-observation-maturity-2026-10-19-v1`
-
-Production:
-
-`live_adjustment = 0`
-
-Do not mutate this stack from new outcomes.
-
----
-
-# 3. Pre-Live v3 historical R&D — COMPLETE AND SEALED
-
-Freeze ID:
+Freeze:
 
 `pre-live-v3-historical-candidate-2026-10-21-v1`
 
@@ -75,248 +52,197 @@ Manifest:
 
 `ml/artifacts/pre_live_v3_historical_candidate_v1/manifest.json`
 
-Manifest SHA256:
+Only T-30 and T-7 change from v2.
 
-`b8c1a3cb1ddb70e9f6b67a6bc1db23619f26a8c328bf4b78399fc262394ff70a`
+20-cell mean historical MAE:
 
-Freeze result:
+`1934.04 -> 1924.64`, improvement `+9.39 / +0.49%`.
 
-`ml/results/PRE_LIVE_V3_HISTORICAL_FREEZE_V1_2026-10-21.md`
+V3 remains research-only.
 
-## Exact v3 package
-
-| Horizon | historical base | current-season regime |
-|---|---|---|
-| T-30 | `0.75 current a2 + 0.25 XGBoost depth3` | `NO_ADJUSTMENT` |
-| T-14 | exact v2 horizon base | `NO_ADJUSTMENT` |
-| T-7 | `0.25 current a2/HGB + 0.25 CatBoost depth4 + 0.50 LightGBM leaves15` | `ewma50-resid-k4-cap05-min2` |
-| T-3 | exact v2 horizon base | `ewma50-resid-k2-cap05-min3` |
-| T-1 | exact v2 horizon base | `ewma50-resid-k6-cap05-min3` |
-
-Historical c2:
-
-`NO_CONTEXT_ALL_HORIZONS`
-
-## Evidence chain
-
-### a2 external/ensemble closure
-
-Run `39624170933`.
-
-### a2 fixed-temporal robustness
-
-Run `39625425854`.
-
-### v3 current-season-regime revalidation
-
-Run `39627633502`.
-
-Outcome:
-
-- T-30 advance with `NO_ADJUSTMENT`;
-- T-7 advance with `ewma50-resid-k4-cap05-min2`;
-- T-14/T-3/T-1 retain Frozen-v2 horizon package.
-
-### v3 fixed-temporal package audit
-
-Run `39628607689`.
-
-T-30 gains vs v2:
-
-`+5.98 / +33.50 / +54.93 / +29.74`
-
-T-7 gains:
-
-`+10.92 / +11.18 / +13.71 / +27.88`
-
-T-14/T-3/T-1 exact v2 reproduction.
-
-20-cell mean MAE:
-
-`1934.04 -> 1924.64`
-
-Improvement:
-
-`+9.39 / +0.49%`
-
-### v3 freeze seal
-
-Run `39633561065`.
-
-Artifact ID `12360033160`.
-
-Manifest SHA256:
-
-`b8c1a3cb1ddb70e9f6b67a6bc1db23619f26a8c328bf4b78399fc262394ff70a`
-
-Status:
-
-`FROZEN_HISTORICAL_RESEARCH_CANDIDATE`
+Final24 v2/v3 anchor equivalence is proven exactly, so do not rerun a cosmetic final24 model cycle.
 
 ---
 
-# 4. Important v3 interpretation
+# 3. Long-horizon live R&D — COMPLETE THROUGH STAGE 2
 
-V3 is not an all-horizon rewrite.
+## Data contract
 
-Only T-30 and T-7 changed after package-level evidence.
+Additive export:
 
-T-1 was deliberately rejected from v3 even after historical-anchor robustness because the full package vs Frozen v2 was mixed:
+`v8-long168 -> export_d2_long_horizon_168_rows_v1`
 
-- 2024/25 `+1.92`;
-- 2025/26 `-15.39`.
+Coverage evidence:
 
-This is why package-level revalidation matters.
+- 14 eligible labeled events;
+- 240 PIT-safe rows in final 168h;
+- 13 events beyond 24h;
+- 10 beyond 48h;
+- 8 beyond 72h.
 
-V3 remains research-only because:
+Inherited independent-event floor:
 
-- references are exposed historically;
-- aggregate gain is modest;
-- tail risk remains material;
-- no fresh prospective v3 evidence exists yet.
+`N=9`
 
----
+Therefore:
 
-# 5. Track-B priority 1 — d2-v3 — ACTIVE NOW
+- first learned window = final **72h**;
+- 72–168h = diagnostic-only for now.
 
-The live residual target must be rebuilt because the anchor changed.
+## Frozen long72 anchor/data contract
 
-Do not silently reuse `ridge-a10` or P2 from v2.
+Result:
 
-## Stage 0 — v3 anchor replay
+`ml/results/D2_LONG72_ANCHOR_CONTRACT_V1_2026-10-21.md`
 
-Reconstruct exact v3 anchors for the frozen d2 development set:
+Dataset:
 
-- 9 independent events;
-- 30 final-24h live rows;
-- preserve event/as-of identity;
-- no future interpolation;
-- no outcome leakage into live features.
+- 14 events / 130 rows in 0–72h;
+- 24–72h modeling slice: 80 rows / 13 events;
+- 48–72h: 35 rows / 10 events.
 
-Compare:
+Anchor rule:
 
-- v2 Frozen Pre-Live anchor;
-- v3 Frozen research anchor;
-- actual attendance.
+- 0–24h -> T-1;
+- 24–72h -> T-3;
+- no future checkpoint use.
 
-This creates the new d2-v3 target.
+Dataset SHA256:
 
-## Stage 1 — compact live-model tournament
+`2af6209484e7120f08541d82bc7bcd064b0f9ea46dd59bb5e7d2746cb35a214c`
 
-Required benchmark:
+## Stage 1 — early-live expert
 
-`v3-zero-correction`
+Result:
 
-Also retain the old v2/Ridge/P2 stack as an external research comparator.
+`ml/results/D2_LONG72_STAGE1_MODEL_TOURNAMENT_V1_2026-10-21.md`
 
-Candidate families should remain compact and materially different, for example:
+Research lead:
 
-- Ridge;
-- Huber;
-- HGB / LightGBM / CatBoost only where sample size supports them;
-- transparent inventory extrapolation;
-- explicitly governed ensemble only if predeclared.
+`inventory-linear-extrapolation`
 
-No random snapshot split.
+Development:
 
-Primary unit:
+- anchor MAE `3707.14`;
+- raw expert MAE `3254.68`;
+- uplift `+452.46 / +12.21%`.
 
-`event`
+Raw expert had high bias/tail and temporal heterogeneity, so it was not frozen alone.
 
-Selection:
+## Stage 2 — reliability/tail governance
 
-`LOEO / event-balanced`
+Result:
 
-## Stage 2 — reliability / tail governance
+`ml/results/D2_LONG72_STAGE2_RELIABILITY_GATING_V1_2026-10-21.md`
 
-After the Stage-1 expert is frozen, revalidate reliability against v3.
+Frozen research package:
 
-Potential signals:
+`d2-long72-stage2-p2-observation-maturity-2026-10-21-v1`
 
-- observation count;
-- observation span;
-- time to kickoff;
-- correction magnitude;
-- live velocity/acceleration;
-- stability / data-quality flags;
-- disagreement magnitude.
+Manifest:
 
-The existing P2 policy is a benchmark, not an inherited policy.
+`ml/artifacts/d2_long72_stage2_p2_v1/manifest.json`
 
-## TSFM boundary
+Composition:
 
-Old Stage-1 Chronos/Bolt formulation remains closed.
+- scope `24<h<=72`;
+- T-3 frozen checkpoint anchor;
+- Stage-1 inventory linear extrapolation;
+- Stage-1 cap `±0.10` occupancy;
+- Stage-2 `P2-observation-maturity` reliability.
 
-Reopen only if d2-v3 defines a materially different trajectory target/use or materially more independent live trajectories exist.
+Development performance:
 
----
+- MAE `3707.14 -> 3012.63`;
+- uplift `+694.51 / +18.73%`;
+- 24–48h uplift `+954.58 / +25.75%`;
+- 48–72h uplift `+664.71 / +14.47%`;
+- worst degradation `1488.34`;
+- bias `+917.05`;
+- original exposed subset uplift `+103.55`;
+- later exposed subset uplift `+1640.04`.
 
-# 6. Track-A prospective validation continues
+All Stage-2 gates passed.
 
-While d2-v3 R&D runs:
-
-- continue scoring v2/Ridge/P2 append-only;
-- preserve `DELAYED_LABEL_HOLDOUT` vs `TRUE_POST_FREEZE_PROSPECTIVE`;
-- do not mutate Track-A from the scored outcomes;
-- repair truth/capacity/readiness blockers separately.
+P4 data-quality remains a lower-tail-risk alternate but is not substituted because the frozen selector ranked eligible policies by overall MAE first.
 
 ---
 
-# 7. Context research — parallel
+# 4. Active priority — prospective long72 scoring
+
+Do **not** run further same-sample policy tuning on the frozen 13-event Stage-2 evidence.
+
+Build append-only prospective evidence for:
+
+`d2-long72-stage2-p2-observation-maturity-2026-10-21-v1`
+
+For every newly completed eligible event with 24–72h PIT trajectory, preserve:
+
+1. event identity and kickoff;
+2. exact frozen T-3 anchor;
+3. raw inventory correction/forecast;
+4. frozen P2 reliability and forecast;
+5. input snapshot/as-of lineage;
+6. final attendance only when available;
+7. evidence class and whether forecast state existed before label exposure.
+
+Score:
+
+- event-balanced MAE;
+- 24–48h and 48–72h bands;
+- bias;
+- event improvement rate;
+- worst event degradation;
+- revision magnitude.
+
+Do not mutate the package from these outcomes.
+
+---
+
+# 5. 72–168h expansion
+
+Keep the 72–168h band diagnostic-only until independent valid-event coverage reaches the predeclared floor:
+
+`N >= 9`
+
+When it does:
+
+1. freeze exact event/as-of identities;
+2. define a PIT-safe anchor transition involving T-7;
+3. evaluate without reusing future checkpoints;
+4. create a new model/package ID if any target/anchor semantics change.
+
+Do not lower the threshold to accelerate T-7 modeling.
+
+---
+
+# 6. Context research — parallel
 
 Historical c2 remains:
 
 `NO_CONTEXT_ALL_HORIZONS`
 
-Forward PIT-safe collection continues for rivalry, verified absences, sporting context, media/GDELT and valid hype/search/social signals.
+Forward PIT-safe context collection can continue for verified rivalry, absences, sporting state, media/GDELT and valid hype/search/social signals.
 
-Do not backfill final-state knowledge into historical training.
-
----
-
-# 8. What waits and what does not
-
-## Must wait
-
-Only genuinely future evidence:
-
-- future outcomes;
-- future trajectories;
-- forward-only context observations.
-
-## Must not wait
-
-- d2-v3 anchor replay;
-- d2-v3 model tournament;
-- reliability research;
-- PIT-safe feature work;
-- CI/reproducibility work;
-- context ingestion infrastructure.
+Do not backfill final-state knowledge.
 
 ---
 
-# 9. Promotion boundary
+# 7. Promotion boundary
 
-Neither v3 nor future d2-v3 historical/LOEO success is automatic production promotion.
+Neither Pre-Live v3 nor the long72 P2 package is production-ready from historical LOEO evidence alone.
 
-Production requires materially more genuine prospective evidence, acceptable tail risk/bias, a reproducible frozen package and explicit reviewed activation.
+Promotion requires materially more genuine prospective evidence, acceptable tail/bias behavior, frozen reproducible lineage and explicit reviewed activation.
 
 Until then:
 
 `live_adjustment = 0`
 
----
+## Immediate work order
 
-# 10. Immediate work order
-
-1. **start d2-v3 Stage 0 exact anchor replay**;
-2. create the new live residual target against v3;
-3. run compact event-level Stage-1 tournament;
-4. revalidate reliability/tail governance under new IDs;
-5. keep Track-A v2 prospective scoring running in parallel;
-6. continue PIT-safe context collection;
-7. do not activate production.
-
-## One-line rule
-
-> **Pre-Live v3 is sealed. Active R&D moves immediately to d2-v3; Track-A v2/Ridge/P2 remains frozen and production remains unchanged.**
+1. **freeze and use the long72 P2 package exactly as specified**;
+2. build append-only prospective long72 scoring;
+3. continue final24 Track-A scoring independently;
+4. leave 72–168h diagnostic until `N>=9`;
+5. continue PIT-safe context collection;
+6. do not activate production.
