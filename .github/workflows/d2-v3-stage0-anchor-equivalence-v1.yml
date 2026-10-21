@@ -1,0 +1,180 @@
+name: d2-v3 Stage0 Anchor Equivalence v1
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - "ml/D2_V3_STAGE0_ANCHOR_EQUIVALENCE_V1.md"
+      - "ml/d2_v3_stage0_anchor_equivalence_v1.py"
+      - "ml/test_d2_v3_stage0_anchor_equivalence_v1.py"
+      - "ml/d2_live_replay_anchor_v1.py"
+      - "ml/run_d2_live_replay_anchor_v1.py"
+      - "ml/d2_stage1_payload_split_v1.py"
+      - "ml/artifacts/d2_stage0_capacity_audit_v1.json"
+      - "ml/artifacts/c1_shadow_v8/training_contract_v1.json"
+      - "ml/artifacts/pre_live_v2_historical_candidate_v1/manifest.json"
+      - "ml/artifacts/pre_live_v3_historical_candidate_v1/manifest.json"
+      - ".github/workflows/d2-v3-stage0-anchor-equivalence-v1.yml"
+  push:
+    branches:
+      - main
+    paths:
+      - "ml/D2_V3_STAGE0_ANCHOR_EQUIVALENCE_V1.md"
+      - "ml/d2_v3_stage0_anchor_equivalence_v1.py"
+      - "ml/test_d2_v3_stage0_anchor_equivalence_v1.py"
+      - "ml/d2_live_replay_anchor_v1.py"
+      - "ml/run_d2_live_replay_anchor_v1.py"
+      - "ml/d2_stage1_payload_split_v1.py"
+      - "ml/artifacts/d2_stage0_capacity_audit_v1.json"
+      - "ml/artifacts/c1_shadow_v8/training_contract_v1.json"
+      - "ml/artifacts/pre_live_v2_historical_candidate_v1/manifest.json"
+      - "ml/artifacts/pre_live_v3_historical_candidate_v1/manifest.json"
+      - ".github/workflows/d2-v3-stage0-anchor-equivalence-v1.yml"
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: d2-v3-stage0-anchor-equivalence-v1-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  validate-and-evaluate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install pinned runtime
+        run: |
+          python -m pip install --upgrade pip
+          pip install numpy==2.3.5 pandas==2.2.3 scikit-learn==1.8.0 joblib==1.5.3
+
+      - name: Compile and unit checks
+        run: |
+          python -m py_compile ml/d2_v3_stage0_anchor_equivalence_v1.py
+          python -m py_compile ml/test_d2_v3_stage0_anchor_equivalence_v1.py
+          python -m py_compile ml/d2_live_replay_anchor_v1.py
+          python -m py_compile ml/run_d2_live_replay_anchor_v1.py
+          python -m py_compile ml/d2_stage1_payload_split_v1.py
+          python -m ml.test_d2_v3_stage0_anchor_equivalence_v1
+
+      - name: Request C1 training OIDC token
+        shell: bash
+        run: |
+          set -euo pipefail
+          response=$(curl --retry 4 --retry-all-errors --retry-delay 2 -fsS \
+            -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
+            "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=beyond-c1-alpha-training")
+          token=$(printf '%s' "$response" | jq -r '.value')
+          test -n "$token"
+          test "$token" != "null"
+          echo "::add-mask::$token"
+          echo "C1_ALPHA_OIDC_TOKEN=$token" >> "$GITHUB_ENV"
+
+      - name: Fetch append-only C1 replay exports
+        shell: bash
+        run: |
+          set -euo pipefail
+          base='https://adchzwqboeekhokapxqi.supabase.co/functions/v1/c1_alpha_training_export_v1'
+          fetch_export() {
+            local version="$1"
+            local output="$2"
+            local attempts=5
+            local attempt=1
+            local code=''
+            while [ "$attempt" -le "$attempts" ]; do
+              code=$(curl -sS --connect-timeout 20 --max-time 90 \
+                -H "Authorization: Bearer $C1_ALPHA_OIDC_TOKEN" \
+                -o "$output" -w '%{http_code}' "$base?version=$version" || true)
+              if [ "$code" = "200" ] && jq -e '.ok == true' "$output" >/dev/null 2>&1; then
+                return 0
+              fi
+              sleep $((attempt * 2))
+              attempt=$((attempt + 1))
+            done
+            echo "C1 export failed version=$version http=$code" >&2
+            return 1
+          }
+          for part in events attendance sporting aliases; do
+            fetch_export "v7-$part" "/tmp/c1-$part.json"
+          done
+          fetch_export "v7-final24" /tmp/c1-final24.json
+
+      - name: Reconstruct exact frozen 9-event / 30-row development payload
+        run: |
+          python -m ml.d2_stage1_payload_split_v1 \
+            --events /tmp/c1-events.json \
+            --attendance /tmp/c1-attendance.json \
+            --sporting /tmp/c1-sporting.json \
+            --aliases /tmp/c1-aliases.json \
+            --live /tmp/c1-final24.json \
+            --training-contract ml/artifacts/c1_shadow_v8/training_contract_v1.json \
+            --output-frozen /tmp/d2-frozen-input.json \
+            --output-split-manifest /tmp/d2-split-manifest.json
+          jq -e '.frozen_development.event_count == 9 and .frozen_development.live_row_count == 30' \
+            /tmp/d2-split-manifest.json >/dev/null
+
+      - name: Rebuild exact Frozen-v2 Stage0 replay
+        run: |
+          python -m ml.run_d2_live_replay_anchor_v1 \
+            --input /tmp/d2-frozen-input.json \
+            --structural-artifact-dir ml/artifacts/structural_prior_runtime_v1 \
+            --freeze-manifest ml/artifacts/pre_live_v2_historical_candidate_v1/manifest.json \
+            --c1-training-contract ml/artifacts/c1_shadow_v8/training_contract_v1.json \
+            --capacity-audit ml/artifacts/d2_stage0_capacity_audit_v1.json \
+            --output-json /tmp/d2-stage0-v2.json \
+            --output-csv /tmp/d2-stage0-v2.csv
+          jq -e '.status == "FROZEN_V2_EXACT_COMPATIBILITY_READY" and .dataset.event_count == 9 and .dataset.row_count == 30' \
+            /tmp/d2-stage0-v2.json >/dev/null
+
+      - name: Run v2-v3 final24 anchor equivalence gate
+        run: |
+          python -m ml.d2_v3_stage0_anchor_equivalence_v1 \
+            --stage0-csv /tmp/d2-stage0-v2.csv \
+            --v2-manifest ml/artifacts/pre_live_v2_historical_candidate_v1/manifest.json \
+            --v3-manifest ml/artifacts/pre_live_v3_historical_candidate_v1/manifest.json \
+            --output-json /tmp/d2-v3-stage0-equivalence.json \
+            --output-csv /tmp/d2-v3-stage0-equivalence.csv
+
+      - name: Hard equivalence decision gate
+        run: |
+          jq -e '
+            .decision == "V3_FINAL24_ANCHOR_EXACTLY_EQUIVALENT_TO_V2"
+            and .dataset.event_count == 9
+            and .dataset.row_count == 30
+            and .row_equivalence.all_rows_exact_anchor_seat_equivalence == true
+            and .row_equivalence.all_rows_target_equivalence_within_atol == true
+            and .interpretation.new_final24_target_required == false
+            and .interpretation.stage1_retraining_required_due_to_v3_anchor == false
+          ' /tmp/d2-v3-stage0-equivalence.json >/dev/null
+
+      - name: Print result and hashes
+        run: |
+          jq '{decision,dataset,row_equivalence:(.row_equivalence|del(.events)),interpretation,lineage}' \
+            /tmp/d2-v3-stage0-equivalence.json
+          sha256sum /tmp/d2-stage0-v2.json
+          sha256sum /tmp/d2-stage0-v2.csv
+          sha256sum /tmp/d2-v3-stage0-equivalence.json
+          sha256sum /tmp/d2-v3-stage0-equivalence.csv
+
+      - name: Upload evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: d2-v3-stage0-anchor-equivalence-v1-${{ github.run_id }}
+          path: |
+            /tmp/d2-split-manifest.json
+            /tmp/d2-stage0-v2.json
+            /tmp/d2-stage0-v2.csv
+            /tmp/d2-v3-stage0-equivalence.json
+            /tmp/d2-v3-stage0-equivalence.csv
+          if-no-files-found: error
+          retention-days: 90
