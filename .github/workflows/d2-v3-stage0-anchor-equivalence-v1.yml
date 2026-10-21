@@ -40,9 +40,9 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  validate-and-evaluate:
+  validate:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 15
 
     steps:
       - name: Checkout
@@ -66,6 +66,26 @@ jobs:
           python -m py_compile ml/run_d2_live_replay_anchor_v1.py
           python -m py_compile ml/d2_stage1_payload_split_v1.py
           python -m ml.test_d2_v3_stage0_anchor_equivalence_v1
+
+  evaluate-main:
+    if: github.event_name != 'pull_request'
+    needs: validate
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install pinned runtime
+        run: |
+          python -m pip install --upgrade pip
+          pip install numpy==2.3.5 pandas==2.2.3 scikit-learn==1.8.0 joblib==1.5.3
 
       - name: Request C1 training OIDC token
         shell: bash
@@ -96,8 +116,10 @@ jobs:
                 -H "Authorization: Bearer $C1_ALPHA_OIDC_TOKEN" \
                 -o "$output" -w '%{http_code}' "$base?version=$version" || true)
               if [ "$code" = "200" ] && jq -e '.ok == true' "$output" >/dev/null 2>&1; then
+                echo "Fetched $version on attempt $attempt"
                 return 0
               fi
+              echo "C1 export attempt $attempt/$attempts failed version=$version http=$code" >&2
               sleep $((attempt * 2))
               attempt=$((attempt + 1))
             done
