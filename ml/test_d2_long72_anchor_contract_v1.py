@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
-import numpy as np
 import pandas as pd
 
 from ml.d2_long72_anchor_contract_v1 import (
     canonical_club_key,
     resolve_capacity,
+    select_forecastable_priors,
 )
 
 
@@ -18,8 +18,20 @@ def test_canonical_slug_mapping() -> None:
 
 def test_capacity_validity_resolution() -> None:
     rows = [
-        {"id": 1, "club_key": "lech", "stadium_capacity": 40000, "valid_from": "2025-01-01", "valid_to": "2026-06-30"},
-        {"id": 2, "club_key": "lech", "stadium_capacity": 43269, "valid_from": "2026-07-01", "valid_to": None},
+        {
+            "id": 1,
+            "club_key": "lech",
+            "stadium_capacity": 40000,
+            "valid_from": "2025-01-01",
+            "valid_to": "2026-06-30",
+        },
+        {
+            "id": 2,
+            "club_key": "lech",
+            "stadium_capacity": 43269,
+            "valid_from": "2026-07-01",
+            "valid_to": None,
+        },
     ]
     resolved = resolve_capacity(rows, "lech", pd.Timestamp("2026-10-01T18:00:00Z"))
     assert resolved["id"] == 2
@@ -35,10 +47,41 @@ def test_missing_capacity_fails() -> None:
         raise AssertionError("expected missing capacity failure")
 
 
+def test_horizon_specific_unforecastable_rows_are_recorded_not_imputed() -> None:
+    priors = pd.DataFrame(
+        [
+            {
+                "ticket_event_id": 1,
+                "horizon": "T-3",
+                "prior_p50": None,
+                "prior_error": "no PIT sporting state",
+            },
+            {
+                "ticket_event_id": 2,
+                "horizon": "T-3",
+                "prior_p50": 1000.0,
+                "prior_error": None,
+            },
+            {
+                "ticket_event_id": 1,
+                "horizon": "T-1",
+                "prior_p50": 900.0,
+                "prior_error": None,
+            },
+        ]
+    )
+    forecastable, missing = select_forecastable_priors(priors, "T-3")
+    assert forecastable["ticket_event_id"].tolist() == [2]
+    assert missing == [
+        {"ticket_event_id": 1, "prior_error": "no PIT sporting state"}
+    ]
+
+
 def main() -> None:
     test_canonical_slug_mapping()
     test_capacity_validity_resolution()
     test_missing_capacity_fails()
+    test_horizon_specific_unforecastable_rows_are_recorded_not_imputed()
     print("d2 long72 anchor contract unit checks: PASS")
 
 

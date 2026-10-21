@@ -12,6 +12,12 @@ latest checkpoint available at its as-of timestamp:
 
 Sealed Pre-Live v3 uses the exact v2 T-3/T-1 contracts, so this dataset is valid
 for both v2 and v3 in the 0-72h window. The changed v3 T-7 contract is not used.
+
+Current-season residual state is horizon-specific: a completed home match may
+contribute to T-1 state but not T-3 state when a valid T-3 Structural Prior could
+not exist at that historical cutoff (for example, before any current-season
+sporting state existed). Such rows are recorded as unforecastable for that
+horizon rather than given synthetic sporting features.
 """
 from __future__ import annotations
 
@@ -187,12 +193,30 @@ def build_replay_events(
         }
 
     tracked_ids = {int(row["ticket_event_id"]) for row in payload.get("events") or []}
-    replay_tracked = {int(row["ticket_event_id"]) for row in replay_events if int(row["ticket_event_id"]) in tracked_ids}
+    replay_tracked = {
+        int(row["ticket_event_id"])
+        for row in replay_events
+        if int(row["ticket_event_id"]) in tracked_ids
+    }
     if replay_tracked != tracked_ids:
         raise RuntimeError(
-            f"not all target events mapped into attendance history missing={sorted(tracked_ids-replay_tracked)}"
+            f"not all target events mapped into attendance history "
+            f"missing={sorted(tracked_ids-replay_tracked)}"
         )
     return replay_events, actual_by_id, capacity_lineage
+
+
+def select_forecastable_priors(
+    priors: pd.DataFrame, horizon: str
+) -> tuple[pd.DataFrame, list[dict[str, Any]]]:
+    horizon_rows = priors[priors["horizon"] == horizon].copy()
+    forecastable = horizon_rows[horizon_rows["prior_p50"].notna()].copy()
+    missing = horizon_rows[horizon_rows["prior_p50"].isna()][
+        ["ticket_event_id", "prior_error"]
+    ].to_dict("records")
+    if forecastable.empty:
+        raise RuntimeError(f"no forecastable current-season rows for {horizon}")
+    return forecastable.sort_values("ticket_event_id").reset_index(drop=True), missing
 
 
 def build_checkpoint_anchors(
@@ -211,16 +235,7 @@ def build_checkpoint_anchors(
     horizon_diag: dict[str, Any] = {}
 
     for horizon in ("T-3", "T-1"):
-        subset = priors[(priors["horizon"] == horizon) & priors["prior_p50"].notna()].copy()
-        if len(subset) != len(replay_events):
-            missing = priors[(priors["horizon"] == horizon) & priors["prior_p50"].isna()][
-                ["ticket_event_id", "prior_error"]
-            ].to_dict("records")
-            raise RuntimeError(
-                f"not all replay events received {horizon} base prior "
-                f"predicted={len(subset)} events={len(replay_events)} missing={missing}"
-            )
-        subset = subset.sort_values("ticket_event_id").reset_index(drop=True)
+        subset, unforecastable = select_forecastable_priors(priors, horizon)
         rows: list[dict[str, Any]] = []
         base: list[float] = []
         for prior in subset.to_dict("records"):
@@ -254,7 +269,17 @@ def build_checkpoint_anchors(
                 "checkpoint_as_of_at": utc(row["as_of_at"]),
                 "capacity_lineage": capacity_lineage[event_id],
             }
-        horizon_diag[horizon] = diag
+        horizon_diag[horizon] = {
+            **diag,
+            "replay_total_events": int(len(replay_events)),
+            "forecastable_events": int(len(subset)),
+            "unforecastable_events": int(len(unforecastable)),
+            "unforecastable": unforecastable,
+            "forecastability_rule": (
+                "same-season b2 state includes only matches for which the "
+                f"{horizon} Structural Prior was reconstructable at that PIT cutoff"
+            ),
+        }
     return anchor_map, {
         "replay_event_count": len(replay_events),
         "target_event_count": len(context.get("events") or []),
@@ -285,7 +310,10 @@ def build_long72_frame(
         horizon = "T-1" if h <= 24.0 else "T-3"
         anchor = anchor_map.get((event_id, horizon))
         if anchor is None:
-            raise RuntimeError(f"missing {horizon} anchor event={event_id}")
+            raise RuntimeError(
+                f"missing required {horizon} anchor for live event={event_id} h={h}; "
+                "the row cannot be admitted to the frozen long72 dataset"
+            )
         if anchor["checkpoint_as_of_at"] > as_of:
             raise RuntimeError(
                 f"future checkpoint used event={event_id} h={h} "
@@ -318,7 +346,9 @@ def build_long72_frame(
             "target_live_delta_occupancy": actual / capacity - anchor_p50 / capacity,
             "anchor_expected_occupancy": anchor_p50 / capacity,
             "signal_ready": 1.0 if str(f.get("signal_readiness")) == "ready" else 0.0,
-            "feature_quality_good": 1.0 if str(f.get("feature_quality")) in {"sector_matched_plus_raw", "raw_only"} else 0.0,
+            "feature_quality_good": 1.0
+            if str(f.get("feature_quality")) in {"sector_matched_plus_raw", "raw_only"}
+            else 0.0,
         }
         for key in NUMERIC_LIVE_FEATURES:
             rec[key] = pd.to_numeric(f.get(key), errors="coerce")
@@ -375,13 +405,31 @@ def main() -> None:
     event_count = int(frame["ticket_event_id"].nunique())
     rows_by_band = {
         "0_24h": int((frame["hours_to_kickoff"] <= 24).sum()),
-        "24_48h": int(((frame["hours_to_kickoff"] > 24) & (frame["hours_to_kickoff"] <= 48)).sum()),
-        "48_72h": int(((frame["hours_to_kickoff"] > 48) & (frame["hours_to_kickoff"] <= 72)).sum()),
+        "24_48h": int(
+            ((frame["hours_to_kickoff"] > 24) & (frame["hours_to_kickoff"] <= 48)).sum()
+        ),
+        "48_72h": int(
+            ((frame["hours_to_kickoff"] > 48) & (frame["hours_to_kickoff"] <= 72)).sum()
+        ),
     }
     events_by_band = {
-        "0_24h": int(frame.loc[frame["hours_to_kickoff"] <= 24, "ticket_event_id"].nunique()),
-        "24_48h": int(frame.loc[(frame["hours_to_kickoff"] > 24) & (frame["hours_to_kickoff"] <= 48), "ticket_event_id"].nunique()),
-        "48_72h": int(frame.loc[(frame["hours_to_kickoff"] > 48) & (frame["hours_to_kickoff"] <= 72), "ticket_event_id"].nunique()),
+        "0_24h": int(
+            frame.loc[frame["hours_to_kickoff"] <= 24, "ticket_event_id"].nunique()
+        ),
+        "24_48h": int(
+            frame.loc[
+                (frame["hours_to_kickoff"] > 24)
+                & (frame["hours_to_kickoff"] <= 48),
+                "ticket_event_id",
+            ].nunique()
+        ),
+        "48_72h": int(
+            frame.loc[
+                (frame["hours_to_kickoff"] > 48)
+                & (frame["hours_to_kickoff"] <= 72),
+                "ticket_event_id",
+            ].nunique()
+        ),
     }
     if event_count != int(events["eventCount"]):
         raise RuntimeError(f"long72 event coverage drift {event_count} != {events['eventCount']}")
@@ -426,7 +474,9 @@ def main() -> None:
     }
     args.output_json.parent.mkdir(parents=True, exist_ok=True)
     args.output_csv.parent.mkdir(parents=True, exist_ok=True)
-    args.output_json.write_text(json.dumps(result, indent=2, sort_keys=True, default=str) + "\n")
+    args.output_json.write_text(
+        json.dumps(result, indent=2, sort_keys=True, default=str) + "\n"
+    )
     frame.to_csv(args.output_csv, index=False)
     print(json.dumps(result, indent=2, sort_keys=True, default=str))
 
