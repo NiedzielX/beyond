@@ -4,8 +4,6 @@ Last updated: **2026-10-21**
 
 Status: **CANONICAL DEVELOPMENT INSTRUCTION**
 
-This file defines how Beyond forecasting development must be conducted.
-
 ## Objective
 
 > **Reduce forecasting error as far as possible with honest, reproducible, point-in-time-safe evidence before treating the model as mature.**
@@ -29,8 +27,6 @@ A failed challenger closes the challenger, not the workstream.
 ---
 
 # 1. Parallel-track rule
-
-Beyond model work always separates two tracks.
 
 ## Track A — frozen validation / promotion evidence
 
@@ -65,7 +61,7 @@ The current frozen package remains the benchmark.
 
 ---
 
-# 2. Canonical frozen architecture
+# 2. Canonical frozen architecture — Track A
 
 ## Frozen Pre-Live v2
 
@@ -123,7 +119,7 @@ These frozen IDs are evidence objects. Track-B experiments never mutate them.
 
 # 3. Current evidence state
 
-Historical Pre-Live reference mean MAE:
+Frozen Pre-Live v2 reference mean MAE:
 
 - T-30 `1867.82`;
 - T-14 `1809.45`;
@@ -147,7 +143,7 @@ d2 Stage-2 development:
 - worst degradation `1081.72`;
 - 75% reduction in raw-Ridge worst degradation.
 
-Event 5 is an exposed one-pass chronological holdout and can never be reused as unseen validation.
+Event 5 is exposed and can never be reused as unseen validation.
 
 ---
 
@@ -157,25 +153,17 @@ Frozen Stage-2 cutoff:
 
 `2026-10-19T19:11:01Z`
 
-Every completed event used after the freeze must be tagged.
-
 ## `DELAYED_LABEL_HOLDOUT`
 
 Kickoff at or before the cutoff, but truth became available later.
 
-Use for:
-
-- diagnostics;
-- component failure analysis;
-- future hypothesis generation.
-
-Do not count it as true post-freeze promotion evidence.
+Use for diagnostics, component-failure analysis and future hypothesis generation. Do not count it as true post-freeze promotion evidence.
 
 ## `TRUE_POST_FREEZE_PROSPECTIVE`
 
 Kickoff after the cutoff.
 
-This is the class that may contribute to genuine forward promotion evidence.
+This class may contribute to genuine forward promotion evidence.
 
 Never combine both classes into one headline prospective N.
 
@@ -190,7 +178,7 @@ Required:
 - no random split as headline evidence;
 - training only on earlier seasons/events;
 - development selection boundary declared before tuning;
-- exposed reference seasons never used to choose model variants or ensemble weights;
+- exposed reference seasons never used to choose variants or ensemble weights;
 - all features reconstructable point-in-time;
 - horizon-specific metrics;
 - MAE plus median AE, bias, p90/worst event and stability;
@@ -198,35 +186,59 @@ Required:
 
 Historical data already available must be used now rather than waiting for prospective data.
 
-## Active bounded a2 closure gap
+## a2 external-family / ensemble closure — COMPLETE
 
-External families were previously tested canonically only at T-7.
+Canonical results:
 
-Therefore the separately versioned audit:
+- `ml/results/A2_EXTERNAL_ENSEMBLE_CLOSURE_V1_2026-10-21.md`;
+- `ml/results/A2_EXTERNAL_ENSEMBLE_FIXED_TEMPORAL_V1_2026-10-21.md`.
 
-`ml/A2_EXTERNAL_ENSEMBLE_CLOSURE_V1.md`
+The bounded external-family gap is closed.
 
-tests all horizons under one frozen protocol.
+Exact robust historical challengers passed positive MAE improvement in all four rolling folds:
 
-This is valid Track-B R&D and does not reopen or mutate Frozen Pre-Live v2.
+- T-30: `0.75 current a2 + 0.25 XGBoost depth3`;
+- T-7: `0.25 current a2/HGB + 0.25 CatBoost depth4 + 0.50 LightGBM leaves15`;
+- T-1: `0.25 HGB hist31 + 0.50 CatBoost depth4 + 0.25 LightGBM leaves15`.
 
-If a challenger advances, it must pass a separate fixed-temporal robustness audit before any new historical freeze is considered.
+T-14 and T-3 retained current a2 after mixed exposed-reference evidence.
+
+Passing robustness does **not** mutate current a2 or Frozen Pre-Live v2.
+
+## Active historical R&D — Pre-Live v3
+
+The next versioned challenger must use the robust historical bases at T-30/T-7/T-1 and current a2 at T-14/T-3, then revalidate the current-season regime before any new freeze.
 
 ---
 
-# 6. b2 rules
+# 6. Current-season regime rules
 
 Frozen b2 must remain unchanged in Track A.
 
 Component diagnostics must preserve:
 
-`Structural base -> b2/Frozen Pre-Live`
+`Structural/historical base -> b2 -> Pre-Live`
 
-so wrong-direction current-season corrections stay visible.
+so wrong-direction current-season corrections remain visible.
 
-Observed delayed-label or holdout failures may generate a **new separately versioned b2 hypothesis**, but may not rewrite the existing b2 policy.
+## Pre-Live v3 requirement
 
-No one-event post-hoc threshold adjustment.
+The old b2 policy may **not** be silently copied onto the new v3 historical anchors.
+
+Reason:
+
+> b2 is a residual-regime layer and its residuals were defined relative to the old historical bases.
+
+The v3 experiment must compare:
+
+1. new historical anchor only;
+2. old frozen b2 formulation applied unchanged on the new anchor as a fixed comparator;
+3. newly selected current-season-regime challenger under a declared historical temporal boundary;
+4. Frozen Pre-Live v2 as unchanged benchmark.
+
+No event-5 or later delayed-label/prospective d2 outcomes may be used for b2 selection.
+
+If the current-season layer does not add stable incremental value on a new historical anchor, `NO_ADJUSTMENT` is a valid v3 decision for that horizon.
 
 ---
 
@@ -280,11 +292,15 @@ A changed target, estimator, feature contract, preprocessing or correction rule 
 
 ---
 
-# 9. New d2 R&D is allowed now
+# 9. d2 after a new pre-live anchor
 
-A new d2 challenger does not need to wait for N new events if it can be evaluated honestly under a predeclared boundary.
+The current Ridge/P2 package is tied to Frozen Pre-Live v2.
 
-Materially different hypotheses may include:
+If Pre-Live v3 earns a freeze, do **not** silently attach the old live model to the new anchor.
+
+Create a new d2 version and rebuild/revalidate the live residual layer relative to v3.
+
+Possible new d2 hypotheses include:
 
 - remaining-demand target;
 - alternative capacity-normalized residual target;
@@ -297,12 +313,12 @@ Requirements:
 
 1. new experiment/model ID;
 2. declared development set before fitting;
-3. frozen P2 retained as benchmark;
+3. frozen v2/Ridge/P2 retained as benchmark;
 4. exposed event labels recorded honestly;
 5. no claim that exposed events are unseen;
 6. no production write.
 
-Do not simply tune the old Ridge/P2 thresholds event by event.
+Do not simply tune old Ridge/P2 thresholds event by event.
 
 ---
 
@@ -324,10 +340,7 @@ Therefore:
 - no same-data fine-tuning to rescue that challenger;
 - no automatic Lag-Llama / NeuralProphet model zoo on the same formulation.
 
-TSFM may be reopened only when:
-
-- materially more independent trajectory data exists; or
-- a materially different predeclared use/target exists.
+TSFM may be reopened only when materially more independent trajectory data exists or a materially different predeclared use/target exists.
 
 ---
 
@@ -396,21 +409,7 @@ Every material experiment must have:
 14. canonical docs synchronized in the same evidence cycle;
 15. no production activation unless explicitly reviewed.
 
-A material change to:
-
-- target;
-- feature set;
-- source semantics;
-- preprocessing;
-- model family;
-- hyperparameters;
-- weighting;
-- correction cap;
-- split;
-- exclusion;
-- ensemble composition;
-
-creates a new challenger/version.
+A material change to target, feature set, source semantics, preprocessing, model family, hyperparameters, weighting, correction cap, split, exclusions or ensemble composition creates a new challenger/version.
 
 ---
 
@@ -436,4 +435,4 @@ Until then:
 
 # 15. Immediate instruction
 
-> **Keep the existing Pre-Live v2 / Ridge / P2 stack frozen for Track-A evidence. In parallel, continue Track-B accuracy R&D immediately. Finish the all-horizon a2 external/ensemble closure audit, follow any advancing horizon with fixed-temporal robustness, then continue separately versioned d2 target/reliability/ensemble research and PIT-safe context research. Do not wait for a prospective sample-count gate to do research that can be evaluated honestly now.**
+> **Keep Pre-Live v2 / Ridge / P2 frozen for Track-A evidence. The a2 external/ensemble gap is closed with robust T-30/T-7/T-1 challengers. Active Track-B work is now a separately versioned Pre-Live v3 historical-anchor + current-season-regime revalidation. Do not silently inherit b2 onto the new anchors, do not use prospective sample-count gates to pause this R&D, and do not rebuild d2 until a v3 anchor actually earns a freeze. Production remains unchanged.**
