@@ -1,0 +1,145 @@
+name: d2 Long72 Stage2 Freeze v1
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - "ml/artifacts/d2_long72_stage2_p2_v1/manifest.json"
+      - "ml/results/D2_LONG72_STAGE2_RELIABILITY_GATING_V1_2026-10-21.md"
+      - "ml/CURRENT_MODEL.md"
+      - "AI_BOOTSTRAP.md"
+      - "ml/DEMAND_FORECAST_DEVELOPMENT_PLAN_V2.md"
+      - "ml/LIVE_DEMAND_ENGINE_V1_PLAN.md"
+      - "ml/MODEL_ACCURACY_DEVELOPMENT_INSTRUCTIONS_V2.md"
+      - ".github/workflows/d2-long72-stage2-freeze-v1.yml"
+  push:
+    branches:
+      - main
+    paths:
+      - "ml/artifacts/d2_long72_stage2_p2_v1/manifest.json"
+      - ".github/workflows/d2-long72-stage2-freeze-v1.yml"
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: d2-long72-stage2-freeze-v1-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate frozen package manifest
+        run: |
+          set -euo pipefail
+          manifest='ml/artifacts/d2_long72_stage2_p2_v1/manifest.json'
+          jq -e '
+            .package_id == "d2-long72-stage2-p2-observation-maturity-2026-10-21-v1"
+            and .status == "FROZEN_HISTORICAL_RESEARCH_PACKAGE"
+            and .production_promotion == false
+            and .production_change == false
+            and .scope.hours_to_kickoff_lower_exclusive == 24
+            and .scope.hours_to_kickoff_upper_inclusive == 72
+            and .anchor.frozen_dataset_sha256 == "2af6209484e7120f08541d82bc7bcd064b0f9ea46dd59bb5e7d2746cb35a214c"
+            and .anchor.frozen_contract_sha256 == "0083b82be7de4599574b90ed0af44e1accd1a993c1d07b7f263bfbf01f3a1a27"
+            and .stage1.expert_id == "inventory-linear-extrapolation"
+            and .stage1.correction_cap_occupancy == 0.1
+            and .stage1.artifact_id == 12365399256
+            and .stage1.result_json_sha256 == "f19ea1378d0f8b07007bf45c2ab7f3fa20ebb3c53e32afa4548723336b71358a"
+            and .stage1.predictions_sha256 == "33de331d2c3bf1e385f513c7fa7e28aa8b454a4d49cfe00d48163e6c083a6df5"
+            and .stage2.policy_id == "P2-observation-maturity"
+            and .stage2.workflow_run_id == 39644319080
+            and .stage2.artifact_id == 12366826274
+            and .stage2.artifact_zip_sha256 == "c750cf385b2c6b6f05fabceaf68ff323a66235862967900419be421f7cdcb4ae"
+            and .stage2.result_json_sha256 == "a9daa834e15b4f313b15c3e809033b7d79e4ed4357f61a8f5071e6bf20359d8c"
+            and .stage2.predictions_sha256 == "489ba62156f19d3b915fda1b9f1ef506fb81603d4286a01e8ad4b799c58bce4b"
+            and .live_adjustment == 0
+          ' "$manifest" >/dev/null
+          sha256sum "$manifest"
+
+  seal-main:
+    if: github.event_name != 'pull_request'
+    needs: validate
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download immutable Stage2 evidence artifact
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          curl --retry 4 --retry-all-errors --retry-delay 2 -fL \
+            -H "Authorization: Bearer $GH_TOKEN" \
+            -H "Accept: application/vnd.github+json" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            "https://api.github.com/repos/NiedzielX/beyond/actions/artifacts/12366826274/zip" \
+            -o /tmp/d2-long72-stage2.zip
+          echo 'c750cf385b2c6b6f05fabceaf68ff323a66235862967900419be421f7cdcb4ae  /tmp/d2-long72-stage2.zip' | sha256sum -c -
+          mkdir -p /tmp/d2-long72-stage2
+          unzip -q /tmp/d2-long72-stage2.zip -d /tmp/d2-long72-stage2
+
+      - name: Verify immutable evidence chain
+        run: |
+          set -euo pipefail
+          test -f /tmp/d2-long72-stage2/d2-long72-stage2.json
+          test -f /tmp/d2-long72-stage2/d2-long72-stage2-predictions.csv
+          test -f /tmp/d2-long72-stage2/d2-long72-stage1/d2-long72-stage1.json
+          test -f /tmp/d2-long72-stage2/d2-long72-stage1/d2-long72-stage1-predictions.csv
+          test -f /tmp/d2-long72-stage2/d2-long72-stage1/d2-long72-frozen/d2-long72-contract.json
+          test -f /tmp/d2-long72-stage2/d2-long72-stage1/d2-long72-frozen/d2-long72-dataset.csv
+
+          echo 'a9daa834e15b4f313b15c3e809033b7d79e4ed4357f61a8f5071e6bf20359d8c  /tmp/d2-long72-stage2/d2-long72-stage2.json' | sha256sum -c -
+          echo '489ba62156f19d3b915fda1b9f1ef506fb81603d4286a01e8ad4b799c58bce4b  /tmp/d2-long72-stage2/d2-long72-stage2-predictions.csv' | sha256sum -c -
+          echo 'f19ea1378d0f8b07007bf45c2ab7f3fa20ebb3c53e32afa4548723336b71358a  /tmp/d2-long72-stage2/d2-long72-stage1/d2-long72-stage1.json' | sha256sum -c -
+          echo '33de331d2c3bf1e385f513c7fa7e28aa8b454a4d49cfe00d48163e6c083a6df5  /tmp/d2-long72-stage2/d2-long72-stage1/d2-long72-stage1-predictions.csv' | sha256sum -c -
+          echo '0083b82be7de4599574b90ed0af44e1accd1a993c1d07b7f263bfbf01f3a1a27  /tmp/d2-long72-stage2/d2-long72-stage1/d2-long72-frozen/d2-long72-contract.json' | sha256sum -c -
+          echo '2af6209484e7120f08541d82bc7bcd064b0f9ea46dd59bb5e7d2746cb35a214c  /tmp/d2-long72-stage2/d2-long72-stage1/d2-long72-frozen/d2-long72-dataset.csv' | sha256sum -c -
+
+          jq -e '
+            .status == "COMPLETED_STAGE2_RELIABILITY_GATING"
+            and .production_change == false
+            and .promotion_allowed == false
+            and .stage1_expert_id == "inventory-linear-extrapolation"
+            and .selection.decision == "STAGE2_RELIABILITY_POLICY_SELECTED"
+            and .selection.selected_policy_id == "P2-observation-maturity"
+            and .selection.stage2_policy_advanced == true
+          ' /tmp/d2-long72-stage2/d2-long72-stage2.json >/dev/null
+
+      - name: Emit seal evidence
+        run: |
+          set -euo pipefail
+          manifest='ml/artifacts/d2_long72_stage2_p2_v1/manifest.json'
+          manifest_sha=$(sha256sum "$manifest" | awk '{print $1}')
+          cat > /tmp/d2-long72-stage2-freeze-seal.json <<EOF
+          {
+            "package_id": "d2-long72-stage2-p2-observation-maturity-2026-10-21-v1",
+            "status": "FROZEN_RESEARCH_PACKAGE_SEALED",
+            "selection_performed": false,
+            "production_change": false,
+            "manifest_sha256": "$manifest_sha",
+            "parent_stage2_run_id": 39644319080,
+            "parent_stage2_artifact_id": 12366826274,
+            "parent_stage2_artifact_zip_sha256": "c750cf385b2c6b6f05fabceaf68ff323a66235862967900419be421f7cdcb4ae",
+            "parent_stage2_json_sha256": "a9daa834e15b4f313b15c3e809033b7d79e4ed4357f61a8f5071e6bf20359d8c",
+            "frozen_dataset_sha256": "2af6209484e7120f08541d82bc7bcd064b0f9ea46dd59bb5e7d2746cb35a214c",
+            "next": "append_only_prospective_scoring_of_frozen_long72_package",
+            "github_sha": "${GITHUB_SHA}"
+          }
+          EOF
+          jq . /tmp/d2-long72-stage2-freeze-seal.json
+          sha256sum /tmp/d2-long72-stage2-freeze-seal.json
+
+      - name: Upload seal evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: d2-long72-stage2-freeze-v1-${{ github.run_id }}
+          path: /tmp/d2-long72-stage2-freeze-seal.json
+          if-no-files-found: error
+          retention-days: 90
