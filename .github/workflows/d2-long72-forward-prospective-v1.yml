@@ -8,6 +8,8 @@ on:
     paths:
       - "ml/d2_long72_forward_materialize_v1.py"
       - "ml/test_d2_long72_forward_materialize_v1.py"
+      - "ml/d2_long72_forward_input_normalize_v1.py"
+      - "ml/test_d2_long72_forward_input_normalize_v1.py"
       - "supabase/sql/d2_long72_forward_prospective_v1.sql"
       - "supabase/functions/d2_long72_forward_shadow_v1/index.ts"
       - ".github/workflows/d2-long72-forward-prospective-v1.yml"
@@ -17,6 +19,8 @@ on:
     paths:
       - "ml/d2_long72_forward_materialize_v1.py"
       - "ml/test_d2_long72_forward_materialize_v1.py"
+      - "ml/d2_long72_forward_input_normalize_v1.py"
+      - "ml/test_d2_long72_forward_input_normalize_v1.py"
       - "supabase/sql/d2_long72_forward_prospective_v1.sql"
       - "supabase/functions/d2_long72_forward_shadow_v1/index.ts"
       - ".github/workflows/d2-long72-forward-prospective-v1.yml"
@@ -41,7 +45,10 @@ jobs:
         run: |
           python -m py_compile ml/d2_long72_forward_materialize_v1.py
           python -m py_compile ml/test_d2_long72_forward_materialize_v1.py
+          python -m py_compile ml/d2_long72_forward_input_normalize_v1.py
+          python -m py_compile ml/test_d2_long72_forward_input_normalize_v1.py
           python -m ml.test_d2_long72_forward_materialize_v1
+          python -m ml.test_d2_long72_forward_input_normalize_v1
       - name: Static contract checks
         run: |
           grep -q "get_d2_long72_forward_inputs_v1" supabase/sql/d2_long72_forward_prospective_v1.sql
@@ -89,10 +96,15 @@ jobs:
             /tmp/d2-long72-forward-input.json >/dev/null
           jq '{version,package_id,requested_at,event_count:.forward.eventCount,live_row_count:.forward.liveRowCount}' \
             /tmp/d2-long72-forward-input.json
+      - name: Normalize redundant forward timestamp fields
+        run: |
+          python -m ml.d2_long72_forward_input_normalize_v1 \
+            --input /tmp/d2-long72-forward-input.json \
+            --output /tmp/d2-long72-forward-input-normalized.json
       - name: Materialize frozen Long72 forecasts
         run: |
           python -m ml.d2_long72_forward_materialize_v1 \
-            --input /tmp/d2-long72-forward-input.json \
+            --input /tmp/d2-long72-forward-input-normalized.json \
             --package-manifest ml/artifacts/d2_long72_stage2_p2_v1/manifest.json \
             --structural-artifact-dir ml/artifacts/structural_prior_runtime_v1 \
             --github-sha "${GITHUB_SHA}" \
@@ -145,6 +157,7 @@ jobs:
           name: d2-long72-forward-prospective-v1-${{ github.run_id }}
           path: |
             /tmp/d2-long72-forward-input.json
+            /tmp/d2-long72-forward-input-normalized.json
             /tmp/d2-long72-materialized.json
             /tmp/d2-long72-persist-result.json
             /tmp/d2-long72-score-result.json
