@@ -1,0 +1,97 @@
+name: d2 Long Horizon Export v1
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - "supabase/sql/d2_long_horizon_168_export_v1.sql"
+      - "supabase/functions/c1_alpha_training_export_v1/index.ts"
+      - "ml/d2_long_horizon_coverage_audit_v1.py"
+      - "ml/test_d2_long_horizon_coverage_audit_v1.py"
+      - ".github/workflows/d2-long-horizon-export-v1.yml"
+  push:
+    branches:
+      - main
+    paths:
+      - "supabase/sql/d2_long_horizon_168_export_v1.sql"
+      - "supabase/functions/c1_alpha_training_export_v1/index.ts"
+      - "ml/d2_long_horizon_coverage_audit_v1.py"
+      - "ml/test_d2_long_horizon_coverage_audit_v1.py"
+      - ".github/workflows/d2-long-horizon-export-v1.yml"
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install pandas==2.2.3
+      - name: Compile and unit checks
+        run: |
+          python -m py_compile ml/d2_long_horizon_coverage_audit_v1.py
+          python -m py_compile ml/test_d2_long_horizon_coverage_audit_v1.py
+          python -m ml.test_d2_long_horizon_coverage_audit_v1
+      - name: Static export contract checks
+        run: |
+          grep -q "export_d2_long_horizon_168_rows_v1" supabase/sql/d2_long_horizon_168_export_v1.sql
+          grep -q '"v8-long168": "export_d2_long_horizon_168_rows_v1"' supabase/functions/c1_alpha_training_export_v1/index.ts
+          grep -q "interval '168 hours'" supabase/sql/d2_long_horizon_168_export_v1.sql
+          grep -q "get_live_trajectory_features_v1_1_asof" supabase/sql/d2_long_horizon_168_export_v1.sql
+
+  evaluate-main:
+    if: github.event_name != 'pull_request'
+    needs: validate
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install pandas==2.2.3
+      - name: Request main-only training OIDC token
+        run: |
+          set -euo pipefail
+          response=$(curl --retry 4 --retry-all-errors --retry-delay 2 -fsS \
+            -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
+            "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=beyond-c1-alpha-training")
+          token=$(printf '%s' "$response" | jq -r '.value')
+          test -n "$token"
+          test "$token" != "null"
+          echo "::add-mask::$token"
+          echo "C1_ALPHA_OIDC_TOKEN=$token" >> "$GITHUB_ENV"
+      - name: Fetch additive long-horizon export
+        run: |
+          set -euo pipefail
+          url='https://adchzwqboeekhokapxqi.supabase.co/functions/v1/c1_alpha_training_export_v1?version=v8-long168'
+          curl --retry 5 --retry-all-errors --retry-delay 2 -fsS \
+            -H "Authorization: Bearer $C1_ALPHA_OIDC_TOKEN" \
+            "$url" -o /tmp/d2-long168.json
+          jq -e '.ok == true and .version == "d2-long-horizon-168-rows-v1" and .sampling.window_hours == 168 and .sampling.cadence_hours == 6' /tmp/d2-long168.json >/dev/null
+      - name: Run PIT/coverage readiness audit
+        run: |
+          python -m ml.d2_long_horizon_coverage_audit_v1 \
+            --input /tmp/d2-long168.json \
+            --output /tmp/d2-long168-audit.json
+          jq -e '.status == "LONG_HORIZON_DATA_CONTRACT_READY" and .export.pit_rows_validated == true and .export.unique_event_bucket_rows == true' /tmp/d2-long168-audit.json >/dev/null
+      - name: Print decision and hashes
+        run: |
+          jq '{export,coverage:(.coverage|del(.events)),readiness,decision}' /tmp/d2-long168-audit.json
+          sha256sum /tmp/d2-long168.json
+          sha256sum /tmp/d2-long168-audit.json
+      - name: Upload evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: d2-long-horizon-export-v1-${{ github.run_id }}
+          path: |
+            /tmp/d2-long168.json
+            /tmp/d2-long168-audit.json
+          if-no-files-found: error
+          retention-days: 90
