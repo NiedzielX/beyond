@@ -22,31 +22,20 @@ Production remains unchanged:
 
 Current research champion family: **Global Model v2.1**
 
-Data:
-
 - 1,530 Ekstraklasa matches / five complete seasons;
 - 7,650 PIT snapshots;
-- horizons T-30/T-14/T-7/T-3/T-1.
+- horizons T-30/T-14/T-7/T-3/T-1;
+- architecture: `club-history baseline + global residual correction`.
 
-Architecture:
-
-`club-history baseline + global residual correction`
-
-Historical later-season evidence shows roughly 16–24% MAE improvement versus the baseline across all five horizons. These seasons are now exposed research evidence for future iterations.
+Historical later-season evidence shows roughly 16–24% MAE improvement versus the baseline across all five horizons. 2024/25 and 2025/26 are exposed research evidence for future iterations.
 
 ## Track A — final24 frozen evidence lane
-
-Package:
 
 `Frozen Pre-Live v2 + P2 reliability * frozen ridge-a10 delta`
 
 Status: **FROZEN / PROSPECTIVE VALIDATION ACTIVE**
 
-Do not mutate from new outcomes.
-
 ## Track B — Pre-Live v3
-
-Freeze:
 
 `pre-live-v3-historical-candidate-2026-10-21-v1`
 
@@ -62,17 +51,6 @@ Package:
 
 `d2-long72-stage2-p2-observation-maturity-2026-10-21-v1`
 
-Scope:
-
-`24 < hours_to_kickoff <= 72`
-
-Composition:
-
-- frozen T-3 checkpoint anchor;
-- `inventory-linear-extrapolation` expert;
-- correction cap `±0.10` occupancy;
-- `P2-observation-maturity` reliability.
-
 Historical development:
 
 - anchor MAE `3707.14`;
@@ -82,7 +60,24 @@ Historical development:
 - worst event degradation `1488.34`;
 - bias `+917.05`.
 
-Status: **FROZEN HISTORICAL RESEARCH PACKAGE / PROSPECTIVE EVIDENCE ACTIVE**
+Status: **FROZEN / GENUINE POST-FREEZE EVIDENCE ACTIVE**
+
+True forecast-before-label infrastructure is now operational. See:
+
+`ml/results/D2_LONG72_FORWARD_PROSPECTIVE_V1_2026-10-21.md`
+
+First reproducible prospective events:
+
+- event 10 — Pogoń Szczecin vs Radomiak Radom;
+- event 16 — Wisła Kraków vs Raków Częstochowa.
+
+Successful main run:
+
+- run `39667034428`;
+- artifact `12376893783`;
+- digest `sha256:feca43332445e974652e0ad2e1b59f3f7595d52ff8dea9b3cbbef35f771c594a`.
+
+Both events are still pre-outcome, so prospective MAE is intentionally unavailable.
 
 ---
 
@@ -90,35 +85,31 @@ Status: **FROZEN HISTORICAL RESEARCH PACKAGE / PROSPECTIVE EVIDENCE ACTIVE**
 
 ## Lane A — Evidence / validation
 
-Goal: estimate true forward performance of frozen packages without contaminating them.
-
-Active work:
+Running continuously:
 
 - final24 append-only scoring;
-- long72 two-phase persistence: forecast before label -> outcome join later;
-- event-balanced MAE;
-- 24–48h / 48–72h views;
-- bias;
-- P90 / worst-event degradation;
-- event improvement rate;
-- explicit evidence class.
+- hourly long72 pre-outcome materialization;
+- immutable prediction persistence;
+- outcome-only append scoring after attendance exists;
+- event-balanced MAE / band / bias / tail diagnostics;
+- explicit evidence classes.
+
+Manual bootstrap predictions are retained for audit but excluded from the official Long72 scorecard. Only reproducible pipeline rows are scoreable.
 
 ## Lane B — MAE R&D
 
-Goal: build challengers that can lower future MAE.
+Does not wait for Lane A.
 
-Priority:
+Current sequence:
 
-1. forward / rolling validation;
-2. MAE-native loss tournament;
+1. ✅ canonical rolling / forward validation;
+2. 🔄 MAE-native challenger tournament;
 3. `ΔMAE` uncertainty;
-4. new PIT-safe context features;
+4. PIT-safe next-fixture / cannibalization features;
 5. forecast combination;
 6. live-ticket incremental correction over the strongest structural model;
 7. 72–168h learned model at `N>=9`;
 8. club calibration / shrinkage only if it generalizes.
-
-Lane B does not wait for Lane A.
 
 ---
 
@@ -127,19 +118,17 @@ Lane B does not wait for Lane A.
 | Milestone | Status | Decision / output |
 |---|---|---|
 | Global historical multi-club core | ✅ DONE | Global Model v2.1 family established |
-| Season-blocked PIT benchmark | ✅ DONE | 2024/25 + 2025/26 later-season evidence |
+| Season-blocked PIT benchmark | ✅ DONE | later-season exposed evidence |
 | Pre-Live v2 freeze | ✅ DONE | Track-A anchor frozen |
-| final24 d2 Stage 1 | ✅ DONE | `ridge-a10` selected |
-| final24 d2 Stage 2 | ✅ DONE | `P2-observation-maturity` frozen |
+| final24 d2 Stage 1/2 | ✅ DONE | Ridge/P2 frozen |
 | Pre-Live v3 freeze | ✅ DONE | v3 research anchor sealed |
 | v2-v3 final24 equivalence | ✅ DONE | exact `0.0` seat delta |
 | long-horizon export | ✅ DONE | additive `v8-long168` |
-| long72 data + anchor freeze | ✅ DONE | 14 events / 130 rows |
-| long72 Stage 1 | ✅ DONE | inventory extrapolation lead |
-| long72 Stage 2 | ✅ DONE | P2 frozen |
-| long72 true prospective plumbing | 🔄 ACTIVE | forecast before label + append-only score |
-| canonical rolling/forward validator | 🟡 NEXT | required for all new challengers |
-| MAE-native challenger tournament | 🟡 NEXT | q=0.5 / absolute-loss family |
+| long72 data + Stage 1/2 | ✅ DONE | inventory/P2 frozen |
+| long72 true prospective plumbing | ✅ DONE | forecast-before-label + immutable score path |
+| first long72 prospective forecasts | ✅ DONE | events 10 and 16 precommitted before outcome |
+| canonical rolling/forward validator | ✅ DONE | reusable temporal-validation-v1 + fold SHA |
+| MAE-native challenger tournament | 🔄 ACTIVE NEXT | compare median/quantile challengers vs current MAE incumbents |
 | `ΔMAE` uncertainty | 🟡 NEXT | event/fixture-block intervals |
 | next-fixture / cannibalization context | 🟡 NEXT | PIT-safe feature family |
 | forecast combination tournament | 🟡 NEXT | mean/median/convex before stacker |
@@ -149,102 +138,77 @@ Lane B does not wait for Lane A.
 
 ---
 
-# 5. Validation contract going forward
+# 5. Canonical validation contract
 
-Historical/global challenger research must use time-respecting views.
+`ml/temporal_validation_v1.py`
 
-Required:
+For historical/global challengers:
 
-- season-blocked or rolling/expanding-origin folds;
-- no future-season rows in an earlier training fold;
-- per-horizon reporting;
-- persisted fold identities;
-- no random row split as headline evidence.
+- expanding / rolling groups;
+- strict `train_end < test_start`;
+- no future-season rows in earlier training folds;
+- exact fold identities persisted with deterministic SHA;
+- per-horizon/fold/club reporting;
+- random row split is not headline evidence.
 
-Live-ticket challenger research requires:
+For live challengers:
 
-- complete-event independence;
-- LOEO as a diagnostic where useful;
-- forward-event evaluation ordered by kickoff;
-- no snapshot-level random split.
+- event is the independent unit;
+- forward-event folds ordered by kickoff;
+- tied kickoff events cannot train each other;
+- LOEO may remain diagnostic only.
 
-2024/25 and 2025/26 are already exposed to research and must never be rebranded as unseen for new variants.
+Common diagnostics now include:
+
+- MAE;
+- median AE;
+- P90 AE;
+- bias;
+- RMSE;
+- event-balanced MAE where trajectory density differs.
 
 ---
 
-# 6. MAE-first challenger backlog
+# 6. MAE-native challenger work
 
-## A. Loss alignment
+Important correction to the research framing:
 
-Test against current residual incumbents:
+Global Model v2.1 incumbents are already partly MAE-aligned:
 
-- median / LAD regression;
-- quantile regression `q=0.50`;
-- tree boosting with absolute / quantile objective;
-- robust residual linear models;
-- current HistGBR/XGB controls.
+- HistGradientBoosting uses `loss="absolute_error"`;
+- XGBoost uses `objective="reg:absoluteerror"`.
 
-Primary selector: time-respecting MAE.
+Therefore the next tournament is **not** a simple MSE -> MAE conversion.
 
-## B. Context
+The compact challenger set should test genuinely different median/L1 estimators, including:
 
-Highest-priority new family:
+- regularized linear median / `QuantileRegressor(q=0.50)`;
+- alternative robust median residual estimator(s);
+- current HistGBR/XGB absolute-error incumbents as controls.
 
-- next home match timing;
-- next opponent attractiveness;
-- next-match importance;
-- fixture density;
-- previous-home proximity.
-
-Then:
-
-- verified absences;
-- match importance / rivalry;
-- forecast weather available at PIT;
-- PIT-safe media/search/social attention.
-
-All families require ablation against the same incumbent.
-
-## C. Combination
-
-Test in order:
-
-1. mean;
-2. median;
-3. fixed convex blend;
-4. MAE-optimized convex blend within train folds;
-5. regularized stacker only if needed.
-
-Component forecasts should represent different information sources, not cosmetic variants of the same model.
-
-## D. Live inventory
-
-Question to answer:
-
-> Does PIT inventory reduce MAE **after** the strongest structural/global forecast has already explained historical demand?
-
-Use residual corrections and reliability/shrinkage.
+Primary selector: MAE over the new time-respecting fold contract.
 
 ---
 
 # 7. Long72 evidence contract
 
-For each new eligible event preserve before final attendance is used:
+For every new eligible event preserve before final attendance is used:
 
-1. event and kickoff identity;
-2. frozen T-3 anchor;
-3. raw inventory extrapolation;
-4. frozen P2 reliability;
-5. frozen P2 forecast;
-6. `as_of_at` and source snapshot lineage;
-7. package/code/data hashes.
+1. event / kickoff;
+2. source snapshot / `as_of_at`;
+3. frozen T-3 Structural Prior;
+4. frozen b2 replay state;
+5. raw inventory extrapolation;
+6. governed Stage-1 forecast;
+7. P2 observation index / reliability / final forecast;
+8. package / manifest / code lineage.
 
 After the match:
 
 - attach final attendance;
-- compute errors;
-- never recompute the historical forecast;
-- append to scorecard.
+- score only existing reproducible forecasts;
+- never reconstruct a missing forecast from the future;
+- append score evidence.
 
 ---
 
@@ -252,51 +216,24 @@ After the match:
 
 Last audited readiness: `8` independent events beyond 72h.
 
-Predeclared start floor: `N>=9`.
+Predeclared research-start floor: `N>=9`.
 
-When reached:
-
-1. freeze exact event/as-of identities before model selection;
-2. define PIT-safe T-7 anchor transition;
-3. start with simple / strongly regularized models;
-4. include MAE-native objectives;
-5. use event-safe + forward-event validation;
-6. create a separate challenger/package ID.
-
-`N=9` starts research. It does not prove sufficiency.
+At `N>=9`: freeze identities first, define PIT-safe T-7 transition, then open a separate challenger cycle. `N=9` starts research; it does not prove adequacy.
 
 ---
 
-# 9. Hard boundaries
+# 9. Immediate work order
 
-Do not:
-
-- mutate frozen packages;
-- switch P2 -> P4 post hoc on opened evidence;
-- reuse future checkpoints;
-- call exposed historical holdouts unseen;
-- optimize ensemble weights on final evaluation folds;
-- use realized future context at a PIT cutoff;
-- perform broad blind hyperparameter sweeps as the default strategy;
-- stop R&D while prospective evidence accumulates;
-- activate production from historical improvement alone.
-
----
-
-# 10. Immediate work order
-
-1. **finish long72 immutable forecast materialization + outcome scorer**;
-2. **implement rolling/forward validation utilities**;
-3. **run MAE-native residual challenger tournament**;
-4. **add event/fixture-block `ΔMAE` uncertainty**;
-5. **materialize next-fixture / cannibalization features**;
-6. **run controlled context ablations**;
-7. **run simple forecast-combination tournament**;
-8. **measure live-ticket incremental uplift over strongest structural forecast**;
-9. continue Track-A/long72 prospective scoring in parallel;
-10. trigger long168 research when `N>=9`;
-11. keep production unchanged.
+1. **run the MAE-native global residual challenger tournament using temporal-validation-v1**;
+2. **add event/fixture-block uncertainty for `ΔMAE`**;
+3. **materialize PIT-safe next-fixture / cannibalization features**;
+4. run controlled context ablations;
+5. run simple forecast-combination tournament;
+6. measure live-ticket incremental uplift over the strongest structural forecast;
+7. keep final24 + long72 prospective collection running automatically;
+8. trigger long168 research when `N>=9`;
+9. keep production unchanged.
 
 ## One-line handoff
 
-> **Frozen packages collect evidence in the background. Active development is MAE-first challenger R&D, not waiting: forward validation, MAE-aligned losses, PIT-safe context, forecast combinations and incremental live corrections over the strongest global model.**
+> **Prospective Long72 and canonical temporal validation are operational. Active modelling now moves to a genuinely new MAE-native challenger tournament; frozen evidence collection continues automatically in parallel.**
