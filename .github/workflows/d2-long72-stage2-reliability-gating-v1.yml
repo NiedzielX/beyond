@@ -50,7 +50,7 @@ jobs:
           grep -q 'inventory-linear-extrapolation' ml/d2_long72_stage2_reliability_gating_v1.py
           grep -q '33de331d2c3bf1e385f513c7fa7e28aa8b454a4d49cfe00d48163e6c083a6df5' ml/d2_long72_stage2_reliability_gating_v1.py
           grep -q 'minimum_retained_uplift_share_each_view' ml/d2_long72_stage2_reliability_gating_v1.py
-          grep -q 'positive historical uplift on both' ml/D2_LONG72_STAGE2_RELIABILITY_GATING_V1.md
+          grep -q 'historical uplift is positive on the original exposed' ml/D2_LONG72_STAGE2_RELIABILITY_GATING_V1.md
 
   evaluate-main:
     if: github.event_name != 'pull_request'
