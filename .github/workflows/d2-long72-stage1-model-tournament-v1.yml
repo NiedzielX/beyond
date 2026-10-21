@@ -6,7 +6,6 @@ on:
     paths:
       - "ml/d2_long72_stage1_model_tournament_v1.py"
       - "ml/test_d2_long72_stage1_model_tournament_v1.py"
-      - "ml/d2_long72_anchor_contract_v1.py"
       - "ml/results/D2_LONG72_ANCHOR_CONTRACT_V1_2026-10-21.md"
       - ".github/workflows/d2-long72-stage1-model-tournament-v1.yml"
   push:
@@ -15,13 +14,12 @@ on:
     paths:
       - "ml/d2_long72_stage1_model_tournament_v1.py"
       - "ml/test_d2_long72_stage1_model_tournament_v1.py"
-      - "ml/d2_long72_anchor_contract_v1.py"
       - "ml/results/D2_LONG72_ANCHOR_CONTRACT_V1_2026-10-21.md"
       - ".github/workflows/d2-long72-stage1-model-tournament-v1.yml"
 
 permissions:
   contents: read
-  id-token: write
+  actions: read
 
 concurrency:
   group: d2-long72-stage1-model-tournament-v1-${{ github.ref }}
@@ -50,7 +48,7 @@ jobs:
     if: github.event_name != 'pull_request'
     needs: validate
     runs-on: ubuntu-latest
-    timeout-minutes: 35
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -61,64 +59,35 @@ jobs:
           python -m pip install --upgrade pip
           pip install numpy==2.3.5 pandas==2.2.3 scikit-learn==1.8.0 joblib==1.5.3
 
-      - name: Request main-only OIDC token
+      - name: Download immutable frozen long72 artifact
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          response=$(curl --retry 4 --retry-all-errors --retry-delay 2 -fsS \
-            -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
-            "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=beyond-c1-alpha-training")
-          token=$(printf '%s' "$response" | jq -r '.value')
-          test -n "$token"
-          test "$token" != "null"
-          echo "::add-mask::$token"
-          echo "C1_ALPHA_OIDC_TOKEN=$token" >> "$GITHUB_ENV"
-
-      - name: Fetch exact long72 source exports
-        run: |
-          set -euo pipefail
-          base='https://adchzwqboeekhokapxqi.supabase.co/functions/v1/c1_alpha_training_export_v1'
-          fetch_export() {
-            local version="$1" output="$2" attempt=1 code=''
-            while [ "$attempt" -le 5 ]; do
-              code=$(curl -sS --connect-timeout 20 --max-time 90 \
-                -H "Authorization: Bearer $C1_ALPHA_OIDC_TOKEN" \
-                -o "$output" -w '%{http_code}' "$base?version=$version" || true)
-              if [ "$code" = "200" ] && jq -e '.ok == true' "$output" >/dev/null 2>&1; then
-                echo "Fetched $version on attempt $attempt"
-                return 0
-              fi
-              sleep $((attempt * 2)); attempt=$((attempt + 1))
-            done
-            echo "Failed $version http=$code" >&2; return 1
-          }
-          fetch_export v7-events /tmp/events.json
-          fetch_export v7-attendance /tmp/attendance.json
-          fetch_export v7-sporting /tmp/sporting.json
-          fetch_export v7-aliases /tmp/aliases.json
-          fetch_export v8-capacity /tmp/capacity.json
-          fetch_export v8-long168 /tmp/long168.json
-
-      - name: Rebuild exact frozen long72 dataset
-        run: |
-          python -m ml.d2_long72_anchor_contract_v1 \
-            --events /tmp/events.json \
-            --attendance /tmp/attendance.json \
-            --sporting /tmp/sporting.json \
-            --aliases /tmp/aliases.json \
-            --capacity /tmp/capacity.json \
-            --long168 /tmp/long168.json \
-            --structural-artifact-dir ml/artifacts/structural_prior_runtime_v1 \
-            --v2-manifest ml/artifacts/pre_live_v2_historical_candidate_v1/manifest.json \
-            --v3-manifest ml/artifacts/pre_live_v3_historical_candidate_v1/manifest.json \
-            --output-json /tmp/d2-long72-contract.json \
-            --output-csv /tmp/d2-long72-dataset.csv
-          echo '0083b82be7de4599574b90ed0af44e1accd1a993c1d07b7f263bfbf01f3a1a27  /tmp/d2-long72-contract.json' | sha256sum -c -
-          echo '2af6209484e7120f08541d82bc7bcd064b0f9ea46dd59bb5e7d2746cb35a214c  /tmp/d2-long72-dataset.csv' | sha256sum -c -
+          curl --retry 4 --retry-all-errors --retry-delay 2 -fL \
+            -H "Authorization: Bearer $GH_TOKEN" \
+            -H "Accept: application/vnd.github+json" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            "https://api.github.com/repos/NiedzielX/beyond/actions/artifacts/12365352293/zip" \
+            -o /tmp/d2-long72-frozen.zip
+          echo '83082cca46b6aa78fd744f59e9fd7eaaef6e7d33e8135817bda78a201b454561  /tmp/d2-long72-frozen.zip' | sha256sum -c -
+          mkdir -p /tmp/d2-long72-frozen
+          unzip -q /tmp/d2-long72-frozen.zip -d /tmp/d2-long72-frozen
+          test -f /tmp/d2-long72-frozen/d2-long72-contract.json
+          test -f /tmp/d2-long72-frozen/d2-long72-dataset.csv
+          echo '0083b82be7de4599574b90ed0af44e1accd1a993c1d07b7f263bfbf01f3a1a27  /tmp/d2-long72-frozen/d2-long72-contract.json' | sha256sum -c -
+          echo '2af6209484e7120f08541d82bc7bcd064b0f9ea46dd59bb5e7d2746cb35a214c  /tmp/d2-long72-frozen/d2-long72-dataset.csv' | sha256sum -c -
+          jq -e '
+            .status == "FROZEN_LONG72_DATA_AND_ANCHOR_CONTRACT"
+            and .dataset.event_count == 14
+            and .dataset.row_count == 130
+            and .model_training_performed == false
+          ' /tmp/d2-long72-frozen/d2-long72-contract.json >/dev/null
 
       - name: Run 24-72h LOEO tournament
         run: |
           python -m ml.d2_long72_stage1_model_tournament_v1 \
-            --input-csv /tmp/d2-long72-dataset.csv \
+            --input-csv /tmp/d2-long72-frozen/d2-long72-dataset.csv \
             --output-json /tmp/d2-long72-stage1.json \
             --output-predictions-csv /tmp/d2-long72-stage1-predictions.csv
 
@@ -137,8 +106,8 @@ jobs:
       - name: Print leaderboard and hashes
         run: |
           jq '{research_lead_candidate_id,event_count,row_count,candidates:[.candidates[]|{candidate_id,selector_eligible,overall:.scorecard.overall_24_72h,band_24_48h:.scorecard.band_24_48h,band_48_72h:.scorecard.band_48_72h}]}' /tmp/d2-long72-stage1.json
-          sha256sum /tmp/d2-long72-contract.json
-          sha256sum /tmp/d2-long72-dataset.csv
+          sha256sum /tmp/d2-long72-frozen/d2-long72-contract.json
+          sha256sum /tmp/d2-long72-frozen/d2-long72-dataset.csv
           sha256sum /tmp/d2-long72-stage1.json
           sha256sum /tmp/d2-long72-stage1-predictions.csv
 
@@ -147,8 +116,8 @@ jobs:
         with:
           name: d2-long72-stage1-model-tournament-v1-${{ github.run_id }}
           path: |
-            /tmp/d2-long72-contract.json
-            /tmp/d2-long72-dataset.csv
+            /tmp/d2-long72-frozen/d2-long72-contract.json
+            /tmp/d2-long72-frozen/d2-long72-dataset.csv
             /tmp/d2-long72-stage1.json
             /tmp/d2-long72-stage1-predictions.csv
           if-no-files-found: error
