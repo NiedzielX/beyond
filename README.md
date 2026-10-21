@@ -11,8 +11,8 @@ For every new AI / engineering session, read in this order:
 3. [`ml/CURRENT_MODEL.md`](ml/CURRENT_MODEL.md) — current forecasting state;
 4. [`ml/DEMAND_FORECAST_DEVELOPMENT_PLAN_V2.md`](ml/DEMAND_FORECAST_DEVELOPMENT_PLAN_V2.md) — canonical two-track roadmap;
 5. [`ml/MODEL_DEVELOPMENT_STRATEGY.md`](ml/MODEL_DEVELOPMENT_STRATEGY.md) — non-blocking historical R&D strategy;
-6. [`ml/results/A2_EXTERNAL_ENSEMBLE_CLOSURE_V1_2026-10-21.md`](ml/results/A2_EXTERNAL_ENSEMBLE_CLOSURE_V1_2026-10-21.md) — completed all-horizon external/ensemble closure audit;
-7. [`ml/A2_EXTERNAL_ENSEMBLE_FIXED_TEMPORAL_V1.md`](ml/A2_EXTERNAL_ENSEMBLE_FIXED_TEMPORAL_V1.md) — active fixed-temporal robustness contract;
+6. [`ml/results/A2_EXTERNAL_ENSEMBLE_FIXED_TEMPORAL_V1_2026-10-21.md`](ml/results/A2_EXTERNAL_ENSEMBLE_FIXED_TEMPORAL_V1_2026-10-21.md) — completed robustness result;
+7. [`ml/results/A2_EXTERNAL_ENSEMBLE_CLOSURE_V1_2026-10-21.md`](ml/results/A2_EXTERNAL_ENSEMBLE_CLOSURE_V1_2026-10-21.md) — all-horizon external/ensemble closure audit;
 8. [`ml/D2_PROSPECTIVE_ACCUMULATION_V1.md`](ml/D2_PROSPECTIVE_ACCUMULATION_V1.md) — frozen d2 prospective scoring/readiness contract;
 9. [`ml/results/D2_PROSPECTIVE_READINESS_V1_2026-10-19.md`](ml/results/D2_PROSPECTIVE_READINESS_V1_2026-10-19.md) — tracked-event readiness/evidence classes;
 10. [`ml/results/D2_EVENT5_HOLDOUT_V1_2026-10-19.md`](ml/results/D2_EVENT5_HOLDOUT_V1_2026-10-19.md) — first chronological d2 holdout;
@@ -69,7 +69,7 @@ Production remains:
 
 `live_adjustment = 0`
 
-## Active Track-B result — a2 external + ensemble closure
+## Track-B a2 external + ensemble closure — COMPLETE
 
 Canonical run:
 
@@ -87,7 +87,7 @@ Artifact ZIP SHA256:
 
 `c86ad72301e95716a908f4e2b4811e33af37b898b3eed54aed094fc4d91658a4`
 
-Result:
+Closure result:
 
 | Horizon | Development result | 2024/25 gain | 2025/26 gain | Decision |
 |---|---:|---:|---:|---|
@@ -97,30 +97,66 @@ Result:
 | T-3 | +19.59 | -2.80 | +30.54 | retain current a2 |
 | T-1 | +55.46 | **+2.27** | **+6.28** | robustness |
 
-Exact selected ensembles:
+T-14 and T-3 are closed for this challenger formulation because the exposed references are mixed.
+
+## Track-B fixed-temporal robustness — COMPLETE
+
+Canonical run:
+
+`39625425854`
+
+Artifact ID:
+
+`12356632426`
+
+Result JSON SHA256:
+
+`e6532db4bccfe567dd1eeaf3196f74d1a41a78a66eea53bc975892868ff2c900`
+
+Artifact ZIP SHA256:
+
+`7d9cfe2609affcb35b7c99252d42231ce1e5e55b24fbb3bb1dfd3470a0226e4e`
+
+The exact selected contracts were replayed unchanged across 2022/23, 2023/24, 2024/25 and 2025/26.
+
+| Horizon | Rolling-fold MAE gains | Mean gain | Relative mean gain | Worst event degradation | Result |
+|---|---|---:|---:|---:|---|
+| T-30 | +5.98 / +33.50 / +54.93 / +29.74 | **+31.04** | **1.47%** | 2,855.70 | **PASS 4/4** |
+| T-7 | +20.18 / +8.90 / +10.27 / +27.86 | **+16.80** | **0.87%** | 1,632.41 | **PASS 4/4** |
+| T-1 | +16.48 / +55.46 / +2.27 / +6.28 | **+20.12** | **1.05%** | 2,309.70 | **PASS 4/4** |
+
+Exact robust historical challenger ensembles:
 
 - T-30: `0.75 current a2 + 0.25 XGBoost depth3`;
 - T-7: `0.25 current a2/HGB + 0.25 CatBoost depth4 + 0.50 LightGBM leaves15`;
 - T-1: `0.25 HGB hist31 + 0.50 CatBoost depth4 + 0.25 LightGBM leaves15`.
 
-T-14 and T-3 are closed for this challenger formulation because the exposed references are mixed.
+All three pass the predefined temporal-consistency gate, but the effect sizes are modest and event-level tail risk remains material. They are **robust challengers**, not replacements for Frozen Pre-Live v2.
 
-## Active now — fixed-temporal robustness
+## Active Track-B next step — Pre-Live v3 challenger
 
-The exact T-30/T-7/T-1 contracts above are replayed unchanged through four rolling folds:
+Build a separately versioned Pre-Live v3 candidate with historical bases:
 
-1. 2022/23;
-2. 2023/24;
-3. 2024/25;
-4. 2025/26.
+- T-30 -> robust ensemble;
+- T-14 -> current a2;
+- T-7 -> robust ensemble;
+- T-3 -> current a2;
+- T-1 -> robust ensemble.
 
-No weights, models or features are reselected.
+Then **revalidate the current-season regime against the new historical anchors**.
 
-Pass gate:
+Existing frozen b2 cannot be silently inherited because its residual policies were derived relative to the old historical bases.
 
-`positive MAE improvement in all four rolling folds`
+Required comparison:
 
-A pass does not change Frozen Pre-Live v2. It qualifies the horizon only for a new, separately versioned historical / Pre-Live challenger cycle.
+1. new historical base only;
+2. old b2 formulation applied unchanged to the new anchor as a fixed comparator;
+3. newly selected current-season-regime challenger under a declared historical temporal boundary;
+4. Frozen Pre-Live v2 unchanged benchmark.
+
+Only a fully validated package may receive a new freeze ID.
+
+If Pre-Live v3 is later frozen, d2 must be rebuilt/revalidated against that anchor under a new d2 version. Frozen Ridge/P2 remains tied to Frozen Pre-Live v2 for Track A.
 
 ## Frozen d2 state
 
@@ -175,9 +211,9 @@ The current frozen d2 package is not uniformly better match-by-match:
 
 These are exposed diagnostics, not permission for post-hoc Ridge/P2 tuning.
 
-## Next Track-B research after historical robustness
+## Next d2 Track-B research
 
-Separately versioned d2 research may continue without waiting for a future-event count threshold, e.g.:
+After the Pre-Live-v3 anchor cycle is resolved, separately versioned d2 research may continue without waiting for a future-event count threshold, e.g.:
 
 - remaining-demand target;
 - alternative residual target;
@@ -186,7 +222,7 @@ Separately versioned d2 research may continue without waiting for a future-event
 - compact heterogeneous live-model ensemble;
 - materially different trajectory/TSFM hypothesis.
 
-Forward PIT-safe context collection also continues for rivalry, verified absences, sporting state, media/GDELT and valid hype/search/social signals.
+Forward PIT-safe context collection continues in parallel for rivalry, verified absences, sporting state, media/GDELT and valid hype/search/social signals.
 
 ## Engineering rule
 
