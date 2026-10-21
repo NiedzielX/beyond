@@ -12,8 +12,8 @@ Read in this order:
 2. `ml/CURRENT_MODEL.md`;
 3. `ml/DEMAND_FORECAST_DEVELOPMENT_PLAN_V2.md`;
 4. `ml/MODEL_DEVELOPMENT_STRATEGY.md`;
-5. `ml/results/A2_EXTERNAL_ENSEMBLE_CLOSURE_V1_2026-10-21.md`;
-6. `ml/A2_EXTERNAL_ENSEMBLE_FIXED_TEMPORAL_V1.md`;
+5. `ml/results/A2_EXTERNAL_ENSEMBLE_FIXED_TEMPORAL_V1_2026-10-21.md`;
+6. `ml/results/A2_EXTERNAL_ENSEMBLE_CLOSURE_V1_2026-10-21.md`;
 7. `ml/D2_PROSPECTIVE_ACCUMULATION_V1.md`;
 8. `ml/results/D2_PROSPECTIVE_READINESS_V1_2026-10-19.md`;
 9. `ml/results/D2_EVENT5_HOLDOUT_V1_2026-10-19.md`;
@@ -26,7 +26,7 @@ Read in this order:
 
 ## Immediate objective
 
-Run two tracks in parallel:
+Run two tracks in parallel.
 
 ### Track A — frozen validation
 
@@ -40,11 +40,13 @@ Continue delayed-label and true-post-freeze scoring append-only. This track buil
 
 Do **not** wait for a prospective sample-count gate when honest research can be run now.
 
-Current active R&D:
+Current active R&D sequence:
 
-1. the all-horizon external-family/heterogeneous-ensemble closure audit is COMPLETE;
-2. exact T-30/T-7/T-1 selected ensemble contracts are now in a fixed-temporal robustness audit;
-3. after that, continue separately versioned d2 target/reliability/ensemble research and PIT-safe context research.
+1. all-horizon external-family/heterogeneous-ensemble closure audit — COMPLETE;
+2. exact T-30/T-7/T-1 fixed-temporal robustness audit — COMPLETE, all three PASS 4/4;
+3. **ACTIVE NEXT: separately versioned Pre-Live v3 challenger with current-season-regime revalidation on the new historical anchors**;
+4. after the v3 anchor cycle, rebuild/revalidate d2 against v3 under a new d2 version if v3 earns a freeze;
+5. continue PIT-safe context collection/research in parallel.
 
 Core rule:
 
@@ -82,13 +84,7 @@ Canonical result:
 
 `ml/results/A2_EXTERNAL_ENSEMBLE_CLOSURE_V1_2026-10-21.md`
 
-Run:
-
-`39624170933`
-
-Artifact ID:
-
-`12356162577`
+Run `39624170933`, artifact `12356162577`.
 
 Result JSON SHA256:
 
@@ -98,71 +94,134 @@ Artifact ZIP SHA256:
 
 `c86ad72301e95716a908f4e2b4811e33af37b898b3eed54aed094fc4d91658a4`
 
-Result:
+Closure result:
 
-- T-30 ADVANCE to fixed-temporal robustness;
-- T-7 ADVANCE;
-- T-1 ADVANCE;
-- T-14 RETAIN current a2 / mixed references;
-- T-3 RETAIN current a2 / mixed references.
+- T-30 -> robustness;
+- T-7 -> robustness;
+- T-1 -> robustness;
+- T-14 -> retain current a2 / mixed references;
+- T-3 -> retain current a2 / mixed references.
 
-Selected reference improvements:
+## a2 fixed-temporal robustness — COMPLETE
+
+Canonical result:
+
+`ml/results/A2_EXTERNAL_ENSEMBLE_FIXED_TEMPORAL_V1_2026-10-21.md`
+
+Run:
+
+`39625425854`
+
+Artifact ID:
+
+`12356632426`
+
+Result JSON SHA256:
+
+`e6532db4bccfe567dd1eeaf3196f74d1a41a78a66eea53bc975892868ff2c900`
+
+Artifact ZIP SHA256:
+
+`7d9cfe2609affcb35b7c99252d42231ce1e5e55b24fbb3bb1dfd3470a0226e4e`
+
+Exact contracts passed all four rolling folds:
 
 ### T-30
 
-- 2024/25 `+54.93` MAE;
-- 2025/26 `+29.74`.
+Fixed ensemble:
 
-Fixed ensemble weights:
+`0.75 current a2 + 0.25 XGBoost depth3`
 
-`current a2 0.75 + XGBoost depth3 0.25`
+Fold MAE gains:
+
+`+5.98 / +33.50 / +54.93 / +29.74`
+
+Mean gain:
+
+`+31.04 / 1.47%`
+
+Club-season cells improved:
+
+`50/72`
+
+Worst event degradation:
+
+`2,855.70`
 
 ### T-7
 
-- 2024/25 `+10.27`;
-- 2025/26 `+27.86`.
+Fixed ensemble:
 
-Fixed ensemble weights:
+`0.25 current a2/HGB + 0.25 CatBoost depth4 + 0.50 LightGBM leaves15`
 
-`current a2/HGB 0.25 + CatBoost depth4 0.25 + LightGBM leaves15 0.50`
+Fold gains:
+
+`+20.18 / +8.90 / +10.27 / +27.86`
+
+Mean gain:
+
+`+16.80 / 0.87%`
+
+Club-season cells improved:
+
+`42/72`
+
+Worst event degradation:
+
+`1,632.41`
 
 ### T-1
 
-- 2024/25 `+2.27`;
-- 2025/26 `+6.28`.
+Fixed ensemble:
 
-Fixed ensemble weights:
+`0.25 HGB hist31 + 0.50 CatBoost depth4 + 0.25 LightGBM leaves15`
 
-`HGB hist31 0.25 + CatBoost depth4 0.50 + LightGBM leaves15 0.25`
+Fold gains:
 
-T-1 uplift is tiny and tail degradation is material; robustness is mandatory.
+`+16.48 / +55.46 / +2.27 / +6.28`
 
-No frozen or production state changed from closure evidence.
+Mean gain:
 
-## a2 fixed-temporal robustness — ACTIVE
+`+20.12 / 1.05%`
 
-Contract:
+Club-season cells improved:
 
-`ml/A2_EXTERNAL_ENSEMBLE_FIXED_TEMPORAL_V1.md`
+`38/72`
 
-Exact selected T-30/T-7/T-1 contracts are replayed unchanged across:
+Worst event degradation:
 
-1. 2022/23 after training 2021/22;
-2. 2023/24 after training 2021/22+2022/23;
-3. 2024/25 after training all earlier seasons;
-4. 2025/26 after training all earlier seasons.
+`2,309.70`
 
-No tuning occurs in this audit.
+Minimum bootstrap P(improvement > 0) was only `0.5196` for T-1, so the passing contracts are legitimate historical challengers but not strong enough to overwrite v2 automatically.
 
-Pass gate:
+## Active Track-B work — Pre-Live v3 challenger
 
-`positive MAE improvement in all four rolling folds`
+Historical v3 candidate base should use:
 
-A pass still does not mutate Frozen Pre-Live v2. It only creates evidence for a separately versioned next historical / Pre-Live challenger.
+- T-30 -> exact robust ensemble;
+- T-14 -> current a2;
+- T-7 -> exact robust ensemble;
+- T-3 -> current a2;
+- T-1 -> exact robust ensemble.
 
-## Historical layers
+The next experiment must **revalidate the current-season regime against these new anchors**.
 
-### Current frozen a2
+Do not silently copy frozen b2 into v3. Existing b2 residual policies were selected relative to the old historical bases.
+
+Required v3 comparison:
+
+1. new historical base only;
+2. old b2 formulation applied unchanged on the new anchor as a fixed comparator;
+3. newly selected current-season-regime challenger under a declared historical temporal boundary;
+4. Frozen Pre-Live v2 as the unchanged benchmark.
+
+Only after the new anchor + regime package passes its own historical/fixed-temporal gates may it receive a new freeze ID.
+
+If Pre-Live v3 later freezes, d2 must be rebuilt/revalidated against v3 under a new d2 version. Do not silently move the current Ridge/P2 model to a new anchor.
+
+## Historical frozen layers — Track A
+
+Current Frozen Pre-Live v2 historical bases remain:
 
 - T-30 Structural Prior;
 - T-14 Structural Prior;
@@ -170,9 +229,7 @@ A pass still does not mutate Frozen Pre-Live v2. It only creates evidence for a 
 - T-3 Structural Prior;
 - T-1 Structural Prior.
 
-These remain the Frozen Pre-Live v2 historical bases until a separately versioned candidate completes the full evaluation chain.
-
-### Frozen b2
+Frozen b2:
 
 - T-30 no adjustment;
 - T-14 no adjustment;
@@ -180,13 +237,11 @@ These remain the Frozen Pre-Live v2 historical bases until a separately versione
 - T-3 `ewma50-resid-k2-cap05-min3`;
 - T-1 `ewma50-resid-k6-cap05-min3`.
 
-b2 stays frozen in Track A.
-
-### Historical c2
+Historical c2:
 
 `NO_CONTEXT_ALL_HORIZONS`
 
-Forward-only verified rivalry, absences, sporting/media/hype context remains active collection/research in Track B when PIT-safe.
+These remain unchanged for frozen Track-A evidence.
 
 ## Frozen d2 state
 
@@ -266,9 +321,9 @@ Recovered outcomes already show that frozen d2 is not uniformly beneficial:
 
 These events are diagnostic/exposed. They may motivate a future new hypothesis but cannot be used to post-hoc mutate frozen Ridge/P2 and then be called unseen validation.
 
-## d2 next-generation Track-B research
+## Later d2 next-generation Track-B research
 
-Allowed now under a new versioned evaluation contract:
+After the v3 anchor cycle is resolved, allowed under a new versioned evaluation contract:
 
 - remaining-demand target;
 - alternative capacity-normalized residual target;
@@ -295,4 +350,4 @@ Every material change creates a new candidate/version.
 
 ## One-line instruction
 
-> **Keep Frozen Pre-Live v2 / Ridge / P2 unchanged for Track-A evidence. Do not wait for prospective N to continue Track-B R&D. Finish exact T-30/T-7/T-1 ensemble robustness; only passing horizons may enter a separately versioned next Pre-Live challenger; meanwhile keep prospective scoring and PIT-safe context collection running. Production remains unchanged.**
+> **Keep Frozen Pre-Live v2 / Ridge / P2 unchanged for Track-A evidence. Active Track-B work is now Pre-Live v3 historical-anchor + current-season-regime revalidation using the robust T-30/T-7/T-1 challengers. Do not wait for prospective N. Production remains unchanged.**
