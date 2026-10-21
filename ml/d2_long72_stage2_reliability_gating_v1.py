@@ -33,7 +33,6 @@ EXPECTED_STAGE1_PREDICTIONS_SHA256 = "33de331d2c3bf1e385f513c7fa7e28aa8b454a4d49
 EXPECTED_EVENT_COUNT = 13
 EXPECTED_ROW_COUNT = 80
 
-# Canonical Stage-1 inventory evidence; tight drift checks before Stage-2.
 EXPECTED_RAW_OVERALL_MAE = 3254.6809517243155
 EXPECTED_RAW_OVERALL_UPLIFT = 452.4572219222955
 EXPECTED_RAW_24_48_UPLIFT = 675.3308228020314
@@ -43,9 +42,6 @@ EXPECTED_RAW_48_72_WORST_DEGRADATION = 3741.7941628246845
 EXPECTED_RAW_ABS_BIAS = 1458.934971360056
 METRIC_ATOL = 1e-6
 
-# Inherited Stage-2 philosophy: retain at least half the raw uplift and reduce
-# tail harm materially. Additional subgroup/bias gates address the explicit
-# Stage-1 weaknesses discovered before this policy experiment.
 MIN_RETAINED_UPLIFT_SHARE = 0.50
 MIN_WORST_DEGRADATION_REDUCTION = 0.25
 MIN_ABS_BIAS_REDUCTION = 0.25
@@ -116,31 +112,29 @@ def load_inputs(dataset_path: Path, predictions_path: Path) -> pd.DataFrame:
         raise RuntimeError(f"expected {EXPECTED_ROW_COUNT} raw inventory rows")
     if predictions["ticket_event_id"].nunique() != EXPECTED_EVENT_COUNT:
         raise RuntimeError("raw inventory event count drift")
+    if len(early) != EXPECTED_ROW_COUNT or early["ticket_event_id"].nunique() != EXPECTED_EVENT_COUNT:
+        raise RuntimeError("frozen long72 early slice drift")
 
-    keep = [
-        column for column in early.columns
-        if column not in {
-            "actual_attendance",
-            "stadium_capacity",
-            "anchor_p50",
-            "club_slug",
-            "home_team",
-            "away_team",
-            "kickoff_at",
-            "hours_to_kickoff",
-        }
+    keys = ["ticket_event_id", "as_of_at"]
+    # Add only features not already carried by the Stage-1 prediction artifact.
+    # This avoids duplicate merge-key labels and also avoids pandas _x/_y drift.
+    feature_columns = [
+        column
+        for column in early.columns
+        if column not in predictions.columns and column not in keys
     ]
     merged = predictions.merge(
-        early[["ticket_event_id", "as_of_at", *keep]],
-        on=["ticket_event_id", "as_of_at"],
+        early[[*keys, *feature_columns]],
+        on=keys,
         how="left",
         validate="one_to_one",
+        indicator=True,
     )
     if len(merged) != EXPECTED_ROW_COUNT:
         raise RuntimeError("Stage-2 feature join changed row count")
-    if merged[keep].isna().all(axis=1).any():
+    if set(merged["_merge"].astype(str)) != {"both"}:
         raise RuntimeError("Stage-2 feature join produced unmatched rows")
-    return add_causal_reliability_state(merged)
+    return add_causal_reliability_state(merged.drop(columns=["_merge"]))
 
 
 def add_causal_reliability_state(frame: pd.DataFrame) -> pd.DataFrame:
@@ -156,11 +150,6 @@ def add_causal_reliability_state(frame: pd.DataFrame) -> pd.DataFrame:
 
 
 def maturity_reliability(frame: pd.DataFrame) -> np.ndarray:
-    """Scaled version of the frozen final24 P2 maturity policy.
-
-    Observation weights are unchanged from final24 P2. Time thresholds are
-    moved to the analogous halves/quarter of the earlier 24-72h window.
-    """
     index = _numeric(frame, "stage2_observation_index", default=1.0)
     hours = _numeric(frame, "hours_to_kickoff", default=72.0)
     observation_weight = np.where(index <= 1.0, 0.25, np.where(index <= 2.0, 0.60, 1.0))
@@ -285,34 +274,35 @@ def score_policy(predictions: pd.DataFrame) -> dict[str, Any]:
 
 
 def _assert_close(actual: float, expected: float, label: str) -> None:
-    if not np.isclose(actual, expected, rtol=0.0, atol=METRIC_ATOL):
+    if not np.isclose(float(actual), float(expected), rtol=0.0, atol=METRIC_ATOL):
         raise RuntimeError(f"{label} drift actual={actual} expected={expected}")
 
 
 def assert_stage1_lineage(raw_score: dict[str, Any]) -> None:
     overall = raw_score["overall_24_72h"]
-    b1 = raw_score["band_24_48h"]
-    b2 = raw_score["band_48_72h"]
+    band1 = raw_score["band_24_48h"]
+    band2 = raw_score["band_48_72h"]
     _assert_close(overall["event_balanced_mae"], EXPECTED_RAW_OVERALL_MAE, "raw overall MAE")
     _assert_close(overall["mae_improvement"], EXPECTED_RAW_OVERALL_UPLIFT, "raw overall uplift")
-    _assert_close(b1["mae_improvement"], EXPECTED_RAW_24_48_UPLIFT, "raw 24-48 uplift")
-    _assert_close(b2["mae_improvement"], EXPECTED_RAW_48_72_UPLIFT, "raw 48-72 uplift")
+    _assert_close(band1["mae_improvement"], EXPECTED_RAW_24_48_UPLIFT, "raw 24-48 uplift")
+    _assert_close(band2["mae_improvement"], EXPECTED_RAW_48_72_UPLIFT, "raw 48-72 uplift")
     _assert_close(overall["worst_event_degradation"], EXPECTED_RAW_WORST_DEGRADATION, "raw worst")
-    _assert_close(b2["worst_event_degradation"], EXPECTED_RAW_48_72_WORST_DEGRADATION, "raw 48-72 worst")
+    _assert_close(
+        band2["worst_event_degradation"],
+        EXPECTED_RAW_48_72_WORST_DEGRADATION,
+        "raw 48-72 worst",
+    )
     _assert_close(abs(overall["event_balanced_bias"]), EXPECTED_RAW_ABS_BIAS, "raw abs bias")
 
 
-def enrich_policy_row(
-    row: dict[str, Any],
-    raw_score: dict[str, Any],
-) -> dict[str, Any]:
+def enrich_policy_row(row: dict[str, Any], raw_score: dict[str, Any]) -> dict[str, Any]:
     score = row["scorecard"]
     raw_overall = raw_score["overall_24_72h"]
-    raw_b1 = raw_score["band_24_48h"]
-    raw_b2 = raw_score["band_48_72h"]
+    raw_band1 = raw_score["band_24_48h"]
+    raw_band2 = raw_score["band_48_72h"]
     overall = score["overall_24_72h"]
-    b1 = score["band_24_48h"]
-    b2 = score["band_48_72h"]
+    band1 = score["band_24_48h"]
+    band2 = score["band_48_72h"]
 
     def retained(value: float, raw_value: float) -> float:
         return float(value / raw_value) if raw_value > 0 else float("-inf")
@@ -321,18 +311,18 @@ def enrich_policy_row(
         overall["mae_improvement"], raw_overall["mae_improvement"]
     )
     row["retained_24_48_uplift_share"] = retained(
-        b1["mae_improvement"], raw_b1["mae_improvement"]
+        band1["mae_improvement"], raw_band1["mae_improvement"]
     )
     row["retained_48_72_uplift_share"] = retained(
-        b2["mae_improvement"], raw_b2["mae_improvement"]
+        band2["mae_improvement"], raw_band2["mae_improvement"]
     )
     row["overall_worst_degradation_reduction_share"] = float(
         (raw_overall["worst_event_degradation"] - overall["worst_event_degradation"])
         / raw_overall["worst_event_degradation"]
     )
     row["band_48_72_worst_degradation_reduction_share"] = float(
-        (raw_b2["worst_event_degradation"] - b2["worst_event_degradation"])
-        / raw_b2["worst_event_degradation"]
+        (raw_band2["worst_event_degradation"] - band2["worst_event_degradation"])
+        / raw_band2["worst_event_degradation"]
     )
     row["absolute_bias_reduction_share"] = float(
         (abs(raw_overall["event_balanced_bias"]) - abs(overall["event_balanced_bias"]))
@@ -340,8 +330,8 @@ def enrich_policy_row(
     )
     row["selector_eligible"] = bool(
         overall["mae_improvement"] > 0.0
-        and b1["mae_improvement"] > 0.0
-        and b2["mae_improvement"] > 0.0
+        and band1["mae_improvement"] > 0.0
+        and band2["mae_improvement"] > 0.0
         and row["retained_overall_uplift_share"] >= MIN_RETAINED_UPLIFT_SHARE
         and row["retained_24_48_uplift_share"] >= MIN_RETAINED_UPLIFT_SHARE
         and row["retained_48_72_uplift_share"] >= MIN_RETAINED_UPLIFT_SHARE
@@ -356,7 +346,8 @@ def enrich_policy_row(
 
 def select_policy(rows: list[dict[str, Any]]) -> dict[str, Any]:
     eligible = [
-        row for row in rows
+        row
+        for row in rows
         if row["policy_id"] not in {"P0-anchor", "P1-raw-inventory"}
         and row.get("selector_eligible")
     ]
@@ -389,11 +380,10 @@ def run_stage2(base: pd.DataFrame) -> tuple[dict[str, Any], pd.DataFrame]:
     parts: list[pd.DataFrame] = []
     for policy in POLICIES:
         predictions = policy_predictions(base, policy)
-        score = score_policy(predictions)
         policy_rows.append({
             "policy_id": policy.id,
             "description": policy.description,
-            "scorecard": score,
+            "scorecard": score_policy(predictions),
         })
         parts.append(predictions)
 
@@ -405,8 +395,8 @@ def run_stage2(base: pd.DataFrame) -> tuple[dict[str, Any], pd.DataFrame]:
             row["selector_eligible"] = False
         else:
             enrich_policy_row(row, raw_score)
-    selection = select_policy(policy_rows)
 
+    selection = select_policy(policy_rows)
     return {
         "experiment": EXPERIMENT,
         "status": "COMPLETED_STAGE2_RELIABILITY_GATING",
