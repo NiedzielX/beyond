@@ -1,291 +1,346 @@
 # Beyond Ticketing — Demand Forecast Development Plan v2
 
-Ostatnia aktualizacja: **2026-10-19**
+Last updated: **2026-10-21**
 
 Status: **CANONICAL ACCURACY ROADMAP**
 
-Pełne zasady:
+Canonical rules:
 
 `ml/MODEL_ACCURACY_DEVELOPMENT_INSTRUCTIONS_V2.md`
 
-Aktywny prospective contract:
+Historical strategy baseline:
+
+`ml/MODEL_DEVELOPMENT_STRATEGY.md`
+
+Frozen prospective contract:
 
 `ml/D2_PROSPECTIVE_ACCUMULATION_V1.md`
 
-## Główny cel
+Active a2 closure audit:
 
-> **Dopracować model maksymalnie i obniżyć MAE tak daleko, jak pozwalają uczciwe, reprodukowalne dane i walidacja PIT-safe.**
+`ml/A2_EXTERNAL_ENSEMBLE_CLOSURE_V1.md`
 
-Failed challenger zamyka challenger, nie cały workstream. Exposed holdout nie może być później używany jako unseen validation po tuningu.
+## North star
 
-## Architektura
+> **Reduce forecasting MAE as far as possible with honest, reproducible, point-in-time-safe evidence before treating the model as mature.**
 
-Frozen pre-live:
+Two rules are equally important:
 
-`history + proven current-season regime -> Frozen Pre-Live v2`
+1. a frozen champion/evidence package must not be mutated from exposed outcomes;
+2. **R&D must not wait for prospective sample-count gates when honest historical or newly predeclared research is available now.**
 
-Frozen live:
+A failed challenger closes the challenger, not the workstream.
 
-`Frozen Pre-Live v2 + P2 reliability * frozen Ridge delta -> d2 forecast`
+---
 
-## Aktualna kolejność
+# 1. Two parallel tracks — mandatory
 
-1. **a2 Historical optimization — COMPLETE / CLOSED FOR CURRENT DATA**
-2. **b2 Current-season regime — COMPLETE / FROZEN**
-3. **c2 Historical context — COMPLETE FOR CURRENT DATA / NO EXTENSION**
-4. **Pre-Live v2 — FROZEN + SEALED**
-5. **d2 Stage 0 — COMPLETE**
-6. **d2 Stage 1 — COMPLETE / `ridge-a10` FROZEN**
-7. **d2 Stage 2 — COMPLETE / `P2-observation-maturity` FROZEN**
-8. **Event 5 chronological holdout — COMPLETE**
-9. **Prospective accumulation — ACTIVE NOW**
-10. **New challenger/retraining cycle — only if repeated prospective evidence justifies it**
-11. **Production promotion — evidence-gated, later**
+## Track A — Frozen validation / promotion evidence
+
+Purpose:
+
+> Measure the already-frozen model stack on delayed-label and genuinely future events without retraining it.
+
+Frozen stack:
+
+`Frozen Pre-Live v2 + P2 reliability * frozen ridge-a10 delta`
+
+This track:
+
+- keeps Pre-Live v2 unchanged;
+- keeps `ridge-a10` unchanged;
+- keeps `P2-observation-maturity` unchanged;
+- scores new events append-only;
+- separates `DELAYED_LABEL_HOLDOUT` from `TRUE_POST_FREEZE_PROSPECTIVE`;
+- produces production-promotion evidence.
+
+**Track A may wait for genuinely future evidence because that evidence does not exist yet.**
+
+## Track B — Active accuracy R&D
+
+Purpose:
+
+> Continue improving the modelling approach now, using only valid evidence boundaries.
+
+This track does **not** wait for a fixed number of new prospective events.
+
+It may start a new versioned challenger when at least one is true:
+
+- a bounded part of the original investigation is still incomplete;
+- a materially new hypothesis exists;
+- materially new historical data exists;
+- a new PIT-safe feature/source becomes available;
+- a materially different target/model/ensemble formulation can be tested honestly.
+
+Requirements:
+
+- new candidate/version ID;
+- explicit train/development/reference boundary before tuning;
+- exposed prospective events never relabeled as unseen;
+- current frozen stack retained as benchmark;
+- no silent production write.
+
+**Production promotion waits for prospective evidence. R&D does not.**
+
+---
+
+# 2. Current frozen state
+
+Historical sequence already completed:
+
+`a2 historical -> b2 -> c2 historical -> Frozen Pre-Live v2`
+
+Live sequence already completed:
+
+`d2 Stage 0 -> d2 Stage 1 ridge-a10 -> d2 Stage 2 P2 -> event-5 holdout`
+
+Frozen Pre-Live ID:
+
+`pre-live-v2-historical-candidate-2026-10-18-v1`
+
+Frozen d2 package:
+
+`d2-stage2-p2-observation-maturity-2026-10-19-v1`
 
 Production remains:
 
 `live_adjustment = 0`
 
----
-
-# 1. Historical layers — closed for current exposed data
-
-## a2
-
-Final historical bases:
-
-- T-30 Structural Prior;
-- T-14 Structural Prior;
-- T-7 `hist31-leaf20-l2-1`;
-- T-3 Structural Prior;
-- T-1 Structural Prior.
-
-T-7 fixed rolling audit improves 4/4 folds, mean `+104.66 MAE`.
-
-The completed a2 investigation already covered ablation, recency, internal/external model families including CatBoost/LightGBM/XGBoost, temporal robustness, unresolved-horizon multi-fold checks and persistent club calibration.
-
-## b2
-
-Frozen policies:
-
-- T-30 `NO_ADJUSTMENT`;
-- T-14 `NO_ADJUSTMENT`;
-- T-7 `ewma50-resid-k6-cap05-min3`;
-- T-3 `ewma50-resid-k2-cap05-min3`;
-- T-1 `ewma50-resid-k6-cap05-min3`.
-
-Historical four-fold mean gains:
-
-- T-7 `+51.47`;
-- T-3 `+70.44`;
-- T-1 `+69.54`.
-
-Event 5 adds a prospective warning that T-1 b2 may sometimes move a high-demand event in the wrong direction. Do not retune from one event.
-
-## c2
-
-Frozen historical contract:
-
-`NO_CONTEXT_ALL_HORIZONS`
-
-Future-only rivalry, verified absences and media/hype remain prospective research when valid PIT data exists.
+No new R&D experiment mutates those IDs.
 
 ---
 
-# 2. Frozen Pre-Live v2
+# 3. Frozen Pre-Live v2
 
-Freeze ID:
+Historical contract:
 
-`pre-live-v2-historical-candidate-2026-10-18-v1`
+| Horizon | Historical base | b2 | c2 | Frozen reference mean MAE |
+|---|---|---|---|---:|
+| T-30 | Structural Prior | no adjustment | no context | 1,867.82 |
+| T-14 | Structural Prior | no adjustment | no context | 1,809.45 |
+| T-7 | `hist31-leaf20-l2-1` | `ewma50-resid-k6-cap05-min3` | no context | 1,691.40 |
+| T-3 | Structural Prior | `ewma50-resid-k2-cap05-min3` | no context | 1,682.63 |
+| T-1 | Structural Prior | `ewma50-resid-k6-cap05-min3` | no context | 1,661.52 |
 
-Reference mean MAE:
+The current frozen candidate is reproducible and sealed.
 
-| Horizon | MAE |
-|---|---:|
-| T-30 | 1,867.82 |
-| T-14 | 1,809.45 |
-| T-7 | 1,691.40 |
-| T-3 | 1,682.63 |
-| T-1 | 1,661.52 |
+Historical a2 is **not** to be randomly reopened or retuned against the same exposed references.
 
-No prospective scorer may silently mutate this anchor.
+However, one bounded a2 gap remained: external model families were only canonically tested at T-7. That gap is now handled as a separately versioned Track-B closure audit.
 
 ---
 
-# 3. Frozen d2 Stage 1
+# 4. Track B priority 1 — a2 External Model + Ensemble Closure Audit
 
-Expert:
+Status:
+
+**ACTIVE — PR #120 / workflow `a2 External + Ensemble Closure v1`**
+
+Contract:
+
+`ml/A2_EXTERNAL_ENSEMBLE_CLOSURE_V1.md`
+
+Question:
+
+> Can CatBoost / LightGBM / XGBoost / HGB or a heterogeneous ensemble improve the current a2 historical base at T-30/T-14/T-7/T-3/T-1?
+
+Development boundary:
+
+- train: 2021/22 + 2022/23;
+- select: 2023/24 only;
+- exposed references: 2024/25 and 2025/26;
+- references never used for model/weight selection.
+
+Candidates:
+
+- current frozen a2 base;
+- fixed HGB where not already champion;
+- CatBoost depth 4/6;
+- LightGBM leaves 15/31;
+- XGBoost depth 2/3;
+- median of top development family members;
+- non-negative development-selected 0.25-grid weighted ensemble with at least two non-zero members.
+
+Decision per horizon:
+
+- if current a2 wins development -> close this challenger for that horizon;
+- if development winner fails references -> retain current a2;
+- if winner improves both exposed references -> advance unchanged contract to a separate fixed-temporal robustness audit.
+
+A positive result here does **not** automatically replace Frozen Pre-Live v2.
+
+---
+
+# 5. Track A — frozen d2 prospective validation
+
+Stage-1 expert:
 
 `ridge-a10`
 
-Development set:
+Development:
 
-`9 events / 30 rows`
+- Frozen-v2 latest MAE `4128.01`;
+- Ridge latest MAE `3320.39`;
+- Ridge latest uplift `807.62 / 19.56%`;
+- Ridge window MAE `3619.19`;
+- worst latest-event degradation `4326.90`.
 
-Development latest MAE:
-
-`3320.39` vs Frozen-v2 `4128.01`
-
-Development window MAE:
-
-`3619.19`
-
-Worst latest-event degradation:
-
-`4326.90`
-
-Chronos-2 and Chronos-Bolt-small did not improve plain Ridge, therefore:
-
-`TSFM_STAGE1 = NOT_PROVEN_VS_RIDGE`
-
-No same-data fine-tuning of Chronos/Lag-Llama/NeuralProphet.
-
----
-
-# 4. Frozen d2 Stage 2
-
-Package:
+Stage-2 package:
 
 `d2-stage2-p2-observation-maturity-2026-10-19-v1`
 
-Selected policy:
-
-`P2-observation-maturity`
-
-Frozen reliability:
-
-- obs1 `0.25`;
-- obs2 `0.60`;
-- obs3+ `1.00`;
-- time cap >18h `0.75`;
-- >12h <=18h `0.90`;
-- <=12h `1.00`.
-
-Development metrics:
+Development:
 
 - latest MAE `3240.99`;
 - latest uplift vs Frozen `887.02 / 21.49%`;
 - window MAE `3657.65`;
 - worst degradation `1081.72`;
-- worst degradation reduced by `75%` vs raw Ridge.
+- 75% reduction in worst degradation vs raw Ridge.
 
-Do not retune P2 from future individual events.
-
----
-
-# 5. Event 5 chronological holdout — COMPLETE
-
-Canonical result:
-
-`ml/results/D2_EVENT5_HOLDOUT_V1_2026-10-19.md`
-
-Event:
+Event 5:
 
 Lech Poznań vs Korona Kielce, actual `37,407`.
 
-| Layer | Latest error | Window MAE |
-|---|---:|---:|
-| Structural T-1 base | 7,669.07 | n/a |
-| Frozen Pre-Live v2 | 9,832.52 | 9,832.52 |
-| Raw Ridge | **6,652.81** | **6,170.35** |
-| P2 | **6,652.81** | 7,263.16 |
-| Persisted C1 v8 policy | 7,669.07 | 7,669.07* |
+Latest errors:
 
-`*` slightly different sampling contract for the window metric.
+- Structural T-1 base `7,669.07`;
+- Frozen Pre-Live v2 `9,832.52`;
+- raw Ridge `6,652.81`;
+- P2 `6,652.81`;
+- persisted C1 v8 `7,669.07`.
 
-Key findings:
-
-1. d2 materially improved a severe Frozen-v2 miss;
-2. d2 latest beat persisted C1 v8 policy by `1,016.26 seats`;
-3. P2 early conservatism reduced useful early Ridge corrections on this event but matched Ridge at the mature final row;
-4. b2 moved the pre-live anchor down by `2,163.45 seats`, worsening its error by the same amount versus Structural T-1 base.
-
-Decision:
-
-`HOLDOUT_COMPLETE_KEEP_D2_FROZEN_PROSPECTIVE_ACCUMULATION`
+Event 5 is exposed permanently.
 
 ---
 
-# 6. Prospective accumulation — ACTIVE NOW
+# 6. Delayed-label diagnostics
 
-Contract:
+Delayed-label events are useful diagnostics but are not genuine post-freeze promotion evidence.
 
-`ml/D2_PROSPECTIVE_ACCUMULATION_V1.md`
+Current recovered outcomes already show why component-level scoring matters:
 
-Every new eligible completed event must be scored append-only without retraining.
+- GKS Katowice vs Pogoń: Frozen Pre-Live latest error `1,356`, d2/P2 latest error about `2,074`;
+- Cracovia vs Legia: Frozen Pre-Live latest error `434`, d2/P2 latest error about `1,068`.
 
-Persist separately:
+These outcomes must not trigger post-hoc mutation of the frozen package.
 
-1. Structural T-1 base;
-2. Frozen Pre-Live v2 / b2;
-3. raw frozen Ridge;
-4. frozen P2;
-5. genuine persisted pre-outcome C1 comparator where available.
+They are evidence for future hypotheses and future separately versioned challengers.
 
-Track per event:
-
-- latest AE;
-- trajectory/window MAE;
-- b2 incremental contribution;
-- Ridge incremental contribution;
-- P2 incremental contribution;
-- correction direction/magnitude;
-- reliability trajectory;
-- data-quality warnings.
-
-Track cumulatively:
-
-- mean/median latest AE;
-- window MAE;
-- bias;
-- p90/worst event;
-- event improvement rate;
-- component contribution distributions.
-
-## Hypotheses to monitor
-
-### H1 — b2 negative overreaction
-
-Potential hypothesis:
-
-`same-season residual regime may overreact negatively on some high-demand Lech matches`
-
-Status:
-
-`NOT PROVEN — ONE PROSPECTIVE SIGNAL`
-
-### H2 — P2 early conservatism cost
-
-Potential hypothesis:
-
-`P2 may sacrifice useful early correction on some events while reducing tail risk overall`
-
-Status:
-
-`NOT PROVEN AS A SYSTEMATIC PROBLEM — ONE HOLDOUT OBSERVATION`
-
-Do not tune either hypothesis now.
+Capacity/outcome blockers should be repaired as data-contract work, not treated as a reason to stop R&D.
 
 ---
 
-# 7. New challenger / retraining gate
+# 7. Track B priority 2 — d2 next-generation research
 
-A new cycle starts only when:
+The frozen P2 package remains untouched in Track A.
 
-1. materially more independent prospective events exist;
-2. a repeated interpretable failure is visible;
-3. the new hypothesis is declared before tuning;
-4. the current frozen package remains benchmark;
-5. a new train/development/forward split is declared;
-6. exposed prospective events are labeled honestly.
+In Track B, a new versioned d2 challenger may be researched **without waiting for N future events**, provided its evaluation boundary is declared in advance.
 
-No gradual event-by-event mutation of the frozen package.
+Priority research questions:
+
+## 7.1 Alternative target formulations
+
+Test materially different targets rather than repeatedly tuning Ridge:
+
+- current capacity-normalized delta to Frozen Pre-Live;
+- remaining demand from the current live state;
+- anchor-error direction / signed correction classification plus magnitude;
+- other PIT-safe formulations declared before fitting.
+
+## 7.2 Reliability as a learned component
+
+Current P2 is a simple frozen rule.
+
+A new challenger may test whether reliability should be learned from PIT-safe signals such as:
+
+- observation count;
+- observation span;
+- time to kickoff;
+- trajectory stability;
+- velocity / acceleration;
+- correction magnitude;
+- disagreement vs Frozen Pre-Live;
+- release/replenishment flags;
+- sector/coverage changes;
+- missingness/data-quality state.
+
+This must be a new policy/model ID, not a modification of P2.
+
+## 7.3 Heterogeneous live-model comparison
+
+A new d2 tournament may compare a compact set of materially different experts, for example:
+
+- Ridge;
+- HGB / LightGBM / CatBoost where sample size supports them;
+- transparent inventory extrapolation;
+- explicitly governed ensembles.
+
+Do not create an open-ended model zoo.
+
+## 7.4 TSFM boundary
+
+Stage-1 zero-shot Chronos-2 and Chronos-Bolt-small did not beat plain Ridge.
+
+Therefore the old Stage-1 TSFM formulation remains closed.
+
+TSFM may be reopened only through a materially different predeclared hypothesis, e.g. a different trajectory target such as remaining demand, or materially more independent trajectories.
+
+No same-data tuning to rescue the failed Stage-1 Chronos challenger.
 
 ---
 
-# 8. Production promotion gate
+# 8. Track B priority 3 — prospective c2/context research
 
-Production promotion requires materially more independent prospective events than the single event-5 holdout.
+Historical c2 remains:
+
+`NO_CONTEXT_ALL_HORIZONS`
+
+But forward context collection/research continues now where valid PIT sources exist.
+
+Candidate sources already represented in the repository include:
+
+- verified rivalry/derby;
+- verified absences/suspensions;
+- sporting context;
+- media/GDELT attention;
+- hype/search/social where source semantics are valid.
+
+Rules:
+
+- collect point-in-time;
+- never backfill from final-state knowledge;
+- keep context challengers separate from frozen Pre-Live v2;
+- prove incremental MAE value before any integration.
+
+---
+
+# 9. What waits and what does not
+
+## Must wait
+
+Only evidence that genuinely does not yet exist:
+
+- true post-freeze match outcomes;
+- future live ticket trajectories;
+- forward-only context observations.
+
+## Must not wait
+
+Research that can be done honestly now:
+
+- bounded historical closure audits;
+- new model-family or ensemble hypotheses;
+- new target formulations;
+- feature engineering from already PIT-safe data;
+- reproducibility/CI hardening;
+- context collection infrastructure;
+- new versioned d2 research on declared development data.
+
+---
+
+# 10. Promotion boundary
+
+Production promotion requires materially more genuine prospective evidence than the current sample.
 
 Require:
 
@@ -293,8 +348,24 @@ Require:
 - acceptable tail risk;
 - no unresolved systematic component failure;
 - reproducible frozen package;
-- explicit reviewed decision.
+- explicit reviewed promotion decision.
 
 Until then:
 
 `live_adjustment = 0`
+
+---
+
+# 11. Immediate work order
+
+1. finish `a2 External Model + Ensemble Closure Audit v1`;
+2. if any horizon advances, run its fixed-temporal robustness audit under the frozen selected contract;
+3. if none advances, mark this bounded a2 gap closed and continue Track-B R&D;
+4. keep frozen prospective scoring running in parallel;
+5. repair readiness/capacity/truth-source blockers without using them as R&D gates;
+6. start the next separately versioned d2 formulation research cycle;
+7. continue PIT-safe c2/context collection.
+
+## One-line rule
+
+> **Frozen validation protects evidence integrity. It does not pause model development.**
