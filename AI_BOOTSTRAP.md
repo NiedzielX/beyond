@@ -1,192 +1,148 @@
 # Beyond — AI Bootstrap / Read This First
 
-Last product-direction update: **2026-10-21**
+Last updated: **2026-10-21**
 
 ## Cold-start rule
 
 Read in this order:
 
 1. `ml/CURRENT_MODEL.md`;
-2. `ml/DEMAND_FORECAST_DEVELOPMENT_PLAN_V2.md`;
-3. `ml/MODEL_ACCURACY_DEVELOPMENT_INSTRUCTIONS_V2.md`;
-4. `ml/results/D2_V3_STAGE0_ANCHOR_EQUIVALENCE_V1_2026-10-21.md`;
-5. `ml/results/PRE_LIVE_V3_HISTORICAL_FREEZE_V1_2026-10-21.md`;
-6. `ml/artifacts/pre_live_v3_historical_candidate_v1/manifest.json`;
-7. `ml/artifacts/pre_live_v2_historical_candidate_v1/manifest.json`;
-8. `ml/D2_PROSPECTIVE_ACCUMULATION_V1.md`;
-9. `ml/results/D2_STAGE2_RELIABILITY_GATING_V1_2026-10-19.md`;
-10. `ml/results/D2_STAGE1_MODEL_TOURNAMENT_V1_2026-10-19.md`;
-11. `ml/LIVE_DEMAND_ENGINE_V1_PLAN.md`;
-12. `ml/MODEL_PROMOTION_GOVERNANCE_V1.md`.
+2. `ml/results/D2_LONG72_STAGE2_RELIABILITY_GATING_V1_2026-10-21.md`;
+3. `ml/artifacts/d2_long72_stage2_p2_v1/manifest.json`;
+4. `ml/results/D2_LONG72_STAGE1_MODEL_TOURNAMENT_V1_2026-10-21.md`;
+5. `ml/results/D2_LONG72_ANCHOR_CONTRACT_V1_2026-10-21.md`;
+6. `ml/results/D2_LONG_HORIZON_COVERAGE_AUDIT_V1_2026-10-21.md`;
+7. `ml/results/PRE_LIVE_V3_HISTORICAL_FREEZE_V1_2026-10-21.md`;
+8. `ml/artifacts/pre_live_v3_historical_candidate_v1/manifest.json`;
+9. `ml/artifacts/pre_live_v2_historical_candidate_v1/manifest.json`;
+10. `ml/D2_PROSPECTIVE_ACCUMULATION_V1.md`;
+11. `ml/DEMAND_FORECAST_DEVELOPMENT_PLAN_V2.md`;
+12. `ml/MODEL_ACCURACY_DEVELOPMENT_INSTRUCTIONS_V2.md`;
+13. `ml/LIVE_DEMAND_ENGINE_V1_PLAN.md`;
+14. `ml/MODEL_PROMOTION_GOVERNANCE_V1.md`.
 
-## Immediate objective
+## Immediate state
 
-Run two tracks in parallel.
-
-### Track A — frozen forward validation
+### Track A — frozen final24 validation
 
 Keep unchanged:
 
 `Frozen Pre-Live v2 + P2 reliability * frozen ridge-a10 delta`
 
-### Track B — active R&D
+### Track B — frozen research packages
 
-Sealed research anchor:
-
-`pre-live-v3-historical-candidate-2026-10-21-v1`
-
-Final-24h equivalence is now proven:
-
-`V3_FINAL24_ANCHOR_EXACTLY_EQUIVALENT_TO_V2`
-
-Therefore **do not retrain/rename the same final-24h Ridge/P2 problem just because v3 has a new freeze ID**.
-
-Active next work:
-
-> **d2-long-horizon-live-v1 — add an earlier-than-24h live research export and evaluate live forecasting where changed v3 T-7 can actually matter.**
-
-Core rule:
-
-> **Production promotion waits for prospective evidence. R&D does not.**
-
----
-
-# Pre-Live v3 — frozen research candidate
-
-Freeze ID:
+Pre-Live v3:
 
 `pre-live-v3-historical-candidate-2026-10-21-v1`
 
-Manifest SHA256:
+Early-live long72 package:
 
-`b8c1a3cb1ddb70e9f6b67a6bc1db23619f26a8c328bf4b78399fc262394ff70a`
+`d2-long72-stage2-p2-observation-maturity-2026-10-21-v1`
 
-Changed horizons only:
+Track-B long72 package is research-only and not production.
 
-- T-30: `0.75 current a2 + 0.25 XGBoost depth3`, `NO_ADJUSTMENT`;
-- T-7: `0.25 current a2/HGB + 0.25 CatBoost depth4 + 0.50 LightGBM leaves15`, `ewma50-resid-k4-cap05-min2`.
+## Long72 exact package
 
-T-14/T-3/T-1 are exact v2 horizon packages.
+Scope:
 
-20-cell mean MAE:
+`24 < hours_to_kickoff <= 72`
 
-`1934.04 -> 1924.64`, gain `+9.39 / +0.49%`.
+Anchor:
 
-V3 remains research-only.
-
----
-
-# d2-v3 Stage 0 — COMPLETE
-
-Result:
-
-`ml/results/D2_V3_STAGE0_ANCHOR_EQUIVALENCE_V1_2026-10-21.md`
-
-Run:
-
-`39636749440`
-
-Artifact ID:
-
-`12361203868`
-
-Exact frozen development set:
-
-- 9 events;
-- 30 final-24h rows;
-- event IDs `1,3,4,8,9,12,13,14,17`.
-
-Hard result:
-
-- maximum v3-v2 anchor-seat delta: **`0.0` seats**.
-
-Only floating serialization noise in derived values:
-
-- target-attendance max delta `3.64e-12` seats;
-- target-occupancy max delta `1.73e-16`.
-
-Consequences:
-
-- no new final-24h target is required;
-- no Stage-1 retrain is required solely due to the v3 anchor;
-- no P2 reselection is required solely due to the v3 anchor.
-
-The current final-24h residual target is mathematically unchanged because both v2 and v3 use the exact same T-1 package.
-
----
-
-# Earlier-than-24h live data — CONFIRMED
-
-Direct Supabase PIT audit on the current C1-eligible labeled Ekstraklasa events shows:
-
-- 14 labeled capacity-resolved events under the C1 event contract;
-- 13/14 have valid PIT trajectory rows beyond 24h;
-- 10/14 have valid rows beyond 48h;
-- 8/14 have valid rows in 72–168h;
-- several events have a near-full 7-day, 6-hour-bucket trajectory.
-
-The current `v7-final24` RPC is the limiting contract, not data collection.
-
-`get_live_trajectory_features_v1_1_asof` already validates PIT-safe earlier snapshots.
-
-## Important exposure rule
-
-Current later labeled events `5,11,15,18,19` are already exposed from prior diagnostics/readiness work. They may be used only under an explicitly declared new chronological research split and must never be called unseen holdouts.
-
----
-
-# Active next — long-horizon data contract
-
-Do not mutate `v7-final24`.
-
-Create an additive research RPC/export with:
-
-- up to 168h pre-kickoff window;
-- 6h buckets;
-- latest snapshot per event x bucket;
-- same eligibility + capacity rules as v7;
-- same PIT feature function;
-- explicit coverage/missingness metadata.
-
-Then decide whether the honest first modeling window is 48h, 72h or 168h based on independent event coverage.
-
-No random snapshot split.
-
-Event remains the independent unit.
-
----
-
-# Track A remains unchanged
-
-Pre-Live v2:
-
-`pre-live-v2-historical-candidate-2026-10-18-v1`
+Frozen T-3 checkpoint hold.
 
 Stage-1 expert:
 
-`ridge-a10`
+`inventory-linear-extrapolation`
+
+Correction cap:
+
+`±0.10 occupancy`
 
 Stage-2 policy:
 
 `P2-observation-maturity`
 
-Package:
+Reliability:
 
-`d2-stage2-p2-observation-maturity-2026-10-19-v1`
+- observation #1 `0.25`;
+- observation #2 `0.60`;
+- observation #3+ `1.00`;
+- `60<h<=72` time weight `0.75`;
+- `48<h<=60` time weight `0.90`;
+- `24<h<=48` time weight `1.00`;
+- final reliability = minimum of observation/time weights.
 
-Do not mutate it from prospective outcomes.
+Frozen manifest:
 
----
+`ml/artifacts/d2_long72_stage2_p2_v1/manifest.json`
 
-# Production boundary
+## Long72 development evidence
+
+Frozen data:
+
+- 14 total events / 130 rows in 0–72h;
+- model-selection slice 24–72h: 80 rows / 13 events;
+- 48–72h: 35 rows / 10 events.
+
+Selected package:
+
+- anchor MAE `3707.14`;
+- P2 MAE `3012.63`;
+- improvement `+694.51 / +18.73%`;
+- 24–48h improvement `+954.58 / +25.75%`;
+- 48–72h improvement `+664.71 / +14.47%`;
+- worst degradation `1488.34`;
+- bias `+917.05`.
+
+Historical exposed-subset diagnostics:
+
+- original exposed subset `+103.55` MAE improvement;
+- later exposed subset `+1640.04`.
+
+All of this is exposed development evidence, not unseen prospective validation.
+
+## Why P2, not P4
+
+`P4-data-quality` has lower historical tail degradation but slightly worse overall MAE.
+
+The selector was frozen before results and ranks eligible Stage-2 policies by overall event-balanced MAE first. Therefore P2 is the selected package; do not switch to P4 post hoc.
+
+## Immediate next work
+
+> **Stop tuning the frozen long72 package on the same historical events. Build append-only prospective scoring for future completed events with valid 24–72h trajectories.**
+
+For each new eligible event, preserve and score:
+
+1. frozen T-3 anchor;
+2. raw inventory extrapolation;
+3. frozen P2 long72 forecast;
+4. outcome only after it becomes available.
+
+Do not mutate the package from these outcomes.
+
+Keep evidence classes explicit. A future event observed after the long72 freeze can become prospective evidence only if the forecast inputs/package were frozen before the label was used.
+
+## 72–168h boundary
+
+Keep `72–168h` diagnostic-only until independent-event coverage reaches the predeclared `N>=9` floor.
+
+Do not reduce the threshold to fit the current sample.
+
+## Final24 equivalence reminder
+
+Pre-Live v3 T-1 equals v2 T-1, so final24 d2 target remains exactly equivalent. Do not create a cosmetic v3 final24 retrain.
+
+## Production boundary
 
 Always:
 
 - Track-A v2/Ridge/P2 unchanged;
-- v3 research-only;
+- long72 package research-only;
+- Pre-Live v3 research-only;
 - production unchanged;
 - `live_adjustment = 0`.
 
 ## One-line instruction
 
-> **Final-24h v2/v3 is exactly equivalent, so do not waste a cycle retraining the same target. Build the additive earlier-than-24h live export now and move Track-B R&D to a genuinely new long-horizon live problem.**
+> **The 24–72h package is frozen. Active work is prospective append-only scoring, not more same-sample tuning. Production remains unchanged.**
