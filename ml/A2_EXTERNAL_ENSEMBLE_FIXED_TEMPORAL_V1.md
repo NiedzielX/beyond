@@ -2,19 +2,39 @@
 
 Last updated: **2026-10-21**
 
-Status: **ACTIVE FIXED-CONFIG ROBUSTNESS AUDIT**
+Status: **COMPLETED — T-30 / T-7 / T-1 PASS 4/4 ROLLING FOLDS**
 
-Parent result:
+Canonical result:
+
+`ml/results/A2_EXTERNAL_ENSEMBLE_FIXED_TEMPORAL_V1_2026-10-21.md`
+
+Parent closure result:
 
 `ml/results/A2_EXTERNAL_ENSEMBLE_CLOSURE_V1_2026-10-21.md`
+
+Workflow run:
+
+`39625425854`
+
+Artifact ID:
+
+`12356632426`
+
+Result JSON SHA256:
+
+`e6532db4bccfe567dd1eeaf3196f74d1a41a78a66eea53bc975892868ff2c900`
+
+Artifact ZIP SHA256:
+
+`7d9cfe2609affcb35b7c99252d42231ce1e5e55b24fbb3bb1dfd3470a0226e4e`
 
 ## Objective
 
 Replay the exact T-30/T-7/T-1 ensemble contracts selected by the all-horizon closure audit through a stronger rolling temporal audit.
 
-There is **no tuning or selection in this audit**.
+There was **no tuning or selection in this audit**.
 
-## Exact frozen contracts
+## Exact frozen challenger contracts
 
 ### T-30
 
@@ -45,7 +65,7 @@ Members / weights:
 - LightGBM leaves15 `0.25`;
 - XGBoost depth3 `0.00`.
 
-Changing a member, weight, feature contract, baseline, target or hyperparameter creates a new challenger and is not permitted in this audit.
+Changing a member, weight, feature contract, baseline, target or hyperparameter creates a new challenger and is not permitted under this evidence package.
 
 ## Rolling folds
 
@@ -54,40 +74,64 @@ Changing a member, weight, feature contract, baseline, target or hyperparameter 
 3. train through `2023/24` -> test `2024/25` — exposed reference;
 4. train through `2024/25` -> test `2025/26` — exposed reference.
 
-The exact closure-run MAEs for folds 2-4 are hard reproduction gates at tolerance `1e-9`.
+The exact closure-run MAEs for folds 2-4 were hard reproduction gates at tolerance `1e-9`.
 
-## Metrics
+## Result
 
-Per fold:
+All three exact contracts passed the predeclared gate of positive MAE improvement in all four rolling folds.
 
-- current a2 MAE;
-- fixed ensemble MAE;
-- MAE improvement;
-- median AE / p90 AE / bias;
-- event improvement rate;
-- worst-event degradation;
-- paired bootstrap probability and 95% interval;
-- harmful-regression counts above 500/1000/2000/3000 seats;
-- revision magnitude;
-- club-season consistency for cells with at least 10 events.
+| Horizon | Fold improvements (2022/23, 2023/24, 2024/25, 2025/26) | Mean gain | Relative mean gain | Worst event degradation | Club-season cells improved |
+|---|---|---:|---:|---:|---:|
+| T-30 | +5.98 / +33.50 / +54.93 / +29.74 | **+31.04** | **1.47%** | 2,855.70 | 50/72 |
+| T-7 | +20.18 / +8.90 / +10.27 / +27.86 | **+16.80** | **0.87%** | 1,632.41 | 42/72 |
+| T-1 | +16.48 / +55.46 / +2.27 / +6.28 | **+20.12** | **1.05%** | 2,309.70 | 38/72 |
 
-## Decision gate
+Minimum paired-bootstrap P(improvement > 0):
 
-A horizon passes this audit only if the **exact frozen candidate has positive MAE improvement in all four rolling folds**.
+- T-30 `0.6353`;
+- T-7 `0.6612`;
+- T-1 `0.5196`.
 
-Possible decisions:
+## Decision
 
-- `ROBUSTNESS_PASS_ALL_ROLLING_FOLDS_POSITIVE`;
-- `ROBUSTNESS_REJECT_NOT_ALL_ROLLING_FOLDS_POSITIVE`.
+- T-30: `ROBUSTNESS_PASS_ALL_ROLLING_FOLDS_POSITIVE`;
+- T-7: `ROBUSTNESS_PASS_ALL_ROLLING_FOLDS_POSITIVE`;
+- T-1: `ROBUSTNESS_PASS_ALL_ROLLING_FOLDS_POSITIVE`.
 
-This is deliberately stricter than the closure audit. The purpose is to reject small or unstable gains before they can become a new historical candidate.
+These are now **robust historical challengers**, not automatic frozen replacements.
 
-A pass still does **not** mutate Frozen Pre-Live v2. It only qualifies that horizon for a separately versioned next historical / Pre-Live challenger cycle.
+The effect sizes remain modest and tail regressions remain material, especially the weak T-1 reference gains. Therefore the correct next step is a separately versioned Pre-Live v3 challenger, not mutation of current a2 or Frozen Pre-Live v2.
+
+## Next required R&D step
+
+Build a Pre-Live v3 historical candidate using:
+
+- T-30 -> exact robust ensemble;
+- T-14 -> current a2 base;
+- T-7 -> exact robust ensemble;
+- T-3 -> current a2 base;
+- T-1 -> exact robust ensemble.
+
+Then **revalidate the current-season regime against those new anchors**.
+
+Existing b2 residual policies were derived relative to the old historical bases and may not be silently inherited into v3.
+
+A new v3 cycle must compare at minimum:
+
+1. new robust historical base only;
+2. existing b2 formulation applied unchanged to the new anchor as a fixed comparator;
+3. a newly selected current-season-regime challenger under a declared historical temporal boundary;
+4. Frozen Pre-Live v2 as the unchanged benchmark.
+
+Only after that package passes its own historical/fixed-temporal evidence gates may it receive a new freeze ID.
+
+If Pre-Live v3 is later frozen, d2 must be rebuilt/revalidated against that new anchor under a new d2 version. The current frozen Ridge/P2 package remains tied to Frozen Pre-Live v2 for Track-A prospective validation.
 
 ## Production boundary
 
 Always:
 
+- current a2 state unchanged;
 - Frozen Pre-Live v2 unchanged;
 - b2 unchanged;
 - c2 unchanged;
@@ -97,4 +141,4 @@ Always:
 
 ## Interpretation
 
-> **The closure audit selected the contracts. This audit only asks whether those exact contracts are temporally robust.**
+> **The bounded a2 external-family/ensemble gap is closed. T-30/T-7/T-1 are robust challenger inputs for the next versioned Pre-Live cycle; they do not overwrite the frozen v2 stack.**
