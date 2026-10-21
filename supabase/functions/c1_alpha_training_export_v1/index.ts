@@ -56,6 +56,7 @@ const ROUTES: Record<string, string> = {
   "v7-sporting": "export_c1_alpha_v7_sporting_v1",
   "v7-aliases": "export_c1_alpha_v7_aliases_v1",
   "v7-hybrid": "export_c1_alpha_v7_hybrid_v1",
+  "v8-long168": "export_d2_long_horizon_168_rows_v1",
   "d2-readiness": "export_d2_prospective_readiness_v1",
 };
 
@@ -93,7 +94,7 @@ Deno.serve(async (req: Request) => {
       if (eventCount < 2) throw new Error(`invalid C1 training payload events=${eventCount}`);
     }
 
-    if (requestedVersion === "v1" || requestedVersion === "v2" || requestedVersion === "v7-final24") {
+    if (requestedVersion === "v1" || requestedVersion === "v2" || requestedVersion === "v7-final24" || requestedVersion === "v8-long168") {
       const eventCount = Number(payload?.eventCount ?? 0);
       const liveRowCount = Number(payload?.liveRowCount ?? 0);
       if (liveRowCount < eventCount) {
@@ -117,7 +118,7 @@ Deno.serve(async (req: Request) => {
   } catch (error) {
     return json({
       ok: false,
-      version: "c1-alpha-training-export-gateway-v6",
+      version: "c1-alpha-training-export-gateway-v7-long168",
       error: String(error),
       repository: claims.repository,
       sha: claims.sha || null,
