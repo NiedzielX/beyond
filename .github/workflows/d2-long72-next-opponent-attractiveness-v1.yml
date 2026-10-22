@@ -1,0 +1,44 @@
+name: d2 Long72 Next Opponent Attractiveness v1
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - "supabase/sql/d2_long72_next_opponent_attractiveness_v1.sql"
+      - "ml/results/D2_LONG72_NEXT_OPPONENT_ATTRACTIVENESS_V1_2026-10-22.md"
+      - ".github/workflows/d2-long72-next-opponent-attractiveness-v1.yml"
+  push:
+    branches:
+      - main
+    paths:
+      - "supabase/sql/d2_long72_next_opponent_attractiveness_v1.sql"
+      - "ml/results/D2_LONG72_NEXT_OPPONENT_ATTRACTIVENESS_V1_2026-10-22.md"
+      - ".github/workflows/d2-long72-next-opponent-attractiveness-v1.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  validate-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify PIT attractiveness contract
+        run: |
+          set -euo pipefail
+          file='supabase/sql/d2_long72_next_opponent_attractiveness_v1.sql'
+          test -f "$file"
+          grep -q "h.kickoff_at < p_as_of_at" "$file"
+          grep -q "o.created_at <= p_as_of_at" "$file"
+          grep -q "coalesce(o.updated_at,o.created_at) <= p_as_of_at" "$file"
+          grep -q "coalesce(o.confirmed_at,o.created_at) <= p_as_of_at" "$file"
+          grep -q "v_club_count < 8" "$file"
+          grep -q "v_opponent_count < 3" "$file"
+          grep -q "'club_history_gate',8" "$file"
+          grep -q "'opponent_history_gate',3" "$file"
+          grep -q "NO_NEXT_HOME_MATCH_IN_SCHEDULE_STATE" "$file"
+          grep -q "forward_prediction_id bigint not null unique" "$file"
+          grep -q "manual_first_checkpoint" "$file"
+          grep -q "before update or delete" "$file"
+          grep -q "production_change',false" "$file"
