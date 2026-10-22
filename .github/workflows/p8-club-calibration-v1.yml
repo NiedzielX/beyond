@@ -1,0 +1,94 @@
+name: P8 Club Calibration v1
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - "ml/p8_club_calibration_v1.py"
+      - "ml/test_p8_club_calibration_v1.py"
+      - "ml/results/P8_CLUB_CALIBRATION_V1_2026-10-22.md"
+      - ".github/workflows/p8-club-calibration-v1.yml"
+  push:
+    branches: [main]
+    paths:
+      - "ml/p8_club_calibration_v1.py"
+      - "ml/test_p8_club_calibration_v1.py"
+      - "ml/results/P8_CLUB_CALIBRATION_V1_2026-10-22.md"
+      - ".github/workflows/p8-club-calibration-v1.yml"
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: |
+          python -m pip install --upgrade pip
+          pip install numpy==2.3.5 pandas==2.2.3
+      - name: Compile and unit tests
+        run: |
+          python -m py_compile ml/p8_club_calibration_v1.py
+          python -m py_compile ml/test_p8_club_calibration_v1.py
+          python -m ml.test_p8_club_calibration_v1
+
+  evaluate-main:
+    if: github.event_name != 'pull_request'
+    needs: validate
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: |
+          python -m pip install --upgrade pip
+          pip install numpy==2.3.5 pandas==2.2.3
+      - name: Download immutable MAE tournament artifact
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          curl --retry 4 --retry-all-errors --retry-delay 2 -fL \
+            -H "Authorization: Bearer $GH_TOKEN" \
+            -H "Accept: application/vnd.github+json" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            "https://api.github.com/repos/NiedzielX/beyond/actions/artifacts/12378567266/zip" \
+            -o /tmp/p8-source.zip
+          echo '5b9bd145124c8ee98b5fddf4849e37a2337ef66a475339a5a00b57fe76528ab1  /tmp/p8-source.zip' | sha256sum -c -
+          mkdir -p /tmp/p8-source
+          unzip -q /tmp/p8-source.zip -d /tmp/p8-source
+          echo '827bebabf14fe3640361e79259893ebc25621b15b97d6eac97a24f9de043674d  /tmp/p8-source/predictions.csv' | sha256sum -c -
+      - name: Run P8 forward calibration
+        run: |
+          python -m ml.p8_club_calibration_v1 \
+            --predictions-csv /tmp/p8-source/predictions.csv \
+            --output-json /tmp/p8-club-calibration-v1.json
+      - name: Hard evidence gate
+        run: |
+          jq -e '
+            .version == "p8-club-calibration-v1"
+            and .decision == "RETAIN_INCUMBENT_NO_ROBUST_CLUB_CALIBRATION_GAIN"
+            and .production_change == false
+            and .promotion_allowed == false
+            and .horizons["T-30"].home_club_primary.delta_mae < -8.0
+            and .horizons["T-30"].home_club_primary.bootstrap.delta_mae_upper > 0
+            and .horizons["T-14"].home_club_primary.bootstrap.delta_mae_upper > 0
+            and .horizons["T-7"].home_club_primary.bootstrap.delta_mae_upper > 0
+            and .horizons["T-3"].home_club_primary.bootstrap.delta_mae_upper > 0
+            and .horizons["T-1"].home_club_primary.bootstrap.delta_mae_upper > 0
+          ' /tmp/p8-club-calibration-v1.json >/dev/null
+      - name: Upload P8 evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: p8-club-calibration-v1-${{ github.run_id }}
+          path: /tmp/p8-club-calibration-v1.json
+          if-no-files-found: error
+          retention-days: 90
