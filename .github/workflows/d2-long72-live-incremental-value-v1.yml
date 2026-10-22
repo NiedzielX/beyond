@@ -1,0 +1,121 @@
+name: d2 Long72 Live Incremental Value v1
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - "ml/d2_long72_live_incremental_value_v1.py"
+      - "ml/test_d2_long72_live_incremental_value_v1.py"
+      - "ml/results/D2_LONG72_LIVE_INCREMENTAL_VALUE_V1_2026-10-22.md"
+      - ".github/workflows/d2-long72-live-incremental-value-v1.yml"
+  push:
+    branches:
+      - main
+    paths:
+      - "ml/d2_long72_live_incremental_value_v1.py"
+      - "ml/test_d2_long72_live_incremental_value_v1.py"
+      - "ml/results/D2_LONG72_LIVE_INCREMENTAL_VALUE_V1_2026-10-22.md"
+      - ".github/workflows/d2-long72-live-incremental-value-v1.yml"
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: d2-long72-live-incremental-value-v1-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install pinned runtime
+        run: |
+          python -m pip install --upgrade pip
+          pip install numpy==2.3.5 pandas==2.2.3
+      - name: Compile and unit checks
+        run: |
+          python -m py_compile ml/d2_long72_live_incremental_value_v1.py
+          python -m py_compile ml/test_d2_long72_live_incremental_value_v1.py
+          python -m ml.test_d2_long72_live_incremental_value_v1
+
+  evaluate-main:
+    if: github.event_name != 'pull_request'
+    needs: validate
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install pinned runtime
+        run: |
+          python -m pip install --upgrade pip
+          pip install numpy==2.3.5 pandas==2.2.3
+
+      - name: Download immutable frozen Stage2 artifact
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          curl --retry 4 --retry-all-errors --retry-delay 2 -fL \
+            -H "Authorization: Bearer $GH_TOKEN" \
+            -H "Accept: application/vnd.github+json" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            "https://api.github.com/repos/NiedzielX/beyond/actions/artifacts/12366826274/zip" \
+            -o /tmp/d2-long72-stage2.zip
+          echo 'c750cf385b2c6b6f05fabceaf68ff323a66235862967900419be421f7cdcb4ae  /tmp/d2-long72-stage2.zip' | sha256sum -c -
+          mkdir -p /tmp/d2-long72-stage2
+          unzip -q /tmp/d2-long72-stage2.zip -d /tmp/d2-long72-stage2
+          test -f /tmp/d2-long72-stage2/d2-long72-stage2.json
+          test -f /tmp/d2-long72-stage2/d2-long72-stage2-predictions.csv
+          echo 'a9daa834e15b4f313b15c3e809033b7d79e4ed4357f61a8f5071e6bf20359d8c  /tmp/d2-long72-stage2/d2-long72-stage2.json' | sha256sum -c -
+          echo '489ba62156f19d3b915fda1b9f1ef506fb81603d4286a01e8ad4b799c58bce4b  /tmp/d2-long72-stage2/d2-long72-stage2-predictions.csv' | sha256sum -c -
+          jq -e '
+            .status == "COMPLETED_STAGE2_RELIABILITY_GATING"
+            and .selection.selected_policy_id == "P2-observation-maturity"
+            and .production_change == false
+            and .promotion_allowed == false
+          ' /tmp/d2-long72-stage2/d2-long72-stage2.json >/dev/null
+
+      - name: Evaluate live incremental value
+        run: |
+          python -m ml.d2_long72_live_incremental_value_v1 \
+            --predictions-csv /tmp/d2-long72-stage2/d2-long72-stage2-predictions.csv \
+            --output-json /tmp/d2-long72-live-incremental-value-v1.json
+
+      - name: Hard evidence gate
+        run: |
+          jq -e '
+            .version == "d2-long72-live-incremental-value-v1"
+            and .status == "COMPLETED_HISTORICAL_INCREMENTAL_VALUE_EVALUATION"
+            and .evidence_class == "historical_exposed_research"
+            and .policy_id == "P2-observation-maturity"
+            and .production_change == false
+            and .promotion_allowed == false
+            and .live_adjustment == 0
+            and .bands.overall_24_72h.independent_event_count == 13
+            and .bands.overall_24_72h.row_count == 80
+            and .bands.overall_24_72h.delta_mae < -694.50
+            and .bands.overall_24_72h.delta_mae > -694.52
+            and .bands.overall_24_72h.bootstrap.delta_mae_upper > 0
+          ' /tmp/d2-long72-live-incremental-value-v1.json >/dev/null
+
+      - name: Print result
+        run: |
+          jq '{decision,bands,interpretation,production_change,promotion_allowed}' /tmp/d2-long72-live-incremental-value-v1.json
+          sha256sum /tmp/d2-long72-live-incremental-value-v1.json
+
+      - name: Upload P6 evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: d2-long72-live-incremental-value-v1-${{ github.run_id }}
+          path: /tmp/d2-long72-live-incremental-value-v1.json
+          if-no-files-found: error
+          retention-days: 90
