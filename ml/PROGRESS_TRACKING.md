@@ -1,6 +1,6 @@
 # Beyond Ticketing — ML Progress Tracking
 
-Last updated: **2026-10-21**
+Last updated: **2026-10-22**
 
 Status: **CANONICAL PLAN / STATUS / TRACKING SNAPSHOT**
 
@@ -20,22 +20,22 @@ Production remains unchanged:
 
 ## Global historical / structural core
 
-Current research champion family: **Global Model v2.1**
+Current production/research incumbent: **Structural Prior Runtime v1 / Global Model family**
 
 - 1,530 Ekstraklasa matches / five complete seasons;
 - 7,650 PIT snapshots;
-- horizons T-30/T-14/T-7/T-3/T-1;
-- architecture: `club-history baseline + global residual correction`.
+- T-30/T-14/T-7/T-3/T-1;
+- committed canonical history SHA: `3c6b35142c6bd20a484f2aa758cd41284fd6f4c6db1353b138f81cf321161569`.
 
-Historical later-season evidence shows roughly 16–24% MAE improvement versus the baseline across all five horizons. 2024/25 and 2025/26 are exposed research evidence for future iterations.
+Estimator-only MAE challengers did not produce a robust replacement. The incumbent remains unchanged after forward-fold tournament + paired fixture-block uncertainty.
 
-## Track A — final24 frozen evidence lane
+## Final24 frozen evidence lane
 
 `Frozen Pre-Live v2 + P2 reliability * frozen ridge-a10 delta`
 
 Status: **FROZEN / PROSPECTIVE VALIDATION ACTIVE**
 
-## Track B — Pre-Live v3
+## Pre-Live v3
 
 `pre-live-v3-historical-candidate-2026-10-21-v1`
 
@@ -45,7 +45,7 @@ Historical 20-cell mean MAE:
 
 Status: **FROZEN RESEARCH CANDIDATE**
 
-## Track B — early-live long72
+## Early-live Long72
 
 Package:
 
@@ -55,185 +55,147 @@ Historical development:
 
 - anchor MAE `3707.14`;
 - package MAE `3012.63`;
-- uplift `+694.51 / +18.73%`;
-- event improvement rate `61.54%`;
-- worst event degradation `1488.34`;
-- bias `+917.05`.
+- uplift `+694.51 / +18.73%`.
 
 Status: **FROZEN / GENUINE POST-FREEZE EVIDENCE ACTIVE**
 
-True forecast-before-label infrastructure is now operational. See:
-
-`ml/results/D2_LONG72_FORWARD_PROSPECTIVE_V1_2026-10-21.md`
-
-First reproducible prospective events:
-
-- event 10 — Pogoń Szczecin vs Radomiak Radom;
-- event 16 — Wisła Kraków vs Raków Częstochowa.
-
-Successful main run:
-
-- run `39667034428`;
-- artifact `12376893783`;
-- digest `sha256:feca43332445e974652e0ad2e1b59f3f7595d52ff8dea9b3cbbef35f771c594a`.
-
-Both events are still pre-outcome, so prospective MAE is intentionally unavailable.
+True forecast-before-label infrastructure is operational. First reproducible pre-outcome events: 10 and 16. Official scorecard excludes manual bootstrap rows and scores only reproducible pre-outcome forecasts.
 
 ---
 
-# 3. Operating model
+# 3. Roadmap tracking
 
-## Lane A — Evidence / validation
-
-Running continuously:
-
-- final24 append-only scoring;
-- hourly long72 pre-outcome materialization;
-- immutable prediction persistence;
-- outcome-only append scoring after attendance exists;
-- event-balanced MAE / band / bias / tail diagnostics;
-- explicit evidence classes.
-
-Manual bootstrap predictions are retained for audit but excluded from the official Long72 scorecard. Only reproducible pipeline rows are scoreable.
-
-## Lane B — MAE R&D
-
-Does not wait for Lane A.
-
-Current sequence:
-
-1. ✅ canonical rolling / forward validation;
-2. 🔄 MAE-native challenger tournament;
-3. `ΔMAE` uncertainty;
-4. PIT-safe next-fixture / cannibalization features;
-5. forecast combination;
-6. live-ticket incremental correction over the strongest structural model;
-7. 72–168h learned model at `N>=9`;
-8. club calibration / shrinkage only if it generalizes.
-
----
-
-# 4. Milestone tracker
-
-| Milestone | Status | Decision / output |
+| Roadmap item | Status | Current decision / evidence |
 |---|---|---|
-| Global historical multi-club core | ✅ DONE | Global Model v2.1 family established |
-| Season-blocked PIT benchmark | ✅ DONE | later-season exposed evidence |
-| Pre-Live v2 freeze | ✅ DONE | Track-A anchor frozen |
-| final24 d2 Stage 1/2 | ✅ DONE | Ridge/P2 frozen |
-| Pre-Live v3 freeze | ✅ DONE | v3 research anchor sealed |
-| v2-v3 final24 equivalence | ✅ DONE | exact `0.0` seat delta |
-| long-horizon export | ✅ DONE | additive `v8-long168` |
-| long72 data + Stage 1/2 | ✅ DONE | inventory/P2 frozen |
-| long72 true prospective plumbing | ✅ DONE | forecast-before-label + immutable score path |
-| first long72 prospective forecasts | ✅ DONE | events 10 and 16 precommitted before outcome |
-| canonical rolling/forward validator | ✅ DONE | reusable temporal-validation-v1 + fold SHA |
-| MAE-native challenger tournament | 🔄 ACTIVE NEXT | compare median/quantile challengers vs current MAE incumbents |
-| `ΔMAE` uncertainty | 🟡 NEXT | event/fixture-block intervals |
-| next-fixture / cannibalization context | 🟡 NEXT | PIT-safe feature family |
-| forecast combination tournament | 🟡 NEXT | mean/median/convex before stacker |
-| live-ticket uplift over strong structural model | 🟡 NEXT | residual incremental-value test |
-| 72–168h learned model | ⏸ DATA GROWING | 8/9 independent events at last audit |
-| production activation | ⛔ NOT READY | historical uplift != promotion evidence |
+| Evidence Lane — Long72 forecast-before-label | ✅ DONE / RUNNING | immutable hourly persistence + outcome-only scoring active |
+| P1 — canonical forward/rolling validation | ✅ DONE | `temporal_validation_v1.py`; strict expanding-season + forward-event folds |
+| P2 — MAE-native challenger tournament | ✅ DONE | no robust runtime replacement; only tiny T-3 point signal |
+| P3 — `ΔMAE` uncertainty | ✅ DONE | T-3 signal not distinguishable from zero; incumbent retained |
+| P4 — PIT-safe next-fixture / cannibalization | 🔄 ACTIVE | forward schedule-as-known store deployed; feature materialization/ablation next |
+| P5 — forecast combination | ⏳ NEXT | mean/median/fixed convex/MAE-optimized convex; wait for materially different context forecast |
+| P6 — live-ticket incremental value | ⏳ NEXT | formal structural-only vs structural+live residual experiment not yet run |
+| P7 — 72–168h learned model | ⏸ DATA GROWING | exactly `8/9` independent events >72h; 110 rows >72h |
+| P8 — club calibration / shrinkage | ⏳ LATER | lower priority; only if improvement survives forward evaluation |
+| Production activation | ⛔ NOT READY | `live_adjustment = 0` |
 
 ---
 
-# 5. Canonical validation contract
+# 4. P2 — MAE-native tournament result
 
-`ml/temporal_validation_v1.py`
+Canonical input: 1,530 matches / 7,650 PIT rows.
 
-For historical/global challengers:
+Strict expanding-season folds:
 
-- expanding / rolling groups;
-- strict `train_end < test_start`;
-- no future-season rows in earlier training folds;
-- exact fold identities persisted with deterministic SHA;
-- per-horizon/fold/club reporting;
-- random row split is not headline evidence.
+1. 2021/22 + 2022/23 -> 2023/24;
+2. through 2023/24 -> 2024/25;
+3. through 2024/25 -> 2025/26.
 
-For live challengers:
+Predeclared challengers:
 
-- event is the independent unit;
-- forward-event folds ordered by kickoff;
-- tied kickoff events cannot train each other;
-- LOEO may remain diagnostic only.
+- incumbent runtime;
+- `quantile-linear-a0005`;
+- `quantile-linear-a002`;
+- `gbr-l1-depth2`.
 
-Common diagnostics now include:
+Outcome:
 
-- MAE;
-- median AE;
-- P90 AE;
-- bias;
-- RMSE;
-- event-balanced MAE where trajectory density differs.
+- T-30: retain incumbent;
+- T-14: retain incumbent;
+- T-7: challenger mean delta about `-20.76` seats but only `1/3` fold wins -> reject by selector;
+- T-3: `quantile-linear-a002` mean-fold delta about `-4.33` seats, `2/3` fold wins -> advance only to uncertainty diagnostic;
+- T-1: retain incumbent.
+
+No frozen runtime changed.
 
 ---
 
-# 6. MAE-native challenger work
+# 5. P3 — uncertainty result
 
-Important correction to the research framing:
+Paired fixture-block bootstrap, 5,000 resamples, stratified by temporal fold.
 
-Global Model v2.1 incumbents are already partly MAE-aligned:
+T-3 `quantile-linear-a002`:
 
-- HistGradientBoosting uses `loss="absolute_error"`;
-- XGBoost uses `objective="reg:absoluteerror"`.
+- event-level `ΔMAE = -5.16` seats;
+- 95% interval `[-88.84, +80.55]`;
+- `P(ΔMAE < 0) = 0.534`;
+- event improvement rate `45.56%`;
+- decision: **RETAIN INCUMBENT — EFFECT NOT DISTINGUISHABLE FROM ZERO**.
 
-Therefore the next tournament is **not** a simple MSE -> MAE conversion.
+T-7 diagnostic:
 
-The compact challenger set should test genuinely different median/L1 estimators, including:
+- `ΔMAE = -21.16` seats;
+- 95% interval `[-114.01, +73.77]`;
+- `P(ΔMAE < 0) = 0.6782`;
+- fold wins `1/3`;
+- decision: **RETAIN INCUMBENT — TEMPORAL CONSISTENCY FAILED**.
 
-- regularized linear median / `QuantileRegressor(q=0.50)`;
-- alternative robust median residual estimator(s);
-- current HistGBR/XGB absolute-error incumbents as controls.
-
-Primary selector: MAE over the new time-respecting fold contract.
-
----
-
-# 7. Long72 evidence contract
-
-For every new eligible event preserve before final attendance is used:
-
-1. event / kickoff;
-2. source snapshot / `as_of_at`;
-3. frozen T-3 Structural Prior;
-4. frozen b2 replay state;
-5. raw inventory extrapolation;
-6. governed Stage-1 forecast;
-7. P2 observation index / reliability / final forecast;
-8. package / manifest / code lineage.
-
-After the match:
-
-- attach final attendance;
-- score only existing reproducible forecasts;
-- never reconstruct a missing forecast from the future;
-- append score evidence.
+Conclusion: estimator-only tuning is closed for this candidate family. R&D shifts to new PIT-safe information/context.
 
 ---
 
-# 8. 72–168h
+# 6. P4 — fixture substitution / cannibalization
 
-Last audited readiness: `8` independent events beyond 72h.
+Status: **ACTIVE**.
 
-Predeclared research-start floor: `N>=9`.
+Safety decision:
 
-At `N>=9`: freeze identities first, define PIT-safe T-7 transition, then open a separate challenger cycle. `N=9` starts research; it does not prove adequacy.
+Do not backfill historical next-fixture context from today's final schedule and call it PIT-safe. Historical reschedules could leak future information.
+
+Forward schedule-as-known infrastructure is deployed in Supabase:
+
+- `private.fixture_schedule_batches_v1`;
+- `private.fixture_schedule_rows_v1`;
+- `public.capture_fixture_schedule_as_known_v1(...)`;
+- forward-only capture: `observed_at` must be close to `now()`;
+- unchanged schedule states are fingerprint-deduplicated;
+- historical backfill is explicitly disallowed.
+
+Current captured state:
+
+- `3` schedule batches;
+- `351` versioned schedule rows.
+
+Next P4 implementation:
+
+1. commit/deploy the schedule-as-known migration source in repo;
+2. implement PIT lookup using only schedule batch `observed_at <= as_of_at`;
+3. materialize first safe feature family:
+   - `next_home_match_days`;
+   - `previous_home_match_days`;
+   - `fixture_density_7d`;
+   - `fixture_density_14d`;
+   - `fixture_density_30d`;
+4. add next-opponent attractiveness separately from a PIT-safe opponent-demand source;
+5. run controlled ablation against the unchanged incumbent using the canonical temporal contract;
+6. advance only if future/forward MAE improves.
 
 ---
 
-# 9. Immediate work order
+# 7. 72–168h readiness
 
-1. **run the MAE-native global residual challenger tournament using temporal-validation-v1**;
-2. **add event/fixture-block uncertainty for `ΔMAE`**;
-3. **materialize PIT-safe next-fixture / cannibalization features**;
-4. run controlled context ablations;
-5. run simple forecast-combination tournament;
-6. measure live-ticket incremental uplift over the strongest structural forecast;
-7. keep final24 + long72 prospective collection running automatically;
-8. trigger long168 research when `N>=9`;
+Latest audit:
+
+- `8` independent events with valid observations >72h;
+- `110` rows >72h;
+- observed range above 72h: approximately `72.17h–166.12h`;
+- predeclared research-start threshold remains `N>=9`.
+
+Therefore P7 **has not started**. Do not move the threshold. At the ninth independent event: freeze exact identities first, then open the predeclared 72–168h challenger cycle.
+
+---
+
+# 8. Immediate work order
+
+1. **finish P4 schedule-as-known repo/feature contract**;
+2. **materialize PIT-safe fixture-spacing/density features**;
+3. **run P4 controlled ablation against incumbent**;
+4. if P4 creates a materially different useful forecast, **run P5 forecast-combination tournament**;
+5. run **P6 structural-only vs structural+live incremental-value experiment**;
+6. keep final24 + Long72 prospective evidence collecting automatically;
+7. continuously monitor P7 readiness; trigger only when independent >72h event count reaches `9`;
+8. keep P8 lower priority;
 9. keep production unchanged.
 
 ## One-line handoff
 
-> **Prospective Long72 and canonical temporal validation are operational. Active modelling now moves to a genuinely new MAE-native challenger tournament; frozen evidence collection continues automatically in parallel.**
+> **Validation, estimator tournament and uncertainty are complete. They did not justify a model replacement. The active MAE opportunity is now new PIT-safe information: fixture substitution/cannibalization first, then combinations and incremental live-ticket value.**
