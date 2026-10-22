@@ -20,7 +20,7 @@ from typing import Any
 import numpy as np
 import pandas as pd
 
-from mae_delta_uncertainty_v1 import BootstrapConfig, bootstrap_delta_mae, paired_event_errors
+from ml.mae_delta_uncertainty_v1 import BootstrapConfig, bootstrap_delta_mae, paired_event_errors
 
 VERSION = "d2-long72-live-incremental-value-v1"
 POLICY_ID = "P2-observation-maturity"
@@ -68,7 +68,7 @@ def load_frozen_p2_predictions(path: Path, *, verify_sha: bool = True) -> pd.Dat
 
     for column in ("hours_to_kickoff", "actual_attendance", "anchor_p50", "forecast_p50"):
         selected[column] = pd.to_numeric(selected[column], errors="raise")
-    if selected[list(required - {"policy_id", "ticket_event_id"})].isna().any().any():
+    if selected[["hours_to_kickoff", "actual_attendance", "anchor_p50", "forecast_p50"]].isna().any().any():
         raise RuntimeError("frozen P2 predictions contain null numeric values")
     if not ((selected["hours_to_kickoff"] > 24.0) & (selected["hours_to_kickoff"] <= 72.0)).all():
         raise RuntimeError("frozen P2 predictions contain rows outside 24<h<=72")
