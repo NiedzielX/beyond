@@ -1,0 +1,44 @@
+name: d2 Long72 Fixture Context Sidecar v1
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - "supabase/sql/fixture_schedule_as_known_v1.sql"
+      - "supabase/sql/fixture_context_as_known_v1.sql"
+      - "supabase/sql/d2_long72_fixture_context_sidecar_v1.sql"
+      - "ml/results/D2_LONG72_FIXTURE_CONTEXT_SIDECAR_V1_2026-10-22.md"
+      - ".github/workflows/d2-long72-fixture-context-sidecar-v1.yml"
+  push:
+    branches:
+      - main
+    paths:
+      - "supabase/sql/fixture_schedule_as_known_v1.sql"
+      - "supabase/sql/fixture_context_as_known_v1.sql"
+      - "supabase/sql/d2_long72_fixture_context_sidecar_v1.sql"
+      - "ml/results/D2_LONG72_FIXTURE_CONTEXT_SIDECAR_V1_2026-10-22.md"
+      - ".github/workflows/d2-long72-fixture-context-sidecar-v1.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  validate-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify forward-only sidecar contract
+        run: |
+          set -euo pipefail
+          test -f supabase/sql/fixture_schedule_as_known_v1.sql
+          test -f supabase/sql/fixture_context_as_known_v1.sql
+          test -f supabase/sql/d2_long72_fixture_context_sidecar_v1.sql
+          grep -q "observed_at <= p_as_of_at" supabase/sql/fixture_context_as_known_v1.sql
+          grep -q "NO_SCHEDULE_STATE_AS_OF" supabase/sql/fixture_context_as_known_v1.sql
+          grep -q "forward_prediction_id bigint not null unique" supabase/sql/d2_long72_fixture_context_sidecar_v1.sql
+          grep -q "manual_first_checkpoint" supabase/sql/d2_long72_fixture_context_sidecar_v1.sql
+          grep -q "historical_backfill_from_later_schedule_allowed',false" supabase/sql/d2_long72_fixture_context_sidecar_v1.sql
+          grep -q "before update or delete" supabase/sql/d2_long72_fixture_context_sidecar_v1.sql
+          grep -q "production_change',false" supabase/sql/d2_long72_fixture_context_sidecar_v1.sql
+          grep -q "d2_long72_fixture_context_sidecar_v1_15m" supabase/sql/d2_long72_fixture_context_sidecar_v1.sql
