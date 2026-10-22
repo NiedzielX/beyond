@@ -27,49 +27,23 @@ Current production/research incumbent: **Structural Prior Runtime v1 / Global Mo
 - T-30/T-14/T-7/T-3/T-1;
 - committed canonical history SHA: `3c6b35142c6bd20a484f2aa758cd41284fd6f4c6db1353b138f81cf321161569`.
 
-Estimator-only MAE challengers did not produce a robust replacement. The incumbent remains unchanged after forward-fold tournament + paired fixture-block uncertainty.
+Estimator-only MAE challengers did not produce a robust replacement. The incumbent remains unchanged.
 
-## Final24 frozen evidence lane
-
-`Frozen Pre-Live v2 + P2 reliability * frozen ridge-a10 delta`
-
-Status: **FROZEN / PROSPECTIVE VALIDATION ACTIVE**
-
-## Pre-Live v3
-
-`pre-live-v3-historical-candidate-2026-10-21-v1`
-
-Historical 20-cell mean MAE:
-
-`1934.04 -> 1924.64`, improvement `+9.39 / +0.49%`.
-
-Status: **FROZEN RESEARCH CANDIDATE**
-
-## Early-live Long72
-
-Package:
+## Frozen Long72 package
 
 `d2-long72-stage2-p2-observation-maturity-2026-10-21-v1`
 
-Historical development:
+Historical P6 comparison:
 
-- anchor MAE `3707.14`;
-- package MAE `3012.63`;
-- uplift `+694.51 / +18.73%`.
-
-Formal P6 event-block uncertainty:
-
-- `ΔMAE = -694.51` seats;
-- 95% interval `[-1549.89, +148.05]`;
-- `P(ΔMAE < 0) = 0.9500`;
-- anchor bias `-242.63`;
-- live/P2 bias `+917.05`.
-
-Interpretation: **material historical incremental live value, but N=13 remains uncertainty-limited and positively biased.**
+- structural anchor MAE `3707.14`;
+- frozen P2 MAE `3012.63`;
+- `ΔMAE = -694.51` / `18.73%` improvement;
+- 95% event-block interval `[-1549.89,+148.05]`;
+- `P(ΔMAE<0)=0.9500`;
+- structural bias `-242.63`;
+- frozen P2 bias `+917.05`.
 
 Status: **FROZEN / GENUINE POST-FREEZE EVIDENCE ACTIVE**
-
-True forecast-before-label infrastructure is operational. Manual bootstrap rows remain audit-only and excluded from the official scorecard.
 
 ---
 
@@ -81,9 +55,10 @@ True forecast-before-label infrastructure is operational. Manual bootstrap rows 
 | P1 — canonical forward/rolling validation | ✅ DONE | strict expanding-season + forward-event folds |
 | P2 — MAE-native challenger tournament | ✅ DONE | no robust runtime replacement |
 | P3 — `ΔMAE` uncertainty | ✅ DONE | estimator signals did not justify replacement |
-| P4 — PIT-safe next-fixture / cannibalization | 🟡 **INFRA DONE / DATA ACCUMULATING** | schedule-as-known + PIT lookup + Long72 append-only context sidecar operational |
-| P5a — structural ↔ live convex shrinkage | ✅ DONE | full frozen P2 retains lowest strict forward-event MAE; no shrinkage replacement |
-| P5 — structural + context + live combination | ⏸ WAITING FOR P4 EVIDENCE | start once genuine context component is label-ready |
+| P4a — schedule-as-known / fixture spacing-density | ✅ INFRA DONE / DATA ACCUMULATING | PIT lookup + append-only Long72 sidecar operational |
+| P4b — next-home opponent attractiveness | ✅ INFRA DONE / DATA ACCUMULATING | strict schedule + outcome knowledge gates; append-only sidecar operational |
+| P5a — structural ↔ live convex shrinkage | ✅ DONE | full frozen P2 retains lowest strict forward-event MAE |
+| P5 — structural + context + live combination | ⏸ WAITING FOR P4 LABELED EVIDENCE | start only when context component is genuinely label-ready |
 | P6 — live-ticket incremental value | ✅ DONE HISTORICALLY | +18.73% MAE point uplift; CI crosses zero; +917-seat bias guardrail |
 | P7 — 72–168h learned model | ⏸ DATA GROWING | exactly `8/9` independent events >72h; 110 rows >72h |
 | P8 — club calibration / shrinkage | ⏳ LATER | only if forward evaluation shows generalizable gain |
@@ -91,31 +66,44 @@ True forecast-before-label infrastructure is operational. Manual bootstrap rows 
 
 ---
 
-# 4. P2/P3 — estimator tournament closed
+# 4. Closed R&D loops
 
-Canonical input: 1,530 matches / 7,650 PIT rows.
+## P2/P3 estimator loop
 
-Strict expanding-season folds:
-
-1. 2021/22 + 2022/23 -> 2023/24;
-2. through 2023/24 -> 2024/25;
-3. through 2024/25 -> 2025/26.
-
-Result:
+Do not repeat without a materially new hypothesis.
 
 - T-30: retain incumbent;
 - T-14: retain incumbent;
-- T-7: candidate point delta about `-20.76`, but only `1/3` fold wins;
-- T-3: candidate point delta about `-4.33`, but paired uncertainty crosses zero widely;
+- T-7: point signal not temporally consistent;
+- T-3: tiny point signal, uncertainty crosses zero widely;
 - T-1: retain incumbent.
 
-Conclusion: **do not spend the next cycle on more estimator-only tuning.** New PIT-safe information is the higher-value MAE path.
+Conclusion: new PIT-safe information is higher priority than more estimator-only tuning.
+
+## P5a structural/live convex shrinkage
+
+`blend(w) = anchor + w * (P2 - anchor)`
+
+Strict forward-event MAE:
+
+| Candidate | MAE |
+|---|---:|
+| anchor / `w=0` | 3180.22 |
+| `w=.25` | 2974.89 |
+| `w=.50` | 2776.51 |
+| `w=.75` | 2614.46 |
+| **frozen P2 / `w=1`** | **2472.30** |
+| train-selected weight | 2564.22 |
+
+Train-selected shrinkage is `+91.92` seats worse than full P2.
+
+Decision: **retain frozen P2; no shrinkage replacement.**
 
 ---
 
-# 5. P4 — fixture substitution / cannibalization
+# 5. P4a — fixture substitution / schedule-as-known
 
-## Schedule-as-known contract
+## Schedule evidence
 
 Operational:
 
@@ -137,64 +125,69 @@ PIT lookup:
 
 Current feature family:
 
-- `previous_home_match_days`;
-- `next_home_match_days`;
-- team fixture density next 7/14/30 days;
-- home fixture density next 7/14/30 days;
-- previous/next home opponent identity for later attractiveness joins.
-
-Fail-closed behavior is verified: a forecast timestamp before the first captured schedule state returns `NO_SCHEDULE_STATE_AS_OF` rather than using a later schedule.
+- previous-home spacing;
+- next-home spacing when known;
+- team fixture density next 7/14/30d;
+- home fixture density next 7/14/30d;
+- previous/next home opponent identity.
 
 ## Long72 fixture-context sidecar
 
-Operational in Supabase:
+Operational:
 
 - `private.d2_long72_fixture_context_v1`;
 - `public.capture_d2_long72_fixture_context_v1(...)`;
-- cron `d2_long72_fixture_context_sidecar_v1_15m` at `7,22,37,52 * * * *`;
-- one immutable sidecar row per reproducible Long72 prediction;
-- production forecast is untouched.
+- cron `7,22,37,52 * * * *`;
+- append-only one-to-one sidecar per reproducible forecast.
 
-Initial capture:
+Latest checkpoint:
 
-- 12 reproducible Long72 prediction rows processed;
-- 10 `READY` context rows;
-- 2 pre-schedule-capture rows permanently recorded as `NO_SCHEDULE_STATE_AS_OF`.
+- 12 reproducible Long72 predictions;
+- 12 fixture-context sidecar rows;
+- 10 `READY`;
+- 2 `NO_SCHEDULE_STATE_AS_OF` from forecasts before the first schedule capture.
 
-This means future labels can be joined to context that was genuinely known at forecast time without reconstructing context from the future.
-
-## P4 limitation
-
-A truthful historical schedule-version ablation before `2026-10-21 20:21:39+00` is impossible because no historical schedule state was captured then.
-
-Therefore P4 is **not blocked operationally**, but model selection is **data accumulating**. Do not manufacture historical PIT evidence from today's final schedule.
+No later schedule knowledge is substituted into those two rows.
 
 ---
 
-# 6. P5a — structural/live convex shrinkage
+# 6. P4b — next-home opponent attractiveness
 
-Frozen blend family:
+Operational PIT lookup:
 
-`blend(w) = anchor + w * (P2 - anchor)`
+- `public.opponent_attractiveness_as_known_v1(...)`;
+- `public.next_home_opponent_attractiveness_for_ticket_event_as_known_v1(...)`.
 
-with `w ∈ {0,.25,.50,.75,1}` plus a train-only selected weight.
+Append-only Long72 sidecar:
 
-Strict forward-event evaluation:
+- `private.d2_long72_next_opponent_attractiveness_v1`;
+- `public.capture_d2_long72_next_opponent_attractiveness_v1(...)`;
+- cron `9,24,39,54 * * * *`.
 
-| Candidate | Event-balanced MAE |
-|---|---:|
-| anchor / `w=0` | 3180.22 |
-| `w=.25` | 2974.89 |
-| `w=.50` | 2776.51 |
-| `w=.75` | 2614.46 |
-| **frozen P2 / `w=1`** | **2472.30** |
-| train-selected weight | 2564.22 |
+Readiness requires both:
 
-Train-selected shrinkage is `+91.92` seats worse than full P2. Its paired event-block interval versus P2 is `[-126.79,+324.24]`.
+1. next home opponent known in a schedule batch with `observed_at <= forecast_as_of_at`;
+2. attendance history system-known by the same cutoff: kickoff + outcome created/updated/confirmed timestamps all no later than `forecast_as_of_at`.
 
-Decision: **retain frozen P2; no shrinkage replacement.**
+Attractiveness metric:
 
-P5 remains open only for genuinely different information, especially `structural + context + live`.
+`opponent_uplift_pct = (opponent_median_attendance / club_median_attendance - 1) * 100`
+
+with readiness gates:
+
+- club history `>=8`;
+- opponent history `>=3`.
+
+Initial sidecar checkpoint:
+
+- 12 rows processed;
+- 2 `FIXTURE_CONTEXT_NO_SCHEDULE_STATE_AS_OF`;
+- 10 `NO_NEXT_HOME_MATCH_IN_SCHEDULE_STATE`;
+- 0 `READY`.
+
+This is deliberate fail-closed evidence behavior. Current captured schedules do not yet expose the later home fixture required to score the feature for events 10/16.
+
+Do **not** replace these missing values with later schedule knowledge or a hand-authored opponent score.
 
 ---
 
@@ -204,12 +197,10 @@ Formal historical exposed comparison:
 
 ### 24–72h
 
-- anchor MAE `3707.14`;
-- frozen live/P2 MAE `3012.63`;
 - `ΔMAE = -694.51`;
 - relative improvement `18.73%`;
 - event improvement rate `61.54%`;
-- 95% paired event-block interval `[-1549.89,+148.05]`;
+- 95% interval `[-1549.89,+148.05]`;
 - `P(ΔMAE<0)=0.9500`.
 
 ### 24–48h
@@ -224,39 +215,42 @@ Formal historical exposed comparison:
 - relative improvement `14.47%`;
 - 95% interval `[-1463.31,+241.98]`.
 
-Important guardrail:
+Guardrail: frozen live/P2 has `+917.05` event-balanced bias on the full development set.
 
-- anchor event-balanced bias `-242.63`;
-- frozen live/P2 bias `+917.05`.
-
-Conclusion: live inventory contains valuable information beyond the structural anchor, but genuine prospective evidence is still required and the positive bias must remain visible in any future challenger evaluation.
+Conclusion: live inventory contains material incremental signal, but genuine prospective evidence remains required before promotion.
 
 ---
 
-# 8. 72–168h readiness
+# 8. Current prospective/data readiness
 
-Latest audit:
+Long72 latest checkpoint:
 
-- `8` independent events with valid observations >72h;
+- reproducible forecast rows: `12`;
+- fixture-context sidecar rows: `12` (`10 READY`);
+- next-opponent sidecar rows: `12` (`0 READY`);
+- scored genuine Long72 events: `0` because current precommitted events have no final attendance yet.
+
+Long168 latest audit:
+
+- `8` independent events >72h;
 - `110` rows >72h;
-- observed range approximately `72.17h–166.12h`;
 - predeclared research-start floor remains exactly `N>=9`.
 
-P7 has **not started**. Do not move the threshold. At the ninth independent event: freeze exact identities first, then open the separate 72–168h challenger cycle.
+Do not lower the threshold.
 
 ---
 
 # 9. Immediate work order
 
-1. **keep P4 schedule-as-known + Long72 context sidecar collecting automatically**;
-2. **add next-opponent attractiveness only through a PIT-safe observed source; never recompute historical values from final outcomes**;
-3. once enough labeled P4 context exists, run controlled context ablations;
-4. then run the remaining P5 `structural + context + live` combination tournament;
+1. **keep Long72 forecast, schedule-as-known, fixture-context and next-opponent sidecars collecting automatically**;
+2. monitor for the first `READY` next-opponent rows as later home fixtures become genuinely known;
+3. once labeled P4 events accumulate, run controlled schedule/context ablations;
+4. only then run P5 `structural + context + live` combinations;
 5. continue final24 + Long72 genuine prospective evidence automatically;
-6. trigger P7 immediately when independent >72h event coverage reaches `9`;
+6. trigger P7 immediately at the ninth independent >72h event;
 7. keep P8 lower priority;
 8. keep production unchanged.
 
 ## One-line handoff
 
-> **Estimator R&D, uncertainty, historical live incremental value and simple structural/live shrinkage are complete. P4 forward context evidence is now being captured automatically beside every Long72 prediction; the next model-selection opportunity is genuine context + live once those labels exist, while Long168 remains 8/9.**
+> **All currently unblocked P4 evidence infrastructure is operational and fail-closed. Estimator tuning, historical live-value testing and simple structural/live shrinkage are closed. The next model-selection step requires genuine labeled context evidence; Long168 remains 8/9.**
