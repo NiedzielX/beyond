@@ -9,6 +9,7 @@ on:
       - "ml/test_research_advance_governance_v2.py"
       - "ml/p9_booking_curve_v1.py"
       - "ml/test_p9_booking_curve_v1.py"
+      - "ml/p10_reconstruct_feature_store_v1.py"
       - "ml/p10_pooled_horizon_global_v1.py"
       - "ml/test_p10_pooled_horizon_global_v1.py"
       - "ml/P11_MATCH_ATTRACTIVENESS_CONTEXT_V1_PLAN.md"
@@ -25,6 +26,7 @@ on:
       - "ml/test_research_advance_governance_v2.py"
       - "ml/p9_booking_curve_v1.py"
       - "ml/test_p9_booking_curve_v1.py"
+      - "ml/p10_reconstruct_feature_store_v1.py"
       - "ml/p10_pooled_horizon_global_v1.py"
       - "ml/test_p10_pooled_horizon_global_v1.py"
       - "ml/P11_MATCH_ATTRACTIVENESS_CONTEXT_V1_PLAN.md"
@@ -50,6 +52,7 @@ jobs:
         run: |
           python -m py_compile ml/research_advance_governance_v2.py
           python -m py_compile ml/p9_booking_curve_v1.py
+          python -m py_compile ml/p10_reconstruct_feature_store_v1.py
           python -m py_compile ml/p10_pooled_horizon_global_v1.py
       - name: Run governance v2 tests
         run: python -m ml.test_research_advance_governance_v2
@@ -69,56 +72,10 @@ jobs:
           grep -q "ROBUST_RESEARCH_ADVANCE" "$f"
           grep -q 'live_adjustment = 0' "$f"
 
-  inspect-canonical-runtime:
+  real-p10:
+    needs: validate
     runs-on: ubuntu-latest
-    timeout-minutes: 10
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-      - name: Install schema-inspection dependency
-        run: pip install pandas==2.2.3
-      - name: Verify frozen runtime bytes and inspect schema
-        run: |
-          set -euo pipefail
-          file='ml/artifacts/structural_prior_runtime_v1/historical_runtime_v1.csv.gz'
-          expected='3c6b35142c6bd20a484f2aa758cd41284fd6f4c6db1353b138f81cf321161569'
-          actual=$(sha256sum "$file" | awk '{print $1}')
-          test "$actual" = "$expected"
-          python - <<'PY'
-          import json
-          import pandas as pd
-          path='ml/artifacts/structural_prior_runtime_v1/historical_runtime_v1.csv.gz'
-          frame=pd.read_csv(path)
-          report={
-              'rows': int(len(frame)),
-              'columns': list(frame.columns),
-              'column_count': int(len(frame.columns)),
-              'matches': int(frame['match_key'].nunique()) if 'match_key' in frame else None,
-              'horizons': sorted(map(str, frame['horizon'].dropna().unique())) if 'horizon' in frame else [],
-              'has_p10_contract': all(c in frame.columns for c in [
-                  'match_key','season','horizon','kickoff_at','home_club_key','away_club_key',
-                  'target_attendance','training_eligible','baseline_fixed'
-              ]),
-          }
-          print(json.dumps(report, indent=2))
-          with open('/tmp/runtime-schema.json','w') as fh:
-              json.dump(report, fh, indent=2)
-          assert len(frame)==7650, len(frame)
-          assert report['matches']==1530, report
-          PY
-      - uses: actions/upload-artifact@v4
-        with:
-          name: structural-runtime-schema-${{ github.run_id }}
-          path: /tmp/runtime-schema.json
-          if-no-files-found: error
-          retention-days: 30
-
-  real-p10-if-runtime-compatible:
-    needs: [validate, inspect-canonical-runtime]
-    runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -126,47 +83,46 @@ jobs:
           python-version: "3.12"
       - name: Install pinned ML dependencies
         run: pip install -r ml/requirements.txt
-      - name: Detect canonical runtime compatibility
-        id: contract
+      - name: Reconstruct canonical 7,650-row PIT feature store
         run: |
-          python - <<'PY' >> "$GITHUB_OUTPUT"
-          import pandas as pd
-          f=pd.read_csv('ml/artifacts/structural_prior_runtime_v1/historical_runtime_v1.csv.gz', nrows=2)
-          required={
-              'match_key','season','horizon','kickoff_at','home_club_key','away_club_key',
-              'target_attendance','training_eligible','baseline_fixed'
-          }
-          print('compatible=' + ('true' if required.issubset(f.columns) else 'false'))
-          PY
-      - name: Run real P10 benchmark on canonical runtime when compatible
-        if: steps.contract.outputs.compatible == 'true'
+          python -m ml.p10_reconstruct_feature_store_v1 \
+            --raw-history ml/artifacts/structural_prior_runtime_v1/historical_runtime_v1.csv.gz \
+            --output /tmp/p10-feature-store.csv.gz \
+            --report /tmp/p10-feature-store-report.json
+          jq -e '
+            .status == "PASS"
+            and .raw_sha256 == "3c6b35142c6bd20a484f2aa758cd41284fd6f4c6db1353b138f81cf321161569"
+            and .p10_rows == 7650
+            and .p10_matches == 1530
+            and .baseline_fixed_source == "baseline_season"
+          ' /tmp/p10-feature-store-report.json >/dev/null
+      - name: Run real pooled-vs-local P10 benchmark
         run: |
           python -m ml.p10_pooled_horizon_global_v1 \
-            --feature-store ml/artifacts/structural_prior_runtime_v1/historical_runtime_v1.csv.gz \
+            --feature-store /tmp/p10-feature-store.csv.gz \
             --output-json /tmp/p10-real-scorecard.json \
             --predictions-csv /tmp/p10-real-predictions.csv \
             --fold-manifest /tmp/p10-real-folds.json
-          jq -e '.evidence_class == "historical_exposed_research" and .match_blocking == true and .production_change == false and .live_adjustment == 0' /tmp/p10-real-scorecard.json >/dev/null
-      - name: Record explicit blocker when runtime lacks modelling features
-        if: steps.contract.outputs.compatible != 'true'
+          jq -e '
+            .evidence_class == "historical_exposed_research"
+            and .match_blocking == true
+            and .production_change == false
+            and .live_adjustment == 0
+            and .matches > 0
+            and .fold_count >= 1
+            and .governance_v2.robust_advance_allowed == false
+          ' /tmp/p10-real-scorecard.json >/dev/null
+      - name: Print controlled P10 result
         run: |
-          cat > /tmp/p10-real-blocker.json <<'EOF'
-          {
-            "version": "p10-real-input-readiness-v1",
-            "status": "BLOCKED_CANONICAL_FEATURE_STORE_NOT_COMMITTED",
-            "reason": "Frozen historical_runtime_v1.csv.gz does not expose the full P10 modelling contract. Do not substitute a different dataset. Reuse/reconstruct the exact pinned Structural Prior feature store before real P10 evaluation.",
-            "production_change": false
-          }
-          EOF
-          cat /tmp/p10-real-blocker.json
-      - name: Upload real P10 result or blocker
+          jq '{matches,eligible_rows,fold_count,local_match_balanced_mae,pooled_match_balanced_mae,delta_mae,event_improvement_rate,fold_improvement_rate,governance_v2,per_horizon}' /tmp/p10-real-scorecard.json
+      - name: Upload canonical P10 evidence
         uses: actions/upload-artifact@v4
         with:
           name: p10-real-evidence-${{ github.run_id }}
           path: |
+            /tmp/p10-feature-store-report.json
             /tmp/p10-real-scorecard.json
             /tmp/p10-real-predictions.csv
             /tmp/p10-real-folds.json
-            /tmp/p10-real-blocker.json
           if-no-files-found: error
           retention-days: 90
