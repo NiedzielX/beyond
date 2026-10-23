@@ -202,16 +202,16 @@ def evaluate(
         strata_cols=("fold_id",),
         config=BootstrapConfig(n_resamples=5000, seed=42),
     )
-    event_improvement_rate = float((paired["delta_event_mae"] < 0.0).mean())
+    event_improvement_rate = float(uncertainty["event_improvement_rate"])
     fold_improvement_rate = float(np.mean([row["pooled_improved"] for row in fold_scores]))
-    delta_interval = uncertainty["delta_mae"]
+    bootstrap = uncertainty["bootstrap"]
     governance = decide_research_advance(ResearchAdvanceInput(
         incumbent_mae=local_mae,
         challenger_mae=pooled_mae,
         event_improvement_rate=event_improvement_rate,
         fold_improvement_rate=fold_improvement_rate,
-        delta_mae_ci_lower=float(delta_interval["ci_lower"]),
-        delta_mae_ci_upper=float(delta_interval["ci_upper"]),
+        delta_mae_ci_lower=float(bootstrap["delta_mae_lower"]),
+        delta_mae_ci_upper=float(bootstrap["delta_mae_upper"]),
         minimum_meaningful_mae_improvement=minimum_meaningful_mae_improvement,
     ))
 
