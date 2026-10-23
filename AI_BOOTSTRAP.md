@@ -2,40 +2,29 @@
 
 Last updated: **2026-10-23**
 
-## Cold-start rule
+## Cold-start order
 
 Read in this order:
 
 1. `ml/MAE_RESEARCH_ROADMAP_V4.md`;
-2. `ml/PROGRESS_TRACKING.md`;
-3. `ml/results/P10_POOLED_HORIZON_V1_2026-10-23.md` when working on pooled/global structural models;
-4. `ml/results/P9_BOOKING_CURVE_PRECOMMIT_V1_2026-10-23.md` when working on live trajectory/booking-curve research;
-5. `ml/P11_MATCH_ATTRACTIVENESS_CONTEXT_V1_PLAN.md` when working on new commercial/context signals;
-6. `ml/results/P4_FIXTURE_CONTEXT_PRECOMMIT_V1_2026-10-23.md` when working on P4/P5;
-7. `ml/D2_LONG_HORIZON_LIVE_V1_PLAN.md` when working on P7/Long168;
-8. `ml/CURRENT_MODEL.md`;
-9. `ml/CORE_PRODUCT_STATUS.md`;
-10. `ml/MODEL_ACCURACY_DEVELOPMENT_INSTRUCTIONS_V2.md`;
-11. `ml/LIVE_DEMAND_ENGINE_V1_PLAN.md`;
-12. `ml/MODEL_PROMOTION_GOVERNANCE_V1.md`.
+2. `ml/PROGRESS_TRACKING.md` — **latest canonical state**;
+3. `ml/results/P10B_POOLED_VS_PRELIVE_V3_V1_2026-10-23.md` when touching pooled/global structural research;
+4. `ml/results/P10_POOLED_HORIZON_V1_2026-10-23.md` for the earlier pooled-vs-local finding;
+5. `ml/results/P9_BOOKING_CURVE_PRECOMMIT_V1_2026-10-23.md` for P9;
+6. `ml/P11_MATCH_ATTRACTIVENESS_CONTEXT_V1_PLAN.md` and `supabase/sql/p11_market_odds_context_v1.sql` for P11;
+7. `ml/results/P4_FIXTURE_CONTEXT_PRECOMMIT_V1_2026-10-23.md` for P4/P5;
+8. `ml/D2_LONG_HORIZON_LIVE_V1_PLAN.md` for P7;
+9. `ml/CURRENT_MODEL.md`, `ml/CORE_PRODUCT_STATUS.md`, `ml/MODEL_ACCURACY_DEVELOPMENT_INSTRUCTIONS_V2.md`, `ml/LIVE_DEMAND_ENGINE_V1_PLAN.md`, `ml/MODEL_PROMOTION_GOVERNANCE_V1.md` as relevant.
 
 Do not rebuild frozen historical benchmarks merely to recover context.
 
 ## North star
 
-> **Minimize true out-of-sample attendance-forecast MAE at decision-relevant horizons, using honest PIT-safe and reproducible evidence.**
+> **Minimize true out-of-sample attendance-forecast MAE at decision-relevant horizons using honest PIT-safe, reproducible evidence.**
 
-The current research mode is **representation-first, not tuning-first**.
+Current mode: **representation-first, not tuning-first**.
 
-Prefer:
-
-- new predictive information;
-- better trajectory representation;
-- cross-learning with correct blocking;
-- stronger PIT context;
-- honest uncertainty.
-
-Do not default to another estimator/hyperparameter sweep.
+Prefer new information, better representation, correct temporal blocking and honest uncertainty over another broad estimator/hyperparameter sweep.
 
 Production remains:
 
@@ -43,259 +32,148 @@ Production remains:
 
 ## Structural core
 
-- 1,530 Ekstraklasa matches / five complete seasons;
-- 7,650 PIT snapshots;
-- T-30/T-14/T-7/T-3/T-1;
-- Structural Prior / Global Model remains the production/research incumbent family;
-- historical runtime SHA: `3c6b35142c6bd20a484f2aa758cd41284fd6f4c6db1353b138f81cf321161569`.
+- 1,530 Ekstraklasa matches / five seasons;
+- 7,650 PIT rows at T-30/T-14/T-7/T-3/T-1;
+- canonical history SHA `3c6b35142c6bd20a484f2aa758cd41284fd6f4c6db1353b138f81cf321161569`;
+- strongest reproducible historical structural research anchor: frozen Pre-Live v3.
 
-Previously inspected historical seasons remain exposed research evidence.
+Previously inspected historical seasons remain exposed R&D evidence.
 
-## Roadmap v4 priorities
+## P10 / P10b — CLOSED for this architecture
 
-### P9 — Booking Curve / Trajectory Shape
+### P10 v1
 
-Use the existing trajectory infrastructure; do not duplicate it.
+Pooled cross-horizon HGB beat the **same HGB trained separately per horizon**:
 
-Target representation:
+- local MAE `2120.93`;
+- pooled MAE `2057.46`;
+- `ΔMAE=-63.47`;
+- 95% paired CI `[-106.29,-23.20]`;
+- 3/3 folds and 5/5 horizons improved;
+- status `POINT_GAIN_UNCERTAINTY_LIMITED`.
 
-`PIT snapshots -> normalized trajectory -> historical curve similarity -> pickup distribution -> remaining-demand estimate -> structural residual challenger`
+### P10b
 
-Canonical v1 files:
+The harder frozen comparison against Pre-Live v3 is complete:
 
-- `ml/p9_booking_curve_v1.py`;
-- `ml/test_p9_booking_curve_v1.py`;
-- `supabase/sql/p9_booking_curve_readiness_v1.sql`;
-- `.github/workflows/p9-booking-curve-readiness-v1.yml`;
-- `ml/results/P9_BOOKING_CURVE_PRECOMMIT_V1_2026-10-23.md`.
+- Pre-Live v3 MAE `1919.92`;
+- pooled MAE `2067.43`;
+- `challenger-incumbent ΔMAE=+147.51` seats;
+- relative degradation `+7.68%`;
+- 95% paired CI `[+82.97,+210.67]`;
+- event improvement `43.69%`;
+- folds improved `0/4`;
+- horizons improved `0/5`;
+- status **`NO_RESEARCH_GAIN`**.
 
-P9 v1 deliberately starts with an auditable weighted-L1 similarity/pickup representation. Do not jump to LSTM/Transformer before genuine curve-reference coverage justifies it.
+Do **not** retune P10/P10b after these results. The fixed pooled-HGB direct-replacement path is closed. Any future pooling work requires a materially new mechanism and a new precommit; it is not the current priority.
 
-Hard rules:
+## P9 — Booking Curve / Trajectory Shape
+
+Canonical idea:
+
+`PIT inventory path -> normalized trajectory -> historical curve similarity -> pickup distribution -> remaining-demand estimate -> structural residual challenger`
+
+Hard PIT rules:
 
 - no target observation after `as_of_at`;
-- target future canonical points remain missing;
+- no target-future canonical point;
 - no self-event reference;
-- reference event must already be completed by the target cutoff;
+- reference event completed before target cutoff;
 - public inventory is a demand proxy, not confirmed paid sales.
 
-### P10 — Pooled Horizon Global Model
+Current live coverage:
 
-P10 v1 has already been executed on historical exposed evidence and is now frozen.
+- 168h: **4/9** genuine completed reference events / 4 clubs;
+- 72h: 7 events / 5 clubs;
+- 48h: 10 events / 6 clubs;
+- 24h: 13 events / 8 clubs.
 
-Real run:
+`P9_BOOKING_CURVE_168_START = false`.
 
-`40024979412`
+Do not fit the first learnable P9 model yet. At 9 genuine full-168h references, freeze the learner contract before model-result comparison.
 
-Frozen run head:
+## P11 — Match Attractiveness / Commercial Context
 
-`bfb50ebdf5a1800bd9516a098599b5dd751fc5e7`
+Priority:
 
-Observed result:
-
-- local-horizon MAE `2120.93`;
-- pooled MAE `2057.46`;
-- `ΔMAE=-63.47` seats;
-- ~`2.99%` improvement;
-- 95% paired match-block CI `[-106.29,-23.20]`;
-- event improvement `59.12%`;
-- fold improvement `3/3`;
-- all five horizons improved.
-
-Governance status:
-
-`POINT_GAIN_UNCERTAINTY_LIMITED`
-
-Do **not** modify P10 v1 after seeing this result.
-
-Next experiment must be a new version:
-
-**P10b — pooled-horizon challenger vs the current strongest Global Model v2.1 / Structural comparator under a common match-blocked temporal protocol.**
-
-### P11 — Match Attractiveness / Commercial Context
-
-Priority order:
-
-1. PIT odds / expected quality / outcome uncertainty / stakes / rivalry;
-2. price / promotion state;
+1. PIT odds / outcome uncertainty / stakes / rivalry;
+2. price / promotion;
 3. lineup / star strength / verified absences;
 4. weather / media/social attention.
 
-Never backfill closing odds, final lineup or later-known context into an earlier cutoff.
+Existing DB already has rivalry, stakes reconstruction, verified absences, price, weather and media scaffolding.
+
+### P11a market odds v1
+
+Live contract exists:
+
+- append-only private 1X2 observations;
+- service-role-only access;
+- `p11_market_context_as_known_v1(ticket_event_id, as_of_at)`;
+- de-vigged home/draw/away probabilities;
+- normalized outcome uncertainty;
+- favorite probability;
+- target-free readiness RPC.
+
+Current state:
+
+- genuine PIT 1X2 events `0`;
+- provider selected `false`;
+- model precommitted `false`;
+- `NO_GENUINE_ODDS_CAPTURE_YET`.
+
+Do not backfill closing odds. Next development step is a lawful/reliable provider + genuine append-only capture.
+
+Do not call 1X2 balance “expected match quality”; quality needs a separate justified signal.
 
 ## Governance v2
 
-Canonical:
-
-- `ml/research_advance_governance_v2.py`;
-- `ml/test_research_advance_governance_v2.py`.
-
-Decision vocabulary:
+Statuses:
 
 - `NO_RESEARCH_GAIN`;
 - `POINT_GAIN_UNCERTAINTY_LIMITED`;
 - `ROBUST_RESEARCH_ADVANCE`.
 
-`ROBUST_RESEARCH_ADVANCE` requires a predeclared minimum practically meaningful MAE improvement plus adequate precision and stability.
+Robust advancement requires point gain, event/fold stability, PIT/lineage/reproducibility, adequate precision **and** a predeclared business-derived minimum meaningful MAE improvement.
 
-Do **not** invent an arbitrary business threshold such as 100 seats or 3% merely to enable promotion.
+Do not invent `100 seats` or `3%` from model results. Until the business threshold is defined, the strongest allowed positive state is `POINT_GAIN_UNCERTAINTY_LIMITED`.
 
-Until a business-derived threshold exists, the strongest allowed positive state is:
+## Other frozen/data-bound work
 
-`POINT_GAIN_UNCERTAINTY_LIMITED`
+### P4a
 
-## Frozen Long72 package
+- 5 READY independent events;
+- 0 genuine labels;
+- primary feature `previous_home_match_days`;
+- gate `>=9` labeled events + `>=3` distinct labeled values;
+- fixed challenger `q50-linear-prev-home-spacing-a002`;
+- do not redesign after labels arrive.
 
-`d2-long72-stage2-p2-observation-maturity-2026-10-21-v1`
+### P7 Long168
 
-Historical comparison:
+- recorded state `8/9` independent >72h events;
+- real execution fails closed below 9;
+- at 9/9 follow the already-frozen identity-freeze -> anchor replay -> labels -> strict forward tournament sequence.
 
-- anchor MAE `3707.14`;
-- frozen P2 MAE `3012.63`;
-- `ΔMAE=-694.51` / `18.73%`;
-- 95% interval `[-1549.89,+148.05]`;
-- P2 bias `+917.05`.
+Nine events start research; they do not make a small uplift trustworthy.
 
-Immutable. Genuine prospective evidence continues.
-
-## Closed loops
-
-Do not reopen without materially new information:
-
-- P2 estimator tournament;
-- P3 estimator uncertainty;
-- P5a structural/live shrinkage;
-- P6 historical incremental live value;
-- P8 simple club/opponent calibration.
-
-P9/P10/P11 are allowed because they test new representation/cross-learning/context hypotheses.
-
-## Current live checkpoint
+## Central readiness
 
 Always read fresh state from:
 
 `public.ml_research_readiness_v1()`
 
-Latest checkpoint recorded on 2026-10-23:
+It now includes Long72, P4, P7 and P9 (`P9_BOOKING_CURVE_168_START`).
 
-- Long72 reproducible forecasts: `66`;
-- genuine Long72 scored events: `0`;
-- fixture-context sidecar: `66 / 64 READY`;
-- P4a independent READY events: `5`;
-- P4a genuine labeled READY events: `0`;
-- P4 next-opponent sidecar: `66 / 0 READY`;
-- Long168: `8/9` independent events >72h, `110` rows >72h.
-
-Do not rely on prose counts when a fresh RPC result is available.
-
-## P4a — previous-home spacing is frozen
-
-Do **not** redesign P4a after labels arrive.
-
-Canonical files:
-
-- `supabase/sql/p4_fixture_context_precommit_v1.sql`;
-- `ml/p4_fixture_context_harness_v1.py`;
-- `ml/test_p4_fixture_context_harness_v1.py`;
-- `.github/workflows/p4-fixture-context-precommit-v1.yml`;
-- `ml/results/P4_FIXTURE_CONTEXT_PRECOMMIT_V1_2026-10-23.md`.
-
-Research question:
-
-> Does `previous_home_match_days` reduce event-level attendance MAE beyond the frozen Long72 pre-live T3+B2 anchor?
-
-Independent unit:
-
-`ticket_event`
-
-Primary feature:
-
-`previous_home_match_days`
-
-Hard start gate:
-
-- `>=9` labeled independent events with non-null spacing;
-- `>=3` distinct labeled spacing values.
-
-Mandatory order:
-
-`target-free inputs -> identity/feature/anchor freeze -> manifest SHA -> explicit execute -> labels -> freeze reproduction -> 9/3 gate -> evaluation`
-
-Fixed challenger:
-
-- `q50-linear-prev-home-spacing-a002`;
-- residual target = attendance minus T3+B2 anchor;
-- QuantileRegressor q=.5 alpha=.002;
-- RobustScaler;
-- strict forward-event validation, min 5 train events;
-- paired event-block bootstrap, 5,000 draws, seed 42.
-
-Do not silently add sparse `next_home_match_days` or zero-variance density features.
-
-## P4b next-opponent attractiveness
-
-Infrastructure exists and is fail-closed.
-
-Current recorded state: `0 READY`.
-
-Never reconstruct missing opponent attractiveness using later schedule/outcome knowledge.
-
-## P5 — combination research
-
-Do not start P5 until P4 produces an incremental context signal.
-
-If context advances, learn any combination weights inside training folds only.
-
-## P7 Long168 — frozen harness/executor
-
-Do not redesign P7 at 9/9.
-
-Research start requires:
-
-`>=9` independent events with valid rows >72h.
-
-At the recorded `8/9`:
-
-- model execution fails closed;
-- only anchor audit is allowed;
-- do not lower the threshold.
-
-Historical T-7 control is explicit replay evidence:
-
-`historical_pit_replay`
-
-with:
-
-`persisted_forecast = false`
-
-At 9/9 exact order is:
-
-`readiness -> explicit execute -> identity freeze -> SHA -> T-7 replay verification -> labels -> strict forward folds -> fixed tournament -> uncertainty -> research decision`
-
-Nine events are only a research-start gate, not evidence that a small uplift is trustworthy.
-
-## Evidence operations
-
-Operational pipelines are already active:
-
-- Long72 forecast-before-label hourly;
-- outcome-history sync hourly;
-- completed-event scoring in Long72 prospective cycle;
-- schedule-as-known every 6h;
-- fixture-context sidecar every 15m;
-- next-opponent sidecar every 15m;
-- Long168 accumulation.
+Existing `Beyond ML readiness` automation was updated to understand P4a/P9 but remains **disabled**; do not enable it implicitly.
 
 ## Immediate development order
 
-1. precommit **P10b** against the strongest current Global Model comparator;
-2. validate/deploy P9 readiness and audit genuine completed 168h curve-reference coverage;
-3. design P11a PIT odds / expected-quality / stakes capture;
-4. derive the business minimum meaningful MAE threshold;
-5. keep P4a/P7 evidence collection running without redesign.
-
-## Production boundary
+1. select and integrate a lawful/reliable **P11a odds provider** for genuine PIT append-only capture;
+2. derive the **business minimum meaningful MAE improvement** from downstream decisions/error costs;
+3. keep P9 capture running until genuine 168h coverage reaches its gate;
+4. design a separate expected-match-quality signal if useful;
+5. keep P4a/P7 evidence collection unchanged.
 
 No research result activates production automatically.
-
-`live_adjustment = 0`
