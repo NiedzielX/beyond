@@ -21,9 +21,11 @@ def synthetic_frame(matches_per_season: int = 8) -> pd.DataFrame:
             kickoff = season_start + timedelta(days=7 * local_match)
             latent = 14000 + season_index * 250 + local_match * 120
             target = latent + (local_match % 3) * 300
+            # Deterministic match-specific disturbance is intentionally not exposed
+            # as a feature. This prevents a degenerate zero-MAE synthetic benchmark.
+            hidden_match_noise = ((match_number * 137) % 401) - 200
             for horizon, days in HORIZONS:
-                # Baseline has a systematic horizon effect that pooling may share.
-                baseline = target + days * 18 - 250
+                baseline = target + days * 18 - 250 + hidden_match_noise
                 rows.append({
                     "match_key": f"m-{match_number:03d}",
                     "season": season,
@@ -69,13 +71,13 @@ def test_p10_runs_with_match_blocked_expanding_folds() -> None:
     assert result["fold_count"] == 3
     assert manifest["fold_count"] == 3
     assert result["matches"] == 40
-    assert len(predictions) == 24 * 5  # last 3 seasons are evaluated
+    assert len(predictions) == 24 * 5
+    assert result["local_match_balanced_mae"] > 0
     for fold in manifest["folds"]:
         assert not set(fold["train_entities"]) & set(fold["test_entities"])
     assert result["governance_v2"]["decision"] in {
         "NO_RESEARCH_GAIN", "POINT_GAIN_UNCERTAINTY_LIMITED"
     }
-    # No business threshold was supplied, so robust advancement is impossible.
     assert result["governance_v2"]["robust_advance_allowed"] is False
 
 
