@@ -81,6 +81,13 @@ jobs:
           python-version: "3.12"
       - name: Install pinned ML dependencies
         run: pip install -r ml/requirements.txt
+      - name: Verify frozen Structural Prior bytes
+        run: |
+          set -euo pipefail
+          t7_sha=$(sha256sum ml/artifacts/structural_prior_runtime_v1/structural_prior_t7_v1.joblib | awk '{print $1}')
+          history_sha=$(sha256sum ml/artifacts/structural_prior_runtime_v1/historical_runtime_v1.csv.gz | awk '{print $1}')
+          test "$t7_sha" = "97e712245d6539396030e88ea450809f4265bd7538aa90b29e234420231ac927"
+          test "$history_sha" = "3c6b35142c6bd20a484f2aa758cd41284fd6f4c6db1353b138f81cf321161569"
       - name: Request main-only training OIDC token
         run: |
           set -euo pipefail
@@ -126,6 +133,8 @@ jobs:
             and .persisted_forecast == false
             and .model_training_performed == false
             and .target_attendance_invariance.status == "PASS"
+            and (.target_attendance_invariance.no_exact_attendance_row_event_ids | length) == 0
+            and (.target_attendance_invariance.checked_event_ids | length) == .independent_event_count
             and .anchor_count == .independent_event_count
           ' /tmp/p7-long168-anchor-audit.json >/dev/null
       - name: Print anchor audit status and hashes
