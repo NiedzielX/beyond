@@ -4,7 +4,9 @@
 No tuning or selection occurs in P10b. The comparator is reproduced by the
 frozen Pre-Live v3 code itself and every horizon×season comparator MAE must
 match the committed sealed manifest before the pooled result is interpreted.
-Historical evidence is exposed R&D evidence only; production stays unchanged.
+Headline scoring uses the exact common support on which Pre-Live v3 emits a
+valid forecast. Historical evidence is exposed R&D evidence only; production
+stays unchanged.
 """
 from __future__ import annotations
 
@@ -146,6 +148,10 @@ def _assert_champion_reproduction(
                 f"P10b Pre-Live v3 reproduction drift {horizon}/{test_season}: "
                 f"actual={mae} expected={expected}"
             )
+    if set(actual_by_horizon) != set(HORIZONS):
+        raise RuntimeError(
+            f"P10b missing comparator horizon {test_season}: {sorted(actual_by_horizon)}"
+        )
     return actual_by_horizon
 
 
@@ -183,10 +189,13 @@ def evaluate(
             validate="one_to_one",
             suffixes=("", "_champion"),
         )
-        if len(joined) != len(test) or len(joined) != len(champion):
+        # Headline evidence is restricted to the exact support on which the
+        # frozen comparator emits a forecast. Every comparator row must resolve
+        # to one challenger row; challenger-only rows are excluded, not imputed.
+        if len(joined) != len(champion):
             raise RuntimeError(
-                f"P10b comparator row-set mismatch {test_season}: "
-                f"test={len(test)} champion={len(champion)} joined={len(joined)}"
+                f"P10b comparator support mismatch {test_season}: "
+                f"challenger_rows={len(test)} champion={len(champion)} joined={len(joined)}"
             )
         if not np.allclose(
             joined["target_attendance"].astype(float),
@@ -216,7 +225,10 @@ def evaluate(
             "fold_id": fold.fold_id,
             "test_season": test_season,
             "training_seasons": training_seasons,
-            "test_matches": int(out["match_key"].nunique()),
+            "challenger_available_rows": int(len(test)),
+            "common_support_rows": int(len(out)),
+            "challenger_only_rows_excluded": int(len(test) - len(out)),
+            "common_support_matches": int(out["match_key"].nunique()),
             "prelive_v3_mae_by_horizon": reproduced,
             "prelive_v3_match_balanced_mae": incumbent_mae,
             "pooled_match_balanced_mae": challenger_mae,
@@ -288,10 +300,12 @@ def evaluate(
         "challenger_architecture_source": "frozen P10 v1; no P10b retuning",
         "independent_unit": "match_key",
         "match_blocking": True,
+        "scoring_support": "exact Pre-Live v3 forecastable common support",
         "fold_protocol": "exact Pre-Live v3 four-fold fixed-temporal seasons",
         "fold_manifest_sha256": manifest["folds_sha256"],
-        "eligible_rows": int(len(frame)),
-        "matches": int(frame["match_key"].nunique()),
+        "eligible_challenger_rows": int(len(frame)),
+        "common_support_rows": int(len(predictions)),
+        "matches_on_common_support": int(predictions["match_key"].nunique()),
         "prelive_v3_match_balanced_mae": incumbent_mae,
         "pooled_match_balanced_mae": challenger_mae,
         "delta_mae": challenger_mae - incumbent_mae,
