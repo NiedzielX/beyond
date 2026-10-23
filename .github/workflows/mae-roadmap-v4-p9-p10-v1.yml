@@ -1,0 +1,168 @@
+name: MAE Roadmap v4 P9 P10 v1
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - "ml/MAE_RESEARCH_ROADMAP_V4.md"
+      - "ml/research_advance_governance_v2.py"
+      - "ml/test_research_advance_governance_v2.py"
+      - "ml/p9_booking_curve_v1.py"
+      - "ml/test_p9_booking_curve_v1.py"
+      - "ml/p10_pooled_horizon_global_v1.py"
+      - "ml/test_p10_pooled_horizon_global_v1.py"
+      - "ml/results/P9_BOOKING_CURVE_PRECOMMIT_V1_2026-10-23.md"
+      - "ml/results/P10_POOLED_HORIZON_PRECOMMIT_V1_2026-10-23.md"
+      - ".github/workflows/mae-roadmap-v4-p9-p10-v1.yml"
+  push:
+    branches:
+      - main
+      - ml/mae-roadmap-v4-p9-p10-v1
+    paths:
+      - "ml/MAE_RESEARCH_ROADMAP_V4.md"
+      - "ml/research_advance_governance_v2.py"
+      - "ml/test_research_advance_governance_v2.py"
+      - "ml/p9_booking_curve_v1.py"
+      - "ml/test_p9_booking_curve_v1.py"
+      - "ml/p10_pooled_horizon_global_v1.py"
+      - "ml/test_p10_pooled_horizon_global_v1.py"
+      - "ml/results/P9_BOOKING_CURVE_PRECOMMIT_V1_2026-10-23.md"
+      - "ml/results/P10_POOLED_HORIZON_PRECOMMIT_V1_2026-10-23.md"
+      - ".github/workflows/mae-roadmap-v4-p9-p10-v1.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install pinned ML dependencies
+        run: pip install -r ml/requirements.txt
+      - name: Compile new MAE-first modules
+        run: |
+          python -m py_compile ml/research_advance_governance_v2.py
+          python -m py_compile ml/p9_booking_curve_v1.py
+          python -m py_compile ml/p10_pooled_horizon_global_v1.py
+      - name: Run governance v2 tests
+        run: python -m ml.test_research_advance_governance_v2
+      - name: Run P9 booking-curve PIT tests
+        run: python -m ml.test_p9_booking_curve_v1
+      - name: Run P10 pooled-horizon tests
+        run: python -m ml.test_p10_pooled_horizon_global_v1
+      - name: Verify roadmap v4 contract
+        run: |
+          set -euo pipefail
+          f=ml/MAE_RESEARCH_ROADMAP_V4.md
+          grep -q "P9 — Booking Curve / Trajectory Shape" "$f"
+          grep -q "P10 — Pooled Horizon Global Model" "$f"
+          grep -q "P11 — Match Attractiveness / Commercial Context" "$f"
+          grep -q "Governance v2 — Minimum Meaningful Improvement" "$f"
+          grep -q "POINT_GAIN_UNCERTAINTY_LIMITED" "$f"
+          grep -q "ROBUST_RESEARCH_ADVANCE" "$f"
+          grep -q 'live_adjustment = 0' "$f"
+
+  inspect-canonical-runtime:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Verify frozen runtime bytes and inspect schema
+        run: |
+          set -euo pipefail
+          file='ml/artifacts/structural_prior_runtime_v1/historical_runtime_v1.csv.gz'
+          expected='3c6b35142c6bd20a484f2aa758cd41284fd6f4c6db1353b138f81cf321161569'
+          actual=$(sha256sum "$file" | awk '{print $1}')
+          test "$actual" = "$expected"
+          python - <<'PY'
+          import json
+          import pandas as pd
+          path='ml/artifacts/structural_prior_runtime_v1/historical_runtime_v1.csv.gz'
+          frame=pd.read_csv(path)
+          report={
+              'rows': int(len(frame)),
+              'columns': list(frame.columns),
+              'column_count': int(len(frame.columns)),
+              'matches': int(frame['match_key'].nunique()) if 'match_key' in frame else None,
+              'horizons': sorted(map(str, frame['horizon'].dropna().unique())) if 'horizon' in frame else [],
+              'has_p10_contract': all(c in frame.columns for c in [
+                  'match_key','season','horizon','kickoff_at','home_club_key','away_club_key',
+                  'target_attendance','training_eligible','baseline_fixed'
+              ]),
+          }
+          print(json.dumps(report, indent=2))
+          with open('/tmp/runtime-schema.json','w') as fh:
+              json.dump(report, fh, indent=2)
+          assert len(frame)==7650, len(frame)
+          assert report['matches']==1530, report
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: structural-runtime-schema-${{ github.run_id }}
+          path: /tmp/runtime-schema.json
+          if-no-files-found: error
+          retention-days: 30
+
+  real-p10-if-runtime-compatible:
+    needs: [validate, inspect-canonical-runtime]
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install pinned ML dependencies
+        run: pip install -r ml/requirements.txt
+      - name: Detect canonical runtime compatibility
+        id: contract
+        run: |
+          python - <<'PY' >> "$GITHUB_OUTPUT"
+          import pandas as pd
+          f=pd.read_csv('ml/artifacts/structural_prior_runtime_v1/historical_runtime_v1.csv.gz', nrows=2)
+          required={
+              'match_key','season','horizon','kickoff_at','home_club_key','away_club_key',
+              'target_attendance','training_eligible','baseline_fixed'
+          }
+          print('compatible=' + ('true' if required.issubset(f.columns) else 'false'))
+          PY
+      - name: Run real P10 benchmark on canonical runtime when compatible
+        if: steps.contract.outputs.compatible == 'true'
+        run: |
+          python -m ml.p10_pooled_horizon_global_v1 \
+            --feature-store ml/artifacts/structural_prior_runtime_v1/historical_runtime_v1.csv.gz \
+            --output-json /tmp/p10-real-scorecard.json \
+            --predictions-csv /tmp/p10-real-predictions.csv \
+            --fold-manifest /tmp/p10-real-folds.json
+          jq -e '.evidence_class == "historical_exposed_research" and .match_blocking == true and .production_change == false and .live_adjustment == 0' /tmp/p10-real-scorecard.json >/dev/null
+      - name: Record explicit blocker when runtime lacks modelling features
+        if: steps.contract.outputs.compatible != 'true'
+        run: |
+          cat > /tmp/p10-real-blocker.json <<'EOF'
+          {
+            "version": "p10-real-input-readiness-v1",
+            "status": "BLOCKED_CANONICAL_FEATURE_STORE_NOT_COMMITTED",
+            "reason": "Frozen historical_runtime_v1.csv.gz does not expose the full P10 modelling contract. Do not substitute a different dataset. Reuse/reconstruct the exact pinned Structural Prior feature store before real P10 evaluation.",
+            "production_change": false
+          }
+          EOF
+          cat /tmp/p10-real-blocker.json
+      - name: Upload real P10 result or blocker
+        uses: actions/upload-artifact@v4
+        with:
+          name: p10-real-evidence-${{ github.run_id }}
+          path: |
+            /tmp/p10-real-scorecard.json
+            /tmp/p10-real-predictions.csv
+            /tmp/p10-real-folds.json
+            /tmp/p10-real-blocker.json
+          if-no-files-found: error
+          retention-days: 90
