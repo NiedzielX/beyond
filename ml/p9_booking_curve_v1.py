@@ -20,6 +20,9 @@ INVENTORY_INTERPRETATION = "demand_proxy_not_confirmed_sales"
 CANONICAL_HOURS = (168.0, 144.0, 120.0, 96.0, 72.0, 60.0, 48.0, 36.0, 24.0, 18.0, 12.0, 6.0)
 MIN_OVERLAP_POINTS = 3
 DEFAULT_NEIGHBORS = 5
+# Reuse the canonical live-trajectory quality ceiling. We do not interpolate a
+# canonical curve point between raw observations separated by a larger gap.
+MAX_INTERPOLATION_GAP_HOURS = 12.0
 
 
 @dataclass(frozen=True)
@@ -38,7 +41,7 @@ class NormalizedCurve:
     first_visible_available: int
     inventory_interpretation: str
     point_in_time_validated: bool
-    points: tuple[tuple[float, float | None], ...]  # (hours_before_kickoff, available_index)
+    points: tuple[tuple[float, float | None], ...]
 
     def as_dict(self) -> dict[float, float | None]:
         return dict(self.points)
@@ -90,8 +93,8 @@ def build_normalized_curve(
     """Build a curve using only snapshots visible at ``as_of_at``.
 
     Canonical points later than the current cutoff remain missing. Linear
-    interpolation is allowed only between two already-visible snapshots, never
-    across the target's future.
+    interpolation is allowed only between two already-visible snapshots whose
+    bracket gap is within the canonical 12h trajectory quality ceiling.
     """
     _require_aware(as_of_at, "as_of_at")
     _require_aware(kickoff_at, "kickoff_at")
@@ -110,7 +113,6 @@ def build_normalized_curve(
     if not visible:
         raise ValueError("no visible pre-kickoff observations")
 
-    # Deduplicate by time-to-kickoff deterministically, retaining largest snapshot id.
     by_hours: dict[float, tuple[int, int]] = {}
     for hours, snapshot_id, available in visible:
         existing = by_hours.get(hours)
@@ -127,7 +129,6 @@ def build_normalized_curve(
     current_h = (kickoff_at - as_of_at).total_seconds() / 3600.0
     points: list[tuple[float, float | None]] = []
     for canonical_h in canonical_hours:
-        # Any smaller h is later in real time than the target cutoff: future target state.
         if canonical_h < current_h - 1e-9:
             points.append((float(canonical_h), None))
             continue
@@ -161,8 +162,6 @@ def curve_distance(
     ]
     if len(shared) < min_overlap_points:
         return None
-    # Later observed points receive slightly more weight because they summarize
-    # more of the realized booking path, but no unseen target point is admitted.
     raw_weights = np.asarray([1.0 / max(h, 6.0) for h in shared], dtype=float)
     weights = raw_weights / raw_weights.sum()
     diffs = np.asarray([
@@ -241,8 +240,6 @@ def _interpolate_visible(clean: list[tuple[float, int, int]], target_h: float) -
     exact = [available for hours, _, available in clean if abs(hours - target_h) < 1e-9]
     if exact:
         return float(exact[-1])
-    # Observed interval is [smallest hours, largest hours]. Interpolation outside
-    # it would be extrapolation and is forbidden in the representation layer.
     hours_values = [row[0] for row in clean]
     if target_h < min(hours_values) or target_h > max(hours_values):
         return None
@@ -254,6 +251,8 @@ def _interpolate_visible(clean: list[tuple[float, int, int]], target_h: float) -
     right = min(newer, key=lambda row: target_h - row[0])
     h1, _, v1 = left
     h2, _, v2 = right
+    if h1 - h2 > MAX_INTERPOLATION_GAP_HOURS:
+        return None
     weight = (h1 - target_h) / (h1 - h2)
     return float(v1 + weight * (v2 - v1))
 
@@ -269,9 +268,7 @@ def _reference_remaining_pickup(reference: NormalizedCurve, cutoff_h: float) -> 
     ]
     if not later_points:
         return None
-    # Smallest h = latest available pre-kickoff canonical state.
     _, final_index = min(later_points, key=lambda item: item[0])
-    # Positive value means additional inventory was absorbed after cutoff.
     return float(at_cutoff - float(final_index))
 
 
