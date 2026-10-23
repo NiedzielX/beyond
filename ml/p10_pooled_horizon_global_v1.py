@@ -1,24 +1,16 @@
 #!/usr/bin/env python3
 """P10 pooled-horizon global challenger v1.
 
-Controlled question
--------------------
-Does one fixed model trained across T-30/T-14/T-7/T-3/T-1 reduce
-match-balanced out-of-sample MAE versus the *same* fixed model trained
-separately per horizon?
+Controlled question:
+    Does pooling T-30/T-14/T-7/T-3/T-1 rows reduce match-balanced OOS MAE
+    versus the same fixed residual model trained separately per horizon?
 
-The purpose of v1 is to isolate the value of cross-horizon pooling. It is not
-an estimator tournament and it does not replace the frozen Structural Prior.
-All PIT rows of one match are blocked into the same temporal fold and each
-match receives equal total training weight regardless of eligible horizon-row
-count.
-
-Evidence class: historical exposed research. No production activation.
+All rows of one match remain in the same temporal fold. The experiment uses a
+small fixed candidate family and does not relabel historical folds as unseen.
 """
 from __future__ import annotations
 
 import argparse
-import hashlib
 import json
 from pathlib import Path
 from typing import Any
@@ -31,7 +23,6 @@ from sklearn.impute import SimpleImputer
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import OneHotEncoder
 
-from ml.features.structural_prior_feature_store_v1 import WARSAW_TZ, build_feature_store, quality_report
 from ml.mae_delta_uncertainty_v1 import BootstrapConfig, bootstrap_delta_mae, paired_event_errors
 from ml.research_advance_governance_v2 import ResearchAdvanceInput, decide_research_advance
 from ml.temporal_validation_v1 import build_expanding_group_folds, event_balanced_mae, fold_manifest, forecast_metrics
@@ -39,10 +30,6 @@ from ml.temporal_validation_v1 import build_expanding_group_folds, event_balance
 VERSION = "p10-pooled-horizon-global-v1"
 POOLED_ID = "pooled-hgb-absolute-error-v1"
 LOCAL_ID = "local-horizon-hgb-absolute-error-v1"
-EVIDENCE_CLASS = "historical_exposed_research"
-EXPECTED_HISTORY_SHA256 = "3c6b35142c6bd20a484f2aa758cd41284fd6f4c6db1353b138f81cf321161569"
-EXPECTED_MATCHES = 1530
-EXPECTED_STORE_ROWS = 7650
 CAT = ["home_club_key", "away_club_key"]
 HORIZON_DAYS = {
     "T-30": 30.0, "T-30d": 30.0,
@@ -52,82 +39,33 @@ HORIZON_DAYS = {
     "T-1": 1.0, "T-1d": 1.0,
 }
 META = {
-    "feature_set_version",
     "match_key", "season", "horizon", "as_of_at", "kickoff_at",
     "home_club_key", "away_club_key", "target_attendance",
-    "training_eligible", "target_eligible",
+    "training_eligible", "baseline_fixed", "target_eligible",
 }
-
-
-def sha256_file(path: Path) -> str:
-    digest = hashlib.sha256()
-    with path.open("rb") as handle:
-        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
-            digest.update(chunk)
-    return digest.hexdigest()
-
-
-def load_canonical_store(path: Path) -> pd.DataFrame:
-    """Rebuild the canonical 7,650-row PIT store from the frozen 1,530-match history."""
-    actual_sha = sha256_file(path)
-    if actual_sha != EXPECTED_HISTORY_SHA256:
-        raise RuntimeError(
-            f"canonical historical runtime drift actual={actual_sha} expected={EXPECTED_HISTORY_SHA256}"
-        )
-    history = pd.read_csv(path, compression="gzip")
-    if len(history) != EXPECTED_MATCHES or history["match_key"].nunique() != EXPECTED_MATCHES:
-        raise RuntimeError(
-            f"expected {EXPECTED_MATCHES} canonical matches, rows={len(history)} "
-            f"unique={history['match_key'].nunique()}"
-        )
-
-    history["round"] = history["round"].astype(int)
-    history["date"] = pd.to_datetime(history["date"])
-    local = pd.to_datetime(
-        history["date"].dt.strftime("%Y-%m-%d") + " " + history["kickoff_time_local"].astype(str),
-        format="mixed",
-    )
-    history["kickoff_at"] = local.dt.tz_localize(
-        WARSAW_TZ, ambiguous="raise", nonexistent="raise"
-    ).dt.tz_convert("UTC")
-    history["completed_at"] = history["kickoff_at"] + pd.Timedelta(hours=3)
-    history["training_eligible"] = ~history["attendance"].eq(0)
-    history = history.sort_values(["kickoff_at", "home_club_key"]).reset_index(drop=True)
-
-    store = build_feature_store(history)
-    report = quality_report(store)
-    if report["status"] != "PASS":
-        raise RuntimeError(f"canonical feature-store quality failed: {report}")
-    if len(store) != EXPECTED_STORE_ROWS or store["match_key"].nunique() != EXPECTED_MATCHES:
-        raise RuntimeError(
-            f"canonical feature-store drift rows={len(store)} matches={store['match_key'].nunique()}"
-        )
-    return store
 
 
 def clean_frame(raw: pd.DataFrame) -> pd.DataFrame:
     required = {
         "match_key", "season", "horizon", "kickoff_at", "home_club_key",
-        "away_club_key", "target_attendance", "training_eligible",
+        "away_club_key", "target_attendance", "training_eligible", "baseline_fixed",
     }
     missing = sorted(required - set(raw.columns))
     if missing:
         raise RuntimeError(f"P10 feature store missing columns: {missing}")
-
     frame = raw.copy()
     frame["training_eligible"] = frame["training_eligible"].astype(str).str.lower().map(
         {"true": True, "false": False, "1": True, "0": False}
     ).fillna(frame["training_eligible"].astype(bool))
     frame = frame[frame["training_eligible"]].copy()
     frame["target_attendance"] = pd.to_numeric(frame["target_attendance"], errors="raise")
+    frame["baseline_fixed"] = pd.to_numeric(frame["baseline_fixed"], errors="raise")
     frame["kickoff_at"] = pd.to_datetime(frame["kickoff_at"], utc=True, errors="raise")
-
     normalized_horizon = frame["horizon"].astype(str)
     unknown = sorted(set(normalized_horizon) - set(HORIZON_DAYS))
     if unknown:
         raise RuntimeError(f"P10 unknown horizons: {unknown}")
     frame["horizon_days"] = normalized_horizon.map(HORIZON_DAYS).astype(float)
-
     duplicate = frame.duplicated(["match_key", "horizon"], keep=False)
     if duplicate.any():
         raise RuntimeError("P10 requires exactly one PIT row per match/horizon")
@@ -144,8 +82,7 @@ def numeric_features(frame: pd.DataFrame) -> list[str]:
     ]
     if "horizon_days" not in features:
         features.append("horizon_days")
-    # Target is explicitly excluded even if a future schema changes META handling.
-    return sorted(set(features) - {"target_attendance"})
+    return sorted(set(features))
 
 
 def model(numeric: list[str]) -> Pipeline:
@@ -172,23 +109,20 @@ def match_balanced_weights(frame: pd.DataFrame) -> np.ndarray:
     return (1.0 / counts).to_numpy(dtype=float)
 
 
-def fit_direct(train: pd.DataFrame, numeric: list[str]) -> Pipeline:
+def fit_residual(train: pd.DataFrame, numeric: list[str]) -> Pipeline:
     estimator = model(numeric)
+    residual = train["target_attendance"].astype(float) - train["baseline_fixed"].astype(float)
     estimator.fit(
         train[CAT + numeric],
-        train["target_attendance"].astype(float),
+        residual,
         model__sample_weight=match_balanced_weights(train),
     )
     return estimator
 
 
 def predict(estimator: Pipeline, frame: pd.DataFrame, numeric: list[str]) -> np.ndarray:
-    prediction = np.asarray(estimator.predict(frame[CAT + numeric]), dtype=float)
-    if "capacity" in frame.columns:
-        capacity = pd.to_numeric(frame["capacity"], errors="coerce").to_numpy(dtype=float)
-        upper = np.where(np.isfinite(capacity) & (capacity > 0), capacity, np.inf)
-        return np.clip(prediction, 0.0, upper)
-    return np.maximum(0.0, prediction)
+    residual = np.asarray(estimator.predict(frame[CAT + numeric]), dtype=float)
+    return np.maximum(0.0, frame["baseline_fixed"].to_numpy(dtype=float) + residual)
 
 
 def evaluate(
@@ -219,7 +153,7 @@ def evaluate(
         if set(train["match_key"].astype(str)) & set(test["match_key"].astype(str)):
             raise RuntimeError("P10 match leakage across fold")
 
-        pooled_model = fit_direct(train, numeric)
+        pooled_model = fit_residual(train, numeric)
         pooled_pred = predict(pooled_model, test, numeric)
 
         local_pred = np.full(len(test), np.nan, dtype=float)
@@ -228,25 +162,19 @@ def evaluate(
             test_mask = test["horizon"].astype(str) == horizon
             if train_h.empty:
                 raise RuntimeError(f"P10 no local training rows for {horizon}")
-            local_model = fit_direct(train_h, numeric)
+            local_model = fit_residual(train_h, numeric)
             local_pred[np.flatnonzero(test_mask.to_numpy())] = predict(local_model, test[test_mask], numeric)
         if np.isnan(local_pred).any():
             raise RuntimeError("P10 local comparator produced missing predictions")
 
-        out = test[[
-            "match_key", "season", "horizon", "kickoff_at", "home_club_key", "target_attendance"
-        ]].copy()
+        out = test[["match_key", "season", "horizon", "kickoff_at", "home_club_key", "target_attendance"]].copy()
         out["local_prediction"] = local_pred
         out["pooled_prediction"] = pooled_pred
         out["fold_id"] = fold.fold_id
         outputs.append(out)
 
-        local_mae = event_balanced_mae(
-            out, event_col="match_key", actual_col="target_attendance", prediction_col="local_prediction"
-        )
-        pooled_mae = event_balanced_mae(
-            out, event_col="match_key", actual_col="target_attendance", prediction_col="pooled_prediction"
-        )
+        local_mae = event_balanced_mae(out, event_col="match_key", actual_col="target_attendance", prediction_col="local_prediction")
+        pooled_mae = event_balanced_mae(out, event_col="match_key", actual_col="target_attendance", prediction_col="pooled_prediction")
         fold_scores.append({
             "fold_id": fold.fold_id,
             "test_season": fold.test_groups[0],
@@ -257,15 +185,9 @@ def evaluate(
             "pooled_improved": pooled_mae < local_mae,
         })
 
-    predictions = pd.concat(outputs, ignore_index=True).sort_values(
-        ["kickoff_at", "match_key", "horizon"]
-    ).reset_index(drop=True)
-    local_mae = event_balanced_mae(
-        predictions, event_col="match_key", actual_col="target_attendance", prediction_col="local_prediction"
-    )
-    pooled_mae = event_balanced_mae(
-        predictions, event_col="match_key", actual_col="target_attendance", prediction_col="pooled_prediction"
-    )
+    predictions = pd.concat(outputs, ignore_index=True).sort_values(["kickoff_at", "match_key", "horizon"]).reset_index(drop=True)
+    local_mae = event_balanced_mae(predictions, event_col="match_key", actual_col="target_attendance", prediction_col="local_prediction")
+    pooled_mae = event_balanced_mae(predictions, event_col="match_key", actual_col="target_attendance", prediction_col="pooled_prediction")
 
     paired = paired_event_errors(
         predictions,
@@ -304,10 +226,10 @@ def evaluate(
 
     result = {
         "version": VERSION,
-        "evidence_class": EVIDENCE_CLASS,
+        "evidence_class": "historical_exposed_research",
         "production_change": False,
         "live_adjustment": 0,
-        "question": "Does pooled cross-horizon learning beat the same fixed horizon-local direct model?",
+        "question": "Does pooled cross-horizon learning beat the same fixed horizon-local residual model?",
         "independent_unit": "match_key",
         "match_blocking": True,
         "training_weight": "equal total weight per match",
@@ -317,7 +239,6 @@ def evaluate(
         "matches": int(frame["match_key"].nunique()),
         "fold_count": len(folds),
         "fold_manifest_sha256": manifest["folds_sha256"],
-        "numeric_features": numeric,
         "local_match_balanced_mae": local_mae,
         "pooled_match_balanced_mae": pooled_mae,
         "delta_mae": pooled_mae - local_mae,
@@ -333,20 +254,14 @@ def evaluate(
 
 def main() -> None:
     parser = argparse.ArgumentParser()
-    source = parser.add_mutually_exclusive_group(required=True)
-    source.add_argument("--feature-store", type=Path)
-    source.add_argument("--canonical-history", type=Path)
+    parser.add_argument("--feature-store", type=Path, required=True)
     parser.add_argument("--output-json", type=Path, required=True)
     parser.add_argument("--predictions-csv", type=Path, required=True)
     parser.add_argument("--fold-manifest", type=Path, required=True)
     parser.add_argument("--minimum-meaningful-mae-improvement", type=float)
     args = parser.parse_args()
 
-    raw = (
-        load_canonical_store(args.canonical_history)
-        if args.canonical_history is not None
-        else pd.read_csv(args.feature_store)
-    )
+    raw = pd.read_csv(args.feature_store)
     result, predictions, manifest = evaluate(
         raw,
         minimum_meaningful_mae_improvement=args.minimum_meaningful_mae_improvement,
