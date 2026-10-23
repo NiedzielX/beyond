@@ -1,11 +1,11 @@
 -- Canonical ML research readiness snapshot v1
 --
--- Purpose: expose objective, pre-outcome trigger points for the remaining
--- data-bound research loops without inventing arbitrary model-selection floors.
+-- Objective pre-outcome / pre-model-selection triggers for remaining data-bound loops.
 --
 -- Hard triggers:
 --   P7 Long168 research start: 9 independent events with >72h observations.
 --   Long72 prospective review: first genuine scored event.
+--   P4a previous-home-spacing research start: >=9 labeled READY events and >=3 distinct spacing values.
 --   P4 next-opponent inspection: first READY attractiveness row.
 --
 -- This function changes no forecast and performs no model selection.
@@ -20,6 +20,7 @@ set search_path to 'public','private'
 as $function$
 declare
     v_long168 jsonb;
+    v_p4_fixture_research jsonb;
     v_events_gt_72 integer := 0;
     v_rows_gt_72 integer := 0;
     v_long72_predictions integer := 0;
@@ -29,8 +30,10 @@ declare
     v_opponent_rows integer := 0;
     v_opponent_ready integer := 0;
     v_latest_as_of timestamptz;
+    v_p4_prev_start boolean := false;
 begin
     select public.export_d2_long_horizon_168_rows_v1() into v_long168;
+    select public.p4_fixture_context_readiness_v1() into v_p4_fixture_research;
 
     with rows as (
         select jsonb_array_elements(coalesce(v_long168->'liveRows','[]'::jsonb)) as r
@@ -65,6 +68,11 @@ begin
     into v_opponent_rows, v_opponent_ready
     from private.d2_long72_next_opponent_attractiveness_v1;
 
+    v_p4_prev_start := coalesce(
+        (v_p4_fixture_research#>>'{previous_home_spacing,research_start_trigger}')::boolean,
+        false
+    );
+
     return jsonb_build_object(
         'version','ml-research-readiness-v1',
         'checked_at',now(),
@@ -80,6 +88,7 @@ begin
             'ready_rows',v_fixture_ready,
             'first_ready_trigger',v_fixture_ready >= 1
         ),
+        'p4_fixture_context_research',v_p4_fixture_research,
         'p4_next_opponent',jsonb_build_object(
             'sidecar_rows',v_opponent_rows,
             'ready_rows',v_opponent_ready,
@@ -103,9 +112,14 @@ begin
                 'action','inspect first prospective score; do not retune frozen package'
             ),
             jsonb_build_object(
+                'gate','P4_PREVIOUS_HOME_SPACING_START',
+                'ready',v_p4_prev_start,
+                'action','run precommitted event-level previous-home-spacing ablation against Long72 pre-live T3+B2 anchor'
+            ),
+            jsonb_build_object(
                 'gate','P4_NEXT_OPPONENT_FIRST_READY',
                 'ready',v_opponent_ready >= 1,
-                'action','inspect feature availability/variance before predeclaring ablation sample floor'
+                'action','inspect feature availability/variance before predeclaring separate sparse-feature ablation'
             )
         )
     );

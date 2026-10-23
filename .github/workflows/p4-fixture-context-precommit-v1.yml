@@ -1,0 +1,183 @@
+name: P4a Fixture Context Precommit v1
+
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "audit = freeze target-free inputs only; execute = freeze then open labels and evaluate"
+        required: true
+        default: "audit"
+        type: choice
+        options:
+          - audit
+          - execute
+  pull_request:
+    paths:
+      - "ml/p4_fixture_context_harness_v1.py"
+      - "ml/test_p4_fixture_context_harness_v1.py"
+      - "supabase/sql/p4_fixture_context_precommit_v1.sql"
+      - "supabase/functions/c1_alpha_training_export_v1/index.ts"
+      - "ml/results/P4_FIXTURE_CONTEXT_PRECOMMIT_V1_2026-10-23.md"
+      - ".github/workflows/p4-fixture-context-precommit-v1.yml"
+      - "ml/MAE_RESEARCH_ROADMAP_V3.md"
+      - "ml/PROGRESS_TRACKING.md"
+      - "AI_BOOTSTRAP.md"
+      - "AGENTS.md"
+  push:
+    branches: [main]
+    paths:
+      - "ml/p4_fixture_context_harness_v1.py"
+      - "ml/test_p4_fixture_context_harness_v1.py"
+      - "supabase/sql/p4_fixture_context_precommit_v1.sql"
+      - "supabase/functions/c1_alpha_training_export_v1/index.ts"
+      - "ml/results/P4_FIXTURE_CONTEXT_PRECOMMIT_V1_2026-10-23.md"
+      - ".github/workflows/p4-fixture-context-precommit-v1.yml"
+      - "ml/MAE_RESEARCH_ROADMAP_V3.md"
+      - "ml/PROGRESS_TRACKING.md"
+      - "AI_BOOTSTRAP.md"
+      - "AGENTS.md"
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install pinned ML dependencies
+        run: pip install -r ml/requirements.txt
+      - name: Compile and unit tests
+        run: |
+          python -m py_compile ml/p4_fixture_context_harness_v1.py
+          python -m py_compile ml/test_p4_fixture_context_harness_v1.py
+          python -m ml.test_p4_fixture_context_harness_v1
+      - name: Emit precommitted contract
+        run: |
+          python -m ml.p4_fixture_context_harness_v1 \
+            --mode contract \
+            --output /tmp/p4a-contract.json
+      - name: Hard contract gates
+        run: |
+          jq -e '
+            .version == "p4-fixture-context-harness-v1"
+            and .independent_unit == "ticket_event"
+            and .primary_feature == "previous_home_match_days"
+            and .research_start_gate.minimum_labeled_events == 9
+            and .research_start_gate.minimum_distinct_primary_feature_values == 3
+            and .candidate_family[1].candidate_id == "q50-linear-prev-home-spacing-a002"
+            and .validation.type == "strict_forward_event"
+            and .validation.min_train_events == 5
+            and .uncertainty.n_resamples == 5000
+            and .uncertainty.seed == 42
+            and .production.promotion_allowed_from_p4a_v1 == false
+            and .production.live_adjustment == 0
+          ' /tmp/p4a-contract.json >/dev/null
+          grep -q "targetFieldsIncluded',false" supabase/sql/p4_fixture_context_precommit_v1.sql
+          grep -q '"p4a-fixture-inputs-v1"' supabase/functions/c1_alpha_training_export_v1/index.ts
+          grep -q '"p4a-fixture-labels-v1"' supabase/functions/c1_alpha_training_export_v1/index.ts
+      - name: Upload contract
+        uses: actions/upload-artifact@v4
+        with:
+          name: p4a-fixture-context-contract-v1-${{ github.run_id }}
+          path: /tmp/p4a-contract.json
+          if-no-files-found: error
+          retention-days: 90
+
+  main-audit:
+    if: github.event_name != 'pull_request'
+    needs: validate
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install pinned ML dependencies
+        run: pip install -r ml/requirements.txt
+      - name: Request main-only training OIDC token
+        run: |
+          set -euo pipefail
+          response=$(curl --retry 4 --retry-all-errors --retry-delay 2 -fsS \
+            -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
+            "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=beyond-c1-alpha-training")
+          token=$(printf '%s' "$response" | jq -r '.value')
+          test -n "$token"
+          test "$token" != "null"
+          echo "::add-mask::$token"
+          echo "C1_ALPHA_OIDC_TOKEN=$token" >> "$GITHUB_ENV"
+      - name: Fetch target-free P4a inputs only
+        run: |
+          set -euo pipefail
+          url='https://adchzwqboeekhokapxqi.supabase.co/functions/v1/c1_alpha_training_export_v1?version=p4a-fixture-inputs-v1'
+          curl --retry 5 --retry-all-errors --retry-delay 2 -fsS \
+            -H "Authorization: Bearer $C1_ALPHA_OIDC_TOKEN" \
+            "$url" -o /tmp/p4a-inputs.json
+          jq -e '.ok == true and .targetFieldsIncluded == false and .labelsIncluded == false' /tmp/p4a-inputs.json >/dev/null
+      - name: Freeze identities before any label access
+        run: |
+          python -m ml.p4_fixture_context_harness_v1 \
+            --mode freeze \
+            --inputs /tmp/p4a-inputs.json \
+            --output /tmp/p4a-freeze.json
+          jq -e '
+            .status == "P4A_FIXTURE_CONTEXT_IDENTITIES_FROZEN"
+            and .target_values_opened == false
+            and .model_training_performed == false
+            and .production_change == false
+          ' /tmp/p4a-freeze.json >/dev/null
+      - name: Print target-free readiness
+        run: |
+          jq '{eventCount,primaryFeature,events:[.events[]|{ticket_event_id,previous_home_match_days,forecast_as_of_at}]}' /tmp/p4a-inputs.json
+          jq '{event_count,distinct_primary_feature_values,manifest_sha256}' /tmp/p4a-freeze.json
+      - name: Upload target-free audit
+        uses: actions/upload-artifact@v4
+        with:
+          name: p4a-fixture-context-prelabel-audit-v1-${{ github.run_id }}
+          path: |
+            /tmp/p4a-inputs.json
+            /tmp/p4a-freeze.json
+          if-no-files-found: error
+          retention-days: 90
+      - name: Open labels only after freeze on explicit execute dispatch
+        if: github.event_name == 'workflow_dispatch' && inputs.mode == 'execute'
+        run: |
+          set -euo pipefail
+          url='https://adchzwqboeekhokapxqi.supabase.co/functions/v1/c1_alpha_training_export_v1?version=p4a-fixture-labels-v1'
+          curl --retry 5 --retry-all-errors --retry-delay 2 -fsS \
+            -H "Authorization: Bearer $C1_ALPHA_OIDC_TOKEN" \
+            "$url" -o /tmp/p4a-labels.json
+          jq -e '.ok == true' /tmp/p4a-labels.json >/dev/null
+          python -m ml.p4_fixture_context_harness_v1 \
+            --mode evaluate \
+            --inputs /tmp/p4a-inputs.json \
+            --freeze /tmp/p4a-freeze.json \
+            --labels /tmp/p4a-labels.json \
+            --output /tmp/p4a-scorecard.json \
+            --predictions /tmp/p4a-predictions.csv \
+            --fold-manifest /tmp/p4a-fold-manifest.json
+          jq -e '
+            .status == "P4A_FIXTURE_CONTEXT_EVALUATION_COMPLETE"
+            and .labeled_event_count >= 9
+            and .distinct_primary_feature_values >= 3
+            and .production_activation_allowed == false
+            and .live_adjustment == 0
+          ' /tmp/p4a-scorecard.json >/dev/null
+      - name: Upload execute artifacts
+        if: github.event_name == 'workflow_dispatch' && inputs.mode == 'execute'
+        uses: actions/upload-artifact@v4
+        with:
+          name: p4a-fixture-context-execution-v1-${{ github.run_id }}
+          path: |
+            /tmp/p4a-labels.json
+            /tmp/p4a-scorecard.json
+            /tmp/p4a-predictions.csv
+            /tmp/p4a-fold-manifest.json
+          if-no-files-found: error
+          retention-days: 90
