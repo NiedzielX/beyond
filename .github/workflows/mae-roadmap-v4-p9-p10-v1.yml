@@ -11,6 +11,7 @@ on:
       - "ml/test_p9_booking_curve_v1.py"
       - "ml/p10_pooled_horizon_global_v1.py"
       - "ml/test_p10_pooled_horizon_global_v1.py"
+      - "ml/P11_MATCH_ATTRACTIVENESS_CONTEXT_V1_PLAN.md"
       - "ml/results/P9_BOOKING_CURVE_PRECOMMIT_V1_2026-10-23.md"
       - "ml/results/P10_POOLED_HORIZON_PRECOMMIT_V1_2026-10-23.md"
       - ".github/workflows/mae-roadmap-v4-p9-p10-v1.yml"
@@ -26,6 +27,7 @@ on:
       - "ml/test_p9_booking_curve_v1.py"
       - "ml/p10_pooled_horizon_global_v1.py"
       - "ml/test_p10_pooled_horizon_global_v1.py"
+      - "ml/P11_MATCH_ATTRACTIVENESS_CONTEXT_V1_PLAN.md"
       - "ml/results/P9_BOOKING_CURVE_PRECOMMIT_V1_2026-10-23.md"
       - "ml/results/P10_POOLED_HORIZON_PRECOMMIT_V1_2026-10-23.md"
       - ".github/workflows/mae-roadmap-v4-p9-p10-v1.yml"
@@ -75,6 +77,8 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+      - name: Install schema-inspection dependency
+        run: pip install pandas==2.2.3
       - name: Verify frozen runtime bytes and inspect schema
         run: |
           set -euo pipefail
