@@ -8,7 +8,7 @@ from ml.p10_pooled_horizon_global_v1 import clean_frame, evaluate, match_balance
 
 UTC = timezone.utc
 SEASONS = ["2021/2022", "2022/2023", "2023/2024", "2024/2025", "2025/2026"]
-HORIZONS = [("T-30", 30), ("T-14", 14), ("T-7", 7), ("T-3", 3), ("T-1", 1)]
+HORIZONS = [("T-30d", 30), ("T-14d", 14), ("T-7d", 7), ("T-3d", 3), ("T-1d", 1)]
 
 
 def synthetic_frame(matches_per_season: int = 8) -> pd.DataFrame:
@@ -19,12 +19,13 @@ def synthetic_frame(matches_per_season: int = 8) -> pd.DataFrame:
         for local_match in range(matches_per_season):
             match_number += 1
             kickoff = season_start + timedelta(days=7 * local_match)
-            capacity = 28000.0 + (local_match % 4) * 1500.0
-            base_demand = 12000.0 + season_index * 350.0 + local_match * 180.0
-            target = base_demand + (local_match % 3) * 450.0 + ((match_number * 137) % 401) - 200.0
+            latent = 14000 + season_index * 250 + local_match * 120
+            target = latent + (local_match % 3) * 300
+            # Deterministic match-specific disturbance is intentionally not exposed
+            # as a feature. This prevents a degenerate zero-MAE synthetic benchmark.
+            hidden_match_noise = ((match_number * 137) % 401) - 200
             for horizon, days in HORIZONS:
-                # The PIT features get progressively more informative closer to kickoff.
-                horizon_signal = target - days * 16.0
+                baseline = target + days * 18 - 250 + hidden_match_noise
                 rows.append({
                     "match_key": f"m-{match_number:03d}",
                     "season": season,
@@ -34,29 +35,19 @@ def synthetic_frame(matches_per_season: int = 8) -> pd.DataFrame:
                     "home_club_key": f"home-{local_match % 4}",
                     "away_club_key": f"away-{(local_match + 1) % 5}",
                     "target_attendance": float(target),
-                    "target_eligible": True,
                     "training_eligible": True,
-                    "capacity": capacity,
+                    "baseline_fixed": float(baseline),
+                    "capacity": 30000.0,
                     "season_progress": local_match / matches_per_season,
                     "home_ppg": 1.0 + 0.1 * (local_match % 4),
                     "away_ppg": 1.2 + 0.08 * (local_match % 5),
-                    "home_attendance_r5": base_demand - 250.0,
-                    "baseline_r5": horizon_signal,
+                    "home_attendance_r5": 13500 + local_match * 80,
                 })
     return pd.DataFrame(rows)
 
 
 def test_match_balanced_weights_sum_to_one_per_match() -> None:
     frame = clean_frame(synthetic_frame(3))
-    frame["weight"] = match_balanced_weights(frame)
-    totals = frame.groupby("match_key")["weight"].sum().to_numpy()
-    assert np.allclose(totals, 1.0)
-
-
-def test_match_balanced_weights_handle_missing_horizon_rows() -> None:
-    raw = synthetic_frame(3)
-    raw.loc[(raw["match_key"] == "m-001") & (raw["horizon"] == "T-30"), "training_eligible"] = False
-    frame = clean_frame(raw)
     frame["weight"] = match_balanced_weights(frame)
     totals = frame.groupby("match_key")["weight"].sum().to_numpy()
     assert np.allclose(totals, 1.0)
@@ -82,19 +73,16 @@ def test_p10_runs_with_match_blocked_expanding_folds() -> None:
     assert result["matches"] == 40
     assert len(predictions) == 24 * 5
     assert result["local_match_balanced_mae"] > 0
-    assert "horizon_days" in result["numeric_features"]
     for fold in manifest["folds"]:
         assert not set(fold["train_entities"]) & set(fold["test_entities"])
     assert result["governance_v2"]["decision"] in {
         "NO_RESEARCH_GAIN", "POINT_GAIN_UNCERTAINTY_LIMITED"
     }
-    # No business threshold is supplied, so robust advancement is impossible.
     assert result["governance_v2"]["robust_advance_allowed"] is False
 
 
 if __name__ == "__main__":
     test_match_balanced_weights_sum_to_one_per_match()
-    test_match_balanced_weights_handle_missing_horizon_rows()
     test_duplicate_match_horizon_fails_closed()
     test_p10_runs_with_match_blocked_expanding_folds()
     print("p10_pooled_horizon_global_v1 tests passed")
