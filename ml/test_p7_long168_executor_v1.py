@@ -84,7 +84,6 @@ def synthetic_events(n_events: int = 9) -> dict:
     events = []
     for event_id in range(1, n_events + 1):
         kickoff = datetime(2026, 9, 1, 18, tzinfo=UTC) + timedelta(days=event_id * 3)
-        # Construct a residual signal that is learnable from event progression.
         actual = 10_000.0 + event_id * 550.0
         events.append({
             "ticket_event_id": event_id,
@@ -196,7 +195,7 @@ def test_identity_drift_fails_before_tournament() -> None:
     freeze["identities"][0]["requested_snapshot_id"] += 1
     expect_runtime_error(
         lambda: run_tournament(long168=long168, freeze=freeze, anchor=anchor, events_payload=events),
-        "frozen identity drift",
+        "freeze SHA does not reproduce",
     )
 
 
@@ -208,7 +207,6 @@ def test_future_anchor_fails_closed() -> None:
     event_id = int(freeze["event_ids"][0])
     target = next(row for row in anchor["anchors"] if int(row["ticket_event_id"]) == event_id)
     kickoff = datetime.fromisoformat(target["kickoff_at"])
-    # 2 days before kickoff is later than all P7 live observations (90-150h).
     target["target_as_of_at"] = iso(kickoff - timedelta(days=2))
     expect_runtime_error(
         lambda: run_tournament(long168=long168, freeze=freeze, anchor=anchor, events_payload=events),
