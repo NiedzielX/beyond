@@ -20,14 +20,14 @@ Production remains unchanged:
 
 # 2. Structural core
 
-Current production/research incumbent family: **Structural Prior Runtime v1 / Global Model family**.
+Current production/research incumbent family: **Structural Prior Runtime v1 / frozen Pre-Live v3 research package**.
 
 - 1,530 Ekstraklasa matches / five complete seasons;
 - 7,650 PIT snapshots;
 - T-30/T-14/T-7/T-3/T-1;
 - canonical history SHA: `3c6b35142c6bd20a484f2aa758cd41284fd6f4c6db1353b138f81cf321161569`.
 
-Estimator-only MAE challengers and simple post-hoc club calibration did not justify a runtime replacement.
+Estimator-only MAE challengers, simple post-hoc club calibration and the first pooled-horizon direct replacement do not justify a structural runtime replacement.
 
 ## Frozen Long72 package
 
@@ -60,9 +60,10 @@ Status: **FROZEN / GENUINE POST-FREEZE EVIDENCE ACTIVE**.
 | P6 — live incremental value | ✅ DONE HISTORICALLY | positive point signal, uncertainty/bias prevent promotion |
 | **P7 — 72–168h** | 🟡 **HARNESS + EXECUTOR READY / REAL ANCHOR AUDIT 8/8 PASS / DATA GATE 8/9** | no real tournament before freeze at N>=9 |
 | P8 — club calibration | ✅ DONE | no robust gain |
-| **P9 — Booking Curve / Trajectory Shape** | 🟡 **REPRESENTATION + READINESS CONTRACT READY** | accumulate genuine completed 168h reference curves; no deep sequence model yet |
-| **P10 — Pooled Horizon Global Model v1** | ✅ **HISTORICAL R&D RUN COMPLETE** | positive pooled signal; `POINT_GAIN_UNCERTAINTY_LIMITED`; freeze v1 and compare next against stronger Global Model champion in P10b |
-| **P11 — Match Attractiveness / Commercial Context** | 🔵 **PLAN / DATA-CONTRACT STAGE** | odds / expected quality / uncertainty / stakes before weather/social hype |
+| **P9 — Booking Curve / Trajectory Shape** | 🟡 **REPRESENTATION READY / 168h DATA GATE 4/9** | keep genuine curve capture running; no learnable P9 model yet |
+| **P10 — Pooled Horizon Global Model v1** | ✅ DONE | pooling beats the same local HGB: `-63.47` MAE; `POINT_GAIN_UNCERTAINTY_LIMITED` |
+| **P10b — pooled vs frozen Pre-Live v3** | ✅ **DONE / NO_RESEARCH_GAIN** | pooled MAE `2067.43` vs Pre-Live v3 `1919.92`; do not replace structural champion |
+| **P11a — PIT market odds** | 🟡 **DATA CONTRACT LIVE / 0 GENUINE EVENTS** | select lawful/reliable provider and begin append-only capture before any ablation |
 | **Governance v2 — meaningful MAE** | ✅ IMPLEMENTED | no `ROBUST_RESEARCH_ADVANCE` until business-derived minimum meaningful improvement exists |
 | Production | ⛔ NOT READY | `live_adjustment = 0` |
 
@@ -74,28 +75,15 @@ Canonical result:
 
 `ml/results/P10_POOLED_HORIZON_V1_2026-10-23.md`
 
-Real workflow run:
+Real workflow run: `40024979412`
 
-`40024979412`
-
-Frozen run head:
-
-`bfb50ebdf5a1800bd9516a098599b5dd751fc5e7`
+Frozen run head: `bfb50ebdf5a1800bd9516a098599b5dd751fc5e7`
 
 Question:
 
 > Does one model trained across T-30/T-14/T-7/T-3/T-1 improve match-balanced OOS MAE versus the same fixed HGB residual model trained separately per horizon?
 
-Validation contract:
-
-- independent unit = `match_key`;
-- all horizons of one match remain on the same side of every fold;
-- expanding season folds;
-- each match contributes equal total training weight;
-- paired match-block bootstrap, 5,000 draws, seed 42;
-- no broad hyperparameter search.
-
-Observed historical result:
+Observed result:
 
 - horizon-local MAE: **2120.93**;
 - pooled MAE: **2057.46**;
@@ -103,28 +91,67 @@ Observed historical result:
 - relative improvement: **~2.99%**;
 - 95% paired match-block interval: **[-106.29, -23.20]**;
 - match/event improvement rate: **59.12%**;
-- fold improvement rate: **100% (3/3)**;
-- pooled candidate improved all five horizons.
+- fold improvement rate: **3/3**;
+- all five horizons improved.
 
-Interpretation under Governance v2:
+Governance:
 
 `POINT_GAIN_UNCERTAINTY_LIMITED`
 
-Why not `ROBUST_RESEARCH_ADVANCE`:
+Reason robust advancement is blocked:
 
 `business_meaningful_mae_threshold_not_defined`
 
-This is an encouraging historical cross-learning signal. It is **not** production evidence and does not justify activation by itself.
+P10 v1 is frozen. Do not alter it after observing this result.
 
-### P10 v1 is now frozen
+## 4.1 P10b — comparison against the actual frozen structural champion
 
-Do not change P10 v1 after observing this result.
+Canonical result:
 
-Any next comparison or model change must be a new experiment/version. The next planned experiment is:
+`ml/results/P10B_POOLED_VS_PRELIVE_V3_V1_2026-10-23.md`
 
-**P10b — pooled horizon challenger vs current Global Model v2.1 / Structural champion under a common blocked protocol.**
+Real workflow run: `40028701211`
 
-The purpose of P10b is to determine whether the pooled signal survives against the strongest current structural comparator, rather than only against the same HGB trained horizon-locally.
+Frozen execution commit: `dc266e25c641f9b807dac70740ae30f15ed19e73`
+
+Artifact digest:
+
+`sha256:599e9154d9bb2c2be0415044b3acc74eac6acb957eb7dd98bb238e38abb8eab1`
+
+Comparator:
+
+`pre-live-v3-historical-candidate-2026-10-21-v1`
+
+Evidence integrity:
+
+- canonical history SHA verified;
+- sealed Pre-Live v3 manifest SHA `b8c1a3cb1ddb70e9f6b67a6bc1db23619f26a8c328bf4b78399fc262394ff70a` verified;
+- all 20 horizon × season comparator MAE cells reproduced within `1e-9`;
+- complete match blocking;
+- exact common forecastable support;
+- 1,197 independent matches;
+- 5,972 common-support PIT rows;
+- 5,000 paired match-block bootstrap draws, seed 42.
+
+Observed result:
+
+- frozen Pre-Live v3 match-balanced MAE: **1919.92**;
+- pooled challenger MAE: **2067.43**;
+- `challenger - incumbent ΔMAE = +147.51` seats;
+- relative degradation: **+7.68%**;
+- 95% interval: **[+82.97, +210.67]**;
+- probability `ΔMAE < 0`: **0.0**;
+- match/event improvement: **43.69%**;
+- folds improved: **0/4**;
+- horizons improved: **0/5**.
+
+Governance:
+
+`NO_RESEARCH_GAIN`
+
+Interpretation:
+
+P10 v1 established a real cross-learning effect relative to the same weaker local-HGB architecture. P10b establishes that this architecture is nevertheless **materially weaker than the current frozen Pre-Live v3 package**. Do not retune P10b after the result. Any future pooled architecture must be a materially new mechanism and a new precommit; it is not the next priority.
 
 ---
 
@@ -135,10 +162,11 @@ Canonical implementation:
 - `ml/p9_booking_curve_v1.py`;
 - `ml/test_p9_booking_curve_v1.py`;
 - `supabase/sql/p9_booking_curve_readiness_v1.sql`;
+- `supabase/sql/ml_research_readiness_add_p9_booking_curve_v1.sql`;
 - `.github/workflows/p9-booking-curve-readiness-v1.yml`;
 - `ml/results/P9_BOOKING_CURVE_PRECOMMIT_V1_2026-10-23.md`.
 
-P9 deliberately reuses the existing trajectory infrastructure rather than duplicating it.
+P9 reuses the existing trajectory infrastructure rather than duplicating it.
 
 Target representation:
 
@@ -158,9 +186,16 @@ PIT rules:
 - reference event must already be completed by target `as_of_at`;
 - public inventory is a demand proxy, not confirmed paid sales.
 
-P9 v1 intentionally starts with an auditable weighted-L1 historical similarity / pickup representation. LSTM/Transformer work is not part of v1.
+Live readiness on 2026-10-23:
 
-Research-model fitting remains downstream of genuine completed reference-curve coverage.
+- completed reference curves reaching 168h: **4 events / 4 clubs**;
+- reaching 72h: **7 events / 5 clubs**;
+- reaching 48h: **10 events / 6 clubs**;
+- reaching 24h: **13 events / 8 clubs**;
+- full 168h model status: `DATA_BOUND`;
+- central gate `P9_BOOKING_CURVE_168_START`: **false (4/9)**.
+
+P9 v1 intentionally starts with an auditable weighted-L1 similarity / pickup representation. LSTM/Transformer work is not part of v1. Do not fit the first learnable P9 residual challenger before the 168h reference-curve gate and a separate freeze of that learner contract.
 
 ---
 
@@ -170,18 +205,50 @@ Canonical plan:
 
 `ml/P11_MATCH_ATTRACTIVENESS_CONTEXT_V1_PLAN.md`
 
-Priority order:
+Existing infrastructure already covers more than the initial repo-only gap audit suggested:
 
-1. **P11a — PIT odds / expected match quality / outcome uncertainty / stakes / rivalry**;
+- rivalry relations;
+- stakes reconstruction;
+- verified absences;
+- ticket-price observations;
+- weather/media infrastructure.
+
+The primary missing family was genuine PIT market odds.
+
+## P11a — PIT 1X2 market context v1
+
+Canonical SQL:
+
+`supabase/sql/p11_market_odds_context_v1.sql`
+
+Live contract:
+
+- append-only private 1X2 observations;
+- service-role-only table/RPC access;
+- `p11_market_context_as_known_v1(ticket_event_id, as_of_at)` chooses only observations captured by the requested cutoff and strictly before kickoff;
+- de-vigged home/draw/away probabilities;
+- normalized outcome-uncertainty entropy;
+- favorite probability;
+- explicit semantic guard: `expected_match_quality = NOT_DERIVED_FROM_1X2_V1`;
+- `p11_market_odds_readiness_v1()` is target-free.
+
+Current readiness:
+
+- genuine PIT 1X2 events: **0**;
+- provider selected: **false**;
+- model precommitted: **false**;
+- status: `NO_GENUINE_ODDS_CAPTURE_YET`.
+
+Do not backfill closing odds to historical T-30/T-14/T-7/T-3/T-1 states. Next action is to select a lawful/reliable source and begin genuine append-only capture.
+
+Broader P11 priority remains:
+
+1. **P11a — PIT odds / outcome uncertainty / stakes / rivalry**;
 2. **P11b — price / promotion state**;
 3. **P11c — lineup / star strength / verified absences**;
 4. **P11d — weather / attention / social hype**.
 
-Hard PIT rule:
-
-Closing odds, final lineup, final weather or later-known stakes information may never be backfilled into an earlier forecast cutoff.
-
-Every family requires a separate controlled ablation before combination.
+Expected match quality needs a distinct justified signal such as team-strength/goal-market representation; 1X2 balance alone must not be mislabeled as quality.
 
 ---
 
@@ -213,7 +280,7 @@ Until a business-derived threshold exists, the strongest allowed positive state 
 
 `POINT_GAIN_UNCERTAINTY_LIMITED`
 
-This deliberately prevents tiny improvements such as `3012 -> 2998` from being called robust progress merely because the point estimate is lower.
+This prevents small improvements such as `3012 -> 2998` from being called robust progress merely because the point estimate is lower.
 
 ---
 
@@ -225,9 +292,10 @@ Do not reopen without materially new evidence or mechanism:
 - estimator uncertainty re-analysis on the same sample;
 - simple structural/live convex shrinkage;
 - historical Long72 incremental-value loop;
-- simple post-hoc club/opponent calibration.
+- simple post-hoc club/opponent calibration;
+- **P10b fixed pooled-HGB architecture as a direct Pre-Live v3 replacement**.
 
-P9/P10/P11 are valid because they test new representation/cross-learning/context hypotheses rather than another blind sweep.
+P9/P11 remain valid because they test genuinely new representation or information rather than another blind sweep.
 
 ---
 
@@ -237,7 +305,7 @@ Canonical source:
 
 `public.ml_research_readiness_v1()`
 
-Checkpoint read on 2026-10-23:
+Checkpoint read on 2026-10-23 after P9 integration:
 
 ## Long72
 
@@ -285,6 +353,12 @@ Do not substitute later schedule knowledge or hand-authored opponent scores.
 
 Do not lower the threshold.
 
+## P9 Booking Curve
+
+- 168h genuine completed reference curves: `4/9`;
+- P9 start gate: **false**;
+- no learnable model precommitted yet.
+
 ---
 
 # 10. P4a fixture-context precommit
@@ -302,15 +376,11 @@ Research question:
 
 > Does previous-home match spacing reduce event-level attendance MAE beyond the frozen Long72 pre-live T3+B2 anchor?
 
-Independent unit:
-
-`ticket_event`
+Independent unit: `ticket_event`
 
 Exactly one input row is used per event: the first READY context row attached to a reproducible Long72 prediction.
 
-Anchor:
-
-`long72-prelive-t3-b2-anchor`
+Anchor: `long72-prelive-t3-b2-anchor`
 
 Hard research-start gate:
 
@@ -351,17 +421,9 @@ Canonical:
 - `ml/results/P7_LONG168_EXECUTOR_V1_2026-10-23.md`;
 - `ml/results/P7_LONG168_ANCHOR_AUDIT_V1_2026-10-23.md`.
 
-At `N<9`:
+At `N<9`: `P7_NOT_READY`
 
-`P7_NOT_READY`
-
-Historical T-7 control is explicitly:
-
-`historical_pit_replay`
-
-with:
-
-`persisted_forecast = false`.
+Historical T-7 control is explicitly `historical_pit_replay` with `persisted_forecast = false`.
 
 Real main-branch anchor audit:
 
@@ -389,7 +451,10 @@ Operational pipelines remain active:
 - schedule-as-known capture every 6h;
 - fixture-context sidecar every 15m;
 - next-opponent sidecar every 15m;
-- Long168 evidence collection.
+- Long168 evidence collection;
+- P9 central readiness gate now exposed in `ml_research_readiness_v1()`.
+
+Existing automation `Beyond ML readiness` was updated to know about P4a and P9 but remains **disabled**, preserving the user's previous automation state.
 
 ---
 
@@ -397,27 +462,29 @@ Operational pipelines remain active:
 
 ## Development that can proceed now
 
-1. **P10b:** precommit and evaluate pooled-horizon cross-learning against the current strongest Global Model v2.1 / Structural comparator under common match-blocked temporal folds.
-2. **P9:** validate/deploy the readiness contract and audit genuine completed 168h curve-reference coverage; do not train a richer learner before the representation/coverage contract is stable.
-3. **P11a:** design PIT odds / expected-quality / stakes ingestion and as-known contract before any model ablation.
-4. **Governance/business:** derive the minimum practically meaningful MAE improvement from downstream club decisions and asymmetric error cost, not from model score distributions.
+1. **P11a data acquisition:** select a lawful/reliable odds source and implement append-only genuine PIT capture into the frozen market-odds contract. Do not backfill closing odds.
+2. **Governance/business:** derive the minimum practically meaningful MAE improvement from downstream club decisions and asymmetric error cost, independently of model results.
+3. **P9 preparation:** keep the representation/readiness contract stable and monitor genuine 168h coverage; first learnable residual model remains blocked at `4/9`.
+4. **P11 expected quality:** design a separate justified quality signal; do not relabel 1X2 outcome balance as match quality.
 
 ## Data-bound work
 
 - P4a waits for `>=9` labeled independent events and `>=3` distinct spacing values;
 - P7 waits for `9/9` independent >72h events;
+- P9 waits for `9` genuine completed 168h reference curves before freezing its first learnable residual challenger;
 - prospective Long72/final24 scoring continues.
 
 ## Explicitly do not do
 
-- do not mutate frozen P10 v1 after seeing its result;
-- do not re-run a broad estimator sweep merely because P10 was positive;
-- do not lower P4a/P7 gates;
-- do not call P10 `ROBUST_RESEARCH_ADVANCE` until the business meaningful threshold exists;
+- do not mutate frozen P10 or P10b after seeing their results;
+- do not run another pooled-HGB tuning sweep to rescue P10b;
+- do not lower P4a/P7/P9 gates;
+- do not call any positive result `ROBUST_RESEARCH_ADVANCE` until the business meaningful threshold exists;
+- do not backfill closing odds/final lineup/final weather into earlier PIT cutoffs;
 - do not activate production from historical/exposed evidence.
 
 ---
 
 ## One-line handoff
 
-> **Roadmap v4 is representation-first: P9 booking-curve/pickup representation is being made evidence-ready; P10 v1 produced a real historical pooled-horizon gain of 63.47 MAE seats with CI below zero but remains `POINT_GAIN_UNCERTAINTY_LIMITED`; P10b must now test that signal against the strongest Global Model champion; P11a prioritizes PIT odds/quality/stakes; P4a and P7 stay frozen and data-bound; production remains off.**
+> **Roadmap v4 remains representation-first: P10 pooling produced a real cross-learning gain against a weaker local HGB but then lost decisively to frozen Pre-Live v3 in P10b (`+147.51` MAE, 0/4 folds, 0/5 horizons), so that direct replacement path is closed; P9 booking curves are technically ready but data-bound at 4/9 full-168h references; P11a now has a live PIT-safe odds contract but 0 genuine observations and needs a real provider/capture path; Governance v2 is active; P4a/P7 remain frozen and data-bound; production remains off.**
