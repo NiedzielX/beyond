@@ -1,0 +1,74 @@
+name: P7 Long168 Harness v1
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - "ml/p7_long168_harness_v1.py"
+      - "ml/test_p7_long168_harness_v1.py"
+      - "ml/results/P7_LONG168_HARNESS_V1_2026-10-23.md"
+      - "ml/D2_LONG_HORIZON_LIVE_V1_PLAN.md"
+      - "ml/MAE_RESEARCH_ROADMAP_V3.md"
+      - "ml/PROGRESS_TRACKING.md"
+      - "AI_BOOTSTRAP.md"
+      - "AGENTS.md"
+      - ".github/workflows/p7-long168-harness-v1.yml"
+  push:
+    branches: [main]
+    paths:
+      - "ml/p7_long168_harness_v1.py"
+      - "ml/test_p7_long168_harness_v1.py"
+      - "ml/results/P7_LONG168_HARNESS_V1_2026-10-23.md"
+      - "ml/D2_LONG_HORIZON_LIVE_V1_PLAN.md"
+      - "ml/MAE_RESEARCH_ROADMAP_V3.md"
+      - "ml/PROGRESS_TRACKING.md"
+      - "AI_BOOTSTRAP.md"
+      - "AGENTS.md"
+      - ".github/workflows/p7-long168-harness-v1.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Compile and unit tests
+        run: |
+          python -m py_compile ml/p7_long168_harness_v1.py
+          python -m py_compile ml/test_p7_long168_harness_v1.py
+          python -m ml.test_p7_long168_harness_v1
+      - name: Emit frozen experiment contract
+        run: |
+          python -m ml.p7_long168_harness_v1 \
+            --mode contract \
+            --output-json /tmp/p7-long168-contract-v1.json
+      - name: Hard contract gates
+        run: |
+          jq -e '
+            .version == "p7-long168-harness-v1"
+            and .research_start_gate.minimum_independent_events_with_rows_gt_72h == 9
+            and .window.hours_to_kickoff == ">72 and <=168"
+            and .anchor.id == "structural-prior-t7"
+            and .validation.type == "strict_forward_event"
+            and .validation.min_train_events == 5
+            and .primary_metric.name == "event_balanced_mae"
+            and .uncertainty.n_resamples == 5000
+            and .candidate_family[0].candidate_id == "anchor-only-t7"
+            and .candidate_family[1].candidate_id == "q50-linear-residual-a002"
+            and .candidate_family[2].candidate_id == "gbr-l1-depth2-n50-lr003"
+            and .production.promotion_allowed_from_p7_v1 == false
+            and .production.live_adjustment == 0
+          ' /tmp/p7-long168-contract-v1.json >/dev/null
+      - name: Upload contract artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: p7-long168-contract-v1-${{ github.run_id }}
+          path: /tmp/p7-long168-contract-v1.json
+          if-no-files-found: error
+          retention-days: 90

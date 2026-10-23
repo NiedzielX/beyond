@@ -1,223 +1,296 @@
 # Beyond Ticketing — d2 Long-Horizon Live v1 Plan
 
-Last updated: **2026-10-21**
+Last updated: **2026-10-23**
 
-Status: **ACTIVE TRACK-B R&D / DATA CONTRACT FIRST / NO PRODUCTION CHANGE**
+Status: **P7 HARNESS READY / DATA GATE 8 OF 9 / NO PRODUCTION CHANGE**
 
-Parent evidence:
+Canonical harness:
 
-- `ml/results/D2_V3_STAGE0_ANCHOR_EQUIVALENCE_V1_2026-10-21.md`;
-- `ml/results/PRE_LIVE_V3_HISTORICAL_FREEZE_V1_2026-10-21.md`.
+- `ml/p7_long168_harness_v1.py`;
+- `ml/test_p7_long168_harness_v1.py`;
+- `.github/workflows/p7-long168-harness-v1.yml`;
+- `ml/results/P7_LONG168_HARNESS_V1_2026-10-23.md`.
 
-## Why this workstream exists
+## Research question
 
-The current d2 problem uses only the final 24 hours before kickoff and anchors all live rows on T-1.
+> **Can PIT live ticket trajectory between 72h and 168h before kickoff reduce event-balanced attendance MAE beyond the Structural Prior T-7 forecast?**
 
-The v2-v3 Stage-0 audit proved:
+This is a separate Track-B challenger family. It does not mutate final24, frozen Long72 P2 or Structural Prior runtimes.
 
-`V3_FINAL24_ANCHOR_EXACTLY_EQUIVALENT_TO_V2`
+## Current readiness
 
-Therefore retraining the same final-24h problem under a new name would not be a material model change.
+Current Supabase long-horizon export:
 
-The next useful question is different:
+`public.export_d2_long_horizon_168_rows_v1()`
 
-> **Can live ticket trajectory improve attendance forecasting earlier than 24 hours, where the new Pre-Live v3 T-7 anchor can actually matter?**
+Sampling contract:
 
-## Data-readiness audit — 2026-10-21
+- maximum window: 168h;
+- cadence: 6h;
+- latest source snapshot in each event x 6h bucket;
+- PIT feature function: `get_live_trajectory_features_v1_1_asof`;
+- no target in live features.
 
-Current Supabase snapshot history contains:
+Latest checkpoint on 2026-10-23:
 
-- 12,521 raw snapshot rows across 24 mapped ticket events;
-- 15 events with outcome labels in the broader snapshot table;
-- 14 labeled, capacity-resolved Ekstraklasa events eligible under the current C1 event/export rules.
+- independent events with valid rows `>72h`: **8**;
+- valid rows `>72h`: **110**;
+- research-start threshold: **9 independent events**.
 
-For those 14 C1-eligible labeled Ekstraklasa events, using the same 6h bucket sampling and the existing PIT function `get_live_trajectory_features_v1_1_asof`:
+Therefore:
 
-- 13/14 have valid rows beyond 24h;
-- 10/14 have valid rows beyond 48h;
-- 8/14 have valid rows in 72–168h;
-- several events have 24–28 valid 6h-bucket rows inside the final 168h.
+**P7 model fitting remains prohibited.**
 
-Examples with near-full 7-day coverage:
-
-- event 1 Lech–Raków;
-- event 3 Lech–Jagiellonia;
-- event 4 Lech–Radomiak;
-- event 5 Lech–Korona;
-- event 15 GKS Katowice–Pogoń;
-- event 18 Cracovia–Legia;
-- event 19 Zagłębie Lubin–Jagiellonia.
-
-Event 11 Górnik–Piast reaches about 90h.
-
-The limiting factor is currently the export contract, not raw data retention.
+`N=9` is a research-start threshold inherited from the existing frozen d2 development scale. It is not proof of adequacy and never implies production readiness.
 
 ## Data integrity
 
-The earlier snapshots are not reconstructed from final state.
+Every P7 row must be genuinely point-in-time:
 
-The proposed export must use:
-
-- source snapshot `captured_at`;
-- point-in-time event kickoff stored/known at the request time where applicable;
-- verified stadium capacity under the same C1 eligibility rules;
-- `get_live_trajectory_features_v1_1_asof`;
+- source snapshot identity is frozen;
+- `requested_as_of_at` equals the feature as-of;
+- feature snapshot id equals requested snapshot id;
 - `point_in_time_validated = true`;
-- non-null source feature snapshot;
-- no outcome value inside live features.
+- as-of precedes kickoff;
+- reported hours-to-kickoff agrees with timestamps;
+- no future observation may be forward-filled;
+- no attendance target/outcome may exist in the freeze payload.
 
-Outcome is used only as the supervised target after the PIT live row is constructed.
+Missing history is missing evidence, not zero demand.
 
-## Additive export contract
+## P7 window
 
-Do **not** modify:
+P7 v1 is intentionally scoped to:
 
-`v7-final24 -> export_c1_alpha_v7_final24_rows_v1`
+`72 < hours_to_kickoff <= 168`
 
-Create an additive research export:
+This avoids silently mixing the already-developed Long72 problem with the new earlier-horizon problem.
 
-`v8-long168 -> export_d2_long_horizon_168_rows_v1`
+Rows at `<=72h` remain governed by the existing Long72 research/package contracts.
 
-Sampling:
+## Pre-result freeze sequence
 
-- maximum window: 168h before kickoff;
-- cadence: 6h;
-- latest available source snapshot in each event x 6h bucket;
-- same eligible-event and verified-capacity rules as v7-final24;
-- same live PIT feature function.
+When the ninth independent event becomes eligible:
 
-The payload must include:
+1. export the current Long168 payload;
+2. filter exact eligible rows in `72 < h <= 168`;
+3. validate PIT lineage and reject target/outcome fields;
+4. freeze exact identities:
+   - `ticket_event_id`;
+   - `requested_as_of_at`;
+   - `requested_snapshot_id`;
+   - `bucket_6h`;
+   - kickoff / coverage metadata;
+5. persist deterministic manifest SHA256;
+6. only after the manifest exists, join actual attendance for supervised evaluation;
+7. only then open model comparisons.
 
-- `ticket_event_id`;
-- `requested_snapshot_id`;
-- `requested_as_of_at`;
-- `hours_to_kickoff`;
-- `bucket_6h`;
-- PIT `features` JSON;
-- per-event coverage summary where practical;
-- top-level event/row counts and window/cadence metadata.
+At `N<9`, the harness must fail with:
 
-Research export remains service-role/OIDC protected through the existing main-only training gateway.
+`P7_NOT_READY`
 
-## Coverage rule
+The first output at 9/9 is a **freeze manifest**, not a model leaderboard.
 
-Do not pretend all events have a complete T-7 trajectory.
+## Anchor rule — frozen before model results
 
-For every event persist:
+For the entire P7 v1 72–168h band, use:
 
-- earliest valid hours-to-kickoff;
-- latest valid hours-to-kickoff;
-- count of valid 6h buckets;
-- coverage by windows:
-  - 0–24h;
-  - 24–48h;
-  - 48–72h;
-  - 72–168h.
+**Structural Prior T-7 / zero live correction**
 
-Missing earlier history is data availability, not zero demand.
+as the incumbent control.
+
+Rules:
+
+- T-7 must be PIT-safe and available at or before the live row as-of;
+- do not use T-3/T-1 before those checkpoints exist;
+- do not interpolate using future structural checkpoints;
+- do not extrapolate frozen Long72 P2 backward beyond 72h.
+
+P7 challengers predict a residual over the T-7 structural anchor.
+
+## Fixed P7 v1 challenger family
+
+The family is deliberately small because independent-event N is small.
+
+### A. `anchor-only-t7`
+
+No fitted live correction.
+
+### B. `q50-linear-residual-a002`
+
+MAE-native linear residual challenger:
+
+- `QuantileRegressor`;
+- quantile `0.50`;
+- alpha `0.002`;
+- solver `highs`;
+- training-fold median imputation;
+- training-fold `RobustScaler`;
+- no hyperparameter search.
+
+### C. `gbr-l1-depth2-n50-lr003`
+
+Small nonlinear absolute-error residual challenger:
+
+- `GradientBoostingRegressor`;
+- loss `absolute_error`;
+- `n_estimators=50`;
+- `learning_rate=0.03`;
+- `max_depth=2`;
+- `min_samples_leaf=4`;
+- `random_state=42`;
+- no hyperparameter search.
+
+No broad tuning is allowed under P7 v1. A materially different feature/model family requires a new version.
+
+## Feature contract
+
+Only the frozen allowlist in `ml/p7_long168_harness_v1.py` is allowed.
+
+The allowlist is limited to PIT live inventory/trajectory features already available in the current export, including:
+
+- hours-to-kickoff;
+- current / first available inventory;
+- available share of capacity;
+- net removed inventory;
+- velocity and acceleration measures;
+- observation-window / snapshot-age / gap quality measures;
+- release/data-gap flags.
+
+P4 schedule/context features are **not silently added** to P7 v1. If context is later combined with Long168, that is a new experiment/version.
+
+## Event weighting
+
+Trajectory rows are not independent units.
+
+During fitting:
+
+`row_weight = 1 / number_of_training_rows_for_that_event`
+
+so every training event contributes total weight `1` regardless of snapshot coverage.
+
+Independent evidence unit remains:
+
+`ticket_event`
+
+## Validation contract
+
+Use:
+
+`ml/temporal_validation_v1.py::build_forward_event_folds`
+
+with:
+
+- strict forward-event ordering by kickoff;
+- minimum training events: `5`;
+- `train_end < test_start`;
+- tied kickoffs cannot train one another;
+- no random snapshot split;
+- exact fold identities + SHA persisted.
+
+LOEO may be diagnostic but cannot replace strict forward-event evidence.
+
+## Metrics
+
+Primary:
+
+**event-balanced MAE**.
+
+For each held-out event, first average AE across its eligible trajectory rows, then average event MAEs equally.
+
+Required secondary diagnostics:
+
+- median AE;
+- signed bias;
+- P90 AE;
+- worst-event degradation;
+- event-improvement rate;
+- forward-fold MAE delta;
+- MAE by 24h band:
+  - 72–96h;
+  - 96–120h;
+  - 120–144h;
+  - 144–168h;
+- coverage / missingness.
+
+## Uncertainty
+
+Use canonical:
+
+`ml/mae_delta_uncertainty_v1.py`
+
+with paired event-block bootstrap:
+
+- 5,000 draws;
+- seed `42`.
+
+Interpretation:
+
+- `ΔMAE >= 0` → `NO_MAE_GAIN`;
+- `ΔMAE < 0` and CI crosses zero → `POINT_GAIN_UNCERTAINTY_LIMITED`;
+- CI upper bound `<0` → `SUPPORTED_HISTORICAL_FORWARD_GAIN`.
+
+At N=9, uncertainty is expected to be wide. Report it honestly.
+
+## Research advancement
+
+A candidate may advance only as a **research challenger** when:
+
+1. strict-forward event-balanced MAE beats the T-7 anchor;
+2. a majority of independently held-out events improve;
+3. a majority of usable forward folds improve;
+4. PIT/lineage/reproducibility gates pass.
+
+Bias/tail metrics and paired bootstrap must accompany the decision.
+
+No P7 v1 result can activate production directly.
 
 ## Evidence boundary
 
-The original frozen final-24h development set remains:
+Previously inspected historical events remain exposed historical evidence. Do not relabel them as unseen.
 
-`1,3,4,8,9,12,13,14,17`
-
-Newer labeled events already exposed in previous diagnostics/readiness work include:
-
-`5,11,15,18,19`
-
-These labels are no longer unseen.
-
-A long-horizon experiment must predeclare a chronological split and label every event as development/reference/exposed before model fitting.
-
-No random snapshot split.
-
-Independent unit:
-
-`event`
-
-## Stage A — coverage and baseline audit
-
-Before fitting a live correction model:
-
-1. export all valid long-horizon rows;
-2. freeze event/as-of identities and coverage statistics;
-3. determine the honest earliest modeling window supported by event count;
-4. evaluate Pre-Live v2 and v3 anchor behavior at relevant checkpoints;
-5. define the anchor-transition rule before opening model results.
-
-Candidate initial modeling windows to compare:
-
-- final 48h;
-- final 72h;
-- final 168h.
-
-The selection must balance earlier coverage against independent event count.
-
-## Anchor-transition question
-
-Unlike final-24h, a long-horizon live model crosses more than one Pre-Live checkpoint.
-
-The anchor rule must be predeclared and reproducible.
-
-Candidate approaches for a later experiment:
-
-1. **checkpoint hold:** use the latest available frozen Pre-Live checkpoint at/as-of the live row;
-2. **piecewise transition:** move from T-7 toward T-3/T-1 only when the next checkpoint becomes valid;
-3. another deterministic PIT-safe mapping justified before evaluation.
-
-Do not interpolate using future checkpoint predictions that were not available at the row as-of time.
-
-## Stage B — first long-horizon live benchmark
-
-Only after Stage A freezes the data and anchor rule.
-
-Minimum baselines:
-
-- Pre-Live anchor only / zero live correction;
-- transparent inventory trajectory extrapolation;
-- existing final-24h Ridge applied only where its old contract is valid, as a reference rather than automatic long-horizon model.
-
-Any learned model must use event-level chronological/LOEO discipline and event-balanced metrics.
-
-Primary KPI:
-
-`MAE`
-
-Also report:
-
-- median AE;
-- bias;
-- p90/worst event;
-- event improvement rate;
-- revision magnitude;
-- performance by hours-to-kickoff band;
-- coverage/missingness.
-
-## What not to do
-
-- do not mutate `v7-final24`;
-- do not relabel exposed events as unseen;
-- do not random-split snapshots;
-- do not forward-fill from future observations;
-- do not infer actual attendance from inventory;
-- do not automatically reuse final-24h Ridge/P2 outside its validated window;
-- do not activate production.
+The original final24 frozen development events and subsequent diagnostic events remain part of research history. Genuine future fixtures must remain separately labeled as prospective evidence after any P7 challenger is frozen.
 
 ## Immediate work order
 
-1. add/deploy `export_d2_long_horizon_168_rows_v1`;
-2. add gateway route `v8-long168` without changing existing routes;
-3. verify service-role/main-only access and payload counts;
-4. persist a machine-readable long-horizon coverage audit;
-5. freeze the data contract and chronological evidence split;
-6. only then start modeling.
+### While current state remains 8/9
+
+1. keep Long168 data collection unchanged;
+2. keep the P7 harness/contract fixed;
+3. do not fit challengers;
+4. keep the readiness watch active.
+
+### Immediately at 9/9
+
+1. freeze exact identities + manifest SHA;
+2. verify anchor availability and feature contract;
+3. attach labels only after freeze;
+4. build strict forward-event fold manifest;
+5. run the fixed three-candidate P7 v1 tournament;
+6. calculate event-balanced MAE + guardrails;
+7. run paired event-block uncertainty;
+8. persist machine-readable artifacts and human result doc;
+9. make an explicit `ADVANCE_RESEARCH / RETAIN_ANCHOR / INSUFFICIENT` decision;
+10. keep production unchanged.
+
+## What not to do
+
+- do not lower the 9-event gate;
+- do not inspect model results before identity freeze;
+- do not random-split snapshots;
+- do not let high-coverage events dominate training;
+- do not forward-fill future observations;
+- do not join attendance before freeze;
+- do not use future T-3/T-1 anchors;
+- do not extrapolate Long72 P2 backward;
+- do not broaden the hyperparameter search after seeing results;
+- do not mutate frozen final24/Long72 packages;
+- do not activate production.
 
 ## Production boundary
 
 Always:
 
-- Track-A v2/Ridge/P2 unchanged;
-- v3 research-only;
-- long-horizon work research-only;
-- production `live_adjustment = 0`.
+`live_adjustment = 0`
+
+until explicit reviewed production promotion based on separate genuine future evidence.
