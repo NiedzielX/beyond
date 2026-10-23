@@ -79,14 +79,18 @@ jobs:
         run: |
           set -euo pipefail
           history_sha=$(sha256sum ml/artifacts/structural_prior_runtime_v1/historical_runtime_v1.csv.gz | awk '{print $1}')
+          prelive_sha=$(sha256sum ml/artifacts/pre_live_v3_historical_candidate_v1/manifest.json | awk '{print $1}')
           test "$history_sha" = "3c6b35142c6bd20a484f2aa758cd41284fd6f4c6db1353b138f81cf321161569"
-          test -f ml/artifacts/pre_live_v3_historical_candidate_v1/manifest.json
+          test "$prelive_sha" = "b8c1a3cb1ddb70e9f6b67a6bc1db23619f26a8c328bf4b78399fc262394ff70a"
+          jq -e '.freeze_id == "pre-live-v3-historical-candidate-2026-10-21-v1"' \
+            ml/artifacts/pre_live_v3_historical_candidate_v1/manifest.json >/dev/null
       - name: Execute real P10b historical comparison
         run: |
           set -euo pipefail
           python -m ml.p10b_pooled_vs_prelive_v3_v1 \
             --historical-runtime ml/artifacts/structural_prior_runtime_v1/historical_runtime_v1.csv.gz \
             --input-manifest ml/artifacts/structural_prior_runtime_v1/manifest.json \
+            --prelive-v3-manifest ml/artifacts/pre_live_v3_historical_candidate_v1/manifest.json \
             --output-json /tmp/p10b-scorecard.json \
             --predictions-csv /tmp/p10b-predictions.csv \
             --fold-manifest /tmp/p10b-fold-manifest.json
