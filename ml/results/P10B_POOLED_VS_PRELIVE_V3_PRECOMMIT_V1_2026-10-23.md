@@ -32,6 +32,12 @@ Frozen v3 horizon contract:
 
 P10b imports these functions directly. It does not recreate them from prose or headline MAE values.
 
+The sealed comparator manifest is also pinned:
+
+`b8c1a3cb1ddb70e9f6b67a6bc1db23619f26a8c328bf4b78399fc262394ff70a`
+
+Before any P10b result is interpreted, all **20 horizon × season Pre-Live v3 MAE cells** must reproduce the sealed manifest within absolute tolerance `1e-9`. Comparator drift fails closed.
+
 ## Challenger
 
 ID:
@@ -76,9 +82,23 @@ P10b uses the exact four expanding-season cells of the frozen Pre-Live v3 audit:
 
 The canonical temporal helper must reproduce those four cells exactly or P10b fails closed.
 
+## Exact common-support rule
+
+Pre-Live v3 is horizon-specific and some early-season PIT rows are intentionally not forecastable under its frozen contracts. P10b must therefore **not** fabricate comparator predictions or force equal raw row counts.
+
+Headline scoring uses the exact intersection where:
+
+1. frozen Pre-Live v3 emits a valid prediction;
+2. the pooled challenger has a prediction for the same `match_key + horizon`;
+3. target attendance is identical on both sides.
+
+Every comparator row must resolve to exactly one challenger row. Any challenger-only row is reported and excluded from the headline comparison rather than being used to advantage the pooled model.
+
+This preserves the frozen comparator's real forecastability semantics.
+
 ## Primary score
 
-Overall match-balanced MAE across the four forward folds:
+Overall match-balanced MAE across the four forward folds on exact Pre-Live v3 common support:
 
 `pooled challenger vs frozen Pre-Live v3`
 
@@ -86,6 +106,8 @@ Secondary diagnostics:
 
 - per-horizon MAE;
 - per-fold MAE;
+- common-support row/match counts;
+- challenger-only rows excluded;
 - match/event improvement rate;
 - fold improvement rate;
 - paired match-block `Delta MAE` uncertainty;
@@ -123,7 +145,7 @@ Any change after that result is opened requires a new experiment/version (`P10c`
 
 A P10b win would mean:
 
-> the simple cross-horizon pooled architecture contains incremental structural value strong enough to outperform the current sealed horizon-specific Pre-Live v3 package under a common temporal protocol.
+> the simple cross-horizon pooled architecture contains structural value strong enough to outperform the current sealed horizon-specific Pre-Live v3 package on the exact common forecastable support under a common temporal protocol.
 
 A P10b loss would **not** erase the P10 v1 result. It would mean the current pooled architecture does not yet beat the stronger structural champion suite and should not replace it.
 
