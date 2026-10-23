@@ -5,12 +5,14 @@ on:
   pull_request:
     paths:
       - "supabase/sql/ml_research_readiness_v1.sql"
+      - "supabase/sql/p4_fixture_context_precommit_v1.sql"
       - "ml/results/ML_RESEARCH_READINESS_V1_2026-10-23.md"
       - ".github/workflows/ml-research-readiness-contract-v1.yml"
   push:
     branches: [main]
     paths:
       - "supabase/sql/ml_research_readiness_v1.sql"
+      - "supabase/sql/p4_fixture_context_precommit_v1.sql"
       - "ml/results/ML_RESEARCH_READINESS_V1_2026-10-23.md"
       - ".github/workflows/ml-research-readiness-contract-v1.yml"
 
@@ -27,11 +29,19 @@ jobs:
         run: |
           set -euo pipefail
           f='supabase/sql/ml_research_readiness_v1.sql'
+          p4='supabase/sql/p4_fixture_context_precommit_v1.sql'
           test -f "$f"
+          test -f "$p4"
           grep -q "research_start_threshold',9" "$f"
           grep -q "v_events_gt_72 >= 9" "$f"
           grep -q "v_long72_scored >= 1" "$f"
+          grep -q "P4_PREVIOUS_HOME_SPACING_START" "$f"
+          grep -q "v_p4_prev_start" "$f"
           grep -q "v_opponent_ready >= 1" "$f"
           grep -q "manual_first_checkpoint" "$f"
           grep -q "production_change',false" "$f"
           grep -q "freeze exact event/as_of identities" "$f"
+          grep -q "research_start_threshold_events',9" "$p4"
+          grep -q "minimum_distinct_values',3" "$p4"
+          grep -q "targetFieldsIncluded',false" "$p4"
+          grep -q "labelsIncluded',false" "$p4"
