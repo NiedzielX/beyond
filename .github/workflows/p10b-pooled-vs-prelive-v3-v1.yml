@@ -1,0 +1,125 @@
+name: P10b Pooled vs Pre-Live v3 v1
+
+on:
+  pull_request:
+    paths:
+      - "ml/p10b_pooled_vs_prelive_v3_v1.py"
+      - "ml/test_p10b_pooled_vs_prelive_v3_v1.py"
+      - "ml/results/P10B_POOLED_VS_PRELIVE_V3_PRECOMMIT_V1_2026-10-23.md"
+      - ".github/workflows/p10b-pooled-vs-prelive-v3-v1.yml"
+  push:
+    branches: [main]
+    paths:
+      - "ml/p10b_pooled_vs_prelive_v3_v1.py"
+      - "ml/test_p10b_pooled_vs_prelive_v3_v1.py"
+      - "ml/results/P10B_POOLED_VS_PRELIVE_V3_PRECOMMIT_V1_2026-10-23.md"
+      - ".github/workflows/p10b-pooled-vs-prelive-v3-v1.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: p10b-pooled-vs-prelive-v3-v1-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  validate-precommit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install pinned research runtime
+        run: |
+          python -m pip install --upgrade pip
+          pip install \
+            numpy==2.3.5 \
+            pandas==2.2.3 \
+            scikit-learn==1.8.0 \
+            joblib==1.5.3 \
+            catboost==1.2.10 \
+            lightgbm==4.7.0 \
+            xgboost==3.4.1
+      - name: Compile P10b contract
+        run: |
+          python -m py_compile ml/p10b_pooled_vs_prelive_v3_v1.py
+          python -m py_compile ml/test_p10b_pooled_vs_prelive_v3_v1.py
+      - name: Run synthetic protocol tests only
+        run: python -m ml.test_p10b_pooled_vs_prelive_v3_v1
+      - name: Assert precommit production boundary
+        run: |
+          grep -q 'live_adjustment = 0' ml/results/P10B_POOLED_VS_PRELIVE_V3_PRECOMMIT_V1_2026-10-23.md
+          grep -q 'do not execute the real 1,530-match comparison' ml/results/P10B_POOLED_VS_PRELIVE_V3_PRECOMMIT_V1_2026-10-23.md
+
+  real-historical-score:
+    if: github.event_name != 'pull_request'
+    needs: validate-precommit
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install pinned research runtime
+        run: |
+          python -m pip install --upgrade pip
+          pip install \
+            numpy==2.3.5 \
+            pandas==2.2.3 \
+            scikit-learn==1.8.0 \
+            joblib==1.5.3 \
+            catboost==1.2.10 \
+            lightgbm==4.7.0 \
+            xgboost==3.4.1
+      - name: Verify frozen inputs
+        run: |
+          set -euo pipefail
+          history_sha=$(sha256sum ml/artifacts/structural_prior_runtime_v1/historical_runtime_v1.csv.gz | awk '{print $1}')
+          prelive_sha=$(sha256sum ml/artifacts/pre_live_v3_historical_candidate_v1/manifest.json | awk '{print $1}')
+          test "$history_sha" = "3c6b35142c6bd20a484f2aa758cd41284fd6f4c6db1353b138f81cf321161569"
+          test "$prelive_sha" = "b8c1a3cb1ddb70e9f6b67a6bc1db23619f26a8c328bf4b78399fc262394ff70a"
+          jq -e '.freeze_id == "pre-live-v3-historical-candidate-2026-10-21-v1"' \
+            ml/artifacts/pre_live_v3_historical_candidate_v1/manifest.json >/dev/null
+      - name: Execute real P10b historical comparison
+        run: |
+          set -euo pipefail
+          python -m ml.p10b_pooled_vs_prelive_v3_v1 \
+            --historical-runtime ml/artifacts/structural_prior_runtime_v1/historical_runtime_v1.csv.gz \
+            --input-manifest ml/artifacts/structural_prior_runtime_v1/manifest.json \
+            --prelive-v3-manifest ml/artifacts/pre_live_v3_historical_candidate_v1/manifest.json \
+            --output-json /tmp/p10b-scorecard.json \
+            --predictions-csv /tmp/p10b-predictions.csv \
+            --fold-manifest /tmp/p10b-fold-manifest.json
+      - name: Fail closed on governance / production drift
+        run: |
+          set -euo pipefail
+          jq -e '
+            .version == "p10b-pooled-vs-prelive-v3-v1"
+            and .incumbent_id == "pre-live-v3-historical-candidate-2026-10-21-v1"
+            and .evidence_class == "historical_exposed_research"
+            and .production_change == false
+            and .live_adjustment == 0
+            and .match_blocking == true
+            and .governance_v2.robust_advance_allowed == false
+            and (.governance_v2.reason_codes | index("business_meaningful_mae_threshold_not_defined") != null)
+          ' /tmp/p10b-scorecard.json >/dev/null
+      - name: Print headline only after frozen execution
+        run: |
+          jq '{prelive_v3_match_balanced_mae,pooled_match_balanced_mae,delta_mae,relative_mae_improvement,event_improvement_rate,fold_improvement_rate,per_horizon,uncertainty,governance_v2}' /tmp/p10b-scorecard.json
+      - name: Hash evidence
+        run: |
+          sha256sum /tmp/p10b-scorecard.json /tmp/p10b-predictions.csv /tmp/p10b-fold-manifest.json
+      - name: Upload immutable research evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: p10b-pooled-vs-prelive-v3-v1-${{ github.run_id }}
+          path: |
+            /tmp/p10b-scorecard.json
+            /tmp/p10b-predictions.csv
+            /tmp/p10b-fold-manifest.json
+          if-no-files-found: error
+          retention-days: 365
