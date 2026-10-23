@@ -56,7 +56,7 @@ Status: **FROZEN / GENUINE POST-FREEZE EVIDENCE ACTIVE**.
 | P5a — structural/live shrinkage | ✅ DONE | retain full frozen P2 |
 | P5 — structural + context + live | ⏸ DATA-BOUND | requires genuine labeled P4 component |
 | P6 — live incremental value | ✅ DONE HISTORICALLY | positive point signal, uncertainty/bias prevent promotion |
-| **P7 — 72–168h** | 🟡 **HARNESS + EXECUTOR READY / DATA GATE 8/9** | no real tournament before freeze at N>=9 |
+| **P7 — 72–168h** | 🟡 **HARNESS + EXECUTOR READY / REAL ANCHOR AUDIT 8/8 PASS / DATA GATE 8/9** | no real tournament before freeze at N>=9 |
 | P8 — club calibration | ✅ DONE | no robust gain |
 | Production | ⛔ NOT READY | `live_adjustment = 0` |
 
@@ -143,7 +143,8 @@ Canonical:
 - `ml/p7_long168_tournament_v1.py`;
 - `ml/test_p7_long168_executor_v1.py`;
 - `.github/workflows/p7-long168-executor-v1.yml`;
-- `ml/results/P7_LONG168_EXECUTOR_V1_2026-10-23.md`.
+- `ml/results/P7_LONG168_EXECUTOR_V1_2026-10-23.md`;
+- `ml/results/P7_LONG168_ANCHOR_AUDIT_V1_2026-10-23.md`.
 
 ## Historical T-7 anchor issue resolved explicitly
 
@@ -173,11 +174,37 @@ Historical runtime SHA256:
 
 The executor workflow checks the actual file bytes before replay.
 
-### Target invariance
+### Real main-branch anchor audit — PASS
+
+Post-merge workflow:
+
+- run id: `39967794585`;
+- main commit: `ba85b29cf270e4db83b21fecd8f99aa40567e1af`;
+- audit status: `P7_T7_ANCHOR_REPLAY_READY`;
+- independent events: `8`;
+- anchors produced: `8`;
+- audited IDs: `1, 3, 4, 5, 11, 15, 18, 19`;
+- target-attendance invariance: **PASS 8/8**;
+- skipped/missing exact attendance rows: `0`;
+- persisted forecast: `false`;
+- evidence class: `historical_pit_replay`;
+- anchor package SHA256: `7e21831d4da724cd6906ccb34688eb8f4fadd39923054510dea1b33162862362`;
+- support semantic SHA256: `fe62811e376d8c7432b6ee18bb37d2081901068ff42c77075479f7aec6402297`.
+
+Export/audit hashes:
+
+- Long168 export JSON SHA256: `e033a7146df00ccb1a821499e699909ec4a39935a2b26fc09df37ce223ad71b4`;
+- audit JSON SHA256: `54bbaaba2c890e2072197fa71a0ffff6dba88750b788536258e1cbb052018e18`;
+- Actions artifact id: `12507727407`;
+- artifact ZIP digest: `sha256:ff4dffbb07d53c452a6b5a739b2fe027fe8569bf2cc31d552d10bb64c408f6bc`.
+
+The real tournament steps were **skipped** on the automatic `main` run. No P7 challenger was fitted and no leaderboard was opened.
+
+### Target invariance contract
 
 The anchor audit mutates each target event's exact-kickoff attendance to a sentinel value and requires the replayed T-7 P50 to remain unchanged.
 
-No target event may be skipped from this check.
+The real audit passed this gate for every current eligible event with no skipped events.
 
 ## Fixed candidate family
 
@@ -208,6 +235,8 @@ Automatic push to `main`:
 - **T-7 anchor audit only**;
 - zero real challenger fitting.
 
+This behavior has now been validated by real run `39967794585`.
+
 Real P7 tournament:
 
 `workflow_dispatch -> mode=execute`
@@ -233,7 +262,7 @@ No P7 v1 output may directly activate production.
 1. continue Long72/final24 prospective evidence;
 2. continue P4 sidecars;
 3. continue Long168 raw evidence accumulation;
-4. allow P7 anchor audit only;
+4. preserve the now-validated P7 anchor path;
 5. do not execute the real P7 tournament;
 6. do not reopen closed tuning loops.
 
@@ -255,4 +284,4 @@ If P4 produces incremental signal, proceed to P5 structural + context + live com
 
 ## One-line handoff
 
-> **P7 is now fully executable but still scientifically blocked at 8/9. Historical T-7 anchors are explicit PIT replays, never claimed as persisted forecasts. At 9/9 use the manual execute path, which freezes identities before labels/results. Production remains off.**
+> **P7 is fully executable and its real historical T-7 anchor path has passed an 8/8 invariance audit, but the learned experiment remains scientifically blocked at 8/9. At 9/9 use the manual execute path: freeze first, labels/models second. Production remains off.**
