@@ -4,25 +4,24 @@ For any Beyond forecasting / ML / Demand Engine task:
 
 1. **Read `AI_BOOTSTRAP.md` first.**
 2. Then read `ml/MAE_RESEARCH_ROADMAP_V3.md`.
-3. Read `ml/PROGRESS_TRACKING.md` and `ml/CURRENT_MODEL.md` for current state.
-4. For Long168/P7, read `ml/D2_LONG_HORIZON_LIVE_V1_PLAN.md` before touching code or data.
-5. Read `ml/CORE_PRODUCT_STATUS.md` when product/model scope matters.
-6. Read `ml/LIVE_DEMAND_ENGINE_V1_PLAN.md` for live-ticket / Long72 implementation.
-7. Read `ml/MODEL_ACCURACY_DEVELOPMENT_INSTRUCTIONS_V2.md` before creating a new experiment.
-8. Do **not** retrain, rebuild or reproduce frozen historical benchmarks merely to recover context.
-9. For latest-state questions, prefer targeted repo/DB reads over historical recomputation.
-10. Never store secrets, tokens, service-role keys or credentials in repo files.
+3. Read `ml/PROGRESS_TRACKING.md` for the latest canonical state.
+4. For P4/P5, read `ml/results/P4_FIXTURE_CONTEXT_PRECOMMIT_V1_2026-10-23.md` before touching feature selection or model code.
+5. For P7/Long168, read `ml/D2_LONG_HORIZON_LIVE_V1_PLAN.md` before touching code or data.
+6. Read `ml/CURRENT_MODEL.md`, `ml/CORE_PRODUCT_STATUS.md`, `ml/MODEL_ACCURACY_DEVELOPMENT_INSTRUCTIONS_V2.md`, and `ml/LIVE_DEMAND_ENGINE_V1_PLAN.md` as relevant.
+7. Do **not** retrain/rebuild frozen historical benchmarks merely to recover context.
+8. For latest-state questions, use targeted repo/DB reads rather than historical recomputation.
+9. Never store secrets/tokens/service-role keys in repo files.
 
-## Core modelling principle
+## Core principle
 
 > **The objective is lower true out-of-sample MAE, not model complexity.**
 
 Always separate:
 
-- **Evidence Lane:** immutable frozen packages collecting forward evidence;
-- **MAE R&D Lane:** new challenger versions developed in parallel.
+- Evidence Lane — immutable packages collecting forward evidence;
+- MAE R&D Lane — versioned challengers developed in parallel.
 
-Never fabricate PIT history when the required state was never captured.
+Never fabricate PIT history when a state was not captured.
 
 ## Validation rule
 
@@ -31,26 +30,25 @@ Use `ml/temporal_validation_v1.py`.
 Historical/global:
 
 - strict season/group expanding folds;
-- no future-season data in earlier training folds;
+- no future-season data in earlier train folds;
 - persist exact fold identities + SHA.
 
-Live-ticket:
+Live/context:
 
-- event is the independent unit;
+- `ticket_event` is the independent unit;
 - strict forward-event validation by kickoff;
-- tied kickoff events cannot train each other;
-- LOEO is diagnostic, not sufficient;
+- tied kickoffs cannot train one another;
 - no random snapshot split as headline evidence.
 
 ## Closed research loops
 
-Do **not** reopen without a materially new hypothesis/data source:
+Do not reopen without a materially new hypothesis/data source:
 
-1. MAE-native estimator tournament — no robust incumbent replacement.
-2. Estimator `ΔMAE` uncertainty — signals insufficient.
-3. Historical Long72 live incremental value — measured, uncertainty-limited.
-4. Structural ↔ live convex shrinkage — retain full P2.
-5. Simple post-hoc club/opponent calibration — no robust gain.
+1. MAE-native estimator tournament;
+2. estimator `ΔMAE` uncertainty;
+3. historical Long72 incremental live value;
+4. structural/live convex shrinkage;
+5. simple post-hoc club/opponent calibration.
 
 ## Frozen packages
 
@@ -58,167 +56,188 @@ Do not mutate:
 
 - final24 `v2/Ridge/P2`;
 - Long72 `d2-long72-stage2-p2-observation-maturity-2026-10-21-v1`;
-- Pre-Live / Structural Prior research anchors.
+- Pre-Live / Structural Prior anchors.
 
-Any material model/feature/weight/target change creates a new challenger/version.
+Any material feature/model/weight/target change requires a new challenger/version.
 
 ## Current evidence checkpoint
 
-Use `public.ml_research_readiness_v1()` for current gate state instead of relying on prose counts.
+Use `public.ml_research_readiness_v1()` instead of relying on prose counts.
 
-Latest checkpoint read on 2026-10-23:
+Latest checkpoint on 2026-10-23:
 
-- Long72 reproducible forecasts: `58`;
-- genuine scored Long72 events: `0`;
-- fixture-context sidecar: `58 / 56 READY`;
-- next-opponent sidecar: `58 / 0 READY`;
-- Long168: `8/9` independent events >72h, `110` rows >72h.
+- Long72 reproducible forecasts `66`;
+- genuine scored Long72 events `0`;
+- fixture context `66 / 64 READY`;
+- P4a independent READY events `5`;
+- P4a labeled READY events `0`;
+- next-opponent `66 / 0 READY`;
+- Long168 `8/9`, `110` rows >72h.
 
-## P7 Long168 — harness + executor are complete
+## P4a fixture context — already frozen
 
-P7 is no longer a design/coding task. The experiment is fully precommitted and the execution pipeline exists before the ninth event.
+P4a is no longer a feature-selection/design task.
+
+Research question:
+
+> Does `previous_home_match_days` reduce event-level attendance MAE beyond the frozen Long72 pre-live T3+B2 anchor?
+
+Canonical files:
+
+- `supabase/sql/p4_fixture_context_precommit_v1.sql`;
+- `ml/p4_fixture_context_harness_v1.py`;
+- `ml/test_p4_fixture_context_harness_v1.py`;
+- `.github/workflows/p4-fixture-context-precommit-v1.yml`;
+- `ml/results/P4_FIXTURE_CONTEXT_PRECOMMIT_V1_2026-10-23.md`.
+
+### Independent unit and row selection
+
+- independent unit = `ticket_event`;
+- exactly first READY context row per reproducible Long72 event;
+- one frozen context observation per event.
+
+### P4a control
+
+`long72-prelive-t3-b2-anchor`
+
+This is frozen Structural Prior T-3 plus frozen B2 current-season correction. It contains no Long72 live/P2 signal.
+
+### P4a primary feature
+
+Only:
+
+`previous_home_match_days`
+
+Current pre-label values over five READY events:
+
+`13, 36, 15, 14, 15`
+
+Coverage 5/5; four distinct values.
+
+### Hard start gate
+
+Evaluation is prohibited until both are true:
+
+- `>=9` labeled independent events;
+- `>=3` distinct labeled spacing values.
+
+Do not change this threshold after seeing outcomes/model results.
+
+### Target separation
+
+- `export_p4_fixture_context_inputs_v1()` = target-free inputs;
+- `export_p4_fixture_context_labels_v1()` = labels only.
+
+Required sequence:
+
+`target-free export -> freeze identities/features/anchor -> SHA -> explicit execute -> labels -> reproduce freeze -> 9/3 gate -> evaluation`
+
+Automatic main runs must never fetch labels.
+
+Real target-free main audit run `40012547250` passed:
+
+- event count `5`;
+- distinct feature values `4`;
+- manifest SHA `15cb691b8874dee1e086089f90c9f239b703f9b33894945debe0c819ec73fc86`;
+- target values opened `false`;
+- model training performed `false`.
+
+### Fixed P4a challenger
+
+`q50-linear-prev-home-spacing-a002`
+
+- residual target = actual attendance - T3+B2 anchor;
+- only feature `previous_home_match_days`;
+- QuantileRegressor q=.5 alpha=.002;
+- RobustScaler;
+- no broad search;
+- strict forward-event validation, min 5 train events;
+- paired event-block bootstrap 5,000 draws seed 42.
+
+Advance only if:
+
+- MAE below anchor;
+- >50% held-out events improve;
+- >50% forward folds improve.
+
+No P4a result directly activates production.
+
+### Explicitly excluded P4a features
+
+Do not silently add:
+
+- `next_home_match_days` — sparse, currently 1/5 coverage;
+- team/home fixture density 7/14/30d — currently no useful event-level variance.
+
+A later activation requires a new precommit/version.
+
+## P4b next-opponent attractiveness
+
+Current state: `0 READY`.
+
+Never reconstruct missing opponent attractiveness from later schedule/outcome knowledge.
+
+## P5
+
+Do not start P5 until P4a or another separately precommitted context experiment demonstrates incremental signal.
+
+If context advances, combine pre-live/structural + context + live using fold-local weights only. Never learn weights on evaluation folds.
+
+## P7 Long168 — harness + executor complete
+
+P7 is fully precommitted and executable but blocked at `8/9`.
 
 Canonical files:
 
 - `ml/p7_long168_harness_v1.py`;
 - `ml/p7_long168_anchor_replay_v1.py`;
 - `ml/p7_long168_tournament_v1.py`;
-- `ml/test_p7_long168_harness_v1.py`;
-- `ml/test_p7_long168_executor_v1.py`;
 - `.github/workflows/p7-long168-harness-v1.yml`;
-- `.github/workflows/p7-long168-executor-v1.yml`;
-- `ml/results/P7_LONG168_HARNESS_V1_2026-10-23.md`;
-- `ml/results/P7_LONG168_EXECUTOR_V1_2026-10-23.md`.
+- `.github/workflows/p7-long168-executor-v1.yml`.
 
-### Hard gate
-
-Research start requires:
-
-`N>=9` independent events with valid observations >72h.
+Research start requires `N>=9` independent events with valid >72h observations.
 
 At `N<9`:
 
-- freeze/model execution must fail closed;
-- only the T-7 anchor audit may run;
-- do not lower the threshold.
+- real model execution fails closed;
+- only T-7 anchor audit is allowed;
+- never lower the gate.
 
-### Historical T-7 anchor boundary
-
-The current historical Long168 events do not have persisted T-7 rows in `private.structural_prior_forecasts_v1`.
-
-Do **not** fabricate a stored prior and do not substitute a later checkpoint.
-
-The executor uses the frozen Structural Prior Runtime v1 replay path at exactly `kickoff - 7 days`, with chronologically prior attendance/sporting facts only.
-
-Evidence class must remain:
+Historical T-7 control is:
 
 `historical_pit_replay`
 
-and:
+with:
 
-`persisted_forecast = false`
+`persisted_forecast = false`.
 
-Never describe these replayed anchors as genuinely persisted or prospective forecasts.
+The real audit passed target-attendance invariance `8/8`.
 
-Frozen lineage:
+At 9/9:
 
-- T-7 artifact SHA256: `97e712245d6539396030e88ea450809f4265bd7538aa90b29e234420231ac927`;
-- historical runtime SHA256: `3c6b35142c6bd20a484f2aa758cd41284fd6f4c6db1353b138f81cf321161569`.
+1. read fresh readiness;
+2. explicit `mode=execute` dispatch;
+3. freeze exact event/as-of/snapshot/bucket identities;
+4. persist SHA;
+5. verify T-7 replay;
+6. only then attach labels;
+7. strict forward folds;
+8. fixed tournament;
+9. uncertainty;
+10. research decision only.
 
-The workflow verifies the actual repository bytes and target-attendance invariance before anchor use.
+## Evidence operations
 
-### P7 anchor rule
+Operational pipelines are active:
 
-Use Structural Prior **T-7** as the control throughout `72 < h <= 168`.
+- Long72 forecast-before-label hourly;
+- outcome-history sync hourly;
+- completed-event scoring in prospective cycle;
+- schedule-as-known every 6h;
+- fixture-context sidecar every 15m;
+- next-opponent sidecar every 15m.
 
-Never:
-
-- use future T-3/T-1 predictions;
-- interpolate future checkpoints;
-- extrapolate Long72 P2 backward beyond 72h.
-
-### Fixed P7 candidates
-
-- `anchor-only-t7`;
-- `q50-linear-residual-a002`;
-- `gbr-l1-depth2-n50-lr003`.
-
-No broad tuning after seeing results.
-
-### At 9/9 — mandatory execution order
-
-1. re-check `public.ml_research_readiness_v1()`;
-2. explicitly dispatch `.github/workflows/p7-long168-executor-v1.yml` with `mode=execute`;
-3. freeze exact eligible `ticket_event_id + as_of + snapshot_id + bucket_6h` identities;
-4. persist deterministic manifest SHA256;
-5. verify target/outcome absence in the freeze payload;
-6. verify the historical T-7 replay package and exact frozen event set;
-7. only then read/join attendance labels;
-8. build strict forward-event folds;
-9. run only the fixed P7 v1 candidate family;
-10. report event-balanced MAE, guardrails and paired event-block uncertainty;
-11. decide research advancement only;
-12. keep production unchanged.
-
-Opening real model results before identity freeze violates the experiment contract.
-
-### P7 evaluation
-
-Primary: strict-forward event-balanced MAE.
-
-Required:
-
-- median AE;
-- signed bias;
-- P90 AE;
-- worst-event degradation;
-- event-improvement rate;
-- forward-fold improvement rate;
-- 72–96 / 96–120 / 120–144 / 144–168h band MAE;
-- paired event-block bootstrap, 5,000 draws, seed 42.
-
-A learned candidate advances only if MAE beats the anchor **and** more than 50% of held-out events **and** more than 50% of usable forward folds improve. N=9 starts research only; it is not production adequacy.
-
-### Workflow behavior
-
-Automatic push to `main` runs:
-
-- code/contract validation;
-- frozen artifact byte checks;
-- live support-export fetch;
-- T-7 historical replay audit only.
-
-It does **not** fit a real P7 challenger automatically.
-
-Real P7 fitting requires explicit `workflow_dispatch -> mode=execute` and still begins with the N>=9 freeze gate.
-
-## P4/P5 state
-
-P4 evidence capture is operational and fail-closed.
-
-- never backfill today's schedule into a past forecast;
-- never reconstruct opponent attractiveness from outcomes not known at the forecast cutoff;
-- do not choose the P4 ablation sample floor after seeing model performance.
-
-Once genuine labeled context exists:
-
-1. inspect availability/variance only;
-2. predeclare the independent-event floor;
-3. freeze the ablation protocol;
-4. run P4 ablations;
-5. only if context adds signal, run P5 structural + context + live combinations.
-
-## Live runtime operational state
-
-Live Forecast Orchestrator v1 is deployed.
-
-Structural Prior runtimes for T-30/T-14/T-7/T-3/T-1 are active/executable.
-
-Do not rebuild them during normal modelling work unless a dedicated runtime trigger requires it.
-
-## Product principle
-
-Optimize for accurate prediction early enough for the club to act, not only the lowest T-1 error.
+Do not add another tuning loop while P4a/P7 gates are closed.
 
 ## Production boundary
 
