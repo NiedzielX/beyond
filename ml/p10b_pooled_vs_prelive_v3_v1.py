@@ -1,29 +1,12 @@
 #!/usr/bin/env python3
-"""P10b — pooled-horizon challenger vs frozen Pre-Live v3 v1.
+"""P10b — pooled-horizon challenger vs frozen Pre-Live v3.
 
-Research question
------------------
-Does the already-precommitted P10 pooled cross-horizon HGB architecture beat
-Beyond's strongest *reproducible* structural/pre-live research anchor under one
-common match-blocked temporal protocol?
+Question: does the already-frozen P10 pooled cross-horizon HGB architecture
+beat Beyond's strongest reproducible structural/pre-live research anchor under
+one common, strictly temporal, complete-match-blocked protocol?
 
-Comparator
-----------
-Exact frozen `pre-live-v3-historical-candidate-2026-10-21-v1`:
-- T-30 / T-7: exact frozen Pre-Live v3 contracts;
-- T-14 / T-3 / T-1: exact Frozen Pre-Live v2 horizon contracts retained by v3.
-
-Challenger
-----------
-The P10 v1 pooled HGB residual architecture is reused without retuning:
-- one model across T-30/T-14/T-7/T-3/T-1;
-- `horizon_days` is an input;
-- residual target is attendance minus the canonical PIT `baseline_season`;
-- HGB hyperparameters are imported from frozen P10 v1;
-- equal total training weight per match;
-- no model/feature/hyperparameter search in P10b.
-
-This is historical exposed research evidence only. Production stays unchanged.
+No tuning or selection occurs in P10b. Historical evidence is exposed research
+evidence only and cannot change production.
 """
 from __future__ import annotations
 
@@ -36,22 +19,20 @@ import numpy as np
 import pandas as pd
 
 from ml.mae_delta_uncertainty_v1 import BootstrapConfig, bootstrap_delta_mae, paired_event_errors
-from ml.p10_pooled_horizon_global_v1 import (
-    CAT,
-    HORIZON_DAYS,
-    fit_residual,
-    numeric_features,
-    predict,
-)
+from ml.p10_pooled_horizon_global_v1 import HORIZON_DAYS, fit_residual, numeric_features, predict
 from ml.pre_live_baseline_optimization_v1 import load_feature_store, sha256_file
 from ml.pre_live_v3_fixed_temporal_package_v1 import (
     CHANGED_HORIZONS,
-    FOLDS,
+    FOLDS as PRELIVE_V3_FOLDS,
     candidate_prediction as prelive_v3_changed_prediction,
 )
 from ml.pre_live_v3_regime_revalidation_v1 import frozen_v2_for_season, v3_historical_base_for_season
 from ml.research_advance_governance_v2 import ResearchAdvanceInput, decide_research_advance
-from ml.temporal_validation_v1 import event_balanced_mae, fold_manifest, TemporalFold
+from ml.temporal_validation_v1 import (
+    build_expanding_group_folds,
+    event_balanced_mae,
+    fold_manifest,
+)
 
 VERSION = "p10b-pooled-vs-prelive-v3-v1"
 WORKSTREAM = "P10b — pooled horizon cross-learning vs frozen Pre-Live v3"
@@ -63,6 +44,7 @@ EXPECTED_PIT_ROWS = 7650
 BOOTSTRAP_SAMPLES = 5000
 RANDOM_SEED = 42
 BASELINE_COLUMN = "baseline_season"
+HORIZONS = ("T-30", "T-14", "T-7", "T-3", "T-1")
 
 ChampionProvider = Callable[[pd.DataFrame, str, str, list[str]], tuple[pd.DataFrame, np.ndarray]]
 
@@ -73,7 +55,7 @@ def exact_prelive_v3_prediction(
     season: str,
     training_seasons: list[str],
 ) -> tuple[pd.DataFrame, np.ndarray]:
-    """Return the exact frozen Pre-Live v3 prediction for one horizon/fold."""
+    """Use the frozen v3 implementation itself; never reimplement its logic."""
     if horizon in CHANGED_HORIZONS:
         rows, prediction, _ = prelive_v3_changed_prediction(
             store, horizon, season, training_seasons
@@ -97,7 +79,7 @@ def _eligible(frame: pd.DataFrame) -> pd.DataFrame:
     return out[eligible].copy()
 
 
-def _prepare_p10_frame(store: pd.DataFrame) -> pd.DataFrame:
+def prepare_frame(store: pd.DataFrame) -> pd.DataFrame:
     required = {
         "match_key", "season", "horizon", "kickoff_at", "home_club_key",
         "away_club_key", "target_attendance", "training_eligible", BASELINE_COLUMN,
@@ -105,58 +87,59 @@ def _prepare_p10_frame(store: pd.DataFrame) -> pd.DataFrame:
     missing = sorted(required - set(store.columns))
     if missing:
         raise RuntimeError(f"P10b feature store missing columns: {missing}")
+
     frame = _eligible(store)
     frame["kickoff_at"] = pd.to_datetime(frame["kickoff_at"], utc=True, errors="raise")
     frame["target_attendance"] = pd.to_numeric(frame["target_attendance"], errors="raise")
     frame["baseline_fixed"] = pd.to_numeric(frame[BASELINE_COLUMN], errors="raise")
     if frame["baseline_fixed"].isna().any():
         raise RuntimeError("P10b eligible rows contain null baseline_season")
+
     unknown = sorted(set(frame["horizon"].astype(str)) - set(HORIZON_DAYS))
     if unknown:
         raise RuntimeError(f"P10b unknown horizons: {unknown}")
     frame["horizon_days"] = frame["horizon"].astype(str).map(HORIZON_DAYS).astype(float)
+
     if frame.duplicated(["match_key", "horizon"], keep=False).any():
         raise RuntimeError("P10b requires one eligible row per match/horizon")
     return frame.reset_index(drop=True)
 
 
-def _fold_manifest(frame: pd.DataFrame) -> dict[str, Any]:
-    folds: list[TemporalFold] = []
-    for index, (test_season, training_seasons) in enumerate(FOLDS, start=1):
-        train = frame[frame["season"].isin(training_seasons)]
-        test = frame[frame["season"] == test_season]
-        train_ids = tuple(sorted(train["match_key"].astype(str).unique()))
-        test_ids = tuple(sorted(test["match_key"].astype(str).unique()))
-        if set(train_ids) & set(test_ids):
-            raise RuntimeError(f"P10b match leakage in {test_season}")
-        if train["kickoff_at"].max() >= test["kickoff_at"].min():
-            raise RuntimeError(f"P10b temporal ordering failure in {test_season}")
-        folds.append(TemporalFold(
-            fold_id=f"p10b-fold-{index}-{test_season}",
-            train_groups=tuple(training_seasons),
-            test_groups=(test_season,),
-            train_entities=train_ids,
-            test_entities=test_ids,
-            train_max_time=train["kickoff_at"].max().isoformat(),
-            test_min_time=test["kickoff_at"].min().isoformat(),
-        ))
-    return fold_manifest(folds, protocol_id="p10b-prelive-v3-common-fixed-temporal-v1")
+def canonical_folds(frame: pd.DataFrame):
+    folds = build_expanding_group_folds(
+        frame,
+        entity_col="match_key",
+        time_col="kickoff_at",
+        group_col="season",
+        min_train_groups=1,
+    )
+    observed = [
+        (fold.test_groups[0], list(fold.train_groups))
+        for fold in folds
+    ]
+    expected = [(season, list(training)) for season, training in PRELIVE_V3_FOLDS]
+    if observed != expected:
+        raise RuntimeError(
+            f"P10b fold protocol drift observed={observed} expected={expected}"
+        )
+    return folds
 
 
-def _champion_for_fold(
+def champion_for_fold(
     store: pd.DataFrame,
     test_season: str,
     training_seasons: list[str],
     provider: ChampionProvider,
 ) -> pd.DataFrame:
     pieces: list[pd.DataFrame] = []
-    for horizon in ("T-30", "T-14", "T-7", "T-3", "T-1"):
+    for horizon in HORIZONS:
         rows, prediction = provider(store, horizon, test_season, training_seasons)
         if len(rows) != len(prediction):
             raise RuntimeError(f"P10b champion length mismatch {horizon}/{test_season}")
         part = rows[["match_key", "horizon", "target_attendance"]].copy()
         part["champion_prediction"] = np.asarray(prediction, dtype=float)
         pieces.append(part)
+
     champion = pd.concat(pieces, ignore_index=True)
     if champion.duplicated(["match_key", "horizon"], keep=False).any():
         raise RuntimeError(f"P10b champion duplicate match/horizon {test_season}")
@@ -169,26 +152,29 @@ def evaluate(
     champion_provider: ChampionProvider = exact_prelive_v3_prediction,
     minimum_meaningful_mae_improvement: float | None = None,
 ) -> tuple[dict[str, Any], pd.DataFrame, dict[str, Any]]:
-    frame = _prepare_p10_frame(store)
+    frame = prepare_frame(store)
+    folds = canonical_folds(frame)
+    manifest = fold_manifest(folds, protocol_id="p10b-prelive-v3-common-fixed-temporal-v1")
     numeric = numeric_features(frame)
-    manifest = _fold_manifest(frame)
 
     outputs: list[pd.DataFrame] = []
     fold_scores: list[dict[str, Any]] = []
 
-    for index, (test_season, training_seasons) in enumerate(FOLDS, start=1):
-        train = frame[frame["season"].isin(training_seasons)].copy()
-        test = frame[frame["season"] == test_season].copy()
-        train_ids = set(train["match_key"].astype(str))
-        test_ids = set(test["match_key"].astype(str))
+    for fold in folds:
+        test_season = fold.test_groups[0]
+        training_seasons = list(fold.train_groups)
+        train_ids = set(fold.train_entities)
+        test_ids = set(fold.test_entities)
+        train = frame[frame["match_key"].astype(str).isin(train_ids)].copy()
+        test = frame[frame["match_key"].astype(str).isin(test_ids)].copy()
         if train_ids & test_ids:
-            raise RuntimeError(f"P10b match leakage in fold {test_season}")
+            raise RuntimeError(f"P10b match leakage in {fold.fold_id}")
 
         pooled_model = fit_residual(train, numeric)
         test["pooled_prediction"] = predict(pooled_model, test, numeric)
 
-        champion = _champion_for_fold(
-            store, test_season, list(training_seasons), champion_provider
+        champion = champion_for_fold(
+            store, test_season, training_seasons, champion_provider
         )
         joined = test.merge(
             champion,
@@ -214,25 +200,21 @@ def evaluate(
             "match_key", "season", "horizon", "kickoff_at", "home_club_key",
             "target_attendance", "champion_prediction", "pooled_prediction",
         ]].copy()
-        out["fold_id"] = f"p10b-fold-{index}-{test_season}"
+        out["fold_id"] = fold.fold_id
         outputs.append(out)
 
         incumbent_mae = event_balanced_mae(
-            out,
-            event_col="match_key",
-            actual_col="target_attendance",
-            prediction_col="champion_prediction",
+            out, event_col="match_key", actual_col="target_attendance",
+            prediction_col="champion_prediction"
         )
         challenger_mae = event_balanced_mae(
-            out,
-            event_col="match_key",
-            actual_col="target_attendance",
-            prediction_col="pooled_prediction",
+            out, event_col="match_key", actual_col="target_attendance",
+            prediction_col="pooled_prediction"
         )
         fold_scores.append({
-            "fold_id": f"p10b-fold-{index}-{test_season}",
+            "fold_id": fold.fold_id,
             "test_season": test_season,
-            "training_seasons": list(training_seasons),
+            "training_seasons": training_seasons,
             "test_matches": int(out["match_key"].nunique()),
             "prelive_v3_match_balanced_mae": incumbent_mae,
             "pooled_match_balanced_mae": challenger_mae,
@@ -245,17 +227,14 @@ def evaluate(
     ).reset_index(drop=True)
 
     incumbent_mae = event_balanced_mae(
-        predictions,
-        event_col="match_key",
-        actual_col="target_attendance",
-        prediction_col="champion_prediction",
+        predictions, event_col="match_key", actual_col="target_attendance",
+        prediction_col="champion_prediction"
     )
     challenger_mae = event_balanced_mae(
-        predictions,
-        event_col="match_key",
-        actual_col="target_attendance",
-        prediction_col="pooled_prediction",
+        predictions, event_col="match_key", actual_col="target_attendance",
+        prediction_col="pooled_prediction"
     )
+
     paired = paired_event_errors(
         predictions,
         event_col="match_key",
@@ -272,6 +251,7 @@ def evaluate(
     event_improvement_rate = float(uncertainty["event_improvement_rate"])
     fold_improvement_rate = float(np.mean([row["pooled_improved"] for row in fold_scores]))
     bootstrap = uncertainty["bootstrap"]
+
     governance = decide_research_advance(ResearchAdvanceInput(
         incumbent_mae=incumbent_mae,
         challenger_mae=challenger_mae,
@@ -287,12 +267,14 @@ def evaluate(
         actual = group["target_attendance"].astype(float).to_numpy()
         incumbent = group["champion_prediction"].astype(float).to_numpy()
         challenger = group["pooled_prediction"].astype(float).to_numpy()
+        incumbent_h_mae = float(np.mean(np.abs(actual - incumbent)))
+        challenger_h_mae = float(np.mean(np.abs(actual - challenger)))
         per_horizon[str(horizon)] = {
             "rows": int(len(group)),
             "matches": int(group["match_key"].nunique()),
-            "prelive_v3_mae": float(np.mean(np.abs(actual - incumbent))),
-            "pooled_mae": float(np.mean(np.abs(actual - challenger))),
-            "delta_mae": float(np.mean(np.abs(actual - challenger)) - np.mean(np.abs(actual - incumbent))),
+            "prelive_v3_mae": incumbent_h_mae,
+            "pooled_mae": challenger_h_mae,
+            "delta_mae": challenger_h_mae - incumbent_h_mae,
         }
 
     result = {
@@ -341,14 +323,14 @@ def main() -> None:
             f"P10b history SHA drift actual={history_sha} expected={EXPECTED_HISTORY_SHA256}"
         )
     source_manifest = json.loads(args.input_manifest.read_text())
-    expected_manifest_sha = source_manifest["historical_runtime"]["sha256"]
-    if expected_manifest_sha != history_sha:
+    if source_manifest["historical_runtime"]["sha256"] != history_sha:
         raise RuntimeError("P10b source manifest/history mismatch")
 
     store = load_feature_store(args.historical_runtime)
     if len(store) != EXPECTED_PIT_ROWS or store["match_key"].nunique() != EXPECTED_MATCHES:
         raise RuntimeError(
-            f"P10b canonical store drift rows={len(store)} matches={store['match_key'].nunique()}"
+            f"P10b canonical store drift rows={len(store)} "
+            f"matches={store['match_key'].nunique()}"
         )
 
     result, predictions, manifest = evaluate(
