@@ -195,7 +195,7 @@ def test_identity_drift_fails_before_tournament() -> None:
     freeze["identities"][0]["requested_snapshot_id"] += 1
     expect_runtime_error(
         lambda: run_tournament(long168=long168, freeze=freeze, anchor=anchor, events_payload=events),
-        "freeze SHA does not reproduce",
+        "frozen identity drift",
     )
 
 
