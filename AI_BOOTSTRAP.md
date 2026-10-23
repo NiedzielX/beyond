@@ -1,6 +1,6 @@
 # Beyond — AI Bootstrap / Read This First
 
-Last updated: **2026-10-22**
+Last updated: **2026-10-23**
 
 ## Cold-start rule
 
@@ -8,12 +8,13 @@ Read in this order:
 
 1. `ml/MAE_RESEARCH_ROADMAP_V3.md`;
 2. `ml/PROGRESS_TRACKING.md`;
-3. `ml/CURRENT_MODEL.md`;
-4. `ml/CORE_PRODUCT_STATUS.md`;
-5. `ml/MODEL_ACCURACY_DEVELOPMENT_INSTRUCTIONS_V2.md`;
-6. `ml/LIVE_DEMAND_ENGINE_V1_PLAN.md`;
-7. `ml/MODEL_PROMOTION_GOVERNANCE_V1.md`;
-8. only then open detailed result/manifests needed for the current task.
+3. `ml/D2_LONG_HORIZON_LIVE_V1_PLAN.md` when P7/Long168 is relevant;
+4. `ml/CURRENT_MODEL.md`;
+5. `ml/CORE_PRODUCT_STATUS.md`;
+6. `ml/MODEL_ACCURACY_DEVELOPMENT_INSTRUCTIONS_V2.md`;
+7. `ml/LIVE_DEMAND_ENGINE_V1_PLAN.md`;
+8. `ml/MODEL_PROMOTION_GOVERNANCE_V1.md`;
+9. only then open detailed results/manifests required for the task.
 
 Do not rebuild frozen historical benchmarks merely to recover context.
 
@@ -23,175 +24,179 @@ Do not rebuild frozen historical benchmarks merely to recover context.
 
 Model complexity is secondary. Predictive information and future MAE are primary.
 
-## Current architecture
-
-### Global historical / structural core
+## Structural core
 
 - 1,530 Ekstraklasa matches / five complete seasons;
 - 7,650 PIT snapshots;
 - T-30/T-14/T-7/T-3/T-1;
-- Structural Prior / Global Model family: club-history baseline + learned global residual correction.
+- Structural Prior / Global Model family remains incumbent.
 
 2024/25 and 2025/26 are exposed historical research evidence for future challenger decisions.
 
-### Frozen Long72 live package
+## Frozen Long72 live package
 
 `d2-long72-stage2-p2-observation-maturity-2026-10-21-v1`
 
-Historical event-balanced result:
+Historical event-balanced comparison:
 
 - structural anchor MAE `3707.14`;
 - frozen P2 MAE `3012.63`;
-- `18.73%` MAE improvement;
-- 95% paired event-block interval for `ΔMAE`: `[-1549.89,+148.05]`;
+- `ΔMAE=-694.51` / `18.73%` improvement;
+- 95% paired event-block interval `[-1549.89,+148.05]`;
 - P2 bias `+917.05`.
 
-Interpretation: material historical incremental live signal, but N=13 remains uncertainty-limited and genuine prospective evidence is required.
+The package is immutable and continues genuine prospective evidence collection.
 
 ## Closed loops — do not repeat by default
 
-- MAE-native estimator tournament: complete, no replacement.
-- estimator `ΔMAE` uncertainty: complete, no replacement.
-- P6 structural vs live incremental value: complete historically.
-- P5a structural/live convex shrinkage: complete, retain full frozen P2.
+- P2 MAE-native estimator tournament — no replacement;
+- P3 estimator `ΔMAE` uncertainty — signals insufficient;
+- P5a structural/live convex shrinkage — retain full frozen P2;
+- P6 historical Long72 live incremental value — measured, uncertainty-limited;
+- P8 club/opponent post-hoc calibration — no robust gain.
 
-Strict forward-event P5a MAE:
-
-- anchor `3180.22`;
-- w=.25 `2974.89`;
-- w=.50 `2776.51`;
-- w=.75 `2614.46`;
-- frozen P2 `2472.30`;
-- train-selected shrinkage `2564.22`.
-
-Do not trade away MAE solely to reduce bias. Bias remains a guardrail, not the primary selector.
-
-## Temporal validation contract
+## Validation contract
 
 Use `ml/temporal_validation_v1.py`.
 
-- strict forward-event folds for live work;
-- strict expanding-season/group folds for historical/global work;
-- event is the live independent unit;
-- no random snapshot split as headline evidence;
-- persist exact fold identities/SHA.
+Historical/global:
 
-## P4 forward evidence infrastructure — fully operational
+- strict expanding season/group folds;
+- no future-season information in earlier training folds.
 
-### P4a schedule/fixture context
+Live-ticket:
 
-Forward schedule evidence:
+- event is the independent unit;
+- strict forward-event validation by kickoff;
+- tied kickoffs cannot train one another;
+- LOEO is diagnostic only;
+- no random snapshot split as headline evidence.
 
-- `private.fixture_schedule_batches_v1`;
-- `private.fixture_schedule_rows_v1`;
-- `public.capture_fixture_schedule_as_known_v1(...)`.
+Persist exact fold identities + SHA.
 
-First genuine schedule state:
+## Current live evidence state
 
-`2026-10-21 20:21:39.668518+00`
+Latest checkpoint on 2026-10-23:
 
-PIT fixture lookup:
+- Long72 reproducible forecast rows: `48`;
+- genuine scored Long72 events: `0`;
+- fixture-context sidecar: `48`, `46 READY`;
+- next-opponent sidecar: `48`, `0 READY`.
 
-- `public.fixture_context_as_known_v1(...)`;
-- `public.fixture_context_for_ticket_event_as_known_v1(...)`.
+All P4 capture infrastructure is operational and fail-closed.
 
-Long72 sidecar:
+Do not reconstruct missing schedule/opponent context from later knowledge.
 
-- `private.d2_long72_fixture_context_v1`;
-- `public.capture_d2_long72_fixture_context_v1(...)`;
-- append-only, automatic every 15 minutes.
+## Canonical readiness RPC
 
-Current checkpoint:
+Use:
 
-- 12 reproducible Long72 rows;
-- 12 fixture-context sidecar rows;
-- 10 READY;
-- 2 pre-schedule rows fail closed as `NO_SCHEDULE_STATE_AS_OF`.
+`public.ml_research_readiness_v1()`
 
-### P4b next-home opponent attractiveness
+Triggers:
 
-PIT lookup:
+1. P7 Long168 at `>=9` independent events with rows >72h;
+2. first genuine Long72 score;
+3. first READY next-opponent-attractiveness row.
 
-- `public.opponent_attractiveness_as_known_v1(...)`;
-- `public.next_home_opponent_attractiveness_for_ticket_event_as_known_v1(...)`.
+An hourly condition watch exists for these triggers.
 
-Long72 sidecar:
+## P7 Long168 — IMPORTANT
 
-- `private.d2_long72_next_opponent_attractiveness_v1`;
-- `public.capture_d2_long72_next_opponent_attractiveness_v1(...)`;
-- append-only, automatic every 15 minutes.
+P7 is **already designed and precommitted**. Do not redesign it at 9/9.
 
-READY requires:
+Canonical files:
 
-1. next home opponent known in a schedule state observed by `as_of_at`;
-2. historical attendance outcome kickoff + created/updated/confirmed all no later than `as_of_at`;
-3. club history `>=8`;
-4. opponent history `>=3`.
+- `ml/p7_long168_harness_v1.py`;
+- `ml/test_p7_long168_harness_v1.py`;
+- `.github/workflows/p7-long168-harness-v1.yml`;
+- `ml/results/P7_LONG168_HARNESS_V1_2026-10-23.md`;
+- `ml/D2_LONG_HORIZON_LIVE_V1_PLAN.md`.
 
-Current checkpoint:
-
-- 12 rows processed;
-- 2 fixture-context unavailable before schedule capture;
-- 10 rows have no next home match in the schedule state known then;
-- 0 READY attractiveness rows.
-
-Do not fill those rows from later schedule knowledge or hand-authored scores.
-
-## Two lanes
-
-### Lane A — evidence
-
-Continue automatically:
-
-- final24 prospective scoring;
-- hourly Long72 pre-outcome materialization;
-- immutable forecast persistence;
-- append-only outcome scoring;
-- schedule-as-known capture;
-- fixture-context sidecar;
-- next-opponent-attractiveness sidecar.
-
-Current genuine Long72 scored events: `0` because the active precommitted matches do not yet have final attendance.
-
-### Lane B — MAE R&D
-
-All currently unblocked P4 data-capture work is done.
-
-Next sequence:
-
-1. allow genuine P4 labeled evidence to accumulate;
-2. run controlled schedule/context ablations once independent labeled events exist;
-3. run P5 `structural + context + live` combinations only after a genuine context component exists;
-4. trigger 72–168h learned research at the predeclared `N>=9` independent-event threshold;
-5. keep club calibration/shrinkage lower priority.
-
-Current Long168 readiness:
+Current readiness:
 
 - `8/9` independent events >72h;
 - `110` rows >72h.
 
-Do not lower the threshold.
+The harness must fail closed at 8/9.
+
+### At the ninth event
+
+Do this in exact order:
+
+1. export current Long168 payload;
+2. freeze exact `event/as_of/snapshot/bucket` identities for `72<h<=168`;
+3. persist deterministic manifest SHA;
+4. verify target/outcome is absent;
+5. only then attach attendance labels;
+6. build strict forward-event fold manifest;
+7. run the fixed candidate family;
+8. report event-balanced MAE + paired event-block uncertainty;
+9. make explicit research decision;
+10. keep production unchanged.
+
+### P7 v1 anchor
+
+Use **Structural Prior T-7** throughout 72–168h.
+
+Never:
+
+- use future T-3/T-1 predictions;
+- interpolate future checkpoints;
+- extrapolate frozen Long72 P2 backward beyond 72h.
+
+### P7 v1 candidates
+
+Fixed before results:
+
+- `anchor-only-t7`;
+- `q50-linear-residual-a002`;
+- `gbr-l1-depth2-n50-lr003`.
+
+No broad hyperparameter search.
+
+Primary metric: strict-forward event-balanced MAE.
+
+Uncertainty: paired event-block bootstrap, 5,000 resamples, seed 42.
+
+N=9 permits research only; it is never production evidence by itself.
+
+## Remaining roadmap
+
+### P4/P5
+
+Wait only for genuine evidence mathematically required:
+
+1. labeled P4 context events accumulate;
+2. inspect feature availability/variance without model results;
+3. predeclare ablation sample floor;
+4. run controlled P4 ablations;
+5. if context contributes incremental MAE signal, run P5 `structural + context + live` combinations with fold-local weights.
+
+### P7
+
+Harness is ready. Only the ninth independent >72h event is missing.
 
 ## Hard boundaries
 
 Never:
 
-- use random snapshot splits as headline evidence;
-- train earlier forecasts with future event/season information;
 - call inspected historical holdouts unseen;
-- use realized future context at an earlier PIT cutoff;
-- reconstruct old schedule context from a later final schedule and call it PIT-safe;
-- reconstruct opponent attractiveness from outcomes not system-known at the forecast cutoff;
+- use realized future context at an earlier cutoff;
+- reconstruct missing PIT schedule/opponent history;
 - retune frozen packages under the same ID;
-- learn combination weights on the evaluation fold;
+- learn combination weights on evaluation folds;
+- use random snapshot splits as headline evidence;
+- open P7 model results before the identity freeze;
+- lower P7's nine-event research gate;
 - promote from historical uplift alone.
 
 ## Production boundary
 
-Production remains unchanged unless explicitly reviewed and activated:
-
 `live_adjustment = 0`
+
+until explicit reviewed activation based on separate genuine future evidence.
 
 ## One-line instruction
 
-> **All currently unblocked P4 evidence collection is operational and fail-closed. Do not invent missing context. Wait only where genuine labels/data are mathematically required; trigger Long168 at 9 independent >72h events and P5 context combinations only after labeled P4 evidence exists.**
+> **P7 is precommitted and must fail closed at 8/9. At 9/9 freeze identities first and model second. P4/P5 remain label-bound. Do not invent evidence or reopen closed tuning loops.**
