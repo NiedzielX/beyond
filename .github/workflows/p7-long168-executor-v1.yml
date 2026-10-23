@@ -1,0 +1,196 @@
+name: P7 Long168 Executor v1
+
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "audit = anchor replay only; execute = freeze + anchor + fixed tournament"
+        required: true
+        default: "audit"
+        type: choice
+        options:
+          - audit
+          - execute
+  pull_request:
+    paths:
+      - "ml/p7_long168_anchor_replay_v1.py"
+      - "ml/p7_long168_tournament_v1.py"
+      - "ml/test_p7_long168_executor_v1.py"
+      - "ml/p7_long168_harness_v1.py"
+      - "ml/D2_LONG_HORIZON_LIVE_V1_PLAN.md"
+      - "ml/MAE_RESEARCH_ROADMAP_V3.md"
+      - "ml/PROGRESS_TRACKING.md"
+      - "AI_BOOTSTRAP.md"
+      - "AGENTS.md"
+      - ".github/workflows/p7-long168-executor-v1.yml"
+  push:
+    branches: [main]
+    paths:
+      - "ml/p7_long168_anchor_replay_v1.py"
+      - "ml/p7_long168_tournament_v1.py"
+      - "ml/test_p7_long168_executor_v1.py"
+      - "ml/p7_long168_harness_v1.py"
+      - "ml/D2_LONG_HORIZON_LIVE_V1_PLAN.md"
+      - "ml/MAE_RESEARCH_ROADMAP_V3.md"
+      - "ml/PROGRESS_TRACKING.md"
+      - "AI_BOOTSTRAP.md"
+      - "AGENTS.md"
+      - ".github/workflows/p7-long168-executor-v1.yml"
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install pinned ML dependencies
+        run: pip install -r ml/requirements.txt
+      - name: Compile P7 executor
+        run: |
+          python -m py_compile ml/p7_long168_anchor_replay_v1.py
+          python -m py_compile ml/p7_long168_tournament_v1.py
+          python -m py_compile ml/test_p7_long168_executor_v1.py
+      - name: Run fail-closed and deterministic synthetic tests
+        run: python -m ml.test_p7_long168_executor_v1
+      - name: Static precommit checks
+        run: |
+          grep -q 'ANCHOR_EVIDENCE_CLASS = "historical_pit_replay"' ml/p7_long168_anchor_replay_v1.py
+          grep -q 'persisted_forecast": False' ml/p7_long168_anchor_replay_v1.py
+          grep -q 'EXPECTED_T7_ARTIFACT_SHA256 = "97e712245d6539396030e88ea450809f4265bd7538aa90b29e234420231ac927"' ml/p7_long168_anchor_replay_v1.py
+          grep -q 'EXPECTED_HISTORICAL_RUNTIME_SHA256 = "3c6b35142c6bd20a484f2aa758cd41284fd6f4c6db1353b138f81cf321161569"' ml/p7_long168_anchor_replay_v1.py
+          grep -q 'CANDIDATES = (ANCHOR_ID, QLIN_ID, GBR_ID)' ml/p7_long168_tournament_v1.py
+          grep -q 'n_resamples=5000, seed=42' ml/p7_long168_tournament_v1.py
+          grep -q 'production_activation_allowed": False' ml/p7_long168_tournament_v1.py
+
+  live-anchor-audit:
+    if: github.event_name != 'pull_request'
+    needs: validate
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install pinned ML dependencies
+        run: pip install -r ml/requirements.txt
+      - name: Verify frozen Structural Prior bytes
+        run: |
+          set -euo pipefail
+          t7_sha=$(sha256sum ml/artifacts/structural_prior_runtime_v1/structural_prior_t7_v1.joblib | awk '{print $1}')
+          history_sha=$(sha256sum ml/artifacts/structural_prior_runtime_v1/historical_runtime_v1.csv.gz | awk '{print $1}')
+          test "$t7_sha" = "97e712245d6539396030e88ea450809f4265bd7538aa90b29e234420231ac927"
+          test "$history_sha" = "3c6b35142c6bd20a484f2aa758cd41284fd6f4c6db1353b138f81cf321161569"
+      - name: Request main-only training OIDC token
+        run: |
+          set -euo pipefail
+          response=$(curl --retry 4 --retry-all-errors --retry-delay 2 -fsS \
+            -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
+            "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=beyond-c1-alpha-training")
+          token=$(printf '%s' "$response" | jq -r '.value')
+          test -n "$token"
+          test "$token" != "null"
+          echo "::add-mask::$token"
+          echo "C1_ALPHA_OIDC_TOKEN=$token" >> "$GITHUB_ENV"
+      - name: Fetch PIT/support exports
+        run: |
+          set -euo pipefail
+          base='https://adchzwqboeekhokapxqi.supabase.co/functions/v1/c1_alpha_training_export_v1?version='
+          for spec in \
+            'v8-long168:d2-long168.json' \
+            'v7-events:v7-events.json' \
+            'v7-attendance:v7-attendance.json' \
+            'v7-sporting:v7-sporting.json' \
+            'v7-aliases:v7-aliases.json'; do
+            version="${spec%%:*}"
+            file="${spec##*:}"
+            curl --retry 5 --retry-all-errors --retry-delay 2 -fsS \
+              -H "Authorization: Bearer $C1_ALPHA_OIDC_TOKEN" \
+              "${base}${version}" -o "/tmp/${file}"
+            jq -e '.ok == true' "/tmp/${file}" >/dev/null
+          done
+      - name: Replay frozen T-7 anchors without challenger fitting
+        run: |
+          python -m ml.p7_long168_anchor_replay_v1 \
+            --mode audit \
+            --long168 /tmp/d2-long168.json \
+            --events /tmp/v7-events.json \
+            --attendance /tmp/v7-attendance.json \
+            --sporting /tmp/v7-sporting.json \
+            --aliases /tmp/v7-aliases.json \
+            --artifact-dir ml/artifacts/structural_prior_runtime_v1 \
+            --output /tmp/p7-long168-anchor-audit.json
+          jq -e '
+            .status == "P7_T7_ANCHOR_REPLAY_READY"
+            and .anchor_evidence_class == "historical_pit_replay"
+            and .persisted_forecast == false
+            and .model_training_performed == false
+            and .target_attendance_invariance.status == "PASS"
+            and (.target_attendance_invariance.no_exact_attendance_row_event_ids | length) == 0
+            and (.target_attendance_invariance.checked_event_ids | length) == .independent_event_count
+            and .anchor_count == .independent_event_count
+          ' /tmp/p7-long168-anchor-audit.json >/dev/null
+      - name: Print anchor audit status and hashes
+        run: |
+          jq '{status,independent_event_count,anchor_count,anchor_evidence_class,persisted_forecast,target_attendance_invariance,lineage,package_sha256}' /tmp/p7-long168-anchor-audit.json
+          sha256sum /tmp/d2-long168.json /tmp/p7-long168-anchor-audit.json
+      - name: Upload anchor audit evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: p7-long168-anchor-audit-v1-${{ github.run_id }}
+          path: |
+            /tmp/p7-long168-anchor-audit.json
+          if-no-files-found: error
+          retention-days: 90
+      - name: Freeze identities and run P7 only on explicit execute dispatch
+        if: github.event_name == 'workflow_dispatch' && inputs.mode == 'execute'
+        run: |
+          set -euo pipefail
+          python -m ml.p7_long168_harness_v1 \
+            --mode freeze \
+            --input-json /tmp/d2-long168.json \
+            --output-json /tmp/p7-long168-freeze.json
+          python -m ml.p7_long168_anchor_replay_v1 \
+            --mode build \
+            --long168 /tmp/d2-long168.json \
+            --events /tmp/v7-events.json \
+            --attendance /tmp/v7-attendance.json \
+            --sporting /tmp/v7-sporting.json \
+            --aliases /tmp/v7-aliases.json \
+            --artifact-dir ml/artifacts/structural_prior_runtime_v1 \
+            --output /tmp/p7-long168-anchor-build.json
+          python -m ml.p7_long168_tournament_v1 \
+            --long168 /tmp/d2-long168.json \
+            --freeze /tmp/p7-long168-freeze.json \
+            --anchor /tmp/p7-long168-anchor-build.json \
+            --events /tmp/v7-events.json \
+            --scorecard /tmp/p7-long168-scorecard.json \
+            --predictions /tmp/p7-long168-predictions.csv \
+            --fold-manifest /tmp/p7-long168-fold-manifest.json
+          jq -e '
+            .status == "P7_LONG168_TOURNAMENT_COMPLETE"
+            and .independent_frozen_event_count >= 9
+            and .production_change == false
+            and .production_activation_allowed == false
+            and .live_adjustment == 0
+          ' /tmp/p7-long168-scorecard.json >/dev/null
+      - name: Upload execute artifacts
+        if: github.event_name == 'workflow_dispatch' && inputs.mode == 'execute'
+        uses: actions/upload-artifact@v4
+        with:
+          name: p7-long168-execution-v1-${{ github.run_id }}
+          path: |
+            /tmp/p7-long168-freeze.json
+            /tmp/p7-long168-anchor-build.json
+            /tmp/p7-long168-scorecard.json
+            /tmp/p7-long168-predictions.csv
+            /tmp/p7-long168-fold-manifest.json
+          if-no-files-found: error
+          retention-days: 90

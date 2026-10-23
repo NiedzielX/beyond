@@ -36,6 +36,7 @@ Guardrails may block an unsafe challenger but do not replace MAE as the north st
 4. **Combine only genuinely different information.** Structural, context and live components may be combined only with fold-local weights.
 5. **Prefer new predictive information over decorative complexity.** New features must earn inclusion through incremental OOS MAE.
 6. **Pool across clubs but test stability.** A gain concentrated in one club/event/fold is not a robust global improvement.
+7. **Evidence class is part of the result.** A historical PIT replay is useful research evidence but is not a forecast that was genuinely persisted before the match.
 
 Literature anchors remain:
 
@@ -56,7 +57,8 @@ Structural Prior / Global Model family:
 - 1,530 Ekstraklasa matches;
 - five complete seasons;
 - 7,650 PIT snapshots;
-- T-30/T-14/T-7/T-3/T-1.
+- T-30/T-14/T-7/T-3/T-1;
+- historical runtime SHA `3c6b35142c6bd20a484f2aa758cd41284fd6f4c6db1353b138f81cf321161569`.
 
 Previously inspected historical seasons remain exposed historical research evidence.
 
@@ -80,14 +82,17 @@ Historical exposed comparison:
 
 Immutable; genuine forward evidence continues.
 
-Evidence labels:
+### Evidence labels
+
+Use only explicit evidence classes:
 
 - `historical_exposed_research`;
 - `historical_forward_fold`;
+- `historical_pit_replay`;
 - `delayed_label_precommitted`;
 - `true_post_freeze_prospective`.
 
-Never call an inspected historical holdout unseen again.
+Never call an inspected historical holdout unseen again. Never call a replayed historical anchor a genuinely persisted forecast.
 
 ---
 
@@ -115,17 +120,27 @@ Frozen packages are never mutated.
 
 ## 5. Roadmap status
 
+Latest checkpoint should always be refreshed from `public.ml_research_readiness_v1()` before acting.
+
+Checkpoint read on 2026-10-23:
+
+- Long72 reproducible forecasts: `58`;
+- Long72 genuine scored events: `0`;
+- P4 fixture-context sidecar: `58 / 56 READY`;
+- P4 next-opponent sidecar: `58 / 0 READY`;
+- P7 Long168: `8/9` independent events >72h, `110` rows >72h.
+
 | Item | Status | Current decision |
 |---|---|---|
 | P1 canonical temporal validation | ✅ DONE | strict forward-event + expanding-season utilities canonical |
 | P2 MAE-native estimator tournament | ✅ DONE | no robust structural runtime replacement |
 | P3 `ΔMAE` uncertainty | ✅ DONE | small estimator signals insufficient |
-| P4a schedule/fixture context | 🟡 INFRA DONE / DATA ACCUMULATING | 48 sidecar rows, 46 READY at latest checkpoint |
-| P4b next-home opponent attractiveness | 🟡 INFRA DONE / DATA ACCUMULATING | 48 rows, 0 READY at latest checkpoint |
+| P4a schedule/fixture context | 🟡 INFRA DONE / DATA ACCUMULATING | fail-closed PIT sidecar operational |
+| P4b next-home opponent attractiveness | 🟡 INFRA DONE / DATA ACCUMULATING | 0 READY at latest checkpoint |
 | P5a structural/live shrinkage | ✅ DONE | retain full frozen P2 |
 | P5 structural + context + live | ⏸ DATA-BOUND | wait for genuine labeled P4 context component |
 | P6 live incremental value | ✅ DONE HISTORICALLY | positive point signal, uncertainty/bias prevent promotion |
-| **P7 72–168h** | 🟡 **HARNESS READY / 8 OF 9** | contract fixed before model results; wait for ninth event |
+| **P7 72–168h** | 🟡 **HARNESS + EXECUTOR READY / 8 OF 9** | real tournament blocked until freeze at N>=9 |
 | P8 club calibration / shrinkage | ✅ DONE | no robust gain; retain incumbent |
 | Production | ⛔ NOT READY | `live_adjustment = 0` |
 
@@ -133,7 +148,7 @@ Frozen packages are never mutated.
 
 ## 6. Closed loops
 
-Do not reopen without materially new evidence or mechanism:
+Do not reopen without materially new evidence or mechanism.
 
 ### Estimator-only tuning
 
@@ -175,17 +190,15 @@ Next-opponent attractiveness is READY only when both schedule knowledge and hist
 
 ### P4 ablation rule
 
-Do not declare an arbitrary independent-event sample floor before seeing whether the new features actually vary.
+Do not declare an arbitrary independent-event sample floor after seeing model performance.
 
-When the first genuine labeled/READY context evidence exists:
+When genuine labeled/READY context evidence exists:
 
 1. inspect **availability and variance only**;
 2. declare the independent-event floor before model fitting/comparison;
 3. freeze that gate;
 4. run controlled ablations with canonical temporal folds;
 5. report incremental MAE and uncertainty.
-
-Do not choose the threshold from model performance.
 
 ---
 
@@ -218,17 +231,20 @@ Always compare with the best single component. Never learn weights on the evalua
 
 - independent events with valid rows >72h: **8/9**;
 - rows >72h: **110**;
-- model training remains prohibited.
+- real model training remains prohibited.
 
-### Canonical precommit
+### Canonical implementation
 
-P7 is now fully designed before the ninth event.
+P7 is fully precommitted **and executable** before the ninth event.
 
 Read:
 
 - `ml/D2_LONG_HORIZON_LIVE_V1_PLAN.md`;
 - `ml/p7_long168_harness_v1.py`;
-- `ml/results/P7_LONG168_HARNESS_V1_2026-10-23.md`.
+- `ml/p7_long168_anchor_replay_v1.py`;
+- `ml/p7_long168_tournament_v1.py`;
+- `ml/results/P7_LONG168_HARNESS_V1_2026-10-23.md`;
+- `ml/results/P7_LONG168_EXECUTOR_V1_2026-10-23.md`.
 
 The harness must fail closed below nine independent events.
 
@@ -236,18 +252,41 @@ The harness must fail closed below nine independent events.
 
 > Does PIT live ticket trajectory in `72 < h <= 168` reduce event-balanced MAE beyond the Structural Prior T-7 anchor?
 
-### Mandatory order at 9/9
+### Historical T-7 anchor problem and evidence boundary
 
-1. export current Long168 payload;
-2. freeze exact eligible event/as-of/snapshot/bucket identities;
-3. persist deterministic manifest SHA256;
-4. reject any target/outcome field in the freeze payload;
-5. only after freeze, attach attendance labels;
-6. build strict forward-event folds;
-7. run fixed candidate tournament;
-8. run paired event-block uncertainty;
-9. persist artifacts/hashes/result doc;
-10. decide research advancement only.
+The current historical Long168 events have no persisted T-7 rows in `private.structural_prior_forecasts_v1`.
+
+Therefore P7 must **not** pretend those forecasts were persisted.
+
+The canonical executor uses the frozen Structural Prior Runtime v1 historical replay path at exactly `kickoff - 7 days`.
+
+Replay rules:
+
+- use only attendance with kickoff strictly before the T-7 cutoff;
+- use sporting facts strictly before the cutoff;
+- strip target-event `actual_attendance` from event metadata before replay;
+- require T-7 cutoff to be no later than every eligible Long168 observation;
+- use the frozen T-7 artifact and frozen historical runtime;
+- classify output as `historical_pit_replay`;
+- set `persisted_forecast = false`.
+
+Frozen lineage:
+
+- T-7 model artifact SHA256 `97e712245d6539396030e88ea450809f4265bd7538aa90b29e234420231ac927`;
+- historical runtime SHA256 `3c6b35142c6bd20a484f2aa758cd41284fd6f4c6db1353b138f81cf321161569`.
+
+The main-branch executor workflow verifies the actual bytes, not only manifest declarations.
+
+### Target-attendance invariance
+
+Before an anchor package may be used, every eligible P7 target event must pass an explicit mutation test:
+
+1. find its exact-kickoff attendance row;
+2. mutate attendance to an impossible sentinel;
+3. replay T-7;
+4. require the T-7 P50 to remain unchanged within `1e-9`.
+
+No eligible event may be silently skipped.
 
 ### P7 anchor
 
@@ -289,7 +328,7 @@ Required secondary metrics:
 - P90 AE;
 - worst-event degradation;
 - event-improvement rate;
-- fold consistency;
+- forward-fold improvement rate;
 - MAE by 72–96 / 96–120 / 120–144 / 144–168h band.
 
 Uncertainty:
@@ -304,7 +343,47 @@ Interpretation:
 - negative point delta with CI crossing zero → uncertainty-limited point gain;
 - CI upper bound below zero → supported historical-forward gain.
 
-`N=9` is only permission to start research. Production promotion is impossible from P7 v1 alone.
+### Research advancement rule
+
+A learned candidate may advance only when all lineage/PIT gates pass and:
+
+1. strict-forward event-balanced MAE beats T-7 anchor;
+2. more than 50% of independently held-out events improve;
+3. more than 50% of usable forward folds improve.
+
+Otherwise retain the anchor.
+
+`N=9` is permission to start research only. Production promotion is impossible from P7 v1 alone.
+
+### Mandatory execution order at 9/9
+
+1. re-read `public.ml_research_readiness_v1()`;
+2. explicitly dispatch `.github/workflows/p7-long168-executor-v1.yml` with `mode=execute`;
+3. export current Long168 payload;
+4. freeze exact eligible event/as-of/snapshot/bucket identities;
+5. persist deterministic freeze manifest SHA256;
+6. reject any target/outcome field in the freeze payload;
+7. verify historical T-7 replay package and exact event-set identity;
+8. only after freeze + anchor verification, read/join attendance labels;
+9. build strict forward-event fold manifest;
+10. run fixed candidate tournament;
+11. run paired event-block uncertainty;
+12. persist artifacts/hashes/result doc;
+13. decide research advancement only;
+14. keep production unchanged.
+
+### Automatic workflow boundary
+
+Automatic pushes to `main` may run:
+
+- code/contract validation;
+- frozen artifact byte checks;
+- live support-export fetch;
+- historical T-7 anchor audit.
+
+They must **not** fit the real P7 challengers automatically.
+
+Real fitting requires explicit `workflow_dispatch -> mode=execute`, and that path itself begins with the N>=9 freeze gate.
 
 ---
 
@@ -363,13 +442,14 @@ An hourly condition watch monitors these triggers.
 - schedule-as-known capture;
 - fixture-context sidecar;
 - next-opponent sidecar;
-- Long168 raw evidence accumulation.
+- Long168 raw evidence accumulation;
+- P7 historical T-7 **anchor audit only**.
 
 ### If P7 reaches 9/9 first
 
 Priority becomes:
 
-`readiness -> identity freeze + SHA -> target join -> forward-fold manifest -> fixed P7 tournament -> uncertainty -> decision`.
+`readiness -> explicit execute dispatch -> identity freeze + SHA -> verified historical T7 replay -> labels -> forward-fold manifest -> fixed P7 tournament -> uncertainty -> decision`.
 
 ### If genuine P4 labels arrive first
 
@@ -377,7 +457,7 @@ Priority becomes:
 
 `availability/variance inspection -> predeclared sample floor -> controlled ablation -> uncertainty`.
 
-If P4 produces incremental signal, proceed to P5 combinations.
+If P4 produces signal, proceed to P5 combinations.
 
 ### Do not spend cycles on
 
@@ -386,7 +466,8 @@ If P4 produces incremental signal, proceed to P5 combinations.
 - blind hyperparameter sweeps;
 - post-hoc club calibration repeats;
 - random snapshot validation;
-- model complexity without new predictive information.
+- model complexity without new predictive information;
+- claiming replayed anchors were genuinely persisted forecasts.
 
 ---
 
@@ -401,11 +482,13 @@ CI must enforce where applicable:
 - deterministic seeds;
 - pinned dependencies;
 - input/data hashes;
+- actual frozen artifact byte hashes where artifacts are reused;
 - target-leakage assertions;
 - as-of/kickoff ordering;
 - no self/future leakage;
 - persisted fold identities;
 - machine-readable output;
+- explicit evidence class;
 - explicit decision;
 - production remains off unless separately reviewed.
 
@@ -413,4 +496,4 @@ CI must enforce where applicable:
 
 ## One-line handoff
 
-> **P1/P2/P3/P5a/P6/P8 are closed. P4 is collecting genuine context evidence. P7 is fully precommitted and must fail closed at 8/9; at 9/9 freeze exact identities before opening any model result. Production remains unchanged.**
+> **P1/P2/P3/P5a/P6/P8 are closed. P4 is collecting genuine context evidence. P7 is fully precommitted and executable but must fail closed at 8/9; historical T-7 anchors are explicit PIT replays, not persisted forecasts. At 9/9 use the manual executor: freeze first, labels/models second. Production remains unchanged.**

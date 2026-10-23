@@ -2,14 +2,19 @@
 
 Last updated: **2026-10-23**
 
-Status: **P7 HARNESS READY / DATA GATE 8 OF 9 / NO PRODUCTION CHANGE**
+Status: **P7 HARNESS + EXECUTOR READY / DATA GATE 8 OF 9 / NO REAL TOURNAMENT YET / NO PRODUCTION CHANGE**
 
-Canonical harness:
+Canonical P7 files:
 
 - `ml/p7_long168_harness_v1.py`;
 - `ml/test_p7_long168_harness_v1.py`;
+- `ml/p7_long168_anchor_replay_v1.py`;
+- `ml/p7_long168_tournament_v1.py`;
+- `ml/test_p7_long168_executor_v1.py`;
 - `.github/workflows/p7-long168-harness-v1.yml`;
-- `ml/results/P7_LONG168_HARNESS_V1_2026-10-23.md`.
+- `.github/workflows/p7-long168-executor-v1.yml`;
+- `ml/results/P7_LONG168_HARNESS_V1_2026-10-23.md`;
+- `ml/results/P7_LONG168_EXECUTOR_V1_2026-10-23.md`.
 
 ## Research question
 
@@ -19,17 +24,9 @@ This is a separate Track-B challenger family. It does not mutate final24, frozen
 
 ## Current readiness
 
-Current Supabase long-horizon export:
+Current Supabase export:
 
 `public.export_d2_long_horizon_168_rows_v1()`
-
-Sampling contract:
-
-- maximum window: 168h;
-- cadence: 6h;
-- latest source snapshot in each event x 6h bucket;
-- PIT feature function: `get_live_trajectory_features_v1_1_asof`;
-- no target in live features.
 
 Latest checkpoint on 2026-10-23:
 
@@ -39,86 +36,133 @@ Latest checkpoint on 2026-10-23:
 
 Therefore:
 
-**P7 model fitting remains prohibited.**
+**real P7 model fitting remains prohibited.**
 
-`N=9` is a research-start threshold inherited from the existing frozen d2 development scale. It is not proof of adequacy and never implies production readiness.
+`N=9` is a research-start threshold only. It is not evidence of production adequacy.
+
+## Window and sampling
+
+P7 v1 is scoped to:
+
+`72 < hours_to_kickoff <= 168`
+
+Long168 export sampling:
+
+- maximum window: 168h;
+- cadence: 6h;
+- latest source snapshot in each event x 6h bucket;
+- PIT feature function: `get_live_trajectory_features_v1_1_asof`;
+- no attendance target inside live features.
+
+Rows at `<=72h` remain governed by the existing Long72 contracts.
 
 ## Data integrity
 
-Every P7 row must be genuinely point-in-time:
+Every frozen P7 row must satisfy:
 
-- source snapshot identity is frozen;
-- `requested_as_of_at` equals the feature as-of;
+- source snapshot identity is fixed;
+- `requested_as_of_at` equals feature as-of;
 - feature snapshot id equals requested snapshot id;
 - `point_in_time_validated = true`;
 - as-of precedes kickoff;
 - reported hours-to-kickoff agrees with timestamps;
-- no future observation may be forward-filled;
-- no attendance target/outcome may exist in the freeze payload.
+- no future observation is forward-filled;
+- no target/outcome field exists in the freeze payload.
 
-Missing history is missing evidence, not zero demand.
+Missing evidence remains missing. It is never converted into zero demand.
 
-## P7 window
+## Hard research-start gate
 
-P7 v1 is intentionally scoped to:
+At `N<9`:
 
-`72 < hours_to_kickoff <= 168`
+- freeze fails with `P7_NOT_READY`;
+- real tournament execution is blocked;
+- only non-model anchor audit is allowed.
 
-This avoids silently mixing the already-developed Long72 problem with the new earlier-horizon problem.
+At `N>=9`:
 
-Rows at `<=72h` remain governed by the existing Long72 research/package contracts.
+1. export current Long168 payload;
+2. freeze exact eligible identities;
+3. persist deterministic freeze manifest SHA256;
+4. verify target/outcome absence;
+5. verify T-7 anchor package;
+6. only then attach attendance labels;
+7. build strict forward-event folds;
+8. run the fixed candidate family;
+9. run paired event-block uncertainty;
+10. issue a research-only decision.
 
-## Pre-result freeze sequence
+The first P7 artifact after the gate opens must still be the **identity freeze**, not a leaderboard.
 
-When the ninth independent event becomes eligible:
+## Anchor contract
 
-1. export the current Long168 payload;
-2. filter exact eligible rows in `72 < h <= 168`;
-3. validate PIT lineage and reject target/outcome fields;
-4. freeze exact identities:
-   - `ticket_event_id`;
-   - `requested_as_of_at`;
-   - `requested_snapshot_id`;
-   - `bucket_6h`;
-   - kickoff / coverage metadata;
-5. persist deterministic manifest SHA256;
-6. only after the manifest exists, join actual attendance for supervised evaluation;
-7. only then open model comparisons.
-
-At `N<9`, the harness must fail with:
-
-`P7_NOT_READY`
-
-The first output at 9/9 is a **freeze manifest**, not a model leaderboard.
-
-## Anchor rule — frozen before model results
-
-For the entire P7 v1 72–168h band, use:
+For all rows in `72 < h <= 168`, control forecast is:
 
 **Structural Prior T-7 / zero live correction**
 
-as the incumbent control.
+Forbidden:
 
-Rules:
+- future T-3/T-1 forecasts;
+- interpolation from future checkpoints;
+- extrapolation of frozen Long72 P2 backward beyond 72h.
 
-- T-7 must be PIT-safe and available at or before the live row as-of;
-- do not use T-3/T-1 before those checkpoints exist;
-- do not interpolate using future structural checkpoints;
-- do not extrapolate frozen Long72 P2 backward beyond 72h.
+P7 challengers model only the residual over the T-7 structural anchor.
 
-P7 challengers predict a residual over the T-7 structural anchor.
+## Historical T-7 replay boundary
+
+The current historical Long168 events have **no persisted T-7 rows** in `private.structural_prior_forecasts_v1`.
+
+Therefore P7 uses an explicit replay path:
+
+`ml/p7_long168_anchor_replay_v1.py`
+
+The replay:
+
+- uses frozen Structural Prior Runtime v1 artifacts;
+- reconstructs the checkpoint at exactly `kickoff - 7 days`;
+- uses attendance only from matches with kickoff before that cutoff;
+- uses sporting fixtures strictly before the cutoff date;
+- strips the target event's `actual_attendance` from event metadata before replay;
+- requires the replay cutoff to be no later than every Long168 row as-of;
+- keeps verified capacity bounds.
+
+This evidence is classified exactly as:
+
+`historical_pit_replay`
+
+and:
+
+`persisted_forecast = false`
+
+It must never be presented as a forecast that was actually persisted seven days before the match.
+
+### Frozen artifact lineage
+
+Expected T-7 artifact SHA256:
+
+`97e712245d6539396030e88ea450809f4265bd7538aa90b29e234420231ac927`
+
+Expected historical runtime SHA256:
+
+`3c6b35142c6bd20a484f2aa758cd41284fd6f4c6db1353b138f81cf321161569`
+
+The execution workflow checks the actual repository file bytes before any replay.
+
+### Target-attendance invariance
+
+For every P7 event, the anchor audit mutates the event's exact-kickoff attendance row to an impossible sentinel and replays T-7.
+
+The T-7 P50 must remain unchanged within `1e-9`.
+
+Every eligible event must have and pass this check; none may be silently skipped.
 
 ## Fixed P7 v1 challenger family
 
-The family is deliberately small because independent-event N is small.
-
 ### A. `anchor-only-t7`
 
-No fitted live correction.
+Control. No fitted live correction.
 
 ### B. `q50-linear-residual-a002`
-
-MAE-native linear residual challenger:
 
 - `QuantileRegressor`;
 - quantile `0.50`;
@@ -130,8 +174,6 @@ MAE-native linear residual challenger:
 
 ### C. `gbr-l1-depth2-n50-lr003`
 
-Small nonlinear absolute-error residual challenger:
-
 - `GradientBoostingRegressor`;
 - loss `absolute_error`;
 - `n_estimators=50`;
@@ -141,33 +183,33 @@ Small nonlinear absolute-error residual challenger:
 - `random_state=42`;
 - no hyperparameter search.
 
-No broad tuning is allowed under P7 v1. A materially different feature/model family requires a new version.
+A materially different feature/model family requires a new experiment version.
 
 ## Feature contract
 
-Only the frozen allowlist in `ml/p7_long168_harness_v1.py` is allowed.
+Only the frozen allowlist in `ml/p7_long168_harness_v1.py` may enter P7 v1.
 
-The allowlist is limited to PIT live inventory/trajectory features already available in the current export, including:
+The list is limited to PIT live inventory / trajectory features already available in the current export, including:
 
 - hours-to-kickoff;
 - current / first available inventory;
 - available share of capacity;
 - net removed inventory;
-- velocity and acceleration measures;
-- observation-window / snapshot-age / gap quality measures;
+- velocity / acceleration measures;
+- observation-window / snapshot-age / gap-quality measures;
 - release/data-gap flags.
 
-P4 schedule/context features are **not silently added** to P7 v1. If context is later combined with Long168, that is a new experiment/version.
+P4 schedule/context features are not silently added to P7 v1.
 
 ## Event weighting
 
-Trajectory rows are not independent units.
+Trajectory rows are not independent evidence.
 
-During fitting:
+During learned-model fitting:
 
 `row_weight = 1 / number_of_training_rows_for_that_event`
 
-so every training event contributes total weight `1` regardless of snapshot coverage.
+so each training event contributes equal total weight.
 
 Independent evidence unit remains:
 
@@ -181,46 +223,46 @@ Use:
 
 with:
 
-- strict forward-event ordering by kickoff;
+- strict chronological forward-event ordering;
 - minimum training events: `5`;
 - `train_end < test_start`;
 - tied kickoffs cannot train one another;
 - no random snapshot split;
 - exact fold identities + SHA persisted.
 
-LOEO may be diagnostic but cannot replace strict forward-event evidence.
+At exactly nine chronological events this normally yields four held-out forward events, subject to tied kickoffs.
 
-## Metrics
+LOEO may be diagnostic but cannot replace the forward view.
 
-Primary:
+## Primary metric
 
-**event-balanced MAE**.
+**Strict-forward event-balanced MAE**
 
-For each held-out event, first average AE across its eligible trajectory rows, then average event MAEs equally.
+For each held-out event:
 
-Required secondary diagnostics:
+1. average absolute error across its eligible 72–168h rows;
+2. average those event MAEs equally.
 
-- median AE;
-- signed bias;
-- P90 AE;
+Required diagnostics:
+
+- event median AE;
+- event P90 AE;
+- event-balanced signed bias;
 - worst-event degradation;
 - event-improvement rate;
-- forward-fold MAE delta;
-- MAE by 24h band:
-  - 72–96h;
-  - 96–120h;
-  - 120–144h;
-  - 144–168h;
+- forward-fold improvement rate;
+- MAE by 72–96 / 96–120 / 120–144 / 144–168h band;
 - coverage / missingness.
 
 ## Uncertainty
 
-Use canonical:
+Use:
 
 `ml/mae_delta_uncertainty_v1.py`
 
-with paired event-block bootstrap:
+with:
 
+- paired event-block percentile bootstrap;
 - 5,000 draws;
 - seed `42`.
 
@@ -230,62 +272,101 @@ Interpretation:
 - `ΔMAE < 0` and CI crosses zero → `POINT_GAIN_UNCERTAINTY_LIMITED`;
 - CI upper bound `<0` → `SUPPORTED_HISTORICAL_FORWARD_GAIN`.
 
-At N=9, uncertainty is expected to be wide. Report it honestly.
-
 ## Research advancement
 
-A candidate may advance only as a **research challenger** when:
+A learned candidate may advance only when all precommitted gates pass and:
 
 1. strict-forward event-balanced MAE beats the T-7 anchor;
-2. a majority of independently held-out events improve;
-3. a majority of usable forward folds improve;
-4. PIT/lineage/reproducibility gates pass.
+2. event improvement rate is `>50%`;
+3. forward-fold improvement rate is `>50%`.
 
-Bias/tail metrics and paired bootstrap must accompany the decision.
+Bootstrap evidence and bias/tail diagnostics must always accompany the decision.
 
-No P7 v1 result can activate production directly.
+If the majority-event or majority-fold rule fails, decision is:
+
+`RETAIN_ANCHOR`
+
+No P7 v1 result can directly activate production.
+
+## Execution workflow
+
+Workflow:
+
+`.github/workflows/p7-long168-executor-v1.yml`
+
+### Automatic `main` push behavior
+
+Only:
+
+1. validate code;
+2. verify frozen artifact bytes;
+3. fetch Long168 + C1 support data through main-only OIDC;
+4. run T-7 anchor audit;
+5. upload audit evidence.
+
+**No real P7 challenger is fitted automatically.**
+
+### Real tournament behavior
+
+Requires explicit:
+
+`workflow_dispatch -> mode=execute`
+
+The execute path itself starts with `freeze`, so it still fails closed below `N=9`.
+
+Execution artifacts:
+
+- frozen identity manifest;
+- T-7 anchor package;
+- strict-forward fold manifest;
+- prediction CSV;
+- machine-readable scorecard.
 
 ## Evidence boundary
 
-Previously inspected historical events remain exposed historical evidence. Do not relabel them as unseen.
+Previously inspected historical events remain exposed historical evidence.
 
-The original final24 frozen development events and subsequent diagnostic events remain part of research history. Genuine future fixtures must remain separately labeled as prospective evidence after any P7 challenger is frozen.
+Historical T-7 replay is not a persisted forecast and not genuine prospective evidence.
+
+Any P7 challenger frozen after this research must collect separate genuine future evidence before production consideration.
 
 ## Immediate work order
 
 ### While current state remains 8/9
 
-1. keep Long168 data collection unchanged;
-2. keep the P7 harness/contract fixed;
-3. do not fit challengers;
-4. keep the readiness watch active.
+1. keep Long168 evidence collection unchanged;
+2. keep harness/candidate contract fixed;
+3. run only anchor audit, never the real tournament;
+4. keep readiness watch active;
+5. do not lower the gate.
 
 ### Immediately at 9/9
 
-1. freeze exact identities + manifest SHA;
-2. verify anchor availability and feature contract;
-3. attach labels only after freeze;
-4. build strict forward-event fold manifest;
-5. run the fixed three-candidate P7 v1 tournament;
-6. calculate event-balanced MAE + guardrails;
-7. run paired event-block uncertainty;
-8. persist machine-readable artifacts and human result doc;
-9. make an explicit `ADVANCE_RESEARCH / RETAIN_ANCHOR / INSUFFICIENT` decision;
-10. keep production unchanged.
+1. re-read `public.ml_research_readiness_v1()`;
+2. explicitly dispatch P7 executor with `mode=execute`;
+3. freeze exact identities + SHA;
+4. verify frozen T-7 replay;
+5. attach labels only after freeze validation;
+6. build strict forward-event fold manifest;
+7. run the fixed tournament;
+8. calculate event-balanced metrics + guardrails;
+9. run paired event-block uncertainty;
+10. persist a human-readable result and explicit `ADVANCE_RESEARCH / RETAIN_ANCHOR / INSUFFICIENT` decision;
+11. keep production unchanged.
 
 ## What not to do
 
 - do not lower the 9-event gate;
-- do not inspect model results before identity freeze;
+- do not inspect real model results before identity freeze;
+- do not claim replayed T-7 anchors were persisted forecasts;
 - do not random-split snapshots;
 - do not let high-coverage events dominate training;
 - do not forward-fill future observations;
-- do not join attendance before freeze;
 - do not use future T-3/T-1 anchors;
 - do not extrapolate Long72 P2 backward;
 - do not broaden the hyperparameter search after seeing results;
 - do not mutate frozen final24/Long72 packages;
-- do not activate production.
+- do not auto-activate production.
 
 ## Production boundary
 
