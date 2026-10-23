@@ -51,6 +51,22 @@ def test_post_cutoff_snapshot_cannot_change_target_curve() -> None:
     assert a.points == b.points
 
 
+def test_interpolation_across_gap_over_12h_is_missing() -> None:
+    kickoff = datetime(2026, 11, 10, 18, tzinfo=UTC)
+    sparse = [
+        CurveObservation(1, kickoff - timedelta(hours=80), 1000),
+        CurveObservation(2, kickoff - timedelta(hours=64), 800),
+    ]
+    curve = build_normalized_curve(
+        sparse,
+        ticket_event_id=99,
+        as_of_at=kickoff - timedelta(hours=60),
+        kickoff_at=kickoff,
+        canonical_hours=(72.0,),
+    )
+    assert curve.as_dict()[72.0] is None
+
+
 def test_similarity_uses_only_observed_target_overlap() -> None:
     target_kickoff = datetime(2026, 11, 10, 18, tzinfo=UTC)
     ref_kickoff = datetime(2026, 10, 10, 18, tzinfo=UTC)
@@ -69,7 +85,7 @@ def test_similarity_uses_only_observed_target_overlap() -> None:
     result = curve_distance(target, reference)
     assert result is not None
     distance, overlap = result
-    assert overlap == 6  # 168..60 only; target future points 48..6 cannot contribute.
+    assert overlap == 6
     assert distance == 0.0
 
 
@@ -82,7 +98,6 @@ def test_pickup_excludes_self_and_future_reference_event() -> None:
         as_of_at=target_as_of,
         kickoff_at=target_kickoff,
     )
-
     ref1_kickoff = datetime(2026, 10, 1, 18, tzinfo=UTC)
     ref1_curve = build_normalized_curve(
         observations(ref1_kickoff, [1000, 970, 940, 900, 840, 800, 700, 550, 400, 300, 200, 100]),
@@ -103,7 +118,6 @@ def test_pickup_excludes_self_and_future_reference_event() -> None:
         as_of_at=future_ref_kickoff - timedelta(hours=5),
         kickoff_at=future_ref_kickoff,
     )
-
     estimate = estimate_historical_pickup(target, [
         HistoricalCurveReference(1, "club-a", ref1_kickoff + timedelta(hours=3), ref1_curve),
         HistoricalCurveReference(99, "target-club", target_kickoff - timedelta(days=1), self_curve),
@@ -120,6 +134,7 @@ def test_pickup_excludes_self_and_future_reference_event() -> None:
 if __name__ == "__main__":
     test_future_target_points_are_missing()
     test_post_cutoff_snapshot_cannot_change_target_curve()
+    test_interpolation_across_gap_over_12h_is_missing()
     test_similarity_uses_only_observed_target_overlap()
     test_pickup_excludes_self_and_future_reference_event()
     print("p9_booking_curve_v1 tests passed")
