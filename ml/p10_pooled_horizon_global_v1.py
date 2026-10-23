@@ -80,7 +80,6 @@ def numeric_features(frame: pd.DataFrame) -> list[str]:
         column for column in frame.columns
         if column not in META and pd.api.types.is_numeric_dtype(frame[column])
     ]
-    # Explicitly guarantee horizon representation is present exactly once.
     if "horizon_days" not in features:
         features.append("horizon_days")
     return sorted(set(features))
@@ -203,14 +202,16 @@ def evaluate(
         strata_cols=("fold_id",),
         config=BootstrapConfig(n_resamples=5000, seed=42),
     )
+    event_improvement_rate = float((paired["delta_event_mae"] < 0.0).mean())
     fold_improvement_rate = float(np.mean([row["pooled_improved"] for row in fold_scores]))
+    delta_interval = uncertainty["delta_mae"]
     governance = decide_research_advance(ResearchAdvanceInput(
         incumbent_mae=local_mae,
         challenger_mae=pooled_mae,
-        event_improvement_rate=float(uncertainty["event_improvement_rate"]),
+        event_improvement_rate=event_improvement_rate,
         fold_improvement_rate=fold_improvement_rate,
-        delta_mae_ci_lower=float(uncertainty["bootstrap"]["delta_mae_lower"]),
-        delta_mae_ci_upper=float(uncertainty["bootstrap"]["delta_mae_upper"]),
+        delta_mae_ci_lower=float(delta_interval["ci_lower"]),
+        delta_mae_ci_upper=float(delta_interval["ci_upper"]),
         minimum_meaningful_mae_improvement=minimum_meaningful_mae_improvement,
     ))
 
@@ -241,6 +242,7 @@ def evaluate(
         "local_match_balanced_mae": local_mae,
         "pooled_match_balanced_mae": pooled_mae,
         "delta_mae": pooled_mae - local_mae,
+        "event_improvement_rate": event_improvement_rate,
         "fold_improvement_rate": fold_improvement_rate,
         "fold_scores": fold_scores,
         "per_horizon": per_horizon,
