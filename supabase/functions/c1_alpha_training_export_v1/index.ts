@@ -59,6 +59,8 @@ const ROUTES: Record<string, string> = {
   "v8-long168": "export_d2_long_horizon_168_rows_v1",
   "v8-capacity": "export_d2_capacity_registry_v1",
   "d2-readiness": "export_d2_prospective_readiness_v1",
+  "p4a-fixture-inputs-v1": "export_p4_fixture_context_inputs_v1",
+  "p4a-fixture-labels-v1": "export_p4_fixture_context_labels_v1",
 };
 
 Deno.serve(async (req: Request) => {
@@ -87,15 +89,32 @@ Deno.serve(async (req: Request) => {
       ? (raw[0]?.[rpcName] ?? raw[0]?.payload ?? raw[0])
       : raw;
 
-    if (requestedVersion === "v7-attendance" || requestedVersion === "v7-sporting" || requestedVersion === "v7-aliases" || requestedVersion === "v7-hybrid" || requestedVersion === "v8-capacity") {
+    if (
+      requestedVersion === "v7-attendance" ||
+      requestedVersion === "v7-sporting" ||
+      requestedVersion === "v7-aliases" ||
+      requestedVersion === "v7-hybrid" ||
+      requestedVersion === "v8-capacity"
+    ) {
       const rowCount = Number(payload?.rowCount ?? 0);
       if (rowCount < 1) throw new Error(`invalid split/support payload rows=${rowCount}`);
+    } else if (
+      requestedVersion === "p4a-fixture-inputs-v1" ||
+      requestedVersion === "p4a-fixture-labels-v1"
+    ) {
+      const eventCount = Number(payload?.eventCount ?? 0);
+      if (eventCount < 0) throw new Error(`invalid P4a payload events=${eventCount}`);
     } else {
       const eventCount = Number(payload?.eventCount ?? 0);
       if (eventCount < 2) throw new Error(`invalid C1 training payload events=${eventCount}`);
     }
 
-    if (requestedVersion === "v1" || requestedVersion === "v2" || requestedVersion === "v7-final24" || requestedVersion === "v8-long168") {
+    if (
+      requestedVersion === "v1" ||
+      requestedVersion === "v2" ||
+      requestedVersion === "v7-final24" ||
+      requestedVersion === "v8-long168"
+    ) {
       const eventCount = Number(payload?.eventCount ?? 0);
       const liveRowCount = Number(payload?.liveRowCount ?? 0);
       if (liveRowCount < eventCount) {
@@ -103,7 +122,11 @@ Deno.serve(async (req: Request) => {
       }
     }
 
-    if (requestedVersion === "v2" || requestedVersion === "event-v1" || requestedVersion === "v7-hybrid") {
+    if (
+      requestedVersion === "v2" ||
+      requestedVersion === "event-v1" ||
+      requestedVersion === "v7-hybrid"
+    ) {
       const hybridRows = Array.isArray(payload?.ticketingChallengerRows)
         ? payload.ticketingChallengerRows.length
         : 0;
@@ -119,7 +142,7 @@ Deno.serve(async (req: Request) => {
   } catch (error) {
     return json({
       ok: false,
-      version: "c1-alpha-training-export-gateway-v8-long72-support",
+      version: "c1-alpha-training-export-gateway-v9-p4a-support",
       error: String(error),
       repository: claims.repository,
       sha: claims.sha || null,
