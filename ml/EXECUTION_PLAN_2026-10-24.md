@@ -4,7 +4,7 @@ Status: **ACTIVE DEVELOPMENT PLAN**
 
 Canonical strategy remains `ml/MAE_RESEARCH_ROADMAP_V4.md`.
 
-This file records the next execution slice after P10/P10b closeout. It does not change any frozen P4a/P7/P9 scientific gate and does not activate production.
+This file records the next execution slice after P10/P10b closeout. It does not change frozen P4a/P7 contracts, does not lower the full P9 168h gate, and does not activate production.
 
 ## North star
 
@@ -23,7 +23,7 @@ Read from `public.ml_research_readiness_v1()` on **2026-10-24 09:41:41 UTC / 11:
 - P7 Long168: `8/9` independent events >72h — gate still closed.
 - P4a: `5` READY independent events, `0` genuine labels — gate still closed.
 - P9 full 168h reference curves: `4/9` — gate still closed.
-- P9 72h / 48h / 24h coverage: `7 / 10 / 13` completed events.
+- Existing retrospective P9 reference-curve coverage at 72h / 48h / 24h: `7 / 10 / 13` completed events.
 - P4b next-opponent READY rows: `0`.
 - Production change: `false`.
 
@@ -85,21 +85,44 @@ Live verification on 2026-10-24:
 - automated/scheduled capture remains OFF;
 - genuine capture remains **secret-bound** until `THE_ODDS_API_KEY` is configured in Supabase Edge Function secrets.
 
-### 2. P9 booking-curve — KEEP COLLECTING, HARDEN HARNESS
+### 2. P9 booking curve — SPLIT P9a SHORT-HORIZON FROM FULL P9 168h
 
-The representation is ready, but the learnable 168h model stays blocked at `4/9`.
+The canonical P9 precommit already separates two questions and must be interpreted literally:
+
+#### P9a — 24–48h short-horizon R&D: develop now
+
+Existing retrospective reference-curve readiness is sufficient to continue **development** at short horizons. This is not permission to use future target snapshots or to claim a learned MAE uplift.
+
+A new audit on 2026-10-24 exposed two additional safeguards that are now mandatory before any P9a learner:
+
+1. **Target eligibility must be cutoff-safe.** A T-24/T-48 target cannot be selected because its trajectory later turned out to be dense between the cutoff and T-6. Representation eligibility must use only snapshots already captured by the target `as_of_at`.
+2. **Incumbent lineage must be real.** Older short-horizon events do not have comparable persisted pre-live anchors. Do not recreate an incumbent after labels and present it as prospective/frozen evidence.
+
+Pre-cutoff-only exploratory availability from raw snapshots:
+
+- T-24 target representation: `10` events / `8` clubs;
+- T-48 target representation: `7` events / `6` clubs.
+
+These counts are an engineering/readiness audit, not a model sample claim. The deterministic P9a freeze harness must re-derive exact eligible identities from target-visible snapshots and persist their SHA.
 
 Development allowed now:
 
-- representation tests;
-- target-future leakage tests;
-- reference-pool lineage audit;
-- readiness/coverage reporting;
-- deterministic freeze-manifest tooling.
+- target-free raw snapshot export;
+- deterministic T-24/T-48 target representation freeze;
+- prior-completed-event-only reference pools;
+- target/reference snapshot identity lineage;
+- target-future mutation/invariance tests;
+- reference-pool SHA / freeze manifest;
+- separate labels export after freeze;
+- incumbent coverage audit.
 
-Forbidden now:
+A learnable P9a residual candidate may be frozen only after those artifacts prove that a valid incumbent comparison exists for enough strict-forward evaluation events. If it does not, keep P9a representation-ready but model-blocked rather than manufacturing an anchor.
 
-- opening/tuning a learnable P9 residual model before the 168h gate and a separate learner precommit.
+#### Full P9 — 168h: remain data-bound
+
+Full 168h P9 remains blocked at `4/9` reference curves. Do not lower that gate, weaken the 12h interpolation-quality rule, or treat P9a evidence as evidence for T-168.
+
+The first full-P9 learner still requires a separate precommit after the 168h gate is reached.
 
 ### 3. P7 — EXECUTE ONLY WHEN CANONICAL GATE OPENS
 
@@ -134,22 +157,26 @@ Next non-model task:
 
 ## Next actions
 
-1. Run PR CI for provider adapter / Edge Function contract.
-2. Configure `THE_ODDS_API_KEY` as an Edge Function secret before any real capture.
-3. Run one explicit main-branch capture and inspect mapping/coverage before enabling a schedule.
-4. Only after successful genuine capture decide the sampling cadence based on quota and decision horizons.
-5. Continue P9/P7 accumulation unchanged.
+1. Complete PR CI for P11 provider adapter / Edge Function contract.
+2. Implement P9a target-free export + deterministic freeze/lineage audit now.
+3. Audit persisted-incumbent coverage before freezing any P9a learner.
+4. Configure `THE_ODDS_API_KEY` as an Edge Function secret before any real P11 capture.
+5. Run one explicit main-branch P11 capture and inspect mapping/coverage before enabling a schedule.
 6. Re-read canonical readiness when P7 is expected to reach 9/9; never execute from the clock alone.
 7. Precommit a P11 model only after genuine PIT coverage/variance audit.
+8. Define the business-derived minimum meaningful MAE threshold separately from model results.
 
 ## Definition of done for this development slice
 
-- execution plan saved and updated in repo;
+- execution plan saved and internally consistent with the canonical P9 precommit;
 - P11a provider adapter + parser + fixture matcher + tests committed;
 - append-only raw quote + as-known consensus contract live;
 - P11a capture fail-closed on ambiguous mappings;
 - Edge Function deployed but not silently scheduled;
-- synthetic contract verification leaves zero persisted evidence rows;
-- P9/P7 gates untouched;
-- PR opened against `main` and CI green;
-- genuine P11 data collection starts only after provider secret configuration.
+- synthetic P11 contract verification leaves zero persisted evidence rows;
+- P9a target-free freeze/lineage tooling committed and tested;
+- no target is selected using post-cutoff snapshots;
+- no incumbent is reconstructed post-label and misrepresented as frozen evidence;
+- full P9 168h and P7 gates remain unchanged;
+- PR against `main` passes CI;
+- production remains unchanged.
