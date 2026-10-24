@@ -7,21 +7,19 @@ attendance labels and does not train or select a learner.
 Fail-closed guarantees:
 - target snapshots must be <= target as_of_at;
 - target as_of must equal the declared fixed cutoff from kickoff;
-- reference kickoff must be strictly before target as_of_at;
-- target event cannot reference itself;
+- the global reference catalog is filtered per target to `ref kickoff < target
+  as_of_at` and self is always excluded;
 - exact cutoff curve point must be observable;
 - at least three canonical target points are required;
 - reference-pool identities and raw snapshot identities are persisted in the
   deterministic manifest SHA;
-- only incumbent rows genuinely persisted before the target cutoff are exposed
-  by the SQL contract and audited here.
+- only incumbent rows genuinely persisted before the target cutoff are accepted.
 """
 from __future__ import annotations
 
 import argparse
 import hashlib
 import json
-from dataclasses import asdict
 from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Any
@@ -74,11 +72,19 @@ def _scan_forbidden_keys(value: Any, path: str = "$") -> None:
             _scan_forbidden_keys(child, f"{path}[{index}]")
 
 
-def _observation(row: dict[str, Any], *, max_at: datetime, name: str) -> CurveObservation:
+def _observation(
+    row: dict[str, Any],
+    *,
+    max_at: datetime,
+    name: str,
+    strict_before: bool = False,
+) -> CurveObservation:
     snapshot_id = int(row["snapshot_id"])
     captured_at = _parse_dt(row["captured_at"], f"{name}.captured_at")
-    if captured_at > max_at:
-        raise ValueError(f"{name} snapshot {snapshot_id} is after allowed cutoff")
+    invalid = captured_at >= max_at if strict_before else captured_at > max_at
+    if invalid:
+        relation = "at/after" if strict_before else "after"
+        raise ValueError(f"{name} snapshot {snapshot_id} is {relation} allowed cutoff")
     available_total = int(row["available_total"])
     if available_total < 0:
         raise ValueError(f"{name} snapshot {snapshot_id} has negative inventory")
@@ -113,6 +119,56 @@ def _incumbent_audit(rows: list[dict[str, Any]], target_as_of: datetime) -> list
     return sorted(audited, key=lambda item: (item["persisted_at"], item["source"], item["row_id"]))
 
 
+def _build_reference_catalog(payload: dict[str, Any]) -> dict[int, dict[str, Any]]:
+    raw_catalog = payload.get("reference_catalog")
+    if not isinstance(raw_catalog, list):
+        raise ValueError("reference_catalog must be an array")
+
+    catalog: dict[int, dict[str, Any]] = {}
+    for row in sorted(raw_catalog, key=lambda item: (item["kickoff_at"], int(item["ticket_event_id"]))):
+        event_id = int(row["ticket_event_id"])
+        if event_id in catalog:
+            raise ValueError(f"duplicate reference catalog event {event_id}")
+        kickoff = _parse_dt(row["kickoff_at"], f"reference_catalog[{event_id}].kickoff_at")
+        raw_snapshots = row.get("snapshots", [])
+        if not isinstance(raw_snapshots, list):
+            raise ValueError(f"reference catalog event {event_id} snapshots must be an array")
+        observations = [
+            _observation(
+                snapshot,
+                max_at=kickoff,
+                name=f"reference_catalog[{event_id}]",
+                strict_before=True,
+            )
+            for snapshot in raw_snapshots
+        ]
+        snapshot_ids = [obs.snapshot_id for obs in observations]
+        if len(snapshot_ids) != len(set(snapshot_ids)):
+            raise ValueError(f"reference catalog event {event_id} contains duplicate snapshot ids")
+
+        curve = None
+        curve_error: str | None = None
+        try:
+            curve = build_normalized_curve(
+                observations,
+                ticket_event_id=event_id,
+                as_of_at=kickoff - timedelta(microseconds=1),
+                kickoff_at=kickoff,
+            )
+        except ValueError as exc:
+            curve_error = str(exc)
+
+        catalog[event_id] = {
+            "ticket_event_id": event_id,
+            "club_slug": str(row.get("club_slug") or ""),
+            "kickoff_at": kickoff,
+            "snapshot_ids": sorted(snapshot_ids),
+            "curve": curve,
+            "curve_error": curve_error,
+        }
+    return catalog
+
+
 def freeze_inputs(payload: dict[str, Any]) -> dict[str, Any]:
     _scan_forbidden_keys(payload)
     if payload.get("version") != "p9a-booking-curve-inputs-v1":
@@ -132,6 +188,7 @@ def freeze_inputs(payload: dict[str, Any]) -> dict[str, Any]:
     if not isinstance(targets, list):
         raise ValueError("targets must be an array")
 
+    reference_catalog = _build_reference_catalog(payload)
     frozen_targets: list[dict[str, Any]] = []
     seen_target_ids: set[int] = set()
 
@@ -188,57 +245,27 @@ def freeze_inputs(payload: dict[str, Any]) -> dict[str, Any]:
         reference_objects: list[HistoricalCurveReference] = []
         reference_snapshot_ids: dict[int, list[int]] = {}
         reference_errors: list[dict[str, Any]] = []
-        raw_refs = target_row.get("reference_events", [])
-        if not isinstance(raw_refs, list):
-            raise ValueError(f"target {event_id} reference_events must be an array")
-        seen_refs: set[int] = set()
-
-        for ref_row in sorted(raw_refs, key=lambda row: (row["kickoff_at"], int(row["ticket_event_id"]))):
-            ref_id = int(ref_row["ticket_event_id"])
-            if ref_id == event_id:
-                raise ValueError(f"target {event_id} references itself")
-            if ref_id in seen_refs:
-                raise ValueError(f"target {event_id} contains duplicate reference event {ref_id}")
-            seen_refs.add(ref_id)
-            ref_kickoff = _parse_dt(ref_row["kickoff_at"], f"reference[{ref_id}].kickoff_at")
-            if not ref_kickoff < target_as_of:
-                raise ValueError(f"reference event {ref_id} is not completed before target {event_id} cutoff")
-            raw_ref_snapshots = ref_row.get("snapshots", [])
-            if not isinstance(raw_ref_snapshots, list):
-                raise ValueError(f"reference {ref_id} snapshots must be an array")
-            # Reference booking path may use all snapshots genuinely captured before
-            # its own kickoff because the entire reference event precedes target as_of.
-            ref_obs = [
-                _observation(row, max_at=ref_kickoff, name=f"reference[{ref_id}]")
-                for row in raw_ref_snapshots
-            ]
-            ids = [obs.snapshot_id for obs in ref_obs]
-            if len(ids) != len(set(ids)):
-                raise ValueError(f"reference {ref_id} contains duplicate snapshot ids")
-            reference_snapshot_ids[ref_id] = sorted(ids)
-            try:
-                ref_curve = build_normalized_curve(
-                    ref_obs,
-                    ticket_event_id=ref_id,
-                    as_of_at=ref_kickoff - timedelta(microseconds=1),
-                    kickoff_at=ref_kickoff,
-                )
-            except ValueError as exc:
-                reference_errors.append({"ticket_event_id": ref_id, "reason": str(exc)})
+        for ref_id, ref in sorted(reference_catalog.items(), key=lambda item: (item[1]["kickoff_at"], item[0])):
+            if ref_id == event_id or not ref["kickoff_at"] < target_as_of:
                 continue
+            if ref["curve"] is None:
+                reference_errors.append({
+                    "ticket_event_id": ref_id,
+                    "reason": ref["curve_error"],
+                })
+                continue
+            reference_snapshot_ids[ref_id] = ref["snapshot_ids"]
             reference_objects.append(HistoricalCurveReference(
                 ticket_event_id=ref_id,
-                club_slug=str(ref_row.get("club_slug") or ""),
-                completed_at=ref_kickoff,
-                curve=ref_curve,
+                club_slug=ref["club_slug"],
+                completed_at=ref["kickoff_at"],
+                curve=ref["curve"],
             ))
 
         eligible_reference_ids: list[int] = []
         selected_neighbor_ids: list[int] = []
         pickup_features: dict[str, Any] | None = None
         if representation_ready and target_curve is not None:
-            # Large k exposes the full set that genuinely satisfies both curve
-            # overlap and remaining-pickup requirements. Fixed k=5 is then frozen.
             full_pool = estimate_historical_pickup(
                 target_curve,
                 reference_objects,
@@ -283,7 +310,6 @@ def freeze_inputs(payload: dict[str, Any]) -> dict[str, Any]:
             },
             "persisted_incumbent_rows": incumbent_rows,
         }
-        lineage_sha = _sha256(lineage)
 
         frozen_targets.append({
             "ticket_event_id": event_id,
@@ -304,7 +330,7 @@ def freeze_inputs(payload: dict[str, Any]) -> dict[str, Any]:
             "pickup_features": pickup_features,
             "reference_errors": reference_errors,
             "lineage": lineage,
-            "lineage_sha256": lineage_sha,
+            "lineage_sha256": _sha256(lineage),
         })
 
     manifest_core = {
@@ -327,6 +353,7 @@ def freeze_inputs(payload: dict[str, Any]) -> dict[str, Any]:
     manifest_sha = _sha256(manifest_core)
     summary = {
         "input_target_count": len(frozen_targets),
+        "reference_catalog_event_count": len(reference_catalog),
         "representation_ready_count": sum(row["representation_ready"] for row in frozen_targets),
         "reference_ready_count": sum(row["reference_ready"] for row in frozen_targets),
         "freeze_ready_count": sum(row["freeze_ready"] for row in frozen_targets),
