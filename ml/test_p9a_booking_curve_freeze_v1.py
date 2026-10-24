@@ -29,7 +29,6 @@ def reference(event_id: int, kickoff: datetime, club: str) -> dict:
         "home_team": f"Home {event_id}",
         "away_team": f"Away {event_id}",
         "kickoff_at": iso(kickoff),
-        "completed_before_target_as_of": True,
         "snapshots": snaps(
             kickoff,
             event_id,
@@ -69,7 +68,7 @@ def payload(*, with_incumbent: bool = False) -> dict:
         "independent_unit": "ticket_event",
         "target_values_used": False,
         "post_cutoff_target_snapshots_exported": False,
-        "reference_rule": "reference kickoff must be strictly before target_as_of_at",
+        "reference_catalog_semantics": "freeze filters strict-prior refs per target",
         "incumbent_rule": "only rows persisted at or before target_as_of_at are exposed",
         "production_change": False,
         "targets": [{
@@ -86,9 +85,9 @@ def payload(*, with_incumbent: bool = False) -> dict:
                 [48, 36, 24],
                 [1000, 880, 760],
             ),
-            "reference_events": refs,
             "persisted_incumbents": incumbents,
         }],
+        "reference_catalog": refs,
     }
 
 
@@ -104,6 +103,7 @@ def test_freeze_is_target_free_and_reference_ready() -> None:
     assert row["comparator_ready"] is False
     assert row["pickup_features"]["target_future_points_used"] is False
     assert row["lineage"]["eligible_reference_event_ids"] == [1, 2, 3]
+    assert frozen["summary"]["reference_catalog_event_count"] == 3
     assert frozen["summary"]["learner_status"] == "MODEL_BLOCKED_PENDING_SEPARATE_PRECOMMIT_AND_VALID_COMPARATOR_SAMPLE"
 
 
@@ -130,20 +130,34 @@ def test_post_cutoff_target_snapshot_fails_closed() -> None:
         raise AssertionError("post-cutoff target snapshot must fail closed")
 
 
-def test_future_reference_event_fails_closed() -> None:
+def test_future_reference_is_ignored_and_cannot_change_manifest() -> None:
+    base = freeze_inputs(payload())
     value = payload()
-    kickoff = datetime(2026, 10, 20, 18, tzinfo=UTC)
-    value["targets"][0]["reference_events"][0] = reference(
-        1,
-        kickoff - timedelta(hours=12),
-        "club-a",
-    )
-    try:
-        freeze_inputs(value)
-    except ValueError as exc:
-        assert "not completed before target" in str(exc)
-    else:
-        raise AssertionError("future reference must fail closed")
+    target_kickoff = datetime(2026, 10, 20, 18, tzinfo=UTC)
+    # This event occurs after target as_of and deliberately has a very similar
+    # curve. It must not enter the target reference pool or alter its manifest.
+    value["reference_catalog"].append(reference(
+        4,
+        target_kickoff - timedelta(hours=12),
+        "future-club",
+    ))
+    with_future = freeze_inputs(value)
+    assert with_future["targets"][0]["lineage"]["eligible_reference_event_ids"] == [1, 2, 3]
+    assert with_future["targets"][0]["lineage_sha256"] == base["targets"][0]["lineage_sha256"]
+    assert with_future["manifest_sha256"] == base["manifest_sha256"]
+
+
+def test_self_reference_is_ignored() -> None:
+    base = freeze_inputs(payload())
+    value = payload()
+    value["reference_catalog"].append(reference(
+        99,
+        datetime(2026, 9, 28, 18, tzinfo=UTC),
+        "target-club",
+    ))
+    with_self = freeze_inputs(value)
+    assert 99 not in with_self["targets"][0]["lineage"]["eligible_reference_event_ids"]
+    assert with_self["targets"][0]["lineage_sha256"] == base["targets"][0]["lineage_sha256"]
 
 
 def test_attendance_label_in_input_fails_closed() -> None:
@@ -159,7 +173,6 @@ def test_attendance_label_in_input_fails_closed() -> None:
 
 def test_missing_exact_cutoff_is_not_representation_ready() -> None:
     value = payload()
-    # Keep three earlier points, but remove the T-24 point itself.
     kickoff = datetime(2026, 10, 20, 18, tzinfo=UTC)
     value["targets"][0]["target_snapshots"] = snaps(
         kickoff,
@@ -174,12 +187,12 @@ def test_missing_exact_cutoff_is_not_representation_ready() -> None:
     assert row["freeze_ready"] is False
 
 
-def test_manifest_sha_is_order_invariant_for_snapshot_and_reference_arrays() -> None:
+def test_manifest_sha_is_order_invariant_for_snapshot_and_catalog_arrays() -> None:
     a = payload(with_incumbent=True)
     b = deepcopy(a)
     b["targets"][0]["target_snapshots"].reverse()
-    b["targets"][0]["reference_events"].reverse()
-    for ref in b["targets"][0]["reference_events"]:
+    b["reference_catalog"].reverse()
+    for ref in b["reference_catalog"]:
         ref["snapshots"].reverse()
     frozen_a = freeze_inputs(a)
     frozen_b = freeze_inputs(b)
@@ -198,13 +211,32 @@ def test_incumbent_persisted_after_cutoff_fails_closed() -> None:
         raise AssertionError("post-cutoff incumbent must fail closed")
 
 
+def test_reference_snapshot_at_kickoff_fails_closed() -> None:
+    value = payload()
+    ref = value["reference_catalog"][0]
+    kickoff = datetime.fromisoformat(ref["kickoff_at"].replace("Z", "+00:00"))
+    ref["snapshots"].append({
+        "snapshot_id": 199999,
+        "captured_at": iso(kickoff),
+        "available_total": 1,
+    })
+    try:
+        freeze_inputs(value)
+    except ValueError as exc:
+        assert "at/after allowed cutoff" in str(exc)
+    else:
+        raise AssertionError("reference snapshot at kickoff must fail closed")
+
+
 if __name__ == "__main__":
     test_freeze_is_target_free_and_reference_ready()
     test_genuine_persisted_incumbent_can_make_comparator_ready()
     test_post_cutoff_target_snapshot_fails_closed()
-    test_future_reference_event_fails_closed()
+    test_future_reference_is_ignored_and_cannot_change_manifest()
+    test_self_reference_is_ignored()
     test_attendance_label_in_input_fails_closed()
     test_missing_exact_cutoff_is_not_representation_ready()
-    test_manifest_sha_is_order_invariant_for_snapshot_and_reference_arrays()
+    test_manifest_sha_is_order_invariant_for_snapshot_and_catalog_arrays()
     test_incumbent_persisted_after_cutoff_fails_closed()
+    test_reference_snapshot_at_kickoff_fails_closed()
     print("p9a_booking_curve_freeze_v1 tests passed")
