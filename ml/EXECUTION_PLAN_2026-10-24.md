@@ -39,34 +39,51 @@ P10/P10b are closed for the fixed pooled-HGB architecture.
 
 ## Development order
 
-### 1. P11a genuine PIT odds capture — START NOW
+### 1. P11a genuine PIT odds capture — IMPLEMENTED / SECRET-BOUND
 
-Primary provider candidate for v1 integration: **The Odds API v4**.
+Provider selected for the v2 capture adapter: **The Odds API v4**.
 
-Reasons for the v1 adapter choice:
+Reasons:
 
 - explicit Polish Ekstraklasa coverage (`soccer_poland_ekstraklasa`);
 - pre-match `h2h`/1X2 data;
 - ISO timestamps and market-level update timestamps;
-- provider terms explicitly allow storage, analytics and statistical/ML model training, while prohibiting raw-feed resale;
+- provider terms allow storage, analytics and statistical/ML model training while prohibiting raw-feed resale;
 - simple REST integration suitable for append-only PIT collection.
 
 Important boundary:
 
 Provider integration is infrastructure, not model evidence. No historical closing-odds backfill may be used to impersonate earlier PIT observations.
 
-Implementation slice:
+Implemented v2 architecture:
 
-1. provider-neutral fixture matching contract;
-2. deterministic team-name normalization / explicit alias map;
-3. capture only pre-match 1X2 observations;
-4. aggregate bookmaker observations into one deterministic market snapshot only after preserving source lineage;
-5. append into the existing private P11a table through a controlled service-role path;
-6. hash raw provider event payload for lineage;
-7. fail closed on ambiguous event mapping;
-8. record provider event id, bookmaker count and mapping evidence;
-9. no in-play capture in v1;
-10. no model ablation before genuine PIT coverage exists.
+1. target-free local capture input RPC;
+2. deterministic team-name normalization backed by verified club aliases;
+3. exact home/away club-key matching plus <=90-minute kickoff tolerance;
+4. ambiguous or unresolved mappings fail closed;
+5. pre-match `h2h`/1X2 only;
+6. raw bookmaker-level quotes are preserved append-only;
+7. provider event payload is SHA-256 hashed for lineage;
+8. provider event id, bookmaker id, capture batch, provider update timestamp and mapping method are persisted;
+9. database repeats club/kickoff/timing validation before accepting rows;
+10. as-known consensus de-vigs each bookmaker first, takes medians across the latest batch, then renormalizes to sum to one;
+11. `outcome_uncertainty` is normalized 1X2 entropy and is explicitly not labeled expected match quality;
+12. GitHub OIDC main-only authorization protects the deployed capture function;
+13. workflow has **no schedule** and capture requires explicit `workflow_dispatch`;
+14. no P11 model ablation is precommitted yet.
+
+Live verification on 2026-10-24:
+
+- migration `p11_market_odds_capture_v2` applied successfully;
+- `p11_market_capture_inputs_v2(14)` returns the current upcoming Ekstraklasa event set and aliases without targets;
+- `p11_market_odds_readiness_v2()` = `CAPTURE_CONTRACT_READY_NO_GENUINE_OBSERVATIONS_YET`;
+- `p11_market_context_as_known_v2(...)` returns `MISSING` before genuine capture;
+- function ACLs expose v2 RPCs only to `postgres` and `service_role`;
+- transactional rollback test inserted three synthetic bookmaker quotes and produced a valid de-vigged `READY` consensus;
+- rollback verification confirmed `0` persisted synthetic rows;
+- Edge Function `p11_odds_capture_v2` deployed ACTIVE, version 1;
+- automated/scheduled capture remains OFF;
+- genuine capture remains **secret-bound** until `THE_ODDS_API_KEY` is configured in Supabase Edge Function secrets.
 
 ### 2. P9 booking-curve — KEEP COLLECTING, HARDEN HARNESS
 
@@ -101,26 +118,38 @@ Next non-model task:
 - derive that threshold from actual downstream decisions and asymmetric error costs;
 - do not derive it from observed challenger score distributions.
 
-## P11a v1 scientific guardrails
+## P11a scientific guardrails
 
 - independent unit remains `ticket_event`;
-- capture timestamp must be actual ingestion time;
+- capture timestamp is actual ingestion time;
 - provider update timestamp is metadata, never substituted for capture time;
 - only observations captured before kickoff are eligible;
-- odds must be de-vigged before model feature use;
+- odds are de-vigged before feature use;
 - 1X2 outcome uncertainty is not called expected match quality;
 - expected match quality, if added later, must be a distinct signal/precommit;
-- no outcome/attendance target is needed to build the capture/readiness layer;
-- provider/API failures must not mutate existing observations;
+- no outcome/attendance target is needed to build capture/readiness;
+- provider/API failures do not mutate existing observations;
 - no overwrite of historical observations;
 - production remains off.
 
+## Next actions
+
+1. Run PR CI for provider adapter / Edge Function contract.
+2. Configure `THE_ODDS_API_KEY` as an Edge Function secret before any real capture.
+3. Run one explicit main-branch capture and inspect mapping/coverage before enabling a schedule.
+4. Only after successful genuine capture decide the sampling cadence based on quota and decision horizons.
+5. Continue P9/P7 accumulation unchanged.
+6. Re-read canonical readiness when P7 is expected to reach 9/9; never execute from the clock alone.
+7. Precommit a P11 model only after genuine PIT coverage/variance audit.
+
 ## Definition of done for this development slice
 
-- execution plan saved in repo;
+- execution plan saved and updated in repo;
 - P11a provider adapter + parser + fixture matcher + tests committed;
-- append-only capture function created but not silently activated without required API secret;
-- P11a capture is fail-closed on ambiguous mappings;
-- P9/P7 gates remain untouched;
-- canonical docs updated after implementation results;
-- PR opened against `main` after tests/audit.
+- append-only raw quote + as-known consensus contract live;
+- P11a capture fail-closed on ambiguous mappings;
+- Edge Function deployed but not silently scheduled;
+- synthetic contract verification leaves zero persisted evidence rows;
+- P9/P7 gates untouched;
+- PR opened against `main` and CI green;
+- genuine P11 data collection starts only after provider secret configuration.
