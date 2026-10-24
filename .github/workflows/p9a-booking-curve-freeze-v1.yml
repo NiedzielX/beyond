@@ -1,0 +1,164 @@
+name: P9a Booking Curve Freeze v1
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - "ml/p9a_booking_curve_freeze_v1.py"
+      - "ml/test_p9a_booking_curve_freeze_v1.py"
+      - "ml/p9_booking_curve_v1.py"
+      - "supabase/sql/p9a_booking_curve_freeze_v1.sql"
+      - "supabase/functions/p9a_booking_curve_export_v1/**"
+      - ".github/workflows/p9a-booking-curve-freeze-v1.yml"
+      - "ml/EXECUTION_PLAN_2026-10-24.md"
+  push:
+    branches: [main]
+    paths:
+      - "ml/p9a_booking_curve_freeze_v1.py"
+      - "ml/test_p9a_booking_curve_freeze_v1.py"
+      - "ml/p9_booking_curve_v1.py"
+      - "supabase/sql/p9a_booking_curve_freeze_v1.sql"
+      - "supabase/functions/p9a_booking_curve_export_v1/**"
+      - ".github/workflows/p9a-booking-curve-freeze-v1.yml"
+      - "ml/EXECUTION_PLAN_2026-10-24.md"
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: p9a-booking-curve-freeze-v1-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install pinned ML dependencies
+        run: pip install -r ml/requirements.txt
+      - name: Compile and run P9/P9a tests
+        run: |
+          python -m py_compile ml/p9_booking_curve_v1.py
+          python -m py_compile ml/p9a_booking_curve_freeze_v1.py
+          python -m py_compile ml/test_p9a_booking_curve_freeze_v1.py
+          python -m ml.test_p9_booking_curve_v1
+          python -m ml.test_p9a_booking_curve_freeze_v1
+      - name: Verify target-free SQL contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          f=supabase/sql/p9a_booking_curve_freeze_v1.sql
+          grep -q "post_cutoff_target_snapshots_exported',false" "$f"
+          grep -q "target_values_used',false" "$f"
+          grep -q "reference_catalog" "$f"
+          grep -q "sp.created_at <= t.target_as_of_at" "$f"
+          grep -q "d.created_at <= t.target_as_of_at" "$f"
+          grep -q "export_p9a_booking_curve_labels_v1" "$f"
+      - name: Verify no learner is executed in freeze workflow
+        shell: bash
+        run: |
+          set -euo pipefail
+          ! grep -Eiq 'fit\(|QuantileRegressor|HistGradientBoostingRegressor|RandomForest|XGBoost|LightGBM' ml/p9a_booking_curve_freeze_v1.py
+
+  main-audit:
+    if: github.event_name != 'pull_request'
+    needs: validate
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install pinned ML dependencies
+        run: pip install -r ml/requirements.txt
+      - name: Request main-only P9a OIDC token
+        shell: bash
+        run: |
+          set -euo pipefail
+          response=$(curl --retry 4 --retry-all-errors --retry-delay 2 -fsS \
+            -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
+            "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=beyond-p9a-booking-curve")
+          token=$(printf '%s' "$response" | jq -r '.value')
+          test -n "$token"
+          test "$token" != "null"
+          echo "::add-mask::$token"
+          echo "P9A_OIDC_TOKEN=$token" >> "$GITHUB_ENV"
+      - name: Fetch target-free T24 and T48 inputs
+        shell: bash
+        run: |
+          set -euo pipefail
+          base='https://adchzwqboeekhokapxqi.supabase.co/functions/v1/p9a_booking_curve_export_v1?version=p9a-booking-curve-inputs-v1'
+          for cutoff in 24 48; do
+            curl --retry 5 --retry-all-errors --retry-delay 2 -fsS \
+              -H "Authorization: Bearer $P9A_OIDC_TOKEN" \
+              "${base}&cutoff=${cutoff}" -o "/tmp/p9a-${cutoff}-wrapper.json"
+            jq -e '.ok == true and .targetFieldsIncluded == false and .labelsIncluded == false and .targetValuesUsed == false and .productionChange == false' "/tmp/p9a-${cutoff}-wrapper.json" >/dev/null
+            jq '.payload' "/tmp/p9a-${cutoff}-wrapper.json" > "/tmp/p9a-${cutoff}-inputs.json"
+          done
+      - name: Freeze T24 representation/reference identities
+        run: |
+          python -m ml.p9a_booking_curve_freeze_v1 \
+            --inputs /tmp/p9a-24-inputs.json \
+            --output /tmp/p9a-24-freeze.json
+      - name: Freeze T48 representation/reference identities
+        run: |
+          python -m ml.p9a_booking_curve_freeze_v1 \
+            --inputs /tmp/p9a-48-inputs.json \
+            --output /tmp/p9a-48-freeze.json
+      - name: Hard audit gates
+        shell: bash
+        run: |
+          set -euo pipefail
+          for cutoff in 24 48; do
+            jq -e --argjson cutoff "$cutoff" '
+              .version == "p9a-booking-curve-freeze-v1"
+              and .cutoff_hours == $cutoff
+              and .target_values_opened == false
+              and .model_training_performed == false
+              and .production_change == false
+              and .target_boundary_rule.future_target_snapshot_allowed == false
+              and .target_boundary_rule.max_age_hours == 6
+              and .summary.learner_status == "MODEL_BLOCKED_PENDING_SEPARATE_PRECOMMIT_AND_VALID_COMPARATOR_SAMPLE"
+              and ([.targets[].pickup_features? | select(. != null) | .target_future_points_used] | all(. == false))
+            ' "/tmp/p9a-${cutoff}-freeze.json" >/dev/null
+          done
+      - name: Print target-free P9a readiness
+        shell: bash
+        run: |
+          echo '### T-24'
+          jq '{manifest_sha256,summary}' /tmp/p9a-24-freeze.json
+          echo '### T-48'
+          jq '{manifest_sha256,summary}' /tmp/p9a-48-freeze.json
+      - name: Publish summary
+        shell: bash
+        run: |
+          {
+            echo '### P9a Booking Curve target-free freeze'
+            echo
+            echo '**T-24**'
+            jq -r '"- manifest: `\(.manifest_sha256)`\n- representation ready: `\(.summary.representation_ready_count)`\n- freeze ready: `\(.summary.freeze_ready_count)`\n- comparator ready: `\(.summary.comparator_ready_count)`\n- events: `\(.summary.freeze_ready_event_ids)`"' /tmp/p9a-24-freeze.json
+            echo
+            echo '**T-48**'
+            jq -r '"- manifest: `\(.manifest_sha256)`\n- representation ready: `\(.summary.representation_ready_count)`\n- freeze ready: `\(.summary.freeze_ready_count)`\n- comparator ready: `\(.summary.comparator_ready_count)`\n- events: `\(.summary.freeze_ready_event_ids)`"' /tmp/p9a-48-freeze.json
+            echo
+            echo '- labels opened: `false`'
+            echo '- model training performed: `false`'
+            echo '- production change: `false`'
+          } >> "$GITHUB_STEP_SUMMARY"
+      - name: Upload target-free freeze artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: p9a-target-free-freeze-v1-${{ github.run_id }}
+          path: |
+            /tmp/p9a-24-inputs.json
+            /tmp/p9a-24-freeze.json
+            /tmp/p9a-48-inputs.json
+            /tmp/p9a-48-freeze.json
+          if-no-files-found: error
+          retention-days: 90
