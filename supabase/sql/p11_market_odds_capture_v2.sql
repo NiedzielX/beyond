@@ -1,14 +1,8 @@
 -- P11a — genuine PIT 1X2 odds capture v2
 --
--- Purpose:
---   * preserve raw bookmaker-level quotes append-only;
---   * preserve provider-event and capture-batch lineage;
---   * fail closed on event/kickoff mismatch;
---   * derive an as-known de-vigged bookmaker consensus;
---   * remain target-free and production-neutral.
---
--- v1 remains untouched. v2 supersedes v1 for genuine capture before the first
--- real P11 observation is collected.
+-- Verified live contract. Raw bookmaker-level quotes are preserved append-only;
+-- consensus is derived point-in-time from the latest capture batch known at the
+-- requested cutoff. No attendance target is used and production is unchanged.
 
 create table if not exists private.p11_market_odds_observations_v2 (
     id bigint generated always as identity primary key,
@@ -33,14 +27,7 @@ create table if not exists private.p11_market_odds_observations_v2 (
     away_club_key text not null,
     kickoff_delta_seconds integer not null,
     created_at timestamptz not null default now(),
-    unique (
-        ticket_event_id,
-        provider,
-        provider_event_id,
-        bookmaker_key,
-        market_type,
-        captured_at
-    ),
+    unique (ticket_event_id, provider, provider_event_id, bookmaker_key, market_type, captured_at),
     check (captured_at < provider_commence_at),
     check (abs(kickoff_delta_seconds) <= 5400),
     check (source_payload_hash is null or source_payload_hash ~ '^[0-9a-f]{64}$')
@@ -61,8 +48,6 @@ grant select, insert on private.p11_market_odds_observations_v2 to service_role;
 grant usage, select on sequence private.p11_market_odds_observations_v2_id_seq to service_role;
 grant select on private.structural_prior_club_aliases_v1 to service_role;
 
--- Target-free capture inputs. The function intentionally returns only upcoming
--- Ekstraklasa ticket events and verified club aliases; no attendance labels.
 create or replace function public.p11_market_capture_inputs_v2(
     p_horizon_days integer default 14
 )
@@ -107,8 +92,6 @@ $function$;
 revoke all on function public.p11_market_capture_inputs_v2(integer) from public, anon, authenticated;
 grant execute on function public.p11_market_capture_inputs_v2(integer) to service_role;
 
--- Controlled append-only insertion. All mapping and timing checks are repeated
--- in Postgres so the database does not need to trust the Edge Function blindly.
 create or replace function public.insert_p11_market_odds_capture_v2(
     p_capture jsonb
 )
@@ -232,9 +215,6 @@ $function$;
 revoke all on function public.insert_p11_market_odds_capture_v2(jsonb) from public, anon, authenticated;
 grant execute on function public.insert_p11_market_odds_capture_v2(jsonb) to service_role;
 
--- Latest genuinely-known market consensus. We first de-vig every bookmaker's
--- 1X2 prices, then take medians across the latest capture batch and renormalize
--- the three medians to sum to one.
 create or replace function public.p11_market_context_as_known_v2(
     p_ticket_event_id bigint,
     p_as_of_at timestamptz
@@ -274,7 +254,7 @@ with event_row as (
            min(captured_at) as captured_at,
            min(provider) as provider,
            min(provider_event_id) as provider_event_id,
-           min(capture_batch_id) as capture_batch_id
+           min(capture_batch_id::text)::uuid as capture_batch_id
     from quote_probs
 ), consensus as (
     select m.*,(med_home+med_draw+med_away) as med_sum
@@ -337,7 +317,7 @@ security invoker
 set search_path to 'public', 'private'
 as $function$
 with valid as (
-    select o.ticket_event_id,e.club_slug,e.kickoff_at,o.captured_at,o.bookmaker_key,
+    select o.ticket_event_id,e.club_slug,e.kickoff_at,o.captured_at,o.bookmaker_key,o.capture_batch_id,
            extract(epoch from (e.kickoff_at-o.captured_at))/3600.0 as hours_to_kickoff
     from private.p11_market_odds_observations_v2 o
     join public.ticket_events e on e.id=o.ticket_event_id
@@ -347,7 +327,8 @@ with valid as (
            max(hours_to_kickoff) as earliest_hours_to_kickoff,
            count(distinct bookmaker_key)::integer as bookmaker_count,
            count(distinct capture_batch_id)::integer as capture_batches
-    from valid group by ticket_event_id,club_slug
+    from valid
+    group by ticket_event_id,club_slug
 )
 select jsonb_build_object(
     'version','p11-market-odds-readiness-v2',
