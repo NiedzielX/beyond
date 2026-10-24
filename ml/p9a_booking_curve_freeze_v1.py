@@ -9,7 +9,9 @@ Fail-closed guarantees:
 - target as_of must equal the declared fixed cutoff from kickoff;
 - the global reference catalog is filtered per target to `ref kickoff < target
   as_of_at` and self is always excluded;
-- exact cutoff curve point must be observable;
+- the target cutoff state may use only the latest genuinely known pre-cutoff
+  snapshot and only when it is <=6h stale; no future point is used to interpolate
+  the target boundary;
 - at least three canonical target points are required;
 - reference-pool identities and raw snapshot identities are persisted in the
   deterministic manifest SHA;
@@ -20,6 +22,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+from dataclasses import replace
 from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Any
@@ -36,6 +39,7 @@ from ml.p9_booking_curve_v1 import (
 VERSION = "p9a-booking-curve-freeze-v1"
 ALLOWED_CUTOFFS = {24, 48}
 MIN_REFERENCE_EVENTS = 3
+BOUNDARY_HOLD_MAX_AGE_HOURS = 6.0
 FORBIDDEN_INPUT_KEYS = {
     "actual_attendance",
     "attendance_label",
@@ -96,6 +100,51 @@ def _curve_points(curve: Any) -> list[dict[str, float | None]]:
         {"hours_before_kickoff": float(hours), "available_index": None if value is None else float(value)}
         for hours, value in curve.points
     ]
+
+
+def _apply_target_boundary_hold(
+    curve: Any,
+    observations: list[CurveObservation],
+    *,
+    cutoff_hours: int,
+    kickoff_at: datetime,
+) -> tuple[Any, float | None, int | None, str]:
+    """Fill only the target cutoff boundary using last-known pre-cutoff state.
+
+    This is not interpolation through the future. It is a point-in-time hold of
+    the latest observation already visible at the cutoff. The hold is allowed
+    only when that observation is no more than six hours stale.
+    """
+    point_map = curve.as_dict()
+    cutoff = float(cutoff_hours)
+    if point_map.get(cutoff) is not None:
+        return curve, 0.0, None, "canonical_point_already_observed"
+    if not observations:
+        return curve, None, None, "missing_no_visible_snapshot"
+
+    visible_with_hours = [
+        ((kickoff_at - obs.captured_at).total_seconds() / 3600.0, obs)
+        for obs in observations
+        if obs.captured_at < kickoff_at
+    ]
+    # All target observations are <= target as_of, so their hours-to-kickoff are
+    # >= cutoff. The minimum lead time is the latest genuinely known state.
+    eligible = [(hours, obs) for hours, obs in visible_with_hours if hours >= cutoff - 1e-9]
+    if not eligible:
+        return curve, None, None, "missing_no_pre_cutoff_snapshot"
+    hours, latest = min(eligible, key=lambda item: (item[0], -item[1].snapshot_id))
+    age = max(0.0, hours - cutoff)
+    if age > BOUNDARY_HOLD_MAX_AGE_HOURS + 1e-9:
+        return curve, float(age), latest.snapshot_id, "missing_latest_snapshot_too_stale"
+    if curve.first_visible_available <= 0:
+        raise ValueError("invalid first_visible_available in target curve")
+
+    boundary_value = float(latest.available_total / curve.first_visible_available)
+    points = tuple(
+        (h, boundary_value if abs(h - cutoff) < 1e-9 else value)
+        for h, value in curve.points
+    )
+    return replace(curve, points=points), float(age), latest.snapshot_id, "last_known_pre_cutoff_hold"
 
 
 def _incumbent_audit(rows: list[dict[str, Any]], target_as_of: datetime) -> list[dict[str, Any]]:
@@ -217,6 +266,9 @@ def freeze_inputs(payload: dict[str, Any]) -> dict[str, Any]:
 
         representation_error: str | None = None
         target_curve = None
+        cutoff_hold_age_hours: float | None = None
+        cutoff_source_snapshot_id: int | None = None
+        cutoff_point_source = "missing"
         try:
             target_curve = build_normalized_curve(
                 target_observations,
@@ -224,22 +276,28 @@ def freeze_inputs(payload: dict[str, Any]) -> dict[str, Any]:
                 as_of_at=target_as_of,
                 kickoff_at=kickoff_at,
             )
+            target_curve, cutoff_hold_age_hours, cutoff_source_snapshot_id, cutoff_point_source = _apply_target_boundary_hold(
+                target_curve,
+                target_observations,
+                cutoff_hours=cutoff_hours,
+                kickoff_at=kickoff_at,
+            )
         except ValueError as exc:
             representation_error = str(exc)
 
         target_points: list[dict[str, float | None]] = []
         observed_point_count = 0
-        exact_cutoff_available = False
+        cutoff_point_available = False
         if target_curve is not None:
             target_points = _curve_points(target_curve)
             point_map = target_curve.as_dict()
             observed_point_count = sum(value is not None for value in point_map.values())
-            exact_cutoff_available = point_map.get(float(cutoff_hours)) is not None
+            cutoff_point_available = point_map.get(float(cutoff_hours)) is not None
 
         representation_ready = bool(
             target_curve is not None
             and observed_point_count >= MIN_OVERLAP_POINTS
-            and exact_cutoff_available
+            and cutoff_point_available
         )
 
         reference_objects: list[HistoricalCurveReference] = []
@@ -249,10 +307,7 @@ def freeze_inputs(payload: dict[str, Any]) -> dict[str, Any]:
             if ref_id == event_id or not ref["kickoff_at"] < target_as_of:
                 continue
             if ref["curve"] is None:
-                reference_errors.append({
-                    "ticket_event_id": ref_id,
-                    "reason": ref["curve_error"],
-                })
+                reference_errors.append({"ticket_event_id": ref_id, "reason": ref["curve_error"]})
                 continue
             reference_snapshot_ids[ref_id] = ref["snapshot_ids"]
             reference_objects.append(HistoricalCurveReference(
@@ -292,16 +347,14 @@ def freeze_inputs(payload: dict[str, Any]) -> dict[str, Any]:
                 "target_future_points_used": fixed.target_future_points_used,
             }
 
-        incumbent_rows = _incumbent_audit(
-            target_row.get("persisted_incumbents", []),
-            target_as_of,
-        )
+        incumbent_rows = _incumbent_audit(target_row.get("persisted_incumbents", []), target_as_of)
         reference_ready = len(eligible_reference_ids) >= MIN_REFERENCE_EVENTS
         freeze_ready = bool(representation_ready and reference_ready)
         comparator_ready = bool(freeze_ready and len(incumbent_rows) > 0)
 
         lineage = {
             "target_snapshot_ids": sorted(target_snapshot_ids),
+            "cutoff_source_snapshot_id": cutoff_source_snapshot_id,
             "eligible_reference_event_ids": eligible_reference_ids,
             "selected_neighbor_event_ids": selected_neighbor_ids,
             "eligible_reference_snapshot_ids": {
@@ -325,7 +378,10 @@ def freeze_inputs(payload: dict[str, Any]) -> dict[str, Any]:
             "comparator_ready": comparator_ready,
             "representation_error": representation_error,
             "observed_canonical_point_count": observed_point_count,
-            "exact_cutoff_point_available": exact_cutoff_available,
+            "cutoff_point_available": cutoff_point_available,
+            "cutoff_point_source": cutoff_point_source,
+            "cutoff_hold_age_hours": cutoff_hold_age_hours,
+            "cutoff_source_snapshot_id": cutoff_source_snapshot_id,
             "target_curve": target_points,
             "pickup_features": pickup_features,
             "reference_errors": reference_errors,
@@ -339,6 +395,11 @@ def freeze_inputs(payload: dict[str, Any]) -> dict[str, Any]:
         "cutoff_hours": cutoff_hours,
         "canonical_hours": payload.get("canonical_hours"),
         "max_interpolation_gap_hours": payload.get("max_interpolation_gap_hours"),
+        "target_boundary_rule": {
+            "method": "last_known_pre_cutoff_hold",
+            "max_age_hours": BOUNDARY_HOLD_MAX_AGE_HOURS,
+            "future_target_snapshot_allowed": False,
+        },
         "minimum_overlap_points": MIN_OVERLAP_POINTS,
         "minimum_reference_events": MIN_REFERENCE_EVENTS,
         "fixed_neighbor_k": DEFAULT_NEIGHBORS,
@@ -362,11 +423,7 @@ def freeze_inputs(payload: dict[str, Any]) -> dict[str, Any]:
         "comparator_ready_event_ids": [row["ticket_event_id"] for row in frozen_targets if row["comparator_ready"]],
         "learner_status": "MODEL_BLOCKED_PENDING_SEPARATE_PRECOMMIT_AND_VALID_COMPARATOR_SAMPLE",
     }
-    return {
-        **manifest_core,
-        "manifest_sha256": manifest_sha,
-        "summary": summary,
-    }
+    return {**manifest_core, "manifest_sha256": manifest_sha, "summary": summary}
 
 
 def main() -> None:
