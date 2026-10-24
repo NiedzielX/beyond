@@ -11,7 +11,7 @@ def iso(value: datetime) -> str:
     return value.isoformat().replace("+00:00", "Z")
 
 
-def snaps(kickoff: datetime, event_id: int, hours: list[int], values: list[int]) -> list[dict]:
+def snaps(kickoff: datetime, event_id: int, hours: list[float], values: list[int]) -> list[dict]:
     return [
         {
             "snapshot_id": event_id * 1000 + index,
@@ -101,6 +101,8 @@ def test_freeze_is_target_free_and_reference_ready() -> None:
     assert row["reference_ready"] is True
     assert row["freeze_ready"] is True
     assert row["comparator_ready"] is False
+    assert row["cutoff_point_available"] is True
+    assert row["cutoff_point_source"] == "canonical_point_already_observed"
     assert row["pickup_features"]["target_future_points_used"] is False
     assert row["lineage"]["eligible_reference_event_ids"] == [1, 2, 3]
     assert frozen["summary"]["reference_catalog_event_count"] == 3
@@ -112,6 +114,44 @@ def test_genuine_persisted_incumbent_can_make_comparator_ready() -> None:
     row = frozen["targets"][0]
     assert row["comparator_ready"] is True
     assert row["lineage"]["persisted_incumbent_rows"][0]["row_id"] == 77
+
+
+def test_recent_pre_cutoff_snapshot_is_held_without_future_data() -> None:
+    value = payload()
+    kickoff = datetime(2026, 10, 20, 18, tzinfo=UTC)
+    # No exact T-24 snapshot. T-25.5 is already known at T-24 and is <=6h stale.
+    value["targets"][0]["target_snapshots"] = snaps(
+        kickoff,
+        99,
+        [48, 36, 25.5],
+        [1000, 880, 770],
+    )
+    frozen = freeze_inputs(value)
+    row = frozen["targets"][0]
+    assert row["representation_ready"] is True
+    assert row["cutoff_point_available"] is True
+    assert row["cutoff_point_source"] == "last_known_pre_cutoff_hold"
+    assert abs(row["cutoff_hold_age_hours"] - 1.5) < 1e-9
+    assert row["lineage"]["cutoff_source_snapshot_id"] is not None
+    assert row["pickup_features"]["target_future_points_used"] is False
+
+
+def test_stale_pre_cutoff_snapshot_does_not_fill_boundary() -> None:
+    value = payload()
+    kickoff = datetime(2026, 10, 20, 18, tzinfo=UTC)
+    value["targets"][0]["target_snapshots"] = snaps(
+        kickoff,
+        99,
+        [60, 48, 36],
+        [1100, 1000, 880],
+    )
+    frozen = freeze_inputs(value)
+    row = frozen["targets"][0]
+    assert row["cutoff_point_available"] is False
+    assert row["cutoff_point_source"] == "missing_latest_snapshot_too_stale"
+    assert row["cutoff_hold_age_hours"] == 12.0
+    assert row["representation_ready"] is False
+    assert row["freeze_ready"] is False
 
 
 def test_post_cutoff_target_snapshot_fails_closed() -> None:
@@ -134,8 +174,6 @@ def test_future_reference_is_ignored_and_cannot_change_manifest() -> None:
     base = freeze_inputs(payload())
     value = payload()
     target_kickoff = datetime(2026, 10, 20, 18, tzinfo=UTC)
-    # This event occurs after target as_of and deliberately has a very similar
-    # curve. It must not enter the target reference pool or alter its manifest.
     value["reference_catalog"].append(reference(
         4,
         target_kickoff - timedelta(hours=12),
@@ -169,22 +207,6 @@ def test_attendance_label_in_input_fails_closed() -> None:
         assert "target/label field forbidden" in str(exc)
     else:
         raise AssertionError("attendance target must not be accepted in freeze input")
-
-
-def test_missing_exact_cutoff_is_not_representation_ready() -> None:
-    value = payload()
-    kickoff = datetime(2026, 10, 20, 18, tzinfo=UTC)
-    value["targets"][0]["target_snapshots"] = snaps(
-        kickoff,
-        99,
-        [60, 48, 36],
-        [1100, 1000, 880],
-    )
-    frozen = freeze_inputs(value)
-    row = frozen["targets"][0]
-    assert row["exact_cutoff_point_available"] is False
-    assert row["representation_ready"] is False
-    assert row["freeze_ready"] is False
 
 
 def test_manifest_sha_is_order_invariant_for_snapshot_and_catalog_arrays() -> None:
@@ -231,11 +253,12 @@ def test_reference_snapshot_at_kickoff_fails_closed() -> None:
 if __name__ == "__main__":
     test_freeze_is_target_free_and_reference_ready()
     test_genuine_persisted_incumbent_can_make_comparator_ready()
+    test_recent_pre_cutoff_snapshot_is_held_without_future_data()
+    test_stale_pre_cutoff_snapshot_does_not_fill_boundary()
     test_post_cutoff_target_snapshot_fails_closed()
     test_future_reference_is_ignored_and_cannot_change_manifest()
     test_self_reference_is_ignored()
     test_attendance_label_in_input_fails_closed()
-    test_missing_exact_cutoff_is_not_representation_ready()
     test_manifest_sha_is_order_invariant_for_snapshot_and_catalog_arrays()
     test_incumbent_persisted_after_cutoff_fails_closed()
     test_reference_snapshot_at_kickoff_fails_closed()
