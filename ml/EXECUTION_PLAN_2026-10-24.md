@@ -93,30 +93,39 @@ The canonical P9 precommit already separates two questions and must be interpret
 
 Existing retrospective reference-curve readiness is sufficient to continue **development** at short horizons. This is not permission to use future target snapshots or to claim a learned MAE uplift.
 
-A new audit on 2026-10-24 exposed two additional safeguards that are now mandatory before any P9a learner:
+A new audit on 2026-10-24 exposed mandatory safeguards before any P9a learner:
 
 1. **Target eligibility must be cutoff-safe.** A T-24/T-48 target cannot be selected because its trajectory later turned out to be dense between the cutoff and T-6. Representation eligibility must use only snapshots already captured by the target `as_of_at`.
 2. **Incumbent lineage must be real.** Older short-horizon events do not have comparable persisted pre-live anchors. Do not recreate an incumbent after labels and present it as prospective/frozen evidence.
+3. **The target cutoff boundary cannot interpolate through future target data.** If there is no exact T-24/T-48 snapshot, use only the latest already-known pre-cutoff snapshot and only when it is <=6h stale. Otherwise the cutoff point remains missing.
+4. **Reference export must be linear in the stored data, not target × reference duplication.** Full historical reference trajectories are exported once as a flat catalog; the freeze harness constructs each target's strict prior-only pool with `reference kickoff < target_as_of_at` and self exclusion.
 
-Pre-cutoff-only exploratory availability from raw snapshots:
+The first nested-reference export design was intentionally rejected after a live audit exhausted PostgreSQL temporary workspace. No evidence rows were mutated. The live RPC was replaced with the flat-catalog contract before any learner/label access.
 
-- T-24 target representation: `10` events / `8` clubs;
-- T-48 target representation: `7` events / `6` clubs.
+Flat export live audit after replacement:
 
-These counts are an engineering/readiness audit, not a model sample claim. The deterministic P9a freeze harness must re-derive exact eligible identities from target-visible snapshots and persist their SHA.
+- T-24 raw targets: `16`;
+- T-48 raw targets: `13`;
+- reference catalog: `17` historical events;
+- post-cutoff target snapshot violations: `0` at both cutoffs;
+- targets with any genuinely persisted pre-cutoff incumbent row: `6` at T-24 and `4` at T-48.
 
-Development allowed now:
+These are **raw target-free export counts**, not learnable/evaluation sample claims. Canonical 12h interpolation quality, 6h boundary freshness, minimum overlap and strict-prior references are enforced by the deterministic Python freeze harness.
 
-- target-free raw snapshot export;
-- deterministic T-24/T-48 target representation freeze;
-- prior-completed-event-only reference pools;
-- target/reference snapshot identity lineage;
-- target-future mutation/invariance tests;
-- reference-pool SHA / freeze manifest;
-- separate labels export after freeze;
-- incumbent coverage audit.
+Implemented P9a freeze infrastructure:
 
-A learnable P9a residual candidate may be frozen only after those artifacts prove that a valid incumbent comparison exists for enough strict-forward evaluation events. If it does not, keep P9a representation-ready but model-blocked rather than manufacturing an anchor.
+- `public.export_p9a_booking_curve_inputs_v1(24|48)` — target-free flat export;
+- `public.export_p9a_booking_curve_labels_v1(bigint[])` — separate labels RPC, not used by the freeze workflow;
+- `ml/p9a_booking_curve_freeze_v1.py` — deterministic identity/reference/lineage freeze;
+- hard fail on post-cutoff target snapshots, label fields and post-cutoff incumbents;
+- future and self reference events cannot enter a target's pool;
+- fixed K=5 nearest historical curves after eligibility;
+- target/reference snapshot identities persisted in lineage SHA;
+- model training remains blocked pending a separate learner precommit and valid comparator sample;
+- `p9a_booking_curve_export_v1` Edge Function deployed ACTIVE and protected by main-only GitHub OIDC;
+- `.github/workflows/p9a-booking-curve-freeze-v1.yml` opens no labels and runs no learner.
+
+A learnable P9a residual candidate may be frozen only after the target-free main audit proves enough `comparator_ready` strict-forward events. If it does not, keep P9a representation-ready but model-blocked rather than manufacturing an anchor.
 
 #### Full P9 — 168h: remain data-bound
 
@@ -157,14 +166,13 @@ Next non-model task:
 
 ## Next actions
 
-1. Complete PR CI for P11 provider adapter / Edge Function contract.
-2. Implement P9a target-free export + deterministic freeze/lineage audit now.
-3. Audit persisted-incumbent coverage before freezing any P9a learner.
-4. Configure `THE_ODDS_API_KEY` as an Edge Function secret before any real P11 capture.
-5. Run one explicit main-branch P11 capture and inspect mapping/coverage before enabling a schedule.
-6. Re-read canonical readiness when P7 is expected to reach 9/9; never execute from the clock alone.
-7. Precommit a P11 model only after genuine PIT coverage/variance audit.
-8. Define the business-derived minimum meaningful MAE threshold separately from model results.
+1. Complete PR CI for P11 and P9a contracts.
+2. Run the P9a target-free main audit for T-24/T-48 after merge and inspect exact `freeze_ready` / `comparator_ready` identities before any learner precommit.
+3. Configure `THE_ODDS_API_KEY` as an Edge Function secret before any real P11 capture.
+4. Run one explicit main-branch P11 capture and inspect mapping/coverage before enabling a schedule.
+5. Re-read canonical readiness when P7 is expected to reach 9/9; never execute from the clock alone.
+6. Precommit a P11 model only after genuine PIT coverage/variance audit.
+7. Define the business-derived minimum meaningful MAE threshold separately from model results.
 
 ## Definition of done for this development slice
 
@@ -174,8 +182,9 @@ Next non-model task:
 - P11a capture fail-closed on ambiguous mappings;
 - Edge Function deployed but not silently scheduled;
 - synthetic P11 contract verification leaves zero persisted evidence rows;
-- P9a target-free freeze/lineage tooling committed and tested;
+- P9a target-free flat export + freeze/lineage tooling committed and tested;
 - no target is selected using post-cutoff snapshots;
+- target boundary never uses a future target snapshot;
 - no incumbent is reconstructed post-label and misrepresented as frozen evidence;
 - full P9 168h and P7 gates remain unchanged;
 - PR against `main` passes CI;
