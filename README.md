@@ -6,16 +6,16 @@ Beyond Ticketing engineering workspace.
 
 For every new AI / engineering session, read in this order:
 
-1. [`AI_BOOTSTRAP.md`](AI_BOOTSTRAP.md) — cold-start state and execution order;
-2. [`ml/MAE_RESEARCH_ROADMAP_V3.md`](ml/MAE_RESEARCH_ROADMAP_V3.md) — canonical MAE-first research strategy;
-3. [`ml/PROGRESS_TRACKING.md`](ml/PROGRESS_TRACKING.md) — concise status and milestones;
-4. [`ml/CURRENT_MODEL.md`](ml/CURRENT_MODEL.md) — detailed current forecasting state;
-5. [`ml/CORE_PRODUCT_STATUS.md`](ml/CORE_PRODUCT_STATUS.md) — global historical core and product-level model status;
-6. [`ml/MODEL_ACCURACY_DEVELOPMENT_INSTRUCTIONS_V2.md`](ml/MODEL_ACCURACY_DEVELOPMENT_INSTRUCTIONS_V2.md) — experiment / CI rules;
-7. [`ml/LIVE_DEMAND_ENGINE_V1_PLAN.md`](ml/LIVE_DEMAND_ENGINE_V1_PLAN.md) — frozen live packages and live evidence lane;
-8. [`ml/MODEL_PROMOTION_GOVERNANCE_V1.md`](ml/MODEL_PROMOTION_GOVERNANCE_V1.md) — promotion boundary.
+1. [`AI_BOOTSTRAP.md`](AI_BOOTSTRAP.md) — cold-start rules and current state;
+2. [`ml/NEXT_SESSION_HANDOFF.md`](ml/NEXT_SESSION_HANDOFF.md) — **latest operational handoff: main vs active branch vs live Supabase**;
+3. [`ml/EXECUTION_PLAN_CURRENT.md`](ml/EXECUTION_PLAN_CURRENT.md) — **exact next work order**;
+4. [`ml/PROGRESS_TRACKING.md`](ml/PROGRESS_TRACKING.md) — canonical status snapshot;
+5. [`ml/MAE_RESEARCH_ROADMAP_V4.md`](ml/MAE_RESEARCH_ROADMAP_V4.md) — literature-grounded MAE-first strategy;
+6. [`ml/CURRENT_MODEL.md`](ml/CURRENT_MODEL.md) — detailed forecasting state;
+7. [`ml/MODEL_ACCURACY_DEVELOPMENT_INSTRUCTIONS_V2.md`](ml/MODEL_ACCURACY_DEVELOPMENT_INSTRUCTIONS_V2.md) — experiment / CI rules;
+8. [`ml/LIVE_DEMAND_ENGINE_V1_PLAN.md`](ml/LIVE_DEMAND_ENGINE_V1_PLAN.md) and [`ml/MODEL_PROMOTION_GOVERNANCE_V1.md`](ml/MODEL_PROMOTION_GOVERNANCE_V1.md) when touching live/promotion logic.
 
-Historical result documents and manifests remain immutable evidence and are linked from `ml/CURRENT_MODEL.md`.
+Do **not** start from Roadmap v3. Roadmap v4 is canonical.
 
 ## North star
 
@@ -23,71 +23,82 @@ Historical result documents and manifests remain immutable evidence and are link
 
 Complexity is not the objective. Lower future MAE is.
 
-## Operating model
+Current mode: **representation-first, not tuning-first**.
 
-### Lane A — Evidence / validation
+## Current operational warning
 
-Keep frozen packages immutable and score them forward:
+Active development branch:
 
-- final24 `v2/Ridge/P2`;
-- long72 `inventory-linear-extrapolation + P2`;
-- persist forecasts before labels where possible;
-- append outcomes later without recomputation;
-- keep evidence class explicit.
+`ml/p9-p11-execution-2026-10-24`
 
-### Lane B — MAE R&D
+It contains the P11a v2 source/workflow that must be reconciled with `main` before recreating or changing that integration.
 
-Do **not** wait for Lane A to accumulate labels. In parallel:
+The live Supabase project is currently temporarily **ahead of `main` for P11a v2**:
 
-1. make rolling / forward validation canonical;
-2. test MAE-native losses and median/quantile models;
-3. add genuinely new PIT-safe context features;
-4. test forecast combinations;
-5. measure live-ticket signal as an incremental residual over the strongest structural/global model;
-6. quantify uncertainty around `ΔMAE`;
-7. open 72–168h learning once the predeclared `N>=9` start floor is reached.
+- P11 v2 DB contract is live;
+- Edge Function `p11_odds_capture_v2` is ACTIVE v2;
+- genuine P11 v2 odds rows remain `0`;
+- no automatic P11 odds schedule is enabled;
+- provider secret `THE_ODDS_API_KEY` still needs to be configured/verified before the first genuine capture.
 
-## Current structural/global baseline
+Read `ml/NEXT_SESSION_HANDOFF.md` before touching this area.
 
-Beyond already has a multi-club historical core:
+## Current MAE workstreams
 
-- 1,530 Ekstraklasa matches across five complete seasons;
-- 7,650 PIT snapshots across T-30/T-14/T-7/T-3/T-1;
-- Global Model v2.1 residual architecture;
-- roughly 16–24% MAE improvement over the club-history baseline across 2024/25 and 2025/26 historical holdouts.
+### P9 — Booking Curve / Trajectory Shape
 
-Those historical holdouts are now exposed research evidence and must not be described as unseen again.
+Highest-priority live representation gap:
 
-## Frozen live packages
+`normalized PIT trajectory -> historical curve similarity -> pickup distribution -> remaining-demand estimate -> structural residual`
 
-### Final24
+Current full-168h reference coverage: **4/9**. Do not fit the first learnable P9 model before the gate and a separate learner precommit.
 
-`Frozen Pre-Live v2 + P2 reliability * frozen ridge-a10 delta`
+### P10 / P10b — pooled horizon
 
-### Long72
+Closed for the fixed pooled-HGB architecture.
 
-`d2-long72-stage2-p2-observation-maturity-2026-10-21-v1`
+- P10 beat the same weaker local HGB by `63.47` MAE seats;
+- P10b lost to frozen Pre-Live v3 by `147.51` MAE seats;
+- do not retune this architecture after observing the result.
 
-Historical development evidence:
+### P11 — Match Attractiveness / Commercial Context
 
-- anchor MAE `3707.14`;
-- package MAE `3012.63`;
-- improvement `+694.51 / +18.73%`.
+Priority:
 
-Do not retune either frozen package on already-opened evidence.
+1. genuine PIT market odds / outcome uncertainty / stakes / rivalry;
+2. price / promotion;
+3. lineup / star strength / verified absences;
+4. weather / attention later.
 
-## Immediate work order
+P11a v2 captures raw bookmaker-level 1X2 quotes append-only and derives an as-known de-vigged market consensus. No closing-odds backfill is allowed.
 
-1. finish immutable long72 forecast materialization + append-only scoring;
-2. implement canonical rolling/forward validation utilities;
-3. run an MAE-native challenger tournament over the strongest global residual benchmark;
-4. add event/fixture-block uncertainty for `ΔMAE`;
-5. materialize PIT-safe fixture-cannibalization / next-match context;
-6. run controlled context ablations;
-7. test simple forecast combinations before complex stackers;
-8. measure live-ticket incremental uplift over the strongest structural model;
-9. keep long168 coverage growing and launch 72–168h research at `N>=9`;
-10. preserve future 2026/27 fixtures as genuine prospective evidence.
+### Governance v2
+
+A small positive point gain is not automatically a robust advance.
+
+Statuses:
+
+- `NO_RESEARCH_GAIN`;
+- `POINT_GAIN_UNCERTAINTY_LIMITED`;
+- `ROBUST_RESEARCH_ADVANCE`.
+
+`ROBUST_RESEARCH_ADVANCE` requires a predeclared **business-derived minimum meaningful MAE improvement**. Do not infer that threshold from the experiment being judged.
+
+## Current frozen/data-bound gates
+
+Always query fresh:
+
+`public.ml_research_readiness_v1()`
+
+Latest recorded checkpoint: **2026-10-25 10:18 UTC**.
+
+- Long72: `90` reproducible rows, `0` genuine scored events;
+- P7 Long168: **8/9**, still closed;
+- P4a: `5` READY events, `0` genuine labels, gate `>=9 labeled + >=3 distinct labeled spacing values`;
+- P9 168h: **4/9**;
+- P11a v2: `0` genuine odds events.
+
+Important: event 6 was expected to enter the P7 Long168 window, but canonical readiness is still 8/9. The next session must **diagnose event 6 readiness before running any P7 experiment**.
 
 ## Production boundary
 
