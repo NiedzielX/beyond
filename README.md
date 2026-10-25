@@ -35,12 +35,14 @@ Production remains unchanged:
 - repository reconciliation is complete;
 - RoboTicket ingestion safety net is live: hardened discovery, private pre-mapping buffer, verified promotion/backfill and dashboard coverage;
 - **multi-source ticketing coverage is live: RoboTicket + Stellis**;
+- alias-resolved coverage now reaches **18/18 current Ekstraklasa home clubs / 0 uncovered**;
 - Stellis v3 continuously monitors Widzew, Radomiak, Piast, Motor and Korona;
-- the shared ingestion dashboard now exposes both source families through one status contract;
+- the shared ingestion dashboard exposes both source families through one status contract;
 - dashboard CI passes with ingestion coverage visible on Overview and Data Quality;
 - Long72 has **2 genuine prospective scored events**;
 - P7 Long168 frozen tournament executed at genuine 10/9 readiness;
 - P7 prospective follow-up is precommitted, fingerprint-pinned and has **3 immutable genuine predictions across 3 independent future events**;
+- P7 prospective workflow now has a real six-hour `predict -> persist -> score` schedule with immutable model/hash gates;
 - P9a T-24/T-48 target-free freeze audit completed;
 - P11a genuine bookmaker capture is scheduled every 6 hours;
 - P11b PIT-safe price `as-known` contract is live;
@@ -49,7 +51,7 @@ Production remains unchanged:
 
 ### Immediate execution order
 
-`preserve P7 prospective schedule -> preserve/expand multi-source ticketing coverage -> preserve P11a/P11b/P11d collection -> score P7/Long72 only after genuine outcomes -> accumulate P9 to 9/9 -> accumulate P4a labels -> derive business ΔMAE threshold`
+`preserve P7 prospective schedule -> preserve 18/18 multi-source ticketing coverage -> preserve P11a/P11b/P11d collection -> score P7/Long72 only after genuine outcomes -> accumulate P9 to 9/9 -> accumulate P4a labels -> derive business ΔMAE threshold`
 
 No research result activates production automatically.
 
@@ -69,8 +71,7 @@ The real systemic issue was broader than one missing event:
 
 ### RoboTicket — live
 
-- discovery: `roboticket-discovery-v8`;
-- same-element eventId/label identity;
+- hardened discovery and same-element eventId/label identity;
 - fail-closed parking/VIP/premium/reserve/non-football exclusions;
 - private raw candidate buffer before kickoff mapping;
 - football-universe gate;
@@ -108,6 +109,16 @@ Promotion is fail-closed:
 - no hidden availability is converted to a fake zero;
 - no ambiguous fixture is promoted.
 
+### League source coverage
+
+Alias-resolved audit against the current 2026/27 Ekstraklasa club universe:
+
+- league home clubs: **18**;
+- covered by at least one active ticketing source: **18**;
+- uncovered: **0**.
+
+This is source coverage, not a claim that every future fixture already exposes model-safe inventory. Hidden inventory, unpublished events and fixture-mapping delays remain fail-closed states and are surfaced by ingestion monitoring rather than converted into synthetic data.
+
 ### Fresh future coverage
 
 At the latest audit:
@@ -117,15 +128,8 @@ At the latest audit:
 - combined canonical future events: **13**;
 - combined future canonical events with snapshots: **12**;
 - `TRACKED_NO_SNAPSHOT`: **1** — Wisła Kraków vs Cracovia; source currently exposes no readable sectors;
-- protected pre-promotion buffers: **2** future match candidates;
-- genuine match discovered without model-safe aggregate inventory: **1**.
-
-Current Stellis examples:
-
-- Korona Kielce vs Radomiak Radom — event **603**, `TRACKED`, 2 model-facing snapshots at the latest audit;
-- Piast Gliwice vs Korona Kielce — raw curve protected, waiting for unique league fixture confirmation;
-- Radomiak Radom vs Śląsk Wrocław — match discovered, but the active source contract hides aggregate availability, so no fake snapshot is created;
-- STS Puchar Polski Piast Gliwice vs Górnik Zabrze — `NON_MATCH_EXCLUDED`, never promoted into Ekstraklasa model data.
+- protected pre-promotion buffers remain active for future candidates;
+- genuine match discovered without model-safe aggregate inventory remains fail-closed rather than converted to a fake snapshot.
 
 Shared panel-facing contract:
 
@@ -135,7 +139,7 @@ Current status payload version:
 
 `dashboard-ticketing-ingestion-status-v2`
 
-The panel therefore shows both source families without a second frontend API.
+The panel shows both source families, recent completed matches, protected buffers and actionable ingestion gaps without a second frontend API.
 
 This work changes data acquisition only. It does not change model parameters, validation or production forecasts.
 
@@ -166,7 +170,8 @@ Prospective continuation:
 - exact training set: events `[1,3,4,5,10,11,15,16,18,19]` / 139 rows;
 - training manifest: `185a9fc90e646bd5fa1bbed3b50c625d65d127a2b2943501761bdfcb89f354ed`;
 - pinned deterministic model fingerprint: `70fa929181531276c80a75c0b78a60fb821cf50e714e2bc001de8251cea1793f`;
-- fingerprint run `40201818862`: SUCCESS; fingerprint mode persisted zero predictions;
+- fingerprint evidence run `40201818862`: SUCCESS, artifact digest `a6dab7c220e065a9e2d2b5f32954303bf067387b1d24458b1fa1066d5a507184`;
+- canonical execution wrapper: `ml/p7_long168_prospective_run_v1.py`;
 - first true prospective run `40216860928`: SUCCESS;
 - current immutable ledger: **3 predictions / 3 independent events / 0 scored outcomes**;
 - evidence status: `PROSPECTIVE_PREDICTIONS_ONLY`;
@@ -174,11 +179,11 @@ Prospective continuation:
 - production activation allowed: false;
 - `live_adjustment=0`.
 
-Scheduled prospective prediction cadence:
+Scheduled prospective execution is implemented in `.github/workflows/p7-long168-prospective-v1.yml`:
 
 `37 */6 * * *`
 
-Do not interpret MAE until genuine outcomes exist.
+Each scheduled execution rebuilds the exact frozen model, hard-checks the pinned fingerprint and training lineage, persists only previously unseen eligible prospective identities, and only then attaches genuine completed outcomes for scoring. Do not interpret MAE until genuine outcomes exist.
 
 ## Long72 prospective evidence
 
