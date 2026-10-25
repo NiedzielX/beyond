@@ -36,7 +36,7 @@ Production remains unchanged:
 - dashboard CI passes with ingestion coverage visible on Overview and Data Quality;
 - Long72 has **2 genuine prospective scored events**;
 - P7 Long168 frozen tournament executed at genuine 10/9 readiness;
-- P7 prospective follow-up is precommitted and its deterministic model fingerprint is frozen;
+- P7 prospective follow-up is precommitted, fingerprint-pinned and now has **3 immutable genuine predictions across 3 independent future events**;
 - P9a T-24/T-48 target-free freeze audit completed;
 - first genuine P11a bookmaker capture completed and audited;
 - P11a scheduled append-only capture is enabled every 6 hours;
@@ -46,7 +46,7 @@ Production remains unchanged:
 
 ### Immediate execution order
 
-`P7 prospective prediction persistence -> preserve P11a accumulation -> preserve P11b/P11d collection -> continue Long72 prospective evidence -> accumulate P9 to 9/9 -> accumulate P4a labels -> derive business ΔMAE threshold`
+`preserve P7 prospective schedule -> expand/protect ticketing source coverage -> preserve P11a/P11b/P11d collection -> score P7/Long72 only after genuine outcomes -> accumulate P9 to 9/9 -> accumulate P4a labels -> derive business ΔMAE threshold`
 
 No research result activates production automatically.
 
@@ -73,8 +73,9 @@ Now live:
 
 Fresh monitoring after recovery:
 
-- **11 future matches TRACKED**;
-- **1 explicit `TRACKED_NO_SNAPSHOT`**: Wisła Kraków – Cracovia, already mapped but RoboTicket currently exposes zero sectors; normal collection continues to retry it;
+- **12 future matches tracked**;
+- **11 already have genuine inventory snapshots**;
+- **1 explicit `TRACKED_NO_SNAPSHOT`**: Wisła Kraków – Cracovia, already mapped but RoboTicket currently exposes zero readable sectors; normal collection continues to retry it;
 - no genuine match is silently hanging as an unbuffered candidate;
 - early false-positive buffer rows stayed private and were never promoted into model-facing `public.snapshots`.
 
@@ -107,15 +108,19 @@ Prospective continuation:
 - exact training set: events `[1,3,4,5,10,11,15,16,18,19]` / 139 rows;
 - training manifest: `185a9fc90e646bd5fa1bbed3b50c625d65d127a2b2943501761bdfcb89f354ed`;
 - pinned deterministic model fingerprint: `70fa929181531276c80a75c0b78a60fb821cf50e714e2bc001de8251cea1793f`;
-- fingerprint run `40201818862`: SUCCESS after a service-role-only summary permission plumbing fix;
-- fingerprint-time eligible events: `[6,444,446]`;
-- fingerprint mode persisted **zero** predictions;
-- target values used: false;
-- production change: false.
+- fingerprint run `40201818862`: SUCCESS; fingerprint mode persisted zero predictions;
+- first true prospective run `40216860928`: SUCCESS;
+- first immutable ledger: **3 predictions / 3 independent events / 0 scored outcomes**;
+- persisted events: Lech Poznań–Wisła Kraków, GKS Katowice–Widzew Łódź, Wisła Płock–Piast Gliwice;
+- target values used in prediction: false;
+- production activation allowed: false;
+- `live_adjustment=0`.
 
-Pinned evidence: [`ml/P7_LONG168_PROSPECTIVE_FINGERPRINT_V1.md`](ml/P7_LONG168_PROSPECTIVE_FINGERPRINT_V1.md).
+Pinned fingerprint evidence: [`ml/P7_LONG168_PROSPECTIVE_FINGERPRINT_V1.md`](ml/P7_LONG168_PROSPECTIVE_FINGERPRINT_V1.md).
 
-A separate pinned `predict -> immutable persist -> outcome-later score` workflow is now the active P7 execution lane.
+First genuine prospective prediction evidence: [`ml/P7_LONG168_PROSPECTIVE_FIRST_PREDICTIONS_2026-10-25.md`](ml/P7_LONG168_PROSPECTIVE_FIRST_PREDICTIONS_2026-10-25.md).
+
+The scheduled `predict -> immutable persist -> outcome-later score` workflow is now the active P7 lane. Do not interpret MAE until genuine outcomes exist.
 
 ## Long72 prospective evidence
 
@@ -142,23 +147,27 @@ P9a target-free audit is complete:
 - no model training;
 - no future target trajectory use.
 
-Full P9 remains data-bound at the last canonical readiness check:
+Fresh full P9 readiness:
 
 - 168h: **5/9 events / 5 clubs**;
-- 72h: 9 / 7;
-- 48h: 12 / 7;
-- 24h: 15 / 9.
+- 72h: **9 / 7**;
+- 48h: **12 / 7**;
+- 24h: **15 / 9**;
+- full 168h status: `DATA_BOUND`;
+- learner precommitted: false.
 
-Do not select/train the first full-168h learner before 9/9 plus a separate precommit.
+The newly recovered future events improve data collection going forward but cannot be dishonestly backfilled into T-168 history. Do not select/train the first full-168h learner before 9/9 plus a separate precommit.
 
 ## P4a fixture context
 
-Last canonical readiness:
+Fresh readiness:
 
 - READY events: 5;
 - genuine labeled READY events: **2**;
-- distinct labeled `previous_home_match_days`: **2**;
-- required: `>=9 labeled AND >=3 distinct labeled values`.
+- distinct `previous_home_match_days` among READY events: **4**;
+- distinct labeled values: **2**;
+- required: `>=9 labeled AND >=3 distinct labeled values`;
+- research trigger: false.
 
 Gate remains closed.
 
@@ -168,12 +177,14 @@ Canonical context audit: [`ml/P11_CONTEXT_AUDIT_2026-10-25.md`](ml/P11_CONTEXT_A
 
 ### P11a — bookmaker odds
 
-First genuine capture is complete and audited:
+Current fresh readiness:
 
-- raw append-only rows: **34**;
-- matched events: **2**;
-- both matched with kickoff delta 0;
-- event 23 correctly failed closed as `NO_PROVIDER_MATCH`;
+- status: `GENUINE_PIT_DATA_ACCUMULATING`;
+- events with any genuine PIT 1X2: **2**;
+- clubs with any: **2**;
+- events with >=3 bookmakers: **2**;
+- current horizon coverage 24h / 72h / 168h: **1 / 1 / 0**;
+- model precommitted: false;
 - target values used: false;
 - production change: false.
 
@@ -221,6 +232,7 @@ P12 remains lower priority than P7/P9/P11 evidence accumulation.
 
 Do not reopen without a materially new mechanism:
 
+- original P7 tournament;
 - P10/P10b fixed pooled-HGB path;
 - P5a shrinkage;
 - P6 historical Long72 signal;
