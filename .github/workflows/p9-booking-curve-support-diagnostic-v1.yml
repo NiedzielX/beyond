@@ -1,0 +1,139 @@
+name: P9 Booking Curve Support Diagnostic v1
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/p9-booking-curve-support-diagnostic-v1.yml"
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: p9-booking-curve-support-diagnostic-v1
+  cancel-in-progress: false
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install pinned ML dependencies
+        run: pip install -r ml/requirements.txt
+      - name: Compile target-free P9 support tools
+        run: |
+          python -m py_compile ml/p9a_booking_curve_freeze_v1.py
+          python -m py_compile ml/p9_learner_support_freeze_v1.py
+      - name: Request P9a target-free OIDC token
+        shell: bash
+        run: |
+          set -euo pipefail
+          response=$(curl --retry 4 --retry-all-errors --retry-delay 2 -fsS \
+            -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
+            "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=beyond-p9a-booking-curve")
+          token=$(printf '%s' "$response" | jq -r '.value')
+          test -n "$token" && test "$token" != "null"
+          echo "::add-mask::$token"
+          echo "P9A_OIDC_TOKEN=$token" >> "$GITHUB_ENV"
+      - name: Request P9 learner OIDC token
+        shell: bash
+        run: |
+          set -euo pipefail
+          response=$(curl --retry 4 --retry-all-errors --retry-delay 2 -fsS \
+            -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
+            "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=beyond-p9-booking-curve-learner")
+          token=$(printf '%s' "$response" | jq -r '.value')
+          test -n "$token" && test "$token" != "null"
+          echo "::add-mask::$token"
+          echo "P9_LEARNER_OIDC_TOKEN=$token" >> "$GITHUB_ENV"
+      - name: Export fresh target-free inputs and incumbent catalogs
+        shell: bash
+        run: |
+          set -euo pipefail
+          p9a='https://adchzwqboeekhokapxqi.supabase.co/functions/v1/p9a_booking_curve_export_v1?version=p9a-booking-curve-inputs-v1'
+          learner='https://adchzwqboeekhokapxqi.supabase.co/functions/v1/p9_booking_curve_learner_v1'
+          for cutoff in 24 48; do
+            curl --retry 5 --retry-all-errors --retry-delay 2 -fsS \
+              -H "Authorization: Bearer $P9A_OIDC_TOKEN" \
+              "${p9a}&cutoff=${cutoff}" -o "/tmp/p9a-${cutoff}-wrapper.json"
+            jq -e '.ok == true and .targetFieldsIncluded == false and .labelsIncluded == false and .targetValuesUsed == false and .productionChange == false' "/tmp/p9a-${cutoff}-wrapper.json" >/dev/null
+            jq '.payload' "/tmp/p9a-${cutoff}-wrapper.json" > "/tmp/p9a-${cutoff}-inputs.json"
+
+            curl --retry 5 --retry-all-errors --retry-delay 2 -fsS \
+              -H "Authorization: Bearer $P9_LEARNER_OIDC_TOKEN" \
+              "${learner}?mode=incumbents&cutoff=${cutoff}" -o "/tmp/incumbents-${cutoff}-wrapper.json"
+            jq -e '.ok == true and .targetValuesUsed == false and .payload.attendance_values_included == false and .payload.target_values_used == false and .payload.production_change == false' "/tmp/incumbents-${cutoff}-wrapper.json" >/dev/null
+            jq '.payload' "/tmp/incumbents-${cutoff}-wrapper.json" > "/tmp/incumbents-${cutoff}.json"
+          done
+      - name: Reproduce registered target-free curve manifests
+        run: |
+          python -m ml.p9a_booking_curve_freeze_v1 --inputs /tmp/p9a-24-inputs.json --output /tmp/p9a-24-freeze.json
+          python -m ml.p9a_booking_curve_freeze_v1 --inputs /tmp/p9a-48-inputs.json --output /tmp/p9a-48-freeze.json
+      - name: Verify exact registered P9a manifests
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(jq -r '.manifest_sha256' /tmp/p9a-24-freeze.json)" = "ef54d64b5b0f74d767b5e8fcdc4f7fa5b2912905466fcd98db392b966dcd8249"
+          test "$(jq -r '.manifest_sha256' /tmp/p9a-48-freeze.json)" = "a8dc3899a26ff4969ff7fe8656c70466d0d3ef66da3f12e2e4be1abe7289da29"
+      - name: Build target-free support diagnostic
+        run: |
+          python -m ml.p9_learner_support_freeze_v1 \
+            --p9a-freeze /tmp/p9a-24-freeze.json \
+            --incumbent-catalog /tmp/incumbents-24.json \
+            --output /tmp/support-24.json
+          python -m ml.p9_learner_support_freeze_v1 \
+            --p9a-freeze /tmp/p9a-48-freeze.json \
+            --incumbent-catalog /tmp/incumbents-48.json \
+            --output /tmp/support-48.json
+      - name: Print target-free support matrix
+        shell: bash
+        run: |
+          set -euo pipefail
+          for cutoff in 24 48; do
+            echo "=== P9 SUPPORT T-${cutoff} ==="
+            jq '{
+              cutoff_hours,
+              attendance_values_opened,
+              target_values_used,
+              summary,
+              targets: [.targets[] | {
+                ticket_event_id,
+                target_incumbent_source_family,
+                selected_neighbor_event_ids,
+                reference_incumbent_count,
+                reference_incumbents: [.reference_incumbents[] | {ticket_event_id,source,row_id,as_of_at,persisted_at}],
+                missing_reference_incumbent_event_ids,
+                support_ready
+              }]
+            }' "/tmp/support-${cutoff}.json"
+          done
+      - name: Publish target-free summary
+        shell: bash
+        run: |
+          {
+            echo '### P9 target-free incumbent support diagnostic'
+            echo
+            for cutoff in 24 48; do
+              jq -r --arg cutoff "$cutoff" '"#### T-\($cutoff)\n- comparator targets: `\(.summary.comparator_targets_from_p9a)`\n- support frozen targets: `\(.summary.support_frozen_targets)`\n- support ready targets: `\(.summary.support_ready_targets)`\n- attendance opened: `\(.attendance_values_opened)`\n"' "/tmp/support-${cutoff}.json"
+              jq -r '.targets[] | "- event `\(.ticket_event_id)` | source `\(.target_incumbent_source_family)` | neighbors `\(.selected_neighbor_event_ids)` | valid support `\(.reference_incumbent_count)` | missing `\(.missing_reference_incumbent_event_ids)` | ready `\(.support_ready)`"' "/tmp/support-${cutoff}.json"
+            done
+          } >> "$GITHUB_STEP_SUMMARY"
+      - name: Upload target-free diagnostic evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: p9-booking-curve-support-diagnostic-v1-${{ github.run_id }}
+          path: |
+            /tmp/p9a-24-freeze.json
+            /tmp/p9a-48-freeze.json
+            /tmp/incumbents-24.json
+            /tmp/incumbents-48.json
+            /tmp/support-24.json
+            /tmp/support-48.json
+          if-no-files-found: error
+          retention-days: 90
