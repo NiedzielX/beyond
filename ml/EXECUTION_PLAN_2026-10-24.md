@@ -1,10 +1,10 @@
-# Beyond Ticketing — MAE Execution Plan — 2026-10-24
+# Beyond Ticketing — MAE Execution Plan — refreshed 2026-10-25
 
 Status: **ACTIVE DEVELOPMENT PLAN**
 
-Canonical strategy remains `ml/MAE_RESEARCH_ROADMAP_V4.md`.
+Canonical strategy: `ml/MAE_RESEARCH_ROADMAP_V4.md`.
 
-This file records the next execution slice after P10/P10b closeout. It does not change frozen P4a/P7 contracts, does not lower the full P9 168h gate, and does not activate production.
+This document records the current execution slice after the P7 Long168 gate opened and the ticketing-ingestion safety net was deployed. It does not activate production, lower research gates or reopen closed tuning loops.
 
 ## North star
 
@@ -14,178 +14,187 @@ Production remains:
 
 `live_adjustment = 0`
 
-## Fresh readiness checkpoint
+## Fresh readiness checkpoint — 2026-10-25
 
-Read from `public.ml_research_readiness_v1()` on **2026-10-24 09:41:41 UTC / 11:41 Europe/Warsaw**.
+Read from `public.ml_research_readiness_v1()` before P7 execution:
 
-- Long72 reproducible rows: `81`.
-- Long72 genuine scored events: `0`.
-- P7 Long168: `8/9` independent events >72h — gate still closed.
-- P4a: `5` READY independent events, `0` genuine labels — gate still closed.
-- P9 full 168h reference curves: `4/9` — gate still closed.
-- Existing retrospective P9 reference-curve coverage at 72h / 48h / 24h: `7 / 10 / 13` completed events.
-- P4b next-opponent READY rows: `0`.
+- Long72 reproducible rows: `90`.
+- Long72 genuine scored events: `2`; first-score trigger open.
+- P7 Long168: `10/9` independent events and `139` rows >72h; gate OPEN and executed.
+- P4a: `5` READY, `2` genuine labeled events, `2` distinct labeled previous-home-spacing values; gate CLOSED (`>=9` labels and `>=3` distinct required).
+- Full P9 168h: `5/9` genuine completed reference curves; still DATA_BOUND.
+- P9 T-72 / T-48 / T-24 readiness: `9 / 12 / 15` events.
 - Production change: `false`.
 
-Expected P7 timing remains approximately **2026-10-24 18:30 Europe/Warsaw** for event 6 to enter the <=168h window. The clock is not an execution condition; always re-read readiness before execution.
+## Ticketing ingestion safety net — LIVE
 
-## Closed research path
+The earlier discovery/mapping gap could have caused loss of valuable booking-curve history. A permanent pre-mapping protection layer is now live.
 
-P10/P10b are closed for the fixed pooled-HGB architecture.
+### Controls
 
-- P10 proved a real pooling effect against the same weaker local HGB.
-- P10b lost materially to frozen Pre-Live v3.
-- Do not retune P10/P10b after observing those results.
+1. RoboTicket discovery uses same-element/direct-event identity rather than nearby-text heuristics.
+2. Parking, VIP, Premium, conference, reserve-team and other obvious non-match products fail closed.
+3. A known-football-club gate prevents other sports sharing the same storefront from entering the model-facing pipeline.
+4. Discovery cadence is hourly instead of every six hours.
+5. Genuine but not-yet-mapped match candidates are captured into a private raw buffer every 10 minutes.
+6. Raw candidate observations are isolated from model-facing `public.snapshots`.
+7. Original `captured_at` is preserved.
+8. Once a verified fixture identity/kickoff exists, the event is promoted and eligible raw observations are backfilled into the normal snapshot lineage.
+9. The normal collector remains active every 15 minutes.
+10. Dashboard ingestion status refreshes every 10 minutes.
+11. Beyond Ticketing Panel / Data Quality exposes tracked, buffered, excluded and gap states.
 
-## Development order
+Safety rule:
 
-### 1. P11a genuine PIT odds capture — IMPLEMENTED / SECRET-BOUND
+> Candidate buffering preserves evidence only. A candidate cannot become model-facing until event identity and kickoff are verified.
 
-Provider selected for the v2 capture adapter: **The Odds API v4**.
+The first live pass protected multiple newly discovered football events before normal mapping. Non-football GKS products were detected and kept out of model-facing snapshots. `Wisła Kraków – Cracovia` is currently tracked but source inventory is not yet exposed, so it remains an explicit `TRACKED_NO_SNAPSHOT` gap instead of receiving fabricated data.
 
-Reasons:
+## P7 Long168 — EXECUTED / ADVANCE RESEARCH
 
-- explicit Polish Ekstraklasa coverage (`soccer_poland_ekstraklasa`);
-- pre-match `h2h`/1X2 data;
-- ISO timestamps and market-level update timestamps;
-- provider terms allow storage, analytics and statistical/ML model training while prohibiting raw-feed resale;
-- simple REST integration suitable for append-only PIT collection.
+Frozen identity manifest:
 
-Important boundary:
+- independent frozen events: `10`;
+- rows: `139`;
+- manifest SHA-256: `185a9fc90e646bd5fa1bbed3b50c625d65d127a2b2943501761bdfcb89f354ed`;
+- target values present in freeze: `false`;
+- model results opened before freeze: `false`.
 
-Provider integration is infrastructure, not model evidence. No historical closing-odds backfill may be used to impersonate earlier PIT observations.
+Frozen T-7 anchor replay:
 
-Implemented v2 architecture:
+- status: `P7_T7_ANCHOR_REPLAY_READY`;
+- anchor count: `10`;
+- target-attendance invariance: `PASS`;
+- anchor package SHA-256: `da22e25a940b9bb7ce0add3306348f6831f9def5463fafe498615353842553f5`.
 
-1. target-free local capture input RPC;
-2. deterministic team-name normalization backed by verified club aliases;
-3. exact home/away club-key matching plus <=90-minute kickoff tolerance;
-4. ambiguous or unresolved mappings fail closed;
-5. pre-match `h2h`/1X2 only;
-6. raw bookmaker-level quotes are preserved append-only;
-7. provider event payload is SHA-256 hashed for lineage;
-8. provider event id, bookmaker id, capture batch, provider update timestamp and mapping method are persisted;
-9. database repeats club/kickoff/timing validation before accepting rows;
-10. as-known consensus de-vigs each bookmaker first, takes medians across the latest batch, then renormalizes to sum to one;
-11. `outcome_uncertainty` is normalized 1X2 entropy and is explicitly not labeled expected match quality;
-12. GitHub OIDC main-only authorization protects the deployed capture function;
-13. workflow has **no schedule** and capture requires explicit `workflow_dispatch`;
-14. no P11 model ablation is precommitted yet.
+Fixed precommitted tournament result:
 
-Live verification on 2026-10-24:
+- anchor event-balanced MAE: `7409.79`;
+- best candidate: `gbr-l1-depth2-n50-lr003`;
+- challenger event-balanced MAE: `6339.99`;
+- ΔMAE vs anchor: `-1069.80` (`-14.44%`);
+- event improvement rate: `0.80`;
+- forward-fold improvement rate: `0.80`;
+- forward test events: `5`;
+- paired event-block bootstrap 95% interval for ΔMAE: `[-2566.13, +174.47]`;
+- `P(ΔMAE < 0) = 0.9322`;
+- worst event degradation: `+712.05` MAE;
+- scorecard SHA-256: `f684570856e264dae288599a8e24dde6802f84669a43e304c1d900726aa94e45`.
 
-- migration `p11_market_odds_capture_v2` applied successfully;
-- `p11_market_capture_inputs_v2(14)` returns the current upcoming Ekstraklasa event set and aliases without targets;
-- `p11_market_odds_readiness_v2()` = `CAPTURE_CONTRACT_READY_NO_GENUINE_OBSERVATIONS_YET`;
-- `p11_market_context_as_known_v2(...)` returns `MISSING` before genuine capture;
-- function ACLs expose v2 RPCs only to `postgres` and `service_role`;
-- transactional rollback test inserted three synthetic bookmaker quotes and produced a valid de-vigged `READY` consensus;
-- rollback verification confirmed `0` persisted synthetic rows;
-- Edge Function `p11_odds_capture_v2` deployed ACTIVE, version 1;
-- automated/scheduled capture remains OFF;
-- genuine capture remains **secret-bound** until `THE_ODDS_API_KEY` is configured in Supabase Edge Function secrets.
+Interpretation:
 
-### 2. P9 booking curve — SPLIT P9a SHORT-HORIZON FROM FULL P9 168h
+- internal P7 precommit decision: `ADVANCE_RESEARCH`;
+- governance interpretation: `POINT_GAIN_UNCERTAINTY_LIMITED` because the uncertainty interval still crosses zero;
+- this is meaningful positive research evidence, not production-readiness evidence;
+- no candidate/hyperparameter retuning is allowed after observing this result;
+- `production_change=false`, `production_activation_allowed=false`, `live_adjustment=0`.
 
-The canonical P9 precommit already separates two questions and must be interpreted literally:
+## P9 / P9a — CURRENT PRIORITY AFTER P7
 
-#### P9a — 24–48h short-horizon R&D: develop now
+### P9a T-24/T-48 — target-free freeze audit now
 
-Existing retrospective reference-curve readiness is sufficient to continue **development** at short horizons. This is not permission to use future target snapshots or to claim a learned MAE uplift.
+P9a is representation/freeze infrastructure, not a trained learner.
 
-A new audit on 2026-10-24 exposed mandatory safeguards before any P9a learner:
+Hard requirements remain:
 
-1. **Target eligibility must be cutoff-safe.** A T-24/T-48 target cannot be selected because its trajectory later turned out to be dense between the cutoff and T-6. Representation eligibility must use only snapshots already captured by the target `as_of_at`.
-2. **Incumbent lineage must be real.** Older short-horizon events do not have comparable persisted pre-live anchors. Do not recreate an incumbent after labels and present it as prospective/frozen evidence.
-3. **The target cutoff boundary cannot interpolate through future target data.** If there is no exact T-24/T-48 snapshot, use only the latest already-known pre-cutoff snapshot and only when it is <=6h stale. Otherwise the cutoff point remains missing.
-4. **Reference export must be linear in the stored data, not target × reference duplication.** Full historical reference trajectories are exported once as a flat catalog; the freeze harness constructs each target's strict prior-only pool with `reference kickoff < target_as_of_at` and self exclusion.
+- target values remain unopened;
+- no model training;
+- no future target snapshots;
+- target cutoff uses only data already known by `as_of_at`;
+- maximum cutoff-boundary staleness remains 6h;
+- self references and future reference events remain excluded;
+- incumbent lineage must be genuinely persisted, not reconstructed after labels;
+- learner remains blocked pending a separate precommit and valid comparator sample.
 
-The first nested-reference export design was intentionally rejected after a live audit exhausted PostgreSQL temporary workspace. No evidence rows were mutated. The live RPC was replaced with the flat-catalog contract before any learner/label access.
+The main P9a audit is being run after this plan refresh. Exact T-24/T-48 target/reference counts and manifest SHAs must come from the new run; do not reuse stale counts.
 
-Flat export live audit after replacement:
+### Full P9 168h — remain data-bound
 
-- T-24 raw targets: `16`;
-- T-48 raw targets: `13`;
-- reference catalog: `17` historical events;
-- post-cutoff target snapshot violations: `0` at both cutoffs;
-- targets with any genuinely persisted pre-cutoff incumbent row: `6` at T-24 and `4` at T-48.
+Full-window P9 remains at `5/9` genuine completed curves. Do not lower the gate or fit the first full-window residual learner early.
 
-These are **raw target-free export counts**, not learnable/evaluation sample claims. Canonical 12h interpolation quality, 6h boundary freshness, minimum overlap and strict-prior references are enforced by the deterministic Python freeze harness.
+The ingestion safety net should improve future curve coverage by preserving observations from first discovery, even when verified mapping arrives later.
 
-Implemented P9a freeze infrastructure:
+## P11a market odds v2 — GENUINE PIT DATA ACCUMULATING
 
-- `public.export_p9a_booking_curve_inputs_v1(24|48)` — target-free flat export;
-- `public.export_p9a_booking_curve_labels_v1(bigint[])` — separate labels RPC, not used by the freeze workflow;
-- `ml/p9a_booking_curve_freeze_v1.py` — deterministic identity/reference/lineage freeze;
-- hard fail on post-cutoff target snapshots, label fields and post-cutoff incumbents;
-- future and self reference events cannot enter a target's pool;
-- fixed K=5 nearest historical curves after eligibility;
-- target/reference snapshot identities persisted in lineage SHA;
-- model training remains blocked pending a separate learner precommit and valid comparator sample;
-- `p9a_booking_curve_export_v1` Edge Function deployed ACTIVE and protected by main-only GitHub OIDC;
-- `.github/workflows/p9a-booking-curve-freeze-v1.yml` opens no labels and runs no learner.
+Provider:
 
-A learnable P9a residual candidate may be frozen only after the target-free main audit proves enough `comparator_ready` strict-forward events. If it does not, keep P9a representation-ready but model-blocked rather than manufacturing an anchor.
+`the-odds-api-v4` / `soccer_poland_ekstraklasa` / pre-match `h2h`.
 
-#### Full P9 — 168h: remain data-bound
+Fresh database readiness on 2026-10-25:
 
-Full 168h P9 remains blocked at `4/9` reference curves. Do not lower that gate, weaken the 12h interpolation-quality rule, or treat P9a evidence as evidence for T-168.
+- status: `GENUINE_PIT_DATA_ACCUMULATING`;
+- events with any genuine PIT 1X2: `2`;
+- clubs with PIT 1X2: `2`;
+- events with at least 3 bookmakers: `2`;
+- events reaching 72h coverage: `1`;
+- events reaching 24h coverage: `1`;
+- events reaching 168h coverage: `0`;
+- target values used: `false`;
+- model precommitted: `false`;
+- production change: `false`.
 
-The first full-P9 learner still requires a separate precommit after the 168h gate is reached.
+No P11/odds pg_cron job is currently active. Do not enable recurring capture merely because genuine rows exist. First audit the actual quote lineage, mapping and provider coverage; then enable recurring append-only capture only if that audit passes.
 
-### 3. P7 — EXECUTE ONLY WHEN CANONICAL GATE OPENS
+Scientific guardrails remain:
 
-At `9/9`:
+- append-only raw bookmaker quotes;
+- actual capture timestamp is authoritative;
+- provider update timestamp is metadata only;
+- exact verified aliases + kickoff tolerance;
+- ambiguous mappings fail closed;
+- no closing-odds backfill into earlier PIT cutoffs;
+- de-vig bookmaker quotes before consensus;
+- `outcome_uncertainty != expected_match_quality`.
 
-`readiness -> freeze exact identities -> verify frozen T7 replay -> attach labels -> strict forward tournament -> paired event-block uncertainty -> research decision`
+## P10 / P10b — CLOSED
 
-Do not redesign P7 after gate opening.
+Do not reopen without a materially new mechanism.
 
-### 4. Governance v2 — BUSINESS THRESHOLD
+P10 v1:
 
-Existing code intentionally prevents `ROBUST_RESEARCH_ADVANCE` without a predeclared minimum practically meaningful MAE improvement.
+- local HGB `2120.93`;
+- pooled HGB `2057.46`;
+- ΔMAE `-63.47`;
+- `POINT_GAIN_UNCERTAINTY_LIMITED`.
 
-Next non-model task:
+P10b vs frozen Pre-Live v3:
 
-- derive that threshold from actual downstream decisions and asymmetric error costs;
-- do not derive it from observed challenger score distributions.
+- incumbent `1919.92`;
+- pooled `2067.43`;
+- challenger-incumbent ΔMAE `+147.51`;
+- 95% CI `[+82.97,+210.67]`;
+- 0/4 folds and 0/5 horizons improved;
+- `NO_RESEARCH_GAIN`.
 
-## P11a scientific guardrails
+## P4a / Long72
 
-- independent unit remains `ticket_event`;
-- capture timestamp is actual ingestion time;
-- provider update timestamp is metadata, never substituted for capture time;
-- only observations captured before kickoff are eligible;
-- odds are de-vigged before feature use;
-- 1X2 outcome uncertainty is not called expected match quality;
-- expected match quality, if added later, must be a distinct signal/precommit;
-- no outcome/attendance target is needed to build capture/readiness;
-- provider/API failures do not mutate existing observations;
-- no overwrite of historical observations;
-- production remains off.
+P4a remains frozen/data-bound. Do not modify the fixed previous-home-spacing challenger before the gate opens.
 
-## Next actions
+Long72 remains immutable forecast-before-label evidence. Two genuine events are scored; continue prospective evidence collection without retuning the frozen package.
 
-1. Complete PR CI for P11 and P9a contracts.
-2. Run the P9a target-free main audit for T-24/T-48 after merge and inspect exact `freeze_ready` / `comparator_ready` identities before any learner precommit.
-3. Configure `THE_ODDS_API_KEY` as an Edge Function secret before any real P11 capture.
-4. Run one explicit main-branch P11 capture and inspect mapping/coverage before enabling a schedule.
-5. Re-read canonical readiness when P7 is expected to reach 9/9; never execute from the clock alone.
-6. Precommit a P11 model only after genuine PIT coverage/variance audit.
-7. Define the business-derived minimum meaningful MAE threshold separately from model results.
+## Governance v2 — business threshold still required
 
-## Definition of done for this development slice
+`ROBUST_RESEARCH_ADVANCE` still requires a predeclared minimum practically meaningful MAE improvement derived from actual downstream decision costs, not from the challenger result.
 
-- execution plan saved and internally consistent with the canonical P9 precommit;
-- P11a provider adapter + parser + fixture matcher + tests committed;
-- append-only raw quote + as-known consensus contract live;
-- P11a capture fail-closed on ambiguous mappings;
-- Edge Function deployed but not silently scheduled;
-- synthetic P11 contract verification leaves zero persisted evidence rows;
-- P9a target-free flat export + freeze/lineage tooling committed and tested;
-- no target is selected using post-cutoff snapshots;
-- target boundary never uses a future target snapshot;
-- no incumbent is reconstructed post-label and misrepresented as frozen evidence;
-- full P9 168h and P7 gates remain unchanged;
-- PR against `main` passes CI;
-- production remains unchanged.
+P7's positive point estimate must therefore not be re-labeled robust merely because the observed uplift is large.
+
+## Immediate development order
+
+1. **P7 Long168: DONE for this frozen research tournament; advance research only, no production change.**
+2. **Run/inspect P9a target-free T-24/T-48 audit now.**
+3. Audit P11 genuine odds lineage/coverage; if valid, enable recurring append-only capture without opening a model ablation yet.
+4. Keep full P9 168h data collection running toward 9 genuine completed curves.
+5. Define the business-derived minimum meaningful MAE threshold.
+6. Keep P4a and Long72 prospective evidence collection unchanged.
+7. Keep ingestion safety-net monitoring active and fail closed on ambiguous/non-football candidates.
+
+## Definition of done for the current slice
+
+- ingestion safety net live and visible in panel;
+- P7 frozen identities, anchor replay and fixed tournament complete;
+- P7 result recorded without post-result retuning;
+- P9a target-free audit rerun on current data;
+- P11 genuine PIT rows audited before any schedule activation;
+- no labels opened early;
+- no hidden production activation;
+- `live_adjustment=0` preserved.
