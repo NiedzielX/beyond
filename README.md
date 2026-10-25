@@ -41,8 +41,8 @@ Production remains unchanged:
 - dashboard CI passes with ingestion coverage visible on Overview and Data Quality;
 - Long72 has **2 genuine prospective scored events**;
 - P7 Long168 frozen tournament executed at genuine 10/9 readiness;
-- P7 prospective follow-up is precommitted, fingerprint-pinned and has **3 immutable genuine predictions across 3 independent future events**;
-- P7 prospective workflow now has a real six-hour `predict -> persist -> score` schedule with immutable model/hash gates;
+- P7 prospective follow-up is precommitted, fingerprint-pinned and has **6 immutable genuine prediction rows across 3 independent future events**;
+- P7 prospective workflow has a real six-hour `predict -> persist -> score` schedule with immutable model/hash gates;
 - P9a T-24/T-48 target-free freeze audit completed;
 - P11a genuine bookmaker capture is scheduled every 6 hours;
 - P11b PIT-safe price `as-known` contract is live;
@@ -128,6 +128,7 @@ At the latest audit:
 - combined canonical future events: **13**;
 - combined future canonical events with snapshots: **12**;
 - `TRACKED_NO_SNAPSHOT`: **1** — Wisła Kraków vs Cracovia; source currently exposes no readable sectors;
+- schedule watchdog currently surfaces **5 future `SCHEDULE_GAP` fixtures** before ticket products are visible/protected;
 - protected pre-promotion buffers remain active for future candidates;
 - genuine match discovered without model-safe aggregate inventory remains fail-closed rather than converted to a fake snapshot.
 
@@ -173,7 +174,9 @@ Prospective continuation:
 - fingerprint evidence run `40201818862`: SUCCESS, artifact digest `a6dab7c220e065a9e2d2b5f32954303bf067387b1d24458b1fa1066d5a507184`;
 - canonical execution wrapper: `ml/p7_long168_prospective_run_v1.py`;
 - first true prospective run `40216860928`: SUCCESS;
-- current immutable ledger: **3 predictions / 3 independent events / 0 scored outcomes**;
+- one-shot validation run `40223004586`: SUCCESS, artifact digest `45eaf3abdd77395702d03733f2956da6be76c854346ca8b267c868577fcadbe7`;
+- current immutable ledger: **6 prediction rows / 3 independent events / 0 scored outcomes**;
+- each repeated row is a new genuine timepoint, not a new independent event;
 - evidence status: `PROSPECTIVE_PREDICTIONS_ONLY`;
 - target values used in prediction: false;
 - production activation allowed: false;
