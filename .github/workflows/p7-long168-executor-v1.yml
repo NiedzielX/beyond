@@ -150,7 +150,7 @@ jobs:
           if-no-files-found: error
           retention-days: 90
       - name: Freeze identities and run P7 only on explicit execute dispatch
-        if: (github.event_name == 'workflow_dispatch' && inputs.mode == 'execute') || (github.event_name == 'push' && github.event.head_commit.message == 'P7_EXECUTE_ONESHOT_2026-10-25')
+        if: github.event_name == 'workflow_dispatch' && inputs.mode == 'execute'
         run: |
           set -euo pipefail
           python -m ml.p7_long168_harness_v1 \
@@ -182,7 +182,7 @@ jobs:
             and .live_adjustment == 0
           ' /tmp/p7-long168-scorecard.json >/dev/null
       - name: Upload execute artifacts
-        if: (github.event_name == 'workflow_dispatch' && inputs.mode == 'execute') || (github.event_name == 'push' && github.event.head_commit.message == 'P7_EXECUTE_ONESHOT_2026-10-25')
+        if: github.event_name == 'workflow_dispatch' && inputs.mode == 'execute'
         uses: actions/upload-artifact@v4
         with:
           name: p7-long168-execution-v1-${{ github.run_id }}
