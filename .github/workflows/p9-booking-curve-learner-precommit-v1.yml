@@ -1,0 +1,72 @@
+name: P9 Booking Curve Learner Precommit v1
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - "ml/P9_BOOKING_CURVE_LEARNER_PRECOMMIT_V1.md"
+      - "ml/p9_learner_support_freeze_v1.py"
+      - "ml/p9_booking_curve_learner_v1.py"
+      - "ml/test_p9_booking_curve_learner_v1.py"
+      - "supabase/sql/p9_learner_gate_v1.sql"
+      - "supabase/sql/p9_learner_precommit_status_v1.sql"
+      - "supabase/sql/p9_learner_incumbent_catalog_v1.sql"
+      - "supabase/sql/p9_learner_support_gate_v1.sql"
+      - ".github/workflows/p9-booking-curve-learner-precommit-v1.yml"
+  push:
+    branches: [main]
+    paths:
+      - "ml/P9_BOOKING_CURVE_LEARNER_PRECOMMIT_V1.md"
+      - "ml/p9_learner_support_freeze_v1.py"
+      - "ml/p9_booking_curve_learner_v1.py"
+      - "ml/test_p9_booking_curve_learner_v1.py"
+      - "supabase/sql/p9_learner_gate_v1.sql"
+      - "supabase/sql/p9_learner_precommit_status_v1.sql"
+      - "supabase/sql/p9_learner_incumbent_catalog_v1.sql"
+      - "supabase/sql/p9_learner_support_gate_v1.sql"
+      - ".github/workflows/p9-booking-curve-learner-precommit-v1.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: p9-booking-curve-learner-precommit-v1-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  validate-precommit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install pinned ML dependencies
+        run: pip install -r ml/requirements.txt
+      - name: Compile frozen P9 learner code
+        run: |
+          python -m py_compile ml/p9_learner_support_freeze_v1.py
+          python -m py_compile ml/p9_booking_curve_learner_v1.py
+          python -m py_compile ml/test_p9_booking_curve_learner_v1.py
+      - name: Run deterministic P9 learner tests
+        run: python -m ml.test_p9_booking_curve_learner_v1
+      - name: Verify frozen scientific contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -q 'p9-knn-median-residual-k5-v1' ml/P9_BOOKING_CURVE_LEARNER_PRECOMMIT_V1.md
+          grep -q 'PRECOMMIT_ID = "p9-knn-median-residual-k5-v1"' ml/p9_booking_curve_learner_v1.py
+          grep -q 'MIN_RESIDUAL_NEIGHBORS = 3' ml/p9_booking_curve_learner_v1.py
+          grep -q 'ALLOWED_CUTOFFS = (48, 24)' ml/p9_booking_curve_learner_v1.py
+          grep -q 'BOOTSTRAP_SEED = 42' ml/p9_booking_curve_learner_v1.py
+          ! grep -Eq '\.fit\(|GridSearch|RandomizedSearch|HistGradientBoosting|RandomForest|XGBoost|LightGBM' ml/p9_booking_curve_learner_v1.py
+          grep -q 'P9_LABEL_EXPORT_V1_DISABLED_USE_V2' supabase/sql/p9_learner_support_gate_v1.sql
+          grep -q 'P9_LEARNER_GATE_CLOSED' supabase/sql/p9_learner_gate_v1.sql
+      - name: Verify production boundary
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -q 'production_activation_allowed": False' ml/p9_booking_curve_learner_v1.py
+          grep -q '"live_adjustment": 0' ml/p9_booking_curve_learner_v1.py
+          grep -q '"production_change": False' ml/p9_booking_curve_learner_v1.py
