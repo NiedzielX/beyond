@@ -19,7 +19,8 @@ Production: `live_adjustment = 0`.
 | Long72 prospective evidence | 🟢 **4 genuine scored events** | current point gain only 118.43 MAE / 1.71%; preserve freeze; no retuning |
 | P7 Long168 historical tournament | ✅ EXECUTED | 14.44% point gain; exposed; never retune |
 | P7 prospective validation | 🟢 **6 immutable rows / 3 events / 0 scores** | six-hour predict/persist/score workflow validated end to end |
-| P9 full-168h Booking Curve | 🟡 **7/9** | learner still blocked; two more independent full-window labeled events required |
+| P9 full-168h Booking Curve | 🟡 **8/9** | learner design frozen; target/label gate still closed until 9/9 |
+| P9 learner precommit | ✅ **FROZEN BEFORE 9TH LABEL** | `p9-knn-median-residual-k5-v1`; no training/results yet |
 | P9a T-24/T-48 freeze | ✅ COMPLETE | target-free audit frozen |
 | P4a previous-home spacing | 🟡 **4 labeled / 3 distinct labeled** | variance gate satisfied; event-count gate still 4/9 |
 | P10/P10b | ✅ CLOSED | do not reopen fixed pooled-HGB path |
@@ -33,24 +34,29 @@ Production: `live_adjustment = 0`.
 
 ## 2026-10-25 genuine outcome update
 
-Two additional genuine reported attendances were added after the matches completed:
+Three genuine reported attendances have now been added in this evidence cycle:
 
 - event 21 — Jagiellonia Białystok vs Wisła Płock: **17,021**;
-- event 23 — Śląsk Wrocław vs Wieczysta Kraków: **12,391**.
+- event 23 — Śląsk Wrocław vs Wieczysta Kraków: **12,391**;
+- event 20 — Wisła Płock vs Radomiak Radom: **5,014**.
 
-Both were sourced from published post-match reports. No inventory-derived attendance estimate was used.
+Event 20 was not reconstructed from inventory. It was a missing genuine post-match label for a booking curve already present in the database and was verified from public match reporting.
+
+No inventory-derived attendance estimate was used for any of these labels.
 
 Immediate effect:
 
-- P9 T-168 readiness: **5/9 -> 7/9**;
-- P9 T-72 readiness: **9 -> 11 events**;
-- P9 T-48 readiness: **12 -> 14 events**;
-- P9 T-24 readiness: **15 -> 17 events**;
+- P9 T-168 readiness: **5/9 -> 7/9 -> 8/9**;
+- P9 T-72 readiness: **9 -> 12 events**;
+- P9 T-48 readiness: **12 -> 15 events**;
+- P9 T-24 readiness: **15 -> 18 events**;
 - P4a labeled READY events: **2 -> 4**;
 - P4a distinct labeled previous-home-spacing values: **2 -> 3**;
 - Long72 genuine scored events: **2 -> 4**.
 
 Event 22 — Legia Warszawa vs Lech Poznań — has completed, but its attendance has not yet been added because a sufficiently reliable published attendance value has not been confirmed. Do not estimate it from ticket inventory.
+
+Event 22 is technically full-window ready for P9: its T-168/T-6 curve satisfies the frozen quality contract with a maximum observed gap of about **0.25h**. A genuine attendance label for event 22 would therefore be expected to move the full-window gate from 8/9 to 9/9.
 
 ## Multi-source ingestion coverage
 
@@ -183,17 +189,60 @@ By band:
 
 This is materially weaker than the earlier n=2 point result. Preserve the frozen package and continue prospective scoring. **Do not retune, recalibrate or promote from n=4.**
 
-## P9 / P9a — fresh readiness
+## P9 / P9a — fresh readiness and frozen learner design
 
-- 168h: **7 events / 7 clubs**;
-- 72h: **11 / 9**;
-- 48h: **14 / 9**;
-- 24h: **17 / 10**;
+Fresh readiness:
+
+- 168h: **8 events / 8 clubs**;
+- 72h: **12 / 10**;
+- 48h: **15 / 10**;
+- 24h: **18 / 11**;
 - full status: `DATA_BOUND`;
-- completed outcome events visible: **19**;
-- learner precommitted: false.
+- completed outcome events visible: **20**.
 
-Full P9 remains closed until the precommitted 9-event full-168h threshold is reached and a separate learner precommit is frozen.
+The first P9 learner design was frozen **before the ninth full-window label**:
+
+`ml/P9_BOOKING_CURVE_LEARNER_PRECOMMIT_V1.md`
+
+Precommit ID:
+
+`p9-knn-median-residual-k5-v1`
+
+Frozen design:
+
+- T-48 and T-24 only;
+- existing canonical booking-curve representation;
+- weighted-L1 similarity;
+- fixed `k=5` nearest prior curves;
+- minimum 3 residual-bearing neighbors;
+- same incumbent source family for target/reference residuals;
+- median historical residual as the only correction;
+- no fitted coefficient, no regression, no candidate sweep;
+- final clipping only to `[0, verified_stadium_capacity]`;
+- event-balanced MAE across both fixed cutoffs as the primary metric.
+
+Machine-readable status:
+
+`public.p9_learner_gate_status_v1()`
+
+Current state:
+
+- `design_precommitted=true`;
+- `readiness_168_events=8`;
+- `readiness_168_clubs=8`;
+- `full_window_gate_open=false`;
+- `registered_target_free_manifests=0`;
+- `labels_export_allowed=false`;
+- model results opened: false;
+- production activation allowed: false.
+
+Hard DB gate:
+
+- target-free freeze registration is rejected while readiness is below 9/9;
+- P9 label/support export is also rejected while readiness is below 9/9;
+- after 9/9, labels still remain unavailable until the exact target-free T-48/T-24 manifest has first been registered.
+
+Both negative gate tests passed at 8/9 and the target-free freeze registry remains empty.
 
 Expanded source coverage changes future evidence only. Do not backfill P9 windows.
 
@@ -247,7 +296,7 @@ Do not backfill closing odds.
 
 ## Immediate order
 
-`preserve P7 prospective schedule -> preserve 18/18 multi-source ticketing ingestion -> preserve resilient P11a/P11b/P11d collection -> obtain only genuine post-match labels -> P9 7/9 -> P4a 4/9 -> score Long72/P7 only when genuine outcomes arrive -> derive business ΔMAE threshold -> P12 later`
+`preserve P7 prospective schedule -> preserve 18/18 multi-source ticketing ingestion -> preserve resilient P11a/P11b/P11d collection -> obtain only genuine post-match labels -> P9 8/9 with learner design frozen -> on 9/9 freeze exact target-free identities before label export -> P4a 4/9 -> score Long72/P7 only when genuine outcomes arrive -> derive business ΔMAE threshold -> P12 later`
 
 ## Closed loops
 
