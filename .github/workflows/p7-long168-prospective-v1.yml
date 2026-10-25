@@ -4,16 +4,19 @@ on:
   workflow_dispatch:
     inputs:
       mode:
-        description: "fingerprint only until model hash is pinned; predict after pin"
+        description: "fingerprint audit or immutable prospective predict/persist/score"
         required: true
         default: "fingerprint"
         type: choice
         options:
           - fingerprint
           - predict
+  schedule:
+    - cron: "37 */6 * * *"
   pull_request:
     paths:
       - "ml/p7_long168_prospective_v1.py"
+      - "ml/p7_long168_prospective_run_v1.py"
       - "ml/P7_LONG168_PROSPECTIVE_PRECOMMIT_V1.md"
       - "ml/P7_LONG168_PROSPECTIVE_PRECOMMIT_V1_ADDENDUM.md"
       - "supabase/sql/p7_long168_prospective_v1.sql"
@@ -24,6 +27,7 @@ on:
     branches: [main]
     paths:
       - "ml/p7_long168_prospective_v1.py"
+      - "ml/p7_long168_prospective_run_v1.py"
       - "ml/P7_LONG168_PROSPECTIVE_PRECOMMIT_V1.md"
       - "ml/P7_LONG168_PROSPECTIVE_PRECOMMIT_V1_ADDENDUM.md"
       - "supabase/sql/p7_long168_prospective_v1.sql"
@@ -50,8 +54,10 @@ jobs:
           python-version: "3.12"
       - name: Install pinned ML dependencies
         run: pip install -r ml/requirements.txt
-      - name: Compile frozen prospective builder
-        run: python -m py_compile ml/p7_long168_prospective_v1.py
+      - name: Compile frozen prospective builder and pinned runner
+        run: |
+          python -m py_compile ml/p7_long168_prospective_v1.py
+          python -m py_compile ml/p7_long168_prospective_run_v1.py
       - name: Static freeze gates
         shell: bash
         run: |
@@ -60,9 +66,11 @@ jobs:
           grep -q 'EXPECTED_FREEZE_MANIFEST_SHA256 = "185a9fc90e646bd5fa1bbed3b50c625d65d127a2b2943501761bdfcb89f354ed"' ml/p7_long168_prospective_v1.py
           grep -q 'SOURCE_SCORECARD_SHA256 = "f684570856e264dae288599a8e24dde6802f84669a43e304c1d900726aa94e45"' ml/p7_long168_prospective_v1.py
           grep -q 'bootstrap_backfill_performed": False' ml/p7_long168_prospective_v1.py
+          grep -q '70fa929181531276c80a75c0b78a60fb821cf50e714e2bc001de8251cea1793f' ml/p7_long168_prospective_run_v1.py
+          grep -q 'FINGERPRINT_EVIDENCE_RUN_ID = 40201818862' ml/p7_long168_prospective_run_v1.py
 
   fingerprint:
-    if: github.event_name != 'pull_request'
+    if: github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && github.event.inputs.mode == 'fingerprint')
     needs: validate
     runs-on: ubuntu-latest
     timeout-minutes: 30
@@ -143,6 +151,7 @@ jobs:
             and .candidate_id == "gbr-l1-depth2-n50-lr003"
             and .training_row_count == 139
             and .training_freeze_manifest_sha256 == "185a9fc90e646bd5fa1bbed3b50c625d65d127a2b2943501761bdfcb89f354ed"
+            and .model_fingerprint_sha256 == "70fa929181531276c80a75c0b78a60fb821cf50e714e2bc001de8251cea1793f"
             and .bootstrap_backfill_performed == false
             and .target_values_used == false
             and .production_activation_allowed == false
@@ -156,7 +165,146 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: p7-long168-prospective-fingerprint-v1-${{ github.run_id }}
+          path: /tmp/p7-prospective-fingerprint.json
+          if-no-files-found: error
+          retention-days: 90
+
+  predict-persist-score:
+    if: github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && github.event.inputs.mode == 'predict')
+    needs: validate
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install pinned ML dependencies
+        run: pip install -r ml/requirements.txt
+      - name: Verify frozen Structural Prior bytes
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(sha256sum ml/artifacts/structural_prior_runtime_v1/structural_prior_t7_v1.joblib | awk '{print $1}')" = "97e712245d6539396030e88ea450809f4265bd7538aa90b29e234420231ac927"
+          test "$(sha256sum ml/artifacts/structural_prior_runtime_v1/historical_runtime_v1.csv.gz | awk '{print $1}')" = "3c6b35142c6bd20a484f2aa758cd41284fd6f4c6db1353b138f81cf321161569"
+      - name: Request main-only prospective OIDC token
+        shell: bash
+        run: |
+          set -euo pipefail
+          response=$(curl --retry 4 --retry-all-errors --retry-delay 2 -fsS \
+            -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
+            "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=beyond-p7-long168-prospective")
+          token=$(printf '%s' "$response" | jq -r '.value')
+          test -n "$token"
+          test "$token" != "null"
+          echo "::add-mask::$token"
+          echo "P7_PROSPECTIVE_OIDC_TOKEN=$token" >> "$GITHUB_ENV"
+      - name: Fetch bounded historical and target-free inputs
+        shell: bash
+        run: |
+          set -euo pipefail
+          base='https://adchzwqboeekhokapxqi.supabase.co/functions/v1/p7_long168_prospective_v1?mode='
+          for mode in training-long168 training-events attendance sporting aliases prospective prospective-summary; do
+            file="/tmp/p7-${mode}.json"
+            curl --retry 5 --retry-all-errors --retry-delay 2 -fsS \
+              -H "Authorization: Bearer $P7_PROSPECTIVE_OIDC_TOKEN" \
+              "${base}${mode}" -o "$file"
+            jq -e --arg mode "$mode" '.ok == true and .version == "p7-long168-prospective-gateway-v2" and .mode == $mode and .prospectiveTargetValuesUsed == false and .productionChange == false' "$file" >/dev/null
+          done
+      - name: Compose target-free prospective builder bundle
+        shell: bash
+        run: |
+          set -euo pipefail
+          jq -n \
+            --slurpfile long168 /tmp/p7-training-long168.json \
+            --slurpfile events /tmp/p7-training-events.json \
+            --slurpfile attendance /tmp/p7-attendance.json \
+            --slurpfile sporting /tmp/p7-sporting.json \
+            --slurpfile aliases /tmp/p7-aliases.json \
+            --slurpfile prospective /tmp/p7-prospective.json \
+            --slurpfile summary /tmp/p7-prospective-summary.json \
+            '{
+              version:"p7-long168-prospective-bundle-v1",
+              trainingLong168:$long168[0].payload,
+              trainingEvents:$events[0].payload,
+              attendance:$attendance[0].payload,
+              sporting:$sporting[0].payload,
+              aliases:$aliases[0].payload,
+              prospective:$prospective[0].payload,
+              summary:$summary[0].payload,
+              prospectiveTargetValuesUsed:false
+            }' > /tmp/p7-prospective-builder-bundle.json
+          jq -e '.prospective.version == "p7-long168-prospective-inputs-v1" and .prospective.targetValuesIncluded == false and .prospective.targetValuesUsed == false' /tmp/p7-prospective-builder-bundle.json >/dev/null
+      - name: Build frozen prospective predictions
+        run: |
+          python -m ml.p7_long168_prospective_run_v1 \
+            --bundle /tmp/p7-prospective-builder-bundle.json \
+            --artifact-dir ml/artifacts/structural_prior_runtime_v1 \
+            --output /tmp/p7-prospective-predictions.json
+      - name: Hard prediction gates
+        shell: bash
+        run: |
+          set -euo pipefail
+          jq -e '
+            .mode == "predict"
+            and .candidate_id == "gbr-l1-depth2-n50-lr003"
+            and .training_row_count == 139
+            and .training_freeze_manifest_sha256 == "185a9fc90e646bd5fa1bbed3b50c625d65d127a2b2943501761bdfcb89f354ed"
+            and .source_scorecard_sha256 == "f684570856e264dae288599a8e24dde6802f84669a43e304c1d900726aa94e45"
+            and .model_fingerprint_sha256 == "70fa929181531276c80a75c0b78a60fb821cf50e714e2bc001de8251cea1793f"
+            and .pinned_model_fingerprint_sha256 == "70fa929181531276c80a75c0b78a60fb821cf50e714e2bc001de8251cea1793f"
+            and .fingerprint_evidence_run_id == 40201818862
+            and .bootstrap_backfill_performed == false
+            and .target_values_used == false
+            and .production_activation_allowed == false
+            and .live_adjustment == 0
+            and .production_change == false
+            and all(.predictions[]?;
+              .candidate_id == "gbr-l1-depth2-n50-lr003"
+              and .training_freeze_manifest_sha256 == "185a9fc90e646bd5fa1bbed3b50c625d65d127a2b2943501761bdfcb89f354ed"
+              and .source_scorecard_sha256 == "f684570856e264dae288599a8e24dde6802f84669a43e304c1d900726aa94e45"
+              and .model_fingerprint_sha256 == "70fa929181531276c80a75c0b78a60fb821cf50e714e2bc001de8251cea1793f"
+            )
+          ' /tmp/p7-prospective-predictions.json >/dev/null
+      - name: Persist immutable predictions
+        shell: bash
+        run: |
+          set -euo pipefail
+          jq -n --slurpfile payload /tmp/p7-prospective-predictions.json '{mode:"persist",payload:$payload[0]}' > /tmp/p7-persist-request.json
+          curl --retry 5 --retry-all-errors --retry-delay 2 -fsS \
+            -X POST \
+            -H "Authorization: Bearer $P7_PROSPECTIVE_OIDC_TOKEN" \
+            -H 'content-type: application/json' \
+            --data-binary @/tmp/p7-persist-request.json \
+            'https://adchzwqboeekhokapxqi.supabase.co/functions/v1/p7_long168_prospective_v1' \
+            -o /tmp/p7-persist-response.json
+          jq -e '.ok == true and .productionChange == false and .result.production_change == false and .result.target_values_used == false' /tmp/p7-persist-response.json >/dev/null
+      - name: Attach genuine completed outcomes only after prediction persistence
+        shell: bash
+        run: |
+          set -euo pipefail
+          printf '%s' '{"mode":"score"}' > /tmp/p7-score-request.json
+          curl --retry 5 --retry-all-errors --retry-delay 2 -fsS \
+            -X POST \
+            -H "Authorization: Bearer $P7_PROSPECTIVE_OIDC_TOKEN" \
+            -H 'content-type: application/json' \
+            --data-binary @/tmp/p7-score-request.json \
+            'https://adchzwqboeekhokapxqi.supabase.co/functions/v1/p7_long168_prospective_v1' \
+            -o /tmp/p7-score-response.json
+          jq -e '.ok == true and .productionChange == false and .result.production_change == false and .summary.production_change == false and .summary.production_activation_allowed == false and .summary.live_adjustment == 0' /tmp/p7-score-response.json >/dev/null
+      - name: Print prospective evidence status
+        shell: bash
+        run: |
+          jq '{eligible_event_ids,eligible_prediction_count,predictions:(.predictions|length),model_fingerprint_sha256}' /tmp/p7-prospective-predictions.json
+          jq '{persisted:.result}' /tmp/p7-persist-response.json
+          jq '{score_result:.result,summary:.summary}' /tmp/p7-score-response.json
+      - name: Upload prospective execution evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: p7-long168-prospective-v1-${{ github.run_id }}
           path: |
-            /tmp/p7-prospective-fingerprint.json
+            /tmp/p7-prospective-predictions.json
+            /tmp/p7-persist-response.json
+            /tmp/p7-score-response.json
           if-no-files-found: error
           retention-days: 90
