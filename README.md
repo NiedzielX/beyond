@@ -38,22 +38,45 @@ Production remains unchanged:
 - alias-resolved coverage reaches **18/18 current Ekstraklasa home clubs / 0 uncovered**;
 - Stellis v3 continuously monitors Widzew, Radomiak, Piast, Motor and Korona;
 - the shared ingestion dashboard exposes both source families through one status contract;
-- dashboard CI passes with ingestion coverage visible on Overview and Data Quality;
-- Long72 has **2 genuine prospective scored events**;
+- panel shows ingestion coverage, schedule gaps and recent completed matches; Dashboard CI is green;
+- Long72 has **4 genuine prospective scored events**;
 - P7 Long168 frozen tournament executed at genuine 10/9 readiness;
 - P7 prospective follow-up is precommitted, fingerprint-pinned and has **6 immutable genuine prediction rows across 3 independent future events**;
 - P7 prospective workflow has a real six-hour `predict -> persist -> score` schedule with immutable model/hash gates;
 - P9a T-24/T-48 target-free freeze audit completed;
-- P11a genuine bookmaker capture now has **81 raw rows / 4 genuine events / 5 capture batches** and a primary + stale-health fallback schedule;
+- full P9 T-168 readiness is now **7/9** after two new genuine 2026-10-25 outcomes;
+- P4a now has **4 labeled events / 3 distinct labeled spacing values**;
+- P11a genuine bookmaker capture has **81 raw rows / 4 genuine events / 5 capture batches** and a primary + stale-health fallback schedule;
 - P11b PIT-safe price `as-known` contract is live;
 - P11c/P11d target-free source audit is complete;
 - Governance v2 business-threshold framework and P12 audit pre-plan exist.
 
 ### Immediate execution order
 
-`preserve P7 prospective schedule -> preserve 18/18 multi-source ticketing coverage -> preserve resilient P11a/P11b/P11d collection -> score P7/Long72 only after genuine outcomes -> accumulate P9 to 9/9 -> accumulate P4a labels -> derive business ΔMAE threshold`
+`preserve P7 prospective schedule -> preserve 18/18 multi-source ticketing coverage -> preserve resilient P11a/P11b/P11d collection -> obtain only genuine post-match labels -> P9 7/9 -> P4a 4/9 -> score frozen forward lanes only when genuine outcomes arrive -> derive business ΔMAE threshold`
 
 No research result activates production automatically.
+
+## 2026-10-25 outcome update
+
+Two additional genuine reported attendances were added after publication of post-match reports:
+
+- event 21 — Jagiellonia Białystok vs Wisła Płock: **17,021**;
+- event 23 — Śląsk Wrocław vs Wieczysta Kraków: **12,391**.
+
+No attendance value was inferred from inventory, capacity or model output.
+
+These two labels moved:
+
+- P9 T-168: **5/9 -> 7/9**;
+- P9 T-72: **9 -> 11 events**;
+- P9 T-48: **12 -> 14 events**;
+- P9 T-24: **15 -> 17 events**;
+- P4a labeled events: **2 -> 4**;
+- P4a distinct labeled previous-home-spacing values: **2 -> 3**;
+- Long72 genuine scored events: **2 -> 4**.
+
+Event 22 — Legia Warszawa vs Lech Poznań — is completed, but no attendance label is stored yet because a sufficiently reliable published attendance value has not been confirmed. Do not estimate it.
 
 ## Ticketing ingestion safety net / source coverage
 
@@ -119,19 +142,6 @@ Alias-resolved audit against the current 2026/27 Ekstraklasa club universe:
 
 This is source coverage, not a claim that every future fixture already exposes model-safe inventory. Hidden inventory, unpublished events and fixture-mapping delays remain fail-closed states and are surfaced by ingestion monitoring rather than converted into synthetic data.
 
-### Fresh future coverage
-
-At the latest audit:
-
-- canonical future RoboTicket events: **12**, of which **11 have snapshots**;
-- canonical future Stellis events: **1**, with **1 snapshot stream**;
-- combined canonical future events: **13**;
-- combined future canonical events with snapshots: **12**;
-- `TRACKED_NO_SNAPSHOT`: **1** — Wisła Kraków vs Cracovia; source currently exposes no readable sectors;
-- schedule watchdog currently surfaces **5 future `SCHEDULE_GAP` fixtures** before ticket products are visible/protected;
-- protected pre-promotion buffers remain active for future candidates;
-- genuine match discovered without model-safe aggregate inventory remains fail-closed rather than converted to a fake snapshot.
-
 Shared panel-facing contract:
 
 `public.dashboard_ticketing_ingestion_status_v1`
@@ -166,42 +176,39 @@ The old tournament is exposed and must not be rerun or tuned.
 
 Prospective continuation:
 
-- precommit: `ml/P7_LONG168_PROSPECTIVE_PRECOMMIT_V1.md`;
-- bootstrap rule: no prospective backfill of historical buckets;
 - exact training set: events `[1,3,4,5,10,11,15,16,18,19]` / 139 rows;
 - training manifest: `185a9fc90e646bd5fa1bbed3b50c625d65d127a2b2943501761bdfcb89f354ed`;
-- pinned deterministic model fingerprint: `70fa929181531276c80a75c0b78a60fb821cf50e714e2bc001de8251cea1793f`;
-- fingerprint evidence run `40201818862`: SUCCESS, artifact digest `a6dab7c220e065a9e2d2b5f32954303bf067387b1d24458b1fa1066d5a507184`;
-- canonical execution wrapper: `ml/p7_long168_prospective_run_v1.py`;
-- first true prospective run `40216860928`: SUCCESS;
-- one-shot validation run `40223004586`: SUCCESS, artifact digest `45eaf3abdd77395702d03733f2956da6be76c854346ca8b267c868577fcadbe7`;
+- pinned model fingerprint: `70fa929181531276c80a75c0b78a60fb821cf50e714e2bc001de8251cea1793f`;
 - current immutable ledger: **6 prediction rows / 3 independent events / 0 scored outcomes**;
-- each repeated row is a new genuine timepoint, not a new independent event;
 - evidence status: `PROSPECTIVE_PREDICTIONS_ONLY`;
-- target values used in prediction: false;
 - production activation allowed: false;
 - `live_adjustment=0`.
 
-Scheduled prospective execution is implemented in `.github/workflows/p7-long168-prospective-v1.yml`:
+Scheduled execution:
 
 `37 */6 * * *`
 
-Each scheduled execution rebuilds the exact frozen model, hard-checks the pinned fingerprint and training lineage, persists only previously unseen eligible prospective identities, and only then attaches genuine completed outcomes for scoring. Do not interpret MAE until genuine outcomes exist.
+Each scheduled execution rebuilds the exact frozen model, hard-checks the pinned fingerprint and training lineage, persists only previously unseen eligible prospective identities, and only then attaches genuine completed outcomes for scoring.
 
 ## Long72 prospective evidence
 
-Genuine post-match outcomes currently scored:
+Genuine scored events now: **4** — events 10, 16, 21 and 23.
 
-- event 10 — Pogoń Szczecin vs Radomiak Radom: **19,050**;
-- event 16 — Wisła Kraków vs Raków Częstochowa: **33,000**.
+Current frozen point evidence:
 
-Frozen point evidence on n=2:
+- anchor event-balanced MAE: **6,942.59**;
+- frozen package event-balanced MAE: **6,824.16**;
+- point improvement: **118.43 MAE / 1.71%**;
+- event improvement rate: **75%**;
+- event-balanced bias: **-712.84**;
+- worst event degradation: **3,633.23**.
 
-- anchor MAE: **9,069.52**;
-- frozen package MAE: **7,641.71**;
-- point improvement: **1,427.80 / 15.74%**.
+By horizon band:
 
-Preserve and collect more. Do not retune/calibrate/promote from n=2.
+- 24–48h: package is **5.00 MAE worse** than anchor;
+- 48–72h: package improves MAE by **241.87**.
+
+This is much weaker than the earlier n=2 point result. Preserve the frozen package and collect more. Do not retune/calibrate/promote from n=4.
 
 ## P9 / P9a Booking Curve
 
@@ -209,10 +216,10 @@ P9a target-free audit is complete.
 
 Fresh P9 readiness:
 
-- 168h: **5/9 events / 5 clubs**;
-- 72h: **9 / 7**;
-- 48h: **12 / 7**;
-- 24h: **15 / 9**;
+- 168h: **7/9 events / 7 clubs**;
+- 72h: **11 / 9**;
+- 48h: **14 / 9**;
+- 24h: **17 / 10**;
 - full 168h status: `DATA_BOUND`;
 - learner precommitted: false.
 
@@ -220,21 +227,22 @@ The expanded source coverage improves future evidence only. Do not backfill newl
 
 ## P4a fixture context
 
-Fresh readiness remains:
+Fresh readiness:
 
 - READY events: 5;
-- genuine labeled READY events: **2**;
-- distinct labeled values: **2**;
-- required: `>=9 labeled AND >=3 distinct labeled values`;
+- genuine labeled READY events: **4/9**;
+- distinct labeled previous-home-spacing values: **3**;
+- distinct-value requirement: **PASS**;
+- event-count requirement: **FAIL**;
 - research trigger: false.
 
-Gate remains closed.
+Do not open P4a model results before the 9-event gate.
 
 ## P11 context program
 
 ### P11a — bookmaker odds
 
-Fresh genuine state after recovery capture run `40223646599`:
+Fresh genuine state:
 
 - status: `GENUINE_PIT_DATA_ACCUMULATING`;
 - raw append-only bookmaker rows: **81**;
@@ -243,21 +251,17 @@ Fresh genuine state after recovery capture run `40223646599`:
 - events with >=3 bookmakers: **4**;
 - 24h / 72h / 168h coverage: **3 / 3 / 0**;
 - latest capture: `2026-10-25T18:56:51.448Z`;
-- recovery artifact digest: `6c326149cea6d1043eaa3c5a200b5430853a3fb46454aad910cbf0faf188beba`;
 - model precommitted: false;
 - target values used: false;
 - production change: false.
 
-Capture resilience is now explicit:
+Capture resilience:
 
 - primary schedule: `17 */6 * * *`;
 - fallback schedule: `47 0,6,12,18 * * *`;
-- health RPC: `public.p11_market_odds_capture_health_v2()`;
-- fallback only calls the provider when the latest capture is older than **270 minutes**;
-- a fresh primary capture makes the fallback skip the provider call;
-- health is target-free and production-safe.
+- stale threshold: **270 minutes**.
 
-The temporary recovery one-shot workflow was removed after successful validation. Never backfill closing odds.
+Never backfill closing odds.
 
 ### P11b/c/d
 
