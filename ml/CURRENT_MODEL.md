@@ -1,10 +1,10 @@
 # Beyond Ticketing — Current Model & Product State
 
-Last updated: **2026-10-21**
+Last updated: **2026-10-25**
 
-Status: **GLOBAL HISTORICAL CORE + FROZEN LIVE EVIDENCE LANES + ACTIVE MAE-FIRST CHALLENGER R&D**
+Status: **GLOBAL HISTORICAL CORE + FROZEN LIVE EVIDENCE LANES + REPRESENTATION-FIRST MAE R&D**
 
-Canonical strategy: `ml/MAE_RESEARCH_ROADMAP_V3.md`
+Canonical strategy: `ml/MAE_RESEARCH_ROADMAP_V4.md`
 
 ## North star
 
@@ -50,9 +50,9 @@ Later-season historical results:
 
 Important evidence rule:
 
-**2024/25 and 2025/26 have already been opened and influenced research. For all new challengers they are exposed historical evidence, not unseen holdouts.**
+**2024/25 and 2025/26 have already been opened and influenced research. For new challengers they are exposed historical evidence, not unseen holdouts.**
 
-Future challenger selection must increasingly rely on rolling/forward historical folds and genuinely future 2026/27 evidence.
+Future challenger decisions must increasingly rely on strict rolling/forward evaluation and genuinely future 2026/27 evidence.
 
 ---
 
@@ -93,7 +93,7 @@ Status: **frozen research candidate, not production**.
 
 ---
 
-# 4. Frozen long72 live package — Evidence Lane
+# 4. Frozen Long72 live package — Evidence Lane
 
 Package:
 
@@ -103,15 +103,6 @@ Scope:
 
 `24 < hours_to_kickoff <= 72`
 
-Frozen dataset/anchor:
-
-- 14 events / 130 rows in 0–72h;
-- modeling slice 24–72h: 80 rows / 13 events;
-- 48–72h: 35 rows / 10 events;
-- `0<h<=24 -> T-1`;
-- `24<h<=72 -> T-3`;
-- future checkpoint use forbidden.
-
 Architecture:
 
 1. frozen T-3 checkpoint anchor;
@@ -119,68 +110,157 @@ Architecture:
 3. correction cap `±0.10` occupancy;
 4. Stage-2 `P2-observation-maturity` reliability.
 
-P2 reliability:
+Frozen development evidence remains exposed historical research evidence.
 
-- observation #1 `0.25`;
-- observation #2 `0.60`;
-- observation #3+ `1.00`;
-- `60<h<=72` time weight `0.75`;
-- `48<h<=60` time weight `0.90`;
-- `24<h<=48` time weight `1.00`;
-- applied reliability = minimum of observation/time weights.
+Current genuine prospective state:
 
-Historical development performance:
-
-- anchor MAE `3707.14`;
-- package MAE `3012.63`;
-- improvement `+694.51 / +18.73%`;
-- 24–48h uplift `+954.58 / +25.75%`;
-- 48–72h uplift `+664.71 / +14.47%`;
-- event improvement rate `61.54%`;
-- worst event degradation `1488.34`;
-- bias `+917.05`.
-
-All of this remains exposed historical research evidence.
+- reproducible prediction rows: **90**;
+- genuine scored events: **2**;
+- anchor MAE: **9069.52**;
+- frozen package MAE: **7641.71**;
+- point improvement: **1427.80 / 15.74%**;
+- event improvement rate: 1.0 on n=2.
 
 Status: **immutable / prospective scoring active**.
 
----
-
-# 5. Current R&D interpretation
-
-Do not confuse validation with development.
-
-## Evidence Lane
-
-- persist final24 and long72 forecasts forward;
-- for long72, materialize the prediction before the attendance label is available;
-- attach attendance later without recomputing forecasts;
-- report MAE, bands, bias, P90/worst degradation and event improvement rate.
-
-## MAE R&D Lane
-
-Active challengers are built independently from frozen packages.
-
-Priority order:
-
-1. rolling/forward evaluation;
-2. MAE-native residual objectives (`q=0.50`, absolute-error losses);
-3. event/fixture-block uncertainty around `ΔMAE`;
-4. next-fixture / cannibalization context;
-5. other PIT-safe context families;
-6. forecast combinations;
-7. live-ticket residual uplift over the strongest global structural forecast;
-8. 72–168h experiment when coverage reaches `N>=9`;
-9. club calibration / shrinkage only if it improves cross-club generalization.
+Interpretation: n=2 is not enough to retune, calibrate, promote or claim robust improvement.
 
 ---
 
-# 6. Validation rules for new challengers
+# 5. P7 Long168 — executed research lane
+
+Research question:
+
+> Does PIT live-ticket trajectory between 72h and 168h reduce event-balanced MAE beyond the frozen Structural Prior T-7 anchor?
+
+Frozen execution completed on 2026-10-25 after the genuine start gate opened.
+
+Freeze:
+
+- independent events: **10**;
+- rows: **139**;
+- exact event/as-of identities frozen before model evaluation;
+- target values absent from freeze;
+- target-attendance invariance PASS;
+- no candidate/hyperparameter search added post hoc.
+
+Forward result:
+
+- forward held-out events/folds: **5 / 5**;
+- anchor MAE: **7409.79**;
+- best candidate: `gbr-l1-depth2-n50-lr003`;
+- challenger MAE: **6339.99**;
+- point improvement: **1069.80 / 14.44%**;
+- event improvement rate: **80%**;
+- fold improvement rate: **80%**;
+- paired event-block 95% interval for challenger-minus-anchor MAE: **[-2566.13, +174.47]**;
+- evidence interpretation: `POINT_GAIN_UNCERTAINTY_LIMITED`;
+- research decision: `ADVANCE_RESEARCH`.
+
+The interval crosses zero and the independent held-out sample is only five events. Therefore P7 is **promising exposed forward-fold research**, not robust proof and not a production promotion candidate.
+
+Do not tune/rerun the frozen P7 candidate set after seeing this result. Any continuation requires a separately precommitted follow-up or prospective lane.
+
+Canonical result:
+
+`ml/P7_LONG168_RESULT_2026-10-25.md`
+
+---
+
+# 6. P9 Booking Curve / trajectory representation
+
+Roadmap v4 makes P9 the highest-priority new live representation.
+
+Core hypothesis:
+
+> Compare the observed current-event path with genuinely prior/comparable booking curves at the same point in the window and estimate remaining pickup from historical trajectory shape, instead of relying only on local velocity/acceleration features.
+
+Conceptual pipeline:
+
+`PIT trajectory -> normalized curve -> historical similarity -> pickup distribution -> remaining-demand estimate -> structural residual challenger`
+
+Current completed reference coverage:
+
+- 168h: **5/9 events / 5 clubs**;
+- 72h: **9 / 7**;
+- 48h: **12 / 7**;
+- 24h: **15 / 9**.
+
+Full-168h first learner remains `DATA_BOUND` and is not precommitted.
+
+## P9a target-free freeze
+
+Main T-24/T-48 audit completed on 2026-10-25.
+
+T-24:
+
+- manifest `738a42da33b46361f0ba29d3f90c72e2e0019c0057ef00b78ac7e6a073f0bd1c`;
+- representation ready 16;
+- freeze ready 12;
+- comparator ready 9.
+
+T-48:
+
+- manifest `ffa6dd178332bf328a24fc7ce15ef346214a0037325d7161426f9f96664babd4`;
+- representation ready 13;
+- freeze ready 10;
+- comparator ready 7.
+
+Labels remain closed, no model was trained, no future target trajectory point was used.
+
+Canonical audit:
+
+`ml/P9A_FREEZE_AUDIT_2026-10-25.md`
+
+---
+
+# 7. P11 match attractiveness / commercial context
+
+Roadmap v4 context order:
+
+1. P11a market-implied match quality / uncertainty / stakes;
+2. P11b price / promotion context;
+3. P11c lineup / star strength / verified absences;
+4. P11d weather / attention / hype.
+
+P11a current state:
+
+- DB capture/consensus/readiness contract live;
+- `THE_ODDS_API_KEY` configured and verified;
+- main-only GitHub OIDC capture authorization works;
+- provider adapter tests/type-check pass;
+- genuine odds rows: **0**;
+- schedule off.
+
+First provider request failed closed with `422 INVALID_COMMENCE_TIME_FROM` because the deployed Edge runtime included milliseconds in the provider cutoff timestamp. No odds rows were inserted.
+
+Corrected source is committed on `main` (`d27d797578f18f09140ccc1723219a3e690d339a`) and CI-green. Runtime inspection after a Dashboard redeploy still showed the pre-fix code, so the remaining P11 blocker is **runtime/source synchronization**, not the provider key.
+
+After runtime sync, perform one genuine capture and audit it before enabling any schedule.
+
+Every P11 family still requires a separate controlled ablation before combination.
+
+---
+
+# 8. P4a fixture context
+
+Current previous-home-spacing readiness:
+
+- READY events: 5;
+- genuine labels: **2**;
+- distinct labeled values: **2**;
+- required: `>=9 labeled AND >=3 distinct values`.
+
+Gate remains closed. Preserve the frozen contract and accumulate genuine labels only.
+
+---
+
+# 9. Validation / governance rules
 
 Historical/global:
 
 - season-blocked / rolling / expanding origin;
-- never train an earlier fold with future-season rows;
+- never train earlier folds with future-season rows;
 - persist fold identities;
 - report by horizon, season/fold and club;
 - random row split is not headline evidence.
@@ -188,74 +268,38 @@ Historical/global:
 Live-ticket:
 
 - complete event is the independent unit;
-- LOEO remains a useful diagnostic;
-- add forward-event evaluation ordered by kickoff;
-- random snapshot split is forbidden as headline evidence.
+- strict forward-event evaluation is preferred for headline research;
+- random snapshot split is forbidden as headline evidence;
+- target values remain closed until the experiment identities/protocol are frozen where prospective evidence is possible.
+
+Decision vocabulary:
+
+- `NO_RESEARCH_GAIN`;
+- `POINT_GAIN_UNCERTAINTY_LIMITED`;
+- `ROBUST_RESEARCH_ADVANCE`.
+
+A business-derived minimum meaningful `ΔMAE` is still required before `ROBUST_RESEARCH_ADVANCE` is available. Never derive that threshold from the challenger result it will judge.
 
 ---
 
-# 7. Context state
+# 10. Closed research loops
 
-Already useful inside the global model:
+Do not reopen without a materially new information mechanism:
 
-- attendance/home-demand history;
-- opponent demand;
-- calendar/seasonality;
-- sporting state;
-- home–opponent pair history;
-- recent-vs-long-run demand trends.
-
-Highest-priority new context hypothesis:
-
-**fixture substitution / cannibalization** — whether proximity and attractiveness of the next home match changes demand for the current match.
-
-Candidate features:
-
-- days to next home match;
-- next-opponent attractiveness;
-- next-match competition/importance;
-- fixture density 7/14/30d;
-- previous-home proximity.
-
-Then test verified absences, rivalry/importance, PIT weather forecast and PIT-safe attention/hype signals.
+- P10/P10b fixed pooled-HGB path;
+- old estimator-only sweeps;
+- P5a shrinkage;
+- P6 historical Long72 incremental signal;
+- P8 simple club/opponent calibration;
+- blind post-hoc calibration.
 
 ---
 
-# 8. Forecast combination direction
+# 11. Production boundary
 
-Component sources should be meaningfully different:
+Historical uplift, P7 research success, Long72 point gains, P9/P11 research or a new research champion do not activate production.
 
-- global structural forecast;
-- MAE-native residual challenger;
-- context challenger;
-- live inventory / long72 correction;
-- final24 live correction where applicable.
-
-Test in order:
-
-1. mean;
-2. median;
-3. fixed convex weights;
-4. MAE-optimized convex weights learned only inside train folds;
-5. regularized stacker only if simpler methods fail.
-
----
-
-# 9. 72–168h state
-
-Last audited coverage beyond 72h: `8` independent events.
-
-Predeclared research-start floor: `N>=9`.
-
-When reached, freeze the event/as-of set first and open a separate challenger cycle. `N=9` is a start threshold, not proof of adequate sample size.
-
----
-
-# 10. Production boundary
-
-Historical uplift, LOEO success or a new research champion does not activate production.
-
-Production promotion requires genuine future evidence, reproducible lineage, acceptable bias/tail behavior and explicit review.
+Production promotion requires genuine future evidence, reproducible lineage, acceptable bias/tail behavior, meaningful business value and explicit review.
 
 Until then:
 
@@ -263,4 +307,4 @@ Until then:
 
 ## Immediate decision
 
-> **Keep final24 and long72 frozen for forward evidence. Do not wait for that evidence to continue development. The active modelling program is MAE-first: forward validation, MAE-aligned losses, PIT-safe context, forecast combinations and incremental live corrections over Global Model v2.1 / the strongest structural forecast.**
+> **Keep final24 and Long72 frozen for forward evidence. Preserve the completed P7 result without post-hoc tuning. Complete P11 runtime synchronization so genuine PIT odds can start accumulating, continue P9 full-168h data collection to 9/9, keep P4a data-bound, and use Roadmap v4 representation-first research rather than another broad estimator sweep.**
