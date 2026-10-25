@@ -1,6 +1,6 @@
 # Ticketing Source Coverage Expansion — 2026-10-25
 
-Status: **LIVE / MULTI-SOURCE COLLECTION ACTIVE**
+Status: **LIVE / MULTI-SOURCE COLLECTION ACTIVE / 18 OF 18 CURRENT LEAGUE HOME CLUBS COVERED**
 
 Production model: **UNCHANGED** (`live_adjustment = 0`)
 
@@ -15,17 +15,28 @@ The first issue is handled by the RoboTicket safety net. The second is now addre
 
 This is a data-acquisition expansion only. No model weights, validation rules, frozen challengers or production forecasts were changed.
 
+## Coverage result
+
+An alias-resolved audit against the current 2026/27 Ekstraklasa home-club universe now gives:
+
+- current league home clubs: **18**;
+- covered by at least one active ticketing source: **18**;
+- uncovered: **0**.
+
+This resolves the earlier apparent 16/18 result, which was a slug-normalization artifact (`slask_wroclaw` vs `slaskwroclaw`, `wisla_krakow` vs `wislakrakow`). Coverage is verified through the football alias universe rather than direct slug equality.
+
+Important: source coverage is not equivalent to visible inventory for every future fixture. If a source hides aggregate availability, has not yet published the event, or fixture identity is not sufficiently verified, the system remains fail closed and reports the gap rather than manufacturing data.
+
 ## Current multi-source architecture
 
 ### RoboTicket
 
 Canonical controls:
 
-- live discovery: `roboticket-discovery-v8`;
+- hardened same-element event/product identity;
 - discovery cadence: hourly;
 - unmapped genuine-match buffer: every 10 minutes;
 - candidate raw snapshots remain private until verified promotion;
-- same-element eventId/label identity;
 - football-universe gate;
 - parking / VIP / premium / reserve / non-football products fail closed;
 - verified kickoff -> automatic `ticket_events` promotion + original-PIT backfill.
@@ -132,49 +143,50 @@ Fresh status at the 2026-10-25 audit:
 - combined: **13 future canonical events**, **12 with snapshots**;
 - one explicit `TRACKED_NO_SNAPSHOT`: Wisła Kraków vs Cracovia — mapped, but RoboTicket currently returns no readable sectors.
 
-### Stellis
+The source-side exception above is not treated as a missing event and is never converted to a fake zero.
+
+### Protected pre-promotion evidence
+
+The ingestion safety net preserves genuine raw observations before final mapping. Examples include future match candidates waiting for verified fixture identity or kickoff. A mapping delay therefore no longer destroys the early booking curve.
+
+### Stellis examples
 
 #### Korona Kielce vs Radomiak Radom
 
 - canonical ticket event: **603**;
 - source event ID: `48701`;
 - status: `TRACKED`;
-- model-facing snapshots at audit time: **2**;
-- first observed aggregate availability: **5,294**;
+- model-facing snapshots present;
 - mapping: `stellis-visible-availability-v2.1+latest-raw+league-pair-window`.
 
 #### Piast Gliwice vs Korona Kielce
 
 - source event ID: `48823`;
-- source kickoff: 2026-11-20T17:00:00Z;
-- public aggregate availability observed: **4,409**;
-- status: `BUFFERING_AWAITING_KICKOFF` in the shared dashboard vocabulary;
-- raw curve protected privately;
-- promotion waits for a unique league fixture identity in the sporting shadow.
+- public aggregate availability observed;
+- raw curve protected while unique league fixture confirmation is pending;
+- no model-facing snapshot until the league gate passes.
 
 #### Radomiak Radom vs Śląsk Wrocław
 
 - source event ID: `48101`;
-- source kickoff: 2026-11-02T17:00:00Z;
-- source currently declares aggregate availability hidden for the active source contract;
-- status: `MATCH_DISCOVERED_NO_BUFFER`;
+- source currently hides aggregate availability for the active source contract;
+- status remains an explicit ingestion gap;
 - no fake zero or reconstructed inventory is created.
 
 #### Motor Lublin vs Raków Częstochowa
 
 - source event ID: `48812`;
 - raw inventory observations are protected;
-- league fixture confirmation is not currently sufficient for promotion;
-- status: `BUFFERING_AWAITING_KICKOFF`;
-- no model-facing snapshot until the league gate passes.
+- league fixture confirmation remains a promotion gate;
+- no model-facing snapshot until the gate passes.
 
 #### Widzew Łódź
 
-No active ticket event was exposed by the source during the audit. The source remains onboarded and will be checked by the same 10-minute collector.
+The source remains onboarded and is continuously monitored even when no active model-safe event is currently exposed.
 
 ## Shared dashboard / panel contract
 
-`private.refresh_dashboard_ticketing_ingestion_status_v1()` now publishes **Roboticket + Stellis** into the same panel-facing table:
+`private.refresh_dashboard_ticketing_ingestion_status_v1()` publishes **RoboTicket + Stellis** into the same panel-facing table:
 
 `public.dashboard_ticketing_ingestion_status_v1`
 
@@ -182,7 +194,7 @@ Current dashboard contract version:
 
 `dashboard-ticketing-ingestion-status-v2`
 
-Existing panel code does not need a second source-specific API. It continues to render the same status vocabulary, including:
+Existing panel code renders one shared operational vocabulary, including:
 
 - `TRACKED`;
 - `TRACKED_NO_SNAPSHOT`;
@@ -192,13 +204,13 @@ Existing panel code does not need a second source-specific API. It continues to 
 - `NON_FOOTBALL_EXCLUDED`;
 - `UNKNOWN_EXCLUDED`.
 
-The panel therefore shows both canonical events and protected pre-promotion gaps through one operational view.
+The panel also keeps recent completed matches visible, so completed fixtures do not appear to have disappeared simply because they are no longer future events.
 
 ## Why this materially improves the dataset
 
 Previously, source coverage was effectively biased toward RoboTicket-hosted home fixtures. A club using another ticketing platform could be absent even though its public sale inventory was available.
 
-With the Stellis family onboarded, five additional home-club sources are continuously monitored. Not every source exposes the same level of inventory detail, but the important behavior is now systematic:
+The current architecture now covers **18/18 current league home clubs** across RoboTicket and Stellis. Not every source exposes the same level of inventory detail, but the important behavior is systematic:
 
 `source appears -> event discovered -> raw evidence protected -> league identity verified -> model-facing snapshot promoted`
 
@@ -217,4 +229,4 @@ A mapping delay no longer automatically destroys the early booking curve.
 
 ## Immediate next step
 
-Keep both source families collecting and let genuine early-window observations accumulate. Continue the precommitted P7 prospective lane and existing P9/P11 accumulation without changing scientific gates.
+Keep both source families collecting across the full 18-club league universe. Continue the precommitted P7 prospective lane and existing P9/P11 accumulation without changing scientific gates.
