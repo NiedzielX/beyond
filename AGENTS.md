@@ -115,6 +115,8 @@ Required action:
 4. evaluate with existing governance;
 5. keep `production_change=false`, `production_activation_allowed=false`, `live_adjustment=0`.
 
+A temporary one-shot CI trigger is armed only to execute this frozen contract once from `main`; restore the workflow immediately after the run.
+
 Do not redesign candidates after seeing the result.
 
 ## P10 / P10b — frozen closeout
