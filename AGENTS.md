@@ -8,7 +8,7 @@ For any Beyond forecasting / ML / Demand Engine task:
 4. Read `ml/PROGRESS_TRACKING.md` for the latest canonical state.
 5. Read `ml/MAE_RESEARCH_ROADMAP_V4.md` for strategy.
 6. Query `public.ml_research_readiness_v1()` fresh before acting on any data gate.
-7. Compare `main` with active branch `ml/p9-p11-execution-2026-10-24` before touching P11a v2.
+7. Compare `main` with active branch `ml/p9-p11-execution-2026-10-24` before touching P9a/P11a.
 8. Never rebuild frozen history merely to recover context.
 9. Never store secrets/tokens/service-role keys in repo files.
 
@@ -24,13 +24,21 @@ Production remains:
 
 ## Repository / live-state warning
 
-The live Supabase environment is currently temporarily ahead of `main` for P11a v2.
+The live Supabase environment is currently temporarily ahead of `main` for **P9a and P11a v2 source**.
 
 Active branch:
 
 `ml/p9-p11-execution-2026-10-24`
 
-It contains:
+### P9a branch files
+
+- `ml/p9a_booking_curve_freeze_v1.py`;
+- `ml/test_p9a_booking_curve_freeze_v1.py`;
+- `supabase/sql/p9a_booking_curve_freeze_v1.sql`;
+- `supabase/functions/p9a_booking_curve_export_v1/index.ts`;
+- `.github/workflows/p9a-booking-curve-freeze-v1.yml`.
+
+### P11a v2 branch files
 
 - `supabase/sql/p11_market_odds_capture_v2.sql`;
 - `supabase/functions/p11_odds_capture_v2/index.ts`;
@@ -44,10 +52,12 @@ Live Supabase project:
 
 Already live:
 
+- P9a target-free input/label RPCs;
+- Edge Function `p9a_booking_curve_export_v1`, ACTIVE v1;
 - P11 v2 DB table/RPCs;
 - Edge Function `p11_odds_capture_v2`, ACTIVE v2.
 
-Do not redeploy from memory or create a parallel implementation. Reconcile/merge the active branch first.
+Do not redeploy from memory or create parallel implementations. Reconcile/merge the active branch first.
 
 ## Validation / evidence
 
@@ -94,7 +104,7 @@ Always query fresh before acting, but current recorded state is:
 
 Event 6 was expected to enter the <=168h Long168 window, but readiness is still 8/9 on 2026-10-25.
 
-Do **not** run the P7 model because the clock passed. Investigate event 6 snapshot/window/export/readiness first. Execute only after canonical readiness itself returns 9/9.
+Do **not** run P7 because the clock passed. Investigate event 6 snapshot/window/export/readiness first. Execute only after canonical readiness itself returns 9/9.
 
 ## P10 / P10b — frozen closeout
 
@@ -116,7 +126,7 @@ P10b against actual frozen Pre-Live v3:
 
 Do **not** retune P10/P10b after these results. A future pooling experiment requires a materially new mechanism and a new precommit.
 
-## P9 booking curves
+## P9 full-window booking curves
 
 Use existing trajectory infrastructure; do not duplicate it.
 
@@ -130,7 +140,30 @@ Hard rules:
 
 Current full-168h coverage: **4/9** genuine completed reference events.
 
-Do not fit the first learnable P9 residual challenger before the gate. At 9/9, freeze the learner contract before opening model-result comparisons.
+Do not fit the first full-window P9 residual challenger before the gate. At 9/9, freeze the learner contract before opening model-result comparisons.
+
+## P9a T-24/T-48 target-free freeze
+
+P9a is **freeze/audit infrastructure**, not a trained model.
+
+Live target-free export checked 2026-10-25:
+
+- T-24: `18` target events / `19` reference events;
+- T-48: `15` target events / `19` reference events;
+- `target_values_used=false`;
+- `post_cutoff_target_snapshots_exported=false`;
+- `production_change=false`.
+
+The harness freezes exact target/reference/snapshot/incumbent identities and a deterministic SHA. It rejects attendance target fields, post-cutoff target snapshots and self references.
+
+After branch merge, run/verify the main P9a freeze audit. Require:
+
+- `target_values_opened=false`;
+- `model_training_performed=false`;
+- future target snapshots not used;
+- labels remain separate.
+
+Do **not** call `export_p9a_booking_curve_labels_v1` merely because it exists. Label opening/model fitting requires a separate explicit learner/comparator precommit.
 
 ## P11a market odds v2
 
@@ -182,7 +215,7 @@ P4a remains frozen/data-bound:
 - gate `>=9` labeled + `>=3` distinct labeled spacing values;
 - fixed previous-home-spacing challenger.
 
-Long72 remains immutable forecast-before-label evidence. Inspect the first genuine score when it appears, but do not retune the package from it.
+Long72 remains immutable forecast-before-label evidence. Inspect first genuine score when it appears, but do not retune the package from it.
 
 ## Closed loops
 
@@ -199,12 +232,13 @@ Do not reopen without materially new evidence/mechanism:
 ## Immediate development order
 
 1. diagnose event 6 / P7 still 8/9;
-2. reconcile and merge `ml/p9-p11-execution-2026-10-24`;
-3. configure/verify `THE_ODDS_API_KEY`;
-4. run one manual P11a v2 capture and audit it; keep schedule off;
-5. keep P9 genuine 168h curve capture running;
-6. derive the business minimum meaningful MAE threshold;
-7. keep P4a/Long72 evidence collection unchanged.
+2. reconcile and merge `ml/p9-p11-execution-2026-10-24` preserving P9a/P11a;
+3. run/verify P9a target-free T-24/T-48 main freeze audit; do not open labels/train;
+4. configure/verify `THE_ODDS_API_KEY`;
+5. run one manual P11a v2 capture and audit it; keep schedule off;
+6. keep full-168h P9 genuine curve capture running;
+7. derive the business minimum meaningful MAE threshold;
+8. keep P4a/Long72 evidence collection unchanged.
 
 The old ChatGPT Beyond readiness automations are intentionally disabled. Do not enable them implicitly.
 
