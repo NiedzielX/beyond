@@ -130,8 +130,10 @@ select jsonb_build_object(
         'median_positive_price_delta_pct',
             case when (select median_positive_price from latest_price) is not null
                        and (select median_positive_price from previous_price) > 0
-                 then round(((select median_positive_price from latest_price) - (select median_positive_price from previous_price))
-                            / (select median_positive_price from previous_price), 8)
+                 then round((
+                     ((select median_positive_price from latest_price) - (select median_positive_price from previous_price))
+                     / (select median_positive_price from previous_price)
+                 )::numeric, 8)
                  else null end,
         'capture_count_as_known',(select price_capture_count from capture_counts)
     ),
