@@ -26,13 +26,17 @@ Shared panel table:
 
 `public.dashboard_ticketing_ingestion_status_v1`
 
-Multi-source refresh:
+Canonical refresh:
+
+`private.refresh_dashboard_ticketing_ingestion_status_v1()`
+
+Compatibility alias:
 
 `private.refresh_dashboard_ticketing_ingestion_status_v2()`
 
 Current dashboard payload version:
 
-`dashboard-ticketing-ingestion-status-v2.1`
+`dashboard-ticketing-ingestion-status-v2.2`
 
 Refresh cadence:
 
@@ -73,6 +77,24 @@ For a `SCHEDULE_GAP` row:
 - `kickoff_at` remains null until the ticketing/verified source supplies an exact time;
 - the watchdog never fabricates a kickoff from the placeholder schedule date.
 
+## Refresh-race hardening
+
+During the final audit a legacy caller of the old dashboard refresh could still truncate the shared status table and temporarily remove `SCHEDULE_GAP` rows until the next watchdog cron.
+
+This was removed by preserving the old multi-source refresh as:
+
+`private.refresh_dashboard_ticketing_ingestion_base_v1()`
+
+and making the public/canonical v1 refresh itself append schedule-gap rows on every call.
+
+`refresh_dashboard_ticketing_ingestion_status_v2()` now delegates to the hardened v1 refresh.
+
+Verified behavior after the fix:
+
+- direct legacy v1 refresh: **5 schedule gaps remain**;
+- total dashboard rows after refresh: **100**;
+- gap rows cannot be cleared by an older refresh path.
+
 ## Fresh gap state after deployment
 
 After a fresh RoboTicket discovery, Stellis collect and candidate-buffer run, the following five gaps remained genuine:
@@ -83,7 +105,7 @@ After a fresh RoboTicket discovery, Stellis collect and candidate-buffer run, th
 4. **Śląsk Wrocław – Piast Gliwice** — round 14 schedule fixture; no safe RoboTicket candidate yet.
 5. **Widzew Łódź – Pogoń Szczecin** — round 14 schedule fixture; no corresponding Stellis event yet.
 
-These are now visible in the panel as:
+These are visible in the panel as:
 
 `SCHEDULE_GAP`
 
