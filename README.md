@@ -12,7 +12,8 @@ For every new AI / engineering session, read in this order:
 4. [`ml/PROGRESS_TRACKING.md`](ml/PROGRESS_TRACKING.md)
 5. [`ml/MAE_RESEARCH_ROADMAP_V4.md`](ml/MAE_RESEARCH_ROADMAP_V4.md)
 6. [`ml/CURRENT_MODEL.md`](ml/CURRENT_MODEL.md)
-7. [`ml/MODEL_ACCURACY_DEVELOPMENT_INSTRUCTIONS_V2.md`](ml/MODEL_ACCURACY_DEVELOPMENT_INSTRUCTIONS_V2.md)
+7. [`ml/ROBOTICKET_INGESTION_SAFETY_NET_2026-10-25.md`](ml/ROBOTICKET_INGESTION_SAFETY_NET_2026-10-25.md)
+8. [`ml/MODEL_ACCURACY_DEVELOPMENT_INSTRUCTIONS_V2.md`](ml/MODEL_ACCURACY_DEVELOPMENT_INSTRUCTIONS_V2.md)
 
 Do **not** restart from Roadmap v3. Roadmap v4 is canonical.
 
@@ -28,11 +29,14 @@ Production remains unchanged:
 
 ## Current state — 2026-10-25
 
-### Completed
+### Completed / live
 
 - repository reconciliation is complete;
+- RoboTicket ingestion safety net is live: hardened discovery, private pre-mapping buffer, verified promotion/backfill and dashboard coverage;
+- dashboard CI passes with ingestion coverage visible on Overview and Data Quality;
 - Long72 has **2 genuine prospective scored events**;
 - P7 Long168 frozen tournament executed at genuine 10/9 readiness;
+- P7 prospective follow-up is precommitted and its deterministic model fingerprint is frozen;
 - P9a T-24/T-48 target-free freeze audit completed;
 - first genuine P11a bookmaker capture completed and audited;
 - P11a scheduled append-only capture is enabled every 6 hours;
@@ -42,9 +46,76 @@ Production remains unchanged:
 
 ### Immediate execution order
 
-`preserve scheduled P11a accumulation -> preserve P11b/P11d collection -> precommit P7 prospective follow-up without retuning -> continue Long72 prospective evidence -> accumulate P9 to 9/9 -> accumulate P4a labels -> derive business ΔMAE threshold`
+`P7 prospective prediction persistence -> preserve P11a accumulation -> preserve P11b/P11d collection -> continue Long72 prospective evidence -> accumulate P9 to 9/9 -> accumulate P4a labels -> derive business ΔMAE threshold`
 
 No research result activates production automatically.
+
+## RoboTicket ingestion safety net
+
+Canonical incident/safety document:
+
+[`ml/ROBOTICKET_INGESTION_SAFETY_NET_2026-10-25.md`](ml/ROBOTICKET_INGESTION_SAFETY_NET_2026-10-25.md)
+
+The 2026-10-25 audit confirmed that the previous round was **not** fully lost: genuine pre-match booking curves were preserved for 5/9 fixtures hosted by onboarded ticketing sources. The four remaining fixtures were hosted by non-onboarded clubs; the onboarded clubs in those matches were away teams.
+
+The real systemic problem was a missing robust path from newly discovered RoboTicket products to canonical `ticket_events`, plus loose eventId/label matching.
+
+Now live:
+
+- hardened same-element discovery: `roboticket-discovery-v7`;
+- explicit fail-closed exclusions for parking/VIP/premium/reserve/non-football products;
+- private raw candidate buffer before kickoff mapping;
+- football-universe gate before buffering;
+- verified schedule -> automatic ticket-event promotion + PIT-preserving backfill;
+- hourly discovery;
+- 10-minute candidate buffer cadence;
+- dashboard ingestion coverage and historical completed-match visibility.
+
+Fresh monitoring after recovery:
+
+- **11 future matches TRACKED**;
+- **1 explicit `TRACKED_NO_SNAPSHOT`**: Wisła Kraków – Cracovia, already mapped but RoboTicket currently exposes zero sectors; normal collection continues to retry it;
+- no genuine match is silently hanging as an unbuffered candidate;
+- early false-positive buffer rows stayed private and were never promoted into model-facing `public.snapshots`.
+
+This safety net changes data acquisition only. It does not change model parameters, validation or production forecasts.
+
+## P7 Long168 — frozen result and prospective follow-up
+
+Frozen historical/forward-fold result:
+
+- 10 frozen events / 139 rows;
+- 5 strict forward held-out events / folds;
+- anchor MAE: **7,409.79**;
+- selected candidate: `gbr-l1-depth2-n50-lr003`;
+- challenger MAE: **6,339.99**;
+- point improvement: **1,069.80 / 14.44%**;
+- event/fold improvement rate: **80% / 80%**;
+- paired event-block 95% CI: **[-2,566.13, +174.47]**;
+- interpretation: `POINT_GAIN_UNCERTAINTY_LIMITED`;
+- decision: `ADVANCE_RESEARCH`;
+- production activation: not allowed.
+
+Canonical result: [`ml/P7_LONG168_RESULT_2026-10-25.md`](ml/P7_LONG168_RESULT_2026-10-25.md).
+
+The old tournament is exposed and must not be rerun or tuned.
+
+Prospective continuation:
+
+- precommit: `ml/P7_LONG168_PROSPECTIVE_PRECOMMIT_V1.md`;
+- bootstrap rule: no prospective backfill of historical buckets;
+- exact training set: events `[1,3,4,5,10,11,15,16,18,19]` / 139 rows;
+- training manifest: `185a9fc90e646bd5fa1bbed3b50c625d65d127a2b2943501761bdfcb89f354ed`;
+- pinned deterministic model fingerprint: `70fa929181531276c80a75c0b78a60fb821cf50e714e2bc001de8251cea1793f`;
+- fingerprint run `40201818862`: SUCCESS after a service-role-only summary permission plumbing fix;
+- fingerprint-time eligible events: `[6,444,446]`;
+- fingerprint mode persisted **zero** predictions;
+- target values used: false;
+- production change: false.
+
+Pinned evidence: [`ml/P7_LONG168_PROSPECTIVE_FINGERPRINT_V1.md`](ml/P7_LONG168_PROSPECTIVE_FINGERPRINT_V1.md).
+
+A separate pinned `predict -> immutable persist -> outcome-later score` workflow is now the active P7 execution lane.
 
 ## Long72 prospective evidence
 
@@ -61,26 +132,6 @@ Frozen package point evidence on n=2:
 
 Preserve and collect more. Do not retune/calibrate/promote from n=2.
 
-## P7 Long168 — EXECUTED
-
-Frozen result:
-
-- 10 frozen events / 139 rows;
-- 5 strict forward held-out events / folds;
-- anchor MAE: **7,409.79**;
-- best candidate: `gbr-l1-depth2-n50-lr003`;
-- challenger MAE: **6,339.99**;
-- point improvement: **1,069.80 / 14.44%**;
-- event/fold improvement rate: **80% / 80%**;
-- paired event-block 95% CI for challenger-minus-anchor MAE: **[-2,566.13, +174.47]**;
-- interpretation: `POINT_GAIN_UNCERTAINTY_LIMITED`;
-- research decision: `ADVANCE_RESEARCH`;
-- production activation: not allowed.
-
-Canonical result: [`ml/P7_LONG168_RESULT_2026-10-25.md`](ml/P7_LONG168_RESULT_2026-10-25.md).
-
-Do not rerun or tune the inspected P7 tournament. Any continuation must be a separately precommitted prospective lane.
-
 ## P9 / P9a Booking Curve
 
 P9a target-free audit is complete:
@@ -91,7 +142,7 @@ P9a target-free audit is complete:
 - no model training;
 - no future target trajectory use.
 
-Full P9 remains data-bound:
+Full P9 remains data-bound at the last canonical readiness check:
 
 - 168h: **5/9 events / 5 clubs**;
 - 72h: 9 / 7;
@@ -101,6 +152,8 @@ Full P9 remains data-bound:
 Do not select/train the first full-168h learner before 9/9 plus a separate precommit.
 
 ## P4a fixture context
+
+Last canonical readiness:
 
 - READY events: 5;
 - genuine labeled READY events: **2**;
@@ -124,60 +177,31 @@ First genuine capture is complete and audited:
 - target values used: false;
 - production change: false.
 
-Readiness:
-
-- status: `GENUINE_PIT_DATA_ACCUMULATING`;
-- genuine PIT events: 2;
-- events with >=3 bookmakers: 2;
-- events reaching 24h / 72h / 168h: **2 / 1 / 0**;
-- model precommitted: false.
-
-Canonical evidence: [`ml/P11A_FIRST_GENUINE_CAPTURE_2026-10-25.md`](ml/P11A_FIRST_GENUINE_CAPTURE_2026-10-25.md).
-
 Scheduled GitHub capture is enabled at:
 
 `17 */6 * * *`
 
-Pushes run contract/tests only; provider capture runs only on schedule or explicit manual dispatch.
-
-Live Edge runtime is version 6 and its config contract reports scheduled capture enabled.
+Never backfill closing odds into earlier horizons.
 
 ### P11b — price / promotion
 
-Existing price collectors are healthy. New target-free function is live:
+Live target-free function:
 
 `public.p11_price_context_as_known_v1(ticket_event_id, as_of_at)`
-
-It exposes PIT-safe price levels, prior-capture price delta and visible price-area inventory mix.
 
 Promotion remains intentionally unknown because no explicit promotion source exists:
 
 `DO_NOT_INFER_PROMOTION_FROM_PRICE_CHANGE`
 
-No P11b attendance model is fitted yet.
-
 ### P11c — verified absences
 
-Collector/refresh exists and is healthy, but current genuine coverage is only **1 active verified absence / 1 team**.
-
-Status: **DATA_BOUND**. Do not fit a lineup/absence model.
+Current evidence remains data-bound. Missing records are not interpreted as confirmed availability.
 
 ### P11d — weather / attention
 
-Weather collection is healthy, but the existing weather mechanism is already classified:
+Existing weather mechanism: `research_only_no_uplift`. Do not reopen the same hypothesis.
 
-`research_only_no_uplift`
-
-Do not reopen the same weather hypothesis under a new name.
-
-Media attention remains prospective-only:
-
-- >1,000 samples;
-- 12 events;
-- historical backfill forbidden;
-- headline attention feature still lacks adequate useful variance.
-
-Continue collection; do not force an ablation yet.
+Media attention remains prospective-only and collecting.
 
 ## Governance / P12
 
@@ -191,7 +215,7 @@ P12 target-free pre-plan:
 
 `ml/P12_DEMAND_REGIME_AUDIT_PLAN.md`
 
-P12 remains lower priority than P9/P11 evidence accumulation.
+P12 remains lower priority than P7/P9/P11 evidence accumulation.
 
 ## Closed loops
 
@@ -207,8 +231,9 @@ Do not reopen without a materially new mechanism:
 
 ## Never do these
 
-- do not backfill closing odds into earlier PIT horizons;
-- do not fuzzy-match ambiguous provider fixtures;
+- do not backfill booking curves or closing odds and label them prospective;
+- do not fuzzy-match ambiguous fixtures/products;
+- do not promote parking/VIP/reserve/non-football products into model-facing snapshots;
 - do not infer promotion from price movement;
 - do not interpret missing absence records as confirmed availability;
 - do not use future target trajectory points in P9/P9a;
