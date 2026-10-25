@@ -1,0 +1,107 @@
+name: P11 Odds Capture One Shot 2026-10-25
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/p11-odds-capture-one-shot-2026-10-25.yml"
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: p11-odds-capture-v2
+  cancel-in-progress: false
+
+jobs:
+  capture:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+      - name: Contract checks
+        run: |
+          deno check supabase/functions/p11_odds_capture_v2/provider.ts
+          deno check supabase/functions/p11_odds_capture_v2/index.ts
+          deno check supabase/functions/p11_odds_capture_health_v2/index.ts
+          deno test supabase/functions/p11_odds_capture_v2/provider_test.ts
+      - name: Request main-only OIDC token
+        shell: bash
+        run: |
+          set -euo pipefail
+          response=$(curl --retry 4 --retry-all-errors --retry-delay 2 -fsS \
+            -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
+            "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=beyond-p11-odds-capture")
+          token=$(printf '%s' "$response" | jq -r '.value')
+          test -n "$token"
+          test "$token" != "null"
+          echo "::add-mask::$token"
+          echo "BEYOND_OIDC_TOKEN=$token" >> "$GITHUB_ENV"
+      - name: Verify stale health before forced recovery capture
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --retry 4 --retry-all-errors --retry-delay 2 -fsS \
+            -H "Authorization: Bearer $BEYOND_OIDC_TOKEN" \
+            'https://adchzwqboeekhokapxqi.supabase.co/functions/v1/p11_odds_capture_health_v2' \
+            -o /tmp/p11-health-before.json
+          jq . /tmp/p11-health-before.json
+          test "$(jq -r '.ok' /tmp/p11-health-before.json)" = "true"
+          test "$(jq -r '.health.capture_due' /tmp/p11-health-before.json)" = "true"
+          test "$(jq -r '.health.target_values_used' /tmp/p11-health-before.json)" = "false"
+      - name: Verify provider configuration
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --retry 4 --retry-all-errors --retry-delay 2 -fsS \
+            -H "Authorization: Bearer $BEYOND_OIDC_TOKEN" \
+            'https://adchzwqboeekhokapxqi.supabase.co/functions/v1/p11_odds_capture_v2?mode=config' \
+            -o /tmp/p11-config.json
+          jq . /tmp/p11-config.json
+          test "$(jq -r '.ok' /tmp/p11-config.json)" = "true"
+          test "$(jq -r '.configured' /tmp/p11-config.json)" = "true"
+          test "$(jq -r '.productionChange' /tmp/p11-config.json)" = "false"
+      - name: Capture fresh genuine pre-match odds
+        shell: bash
+        run: |
+          set -euo pipefail
+          code=$(curl --retry 4 --retry-all-errors --retry-delay 2 -sS \
+            -X POST \
+            -H "Authorization: Bearer $BEYOND_OIDC_TOKEN" \
+            -H 'content-type: application/json' \
+            -o /tmp/p11-capture.json \
+            -w '%{http_code}' \
+            'https://adchzwqboeekhokapxqi.supabase.co/functions/v1/p11_odds_capture_v2')
+          jq . /tmp/p11-capture.json
+          test "$code" = "200"
+          test "$(jq -r '.ok' /tmp/p11-capture.json)" = "true"
+          test "$(jq -r '.targetValuesUsed' /tmp/p11-capture.json)" = "false"
+          test "$(jq -r '.productionChange' /tmp/p11-capture.json)" = "false"
+      - name: Verify fresh health after capture
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --retry 4 --retry-all-errors --retry-delay 2 -fsS \
+            -H "Authorization: Bearer $BEYOND_OIDC_TOKEN" \
+            'https://adchzwqboeekhokapxqi.supabase.co/functions/v1/p11_odds_capture_health_v2' \
+            -o /tmp/p11-health-after.json
+          jq . /tmp/p11-health-after.json
+          test "$(jq -r '.ok' /tmp/p11-health-after.json)" = "true"
+          test "$(jq -r '.health.capture_due' /tmp/p11-health-after.json)" = "false"
+          test "$(jq -r '.health.target_values_used' /tmp/p11-health-after.json)" = "false"
+          test "$(jq -r '.productionChange' /tmp/p11-health-after.json)" = "false"
+      - name: Upload recovery evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: p11-odds-capture-one-shot-${{ github.run_id }}
+          path: |
+            /tmp/p11-health-before.json
+            /tmp/p11-config.json
+            /tmp/p11-capture.json
+            /tmp/p11-health-after.json
+          if-no-files-found: error
+          retention-days: 90
