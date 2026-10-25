@@ -18,7 +18,7 @@ Production: `live_adjustment = 0`.
 | Panel ingestion coverage | ✅ MULTI-SOURCE | shared RoboTicket + Stellis status contract; Overview + Data Quality + recent completed events |
 | Long72 prospective evidence | 🟢 2 genuine scored events | preserve; no retuning |
 | P7 Long168 historical tournament | ✅ EXECUTED | 14.44% point gain; exposed; never retune |
-| P7 prospective validation | 🟢 **3 immutable predictions / 3 events / 0 scores** | real six-hour predict/persist/score workflow now implemented |
+| P7 prospective validation | 🟢 **6 immutable rows / 3 events / 0 scores** | six-hour predict/persist/score workflow validated end to end |
 | P9 full-168h Booking Curve | 🟡 5/9 | learner blocked |
 | P9a T-24/T-48 freeze | ✅ COMPLETE | target-free audit frozen |
 | P4a previous-home spacing | 🟡 2 labeled / 2 distinct labeled | gate closed |
@@ -96,7 +96,7 @@ Status payload:
 
 `dashboard-ticketing-ingestion-status-v2`
 
-The panel shows future tracked events, protected buffers, ingestion gaps and recent completed matches. The previous round was not fully lost: genuine pre-kickoff curves were preserved for 5/9 fixtures; the other four were hosted by non-onboarded sources at that time.
+The panel shows future tracked events, protected buffers, ingestion gaps and recent completed matches. The schedule watchdog currently surfaces future `SCHEDULE_GAP` fixtures before ticket products are available, which is the intended early-warning behavior.
 
 Known source-side exception:
 
@@ -134,9 +134,16 @@ Canonical execution wrapper:
 
 `ml/p7_long168_prospective_run_v1.py`
 
+One-shot end-to-end execution validation:
+
+- run `40223004586`;
+- conclusion: SUCCESS;
+- artifact digest `45eaf3abdd77395702d03733f2956da6be76c854346ca8b267c868577fcadbe7`;
+- temporary one-shot workflow removed after validation.
+
 Current immutable ledger:
 
-- prediction rows: **3**;
+- prediction rows: **6**;
 - independent prediction events: **3**;
 - scored events: **0**;
 - status: `PROSPECTIVE_PREDICTIONS_ONLY`;
@@ -144,6 +151,8 @@ Current immutable ledger:
 - target values used: false;
 - production activation allowed: false;
 - `live_adjustment=0`.
+
+The second set of three rows is a later genuine timepoint for the same three events; independent event N remains 3.
 
 Actual GitHub Actions schedule is implemented in `.github/workflows/p7-long168-prospective-v1.yml`:
 
