@@ -34,7 +34,7 @@ Production remains:
 
 ## Immediate order
 
-`preserve P7 prospective schedule -> preserve/expand multi-source ticketing ingestion + fixture watchdog -> preserve P11 context/odds collection -> score only genuine future outcomes -> accumulate P9 to 9/9 -> accumulate P4a labels -> derive business ΔMAE threshold -> P12 later`
+`preserve P7 prospective schedule -> preserve 18/18 multi-source ticketing ingestion + fixture watchdog -> preserve resilient P11 context/odds collection -> score only genuine future outcomes -> accumulate P9 to 9/9 -> accumulate P4a labels -> derive business ΔMAE threshold -> P12 later`
 
 ## Current canonical state
 
@@ -43,6 +43,12 @@ Production remains:
 Three protection layers are live:
 
 `fixture watchdog -> source discovery/private buffer -> canonical ticket_event/model-facing snapshots`
+
+Alias-resolved current-league source coverage:
+
+- current Ekstraklasa home clubs: **18**;
+- covered by at least one active source: **18**;
+- uncovered: **0**.
 
 #### RoboTicket
 
@@ -139,17 +145,27 @@ Frozen model fingerprint:
 
 Current ledger:
 
-- 3 immutable prediction rows;
-- 3 independent events;
+- **6 immutable prediction rows**;
+- **3 independent events**;
 - 0 scored events;
 - `PROSPECTIVE_PREDICTIONS_ONLY`;
 - no bootstrap backfill;
 - target values not used;
 - production activation false.
 
+The second three rows are later genuine timepoints for the same three events and do not increase independent N.
+
 Schedule:
 
 `37 */6 * * *`
+
+Pinned execution wrapper:
+
+`ml/p7_long168_prospective_run_v1.py`
+
+End-to-end validation run:
+
+`40223004586` — SUCCESS.
 
 Do not tune from prospective outcomes. The scorer may attach genuine future outcomes without recomputing predictions.
 
@@ -183,17 +199,26 @@ Expanded source coverage improves future evidence only. Never backfill newly dis
 
 ### P11a odds
 
-Fresh readiness:
+Fresh genuine state:
 
-- genuine PIT events: 2;
-- >=3 bookmakers: 2;
-- current 24h / 72h / 168h coverage: 1 / 1 / 0;
+- raw odds rows: **81**;
+- genuine PIT events / clubs: **4 / 4**;
+- capture batches: **5**;
+- events with >=3 bookmakers: **4**;
+- current 24h / 72h / 168h coverage: **3 / 3 / 0**;
+- latest capture: `2026-10-25T18:56:51.448Z`;
 - model precommitted false;
-- target values false.
+- target values false;
+- production change false.
 
-Capture schedule:
+Capture resilience:
 
-`17 */6 * * *`
+- primary schedule: `17 */6 * * *`;
+- fallback schedule: `47 0,6,12,18 * * *`;
+- health RPC: `public.p11_market_odds_capture_health_v2()`;
+- stale threshold: 270 minutes;
+- fallback skips provider work when a fresh primary capture exists;
+- recovery run `40223646599` succeeded end to end and the temporary one-shot workflow was removed.
 
 Never backfill closing odds.
 
