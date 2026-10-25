@@ -1,5 +1,8 @@
 -- P11 odds capture health v2.
 -- Operational-only watchdog. No attendance targets and no production behavior.
+-- 270 minutes is intentionally below the six-hour primary cadence so the
+-- +30m fallback schedule can recover a missed primary run without duplicating
+-- a successful fresh capture.
 
 create or replace function public.p11_market_odds_capture_health_v2()
 returns jsonb
@@ -20,7 +23,7 @@ with state as (
     *,
     case when last_capture_at is null then null
          else extract(epoch from (now() - last_capture_at))/60.0 end as age_minutes,
-    last_capture_at is null or last_capture_at < now() - interval '330 minutes' as capture_due
+    last_capture_at is null or last_capture_at < now() - interval '270 minutes' as capture_due
   from state
 )
 select jsonb_build_object(
@@ -28,7 +31,7 @@ select jsonb_build_object(
   'checked_at',now(),
   'last_capture_at',last_capture_at,
   'age_minutes',age_minutes,
-  'stale_after_minutes',330,
+  'stale_after_minutes',270,
   'capture_due',capture_due,
   'quote_rows',quote_rows,
   'event_count',event_count,
