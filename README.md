@@ -28,186 +28,192 @@ Production remains unchanged:
 
 ## Current state — 2026-10-25
 
-### Completed today
+### Completed
 
-- repository reconciliation remains complete;
-- two genuine post-freeze attendance outcomes were added for events 10 and 16;
-- Long72 now has **2 genuine prospective scored events**;
-- **P7 Long168 frozen tournament was executed** at genuine 10/9 readiness;
-- **P9a T-24/T-48 target-free main freeze audit was completed**;
-- `THE_ODDS_API_KEY` is configured and visible to the P11 Edge Function;
-- the P11 provider time-format bug was identified and fixed in source on `main`.
+- repository reconciliation is complete;
+- Long72 has **2 genuine prospective scored events**;
+- P7 Long168 frozen tournament executed at genuine 10/9 readiness;
+- P9a T-24/T-48 target-free freeze audit completed;
+- first genuine P11a bookmaker capture completed and audited;
+- P11a scheduled append-only capture is enabled every 6 hours;
+- P11b PIT-safe price `as-known` contract is live;
+- P11c/P11d target-free source audit is complete;
+- Governance v2 business-threshold framework and P12 audit pre-plan exist.
 
 ### Immediate execution order
 
-`sync corrected P11 runtime -> first genuine P11 capture + audit -> continue Long72 prospective evidence -> accumulate P9 full-168h coverage -> accumulate P4a labels -> separately precommit any P7 follow-up -> define business ΔMAE threshold`
+`preserve scheduled P11a accumulation -> preserve P11b/P11d collection -> precommit P7 prospective follow-up without retuning -> continue Long72 prospective evidence -> accumulate P9 to 9/9 -> accumulate P4a labels -> derive business ΔMAE threshold`
 
-No production change is allowed from any of these research results.
-
-## Repository reconciliation — DONE
-
-The previous `main` vs `ml/p9-p11-execution-2026-10-24` divergence has been reconciled.
-
-- PR #171 merged `main` into the active branch after deliberate conflict resolution.
-- P11 and P9a contract CI passed.
-- Key P11/P9a implementation blobs were verified identical on both branches.
-- PR #172 merged the reconciled history back into `main` with zero file-content differences.
-- Final reconciliation merge commit: `c48b0045f371f0b52b98f61d24f39f3be99ec7bb`.
-
-Do **not** recreate P9a/P11a from scratch.
+No research result activates production automatically.
 
 ## Long72 prospective evidence
 
-Verified genuine post-match attendance added on 2026-10-25:
+Genuine post-match outcomes currently scored:
 
 - event 10 — Pogoń Szczecin vs Radomiak Radom: **19,050**;
 - event 16 — Wisła Kraków vs Raków Częstochowa: **33,000**.
 
-Frozen Long72 result on the first two prospective events:
+Frozen package point evidence on n=2:
 
-- reproducible rows: **90**;
-- genuine scored events: **2**;
 - anchor MAE: **9,069.52**;
 - frozen package MAE: **7,641.71**;
-- point improvement: **1,427.80 seats / 15.74%**;
-- `production_change=false`.
+- point improvement: **1,427.80 seats / 15.74%**.
 
-This is **n=2 only**. Preserve it, collect more, and do not retune/calibrate/promote from it.
+Preserve and collect more. Do not retune/calibrate/promote from n=2.
 
 ## P7 Long168 — EXECUTED
 
-The frozen P7 executor ran on genuine readiness:
+Frozen result:
 
-- frozen independent events: **10**;
-- frozen rows: **139**;
-- forward held-out events / folds: **5 / 5**;
-- anchor event-balanced MAE: **7,409.79**;
+- 10 frozen events / 139 rows;
+- 5 strict forward held-out events / folds;
+- anchor MAE: **7,409.79**;
 - best candidate: `gbr-l1-depth2-n50-lr003`;
 - challenger MAE: **6,339.99**;
-- point `ΔMAE`: **-1,069.80**;
-- relative point improvement: **14.44%**;
-- event improvement rate: **80%**;
-- forward-fold improvement rate: **80%**;
-- paired event-block 95% bootstrap interval for `ΔMAE`: **[-2,566.13, +174.47]**;
-- interpretation: **`POINT_GAIN_UNCERTAINTY_LIMITED`**;
-- research decision: **`ADVANCE_RESEARCH`**;
-- production activation: **not allowed**;
-- `live_adjustment=0`.
-
-The interval still crosses zero and only five independent events are held out. This is a meaningful research signal, **not robust proof and not a production candidate yet**.
+- point improvement: **1,069.80 / 14.44%**;
+- event/fold improvement rate: **80% / 80%**;
+- paired event-block 95% CI for challenger-minus-anchor MAE: **[-2,566.13, +174.47]**;
+- interpretation: `POINT_GAIN_UNCERTAINTY_LIMITED`;
+- research decision: `ADVANCE_RESEARCH`;
+- production activation: not allowed.
 
 Canonical result: [`ml/P7_LONG168_RESULT_2026-10-25.md`](ml/P7_LONG168_RESULT_2026-10-25.md).
 
-Do not rerun/tune the frozen P7 candidate set against this result. Any continuation must be separately precommitted.
+Do not rerun or tune the inspected P7 tournament. Any continuation must be a separately precommitted prospective lane.
 
 ## P9 / P9a Booking Curve
 
-### P9a target-free freeze — COMPLETE
+P9a target-free audit is complete:
 
-Main T-24/T-48 audit passed with labels/model closed.
+- T-24 manifest: `738a42da33b46361f0ba29d3f90c72e2e0019c0057ef00b78ac7e6a073f0bd1c`;
+- T-48 manifest: `ffa6dd178332bf328a24fc7ce15ef346214a0037325d7161426f9f96664babd4`;
+- targets unopened;
+- no model training;
+- no future target trajectory use.
 
-T-24:
-
-- manifest SHA: `738a42da33b46361f0ba29d3f90c72e2e0019c0057ef00b78ac7e6a073f0bd1c`;
-- input targets: **19**;
-- representation ready: **16**;
-- freeze ready: **12**;
-- comparator ready: **9**.
-
-T-48:
-
-- manifest SHA: `ffa6dd178332bf328a24fc7ce15ef346214a0037325d7161426f9f96664babd4`;
-- input targets: **16**;
-- representation ready: **13**;
-- freeze ready: **10**;
-- comparator ready: **7**.
-
-Guarantees remain:
-
-- `target_values_opened=false`;
-- `model_training_performed=false`;
-- no post-cutoff target trajectory use;
-- `production_change=false`.
-
-Canonical audit: [`ml/P9A_FREEZE_AUDIT_2026-10-25.md`](ml/P9A_FREEZE_AUDIT_2026-10-25.md).
-
-### P9 full-window learner — STILL DATA-BOUND
-
-Current genuine completed-reference coverage:
+Full P9 remains data-bound:
 
 - 168h: **5/9 events / 5 clubs**;
-- 72h: **9 events / 7 clubs**;
-- 48h: **12 events / 7 clubs**;
-- 24h: **15 events / 9 clubs**.
+- 72h: 9 / 7;
+- 48h: 12 / 7;
+- 24h: 15 / 9.
 
-Do not select/train/open the first full-168h learner before **9/9** and a separate learner precommit.
+Do not select/train the first full-168h learner before 9/9 plus a separate precommit.
 
-## P4a fixture context — STILL DATA-BOUND
+## P4a fixture context
 
-- READY events: **5**;
+- READY events: 5;
 - genuine labeled READY events: **2**;
 - distinct labeled `previous_home_match_days`: **2**;
-- required gate: `>=9 labeled AND >=3 distinct labeled values`.
+- required: `>=9 labeled AND >=3 distinct labeled values`.
 
-Do not run or retune the ablation yet.
+Gate remains closed.
 
-## P11a PIT odds — SECRET READY, RUNTIME SYNC PENDING
+## P11 context program
 
-Purpose: add a genuinely new PIT-safe match-attractiveness / outcome-uncertainty signal, not merely collect odds for their own sake.
+Canonical context audit: [`ml/P11_CONTEXT_AUDIT_2026-10-25.md`](ml/P11_CONTEXT_AUDIT_2026-10-25.md).
 
-Current state:
+### P11a — bookmaker odds
 
-- DB capture/consensus/readiness contract: live;
-- `THE_ODDS_API_KEY`: **configured and verified**;
-- GitHub OIDC main-only capture path: working;
-- provider adapter tests/type-check: green;
-- genuine raw odds rows: **0**;
-- schedule: off;
+First genuine capture is complete and audited:
+
+- raw append-only rows: **34**;
+- matched events: **2**;
+- both matched with kickoff delta 0;
+- event 23 correctly failed closed as `NO_PROVIDER_MATCH`;
+- target values used: false;
 - production change: false.
 
-The first provider request exposed an integration bug: The Odds API requires `commenceTimeFrom/To` in `YYYY-MM-DDTHH:MM:SSZ`, while the deployed function sent millisecond ISO timestamps. Provider returned `422 INVALID_COMMENCE_TIME_FROM`; no rows were inserted.
+Readiness:
 
-The source fix is already committed on `main` (`d27d797578f18f09140ccc1723219a3e690d339a`) and strips milliseconds before the provider request. CI passed.
+- status: `GENUINE_PIT_DATA_ACCUMULATING`;
+- genuine PIT events: 2;
+- events with >=3 bookmakers: 2;
+- events reaching 24h / 72h / 168h: **2 / 1 / 0**;
+- model precommitted: false.
 
-Important operational state: a subsequent Dashboard `Deploy updates` created a newer Edge Function version but retained the previous runtime source. Therefore the remaining blocker is **runtime synchronization of the already-fixed `main` source**, not the API key.
+Canonical evidence: [`ml/P11A_FIRST_GENUINE_CAPTURE_2026-10-25.md`](ml/P11A_FIRST_GENUINE_CAPTURE_2026-10-25.md).
 
-After runtime sync, run one main-only manual capture and audit:
+Scheduled GitHub capture is enabled at:
 
-1. local/provider/matched event counts;
-2. mapping status and kickoff delta;
-3. verified aliases only;
-4. complete bookmaker-level 1X2 quotes;
-5. quota headers;
-6. capture batch + payload SHA lineage;
-7. append-only raw rows;
-8. `p11_market_context_as_known_v2(...)`;
-9. `p11_market_odds_readiness_v2()`.
+`17 */6 * * *`
 
-Keep schedule off until the first genuine capture is accepted.
+Pushes run contract/tests only; provider capture runs only on schedule or explicit manual dispatch.
 
-## Governance / closed loops
+Live Edge runtime is version 6 and its config contract reports scheduled capture enabled.
 
-Closed unless a materially new mechanism appears:
+### P11b — price / promotion
+
+Existing price collectors are healthy. New target-free function is live:
+
+`public.p11_price_context_as_known_v1(ticket_event_id, as_of_at)`
+
+It exposes PIT-safe price levels, prior-capture price delta and visible price-area inventory mix.
+
+Promotion remains intentionally unknown because no explicit promotion source exists:
+
+`DO_NOT_INFER_PROMOTION_FROM_PRICE_CHANGE`
+
+No P11b attendance model is fitted yet.
+
+### P11c — verified absences
+
+Collector/refresh exists and is healthy, but current genuine coverage is only **1 active verified absence / 1 team**.
+
+Status: **DATA_BOUND**. Do not fit a lineup/absence model.
+
+### P11d — weather / attention
+
+Weather collection is healthy, but the existing weather mechanism is already classified:
+
+`research_only_no_uplift`
+
+Do not reopen the same weather hypothesis under a new name.
+
+Media attention remains prospective-only:
+
+- >1,000 samples;
+- 12 events;
+- historical backfill forbidden;
+- headline attention feature still lacks adequate useful variance.
+
+Continue collection; do not force an ablation yet.
+
+## Governance / P12
+
+Governance framework:
+
+`ml/GOVERNANCE_V2_BUSINESS_DMAE_THRESHOLD.md`
+
+The numerical minimum meaningful `ΔMAE` remains intentionally unset until derived from real operational decisions.
+
+P12 target-free pre-plan:
+
+`ml/P12_DEMAND_REGIME_AUDIT_PLAN.md`
+
+P12 remains lower priority than P9/P11 evidence accumulation.
+
+## Closed loops
+
+Do not reopen without a materially new mechanism:
 
 - P10/P10b fixed pooled-HGB path;
-- old estimator-only sweeps;
 - P5a shrinkage;
-- P6 historical Long72 incremental signal;
+- P6 historical Long72 signal;
 - P8 simple calibration;
-- blind post-hoc tuning.
-
-`ROBUST_RESEARCH_ADVANCE` still requires a predeclared **business-derived** minimum meaningful `ΔMAE`. Do not derive that threshold from P7, Long72, or another challenger result it will judge.
+- existing weather mechanism;
+- old estimator-only sweeps;
+- post-hoc tuning on inspected evidence.
 
 ## Never do these
 
-- do not backfill closing odds as historical PIT observations;
-- do not insert synthetic odds;
+- do not backfill closing odds into earlier PIT horizons;
 - do not fuzzy-match ambiguous provider fixtures;
-- do not enable P11 schedule before first audited capture;
+- do not infer promotion from price movement;
+- do not interpret missing absence records as confirmed availability;
 - do not use future target trajectory points in P9/P9a;
-- do not open P9a labels merely because freeze tooling exists;
 - do not lower P9/P4 gates;
-- do not retune frozen Long72 from the first prospective scores;
+- do not retune frozen Long72 from early prospective scores;
 - do not retune frozen P7 after seeing its scorecard;
 - do not change `live_adjustment` from zero without reviewed promotion.
 
