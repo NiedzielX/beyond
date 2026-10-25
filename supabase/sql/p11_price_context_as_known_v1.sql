@@ -74,22 +74,26 @@ with event_row as (
         sum(available)::bigint as available
     from latest_area_rows
     group by price_area_id
+), area_total_available as (
+    select coalesce(sum(available),0)::numeric as total_available
+    from area_mix_raw
 ), area_mix as (
     select coalesce(
         jsonb_agg(
             jsonb_build_object(
-                'price_area_id', price_area_id,
-                'price_area_name', price_area_name,
-                'available', available,
+                'price_area_id', r.price_area_id,
+                'price_area_name', r.price_area_name,
+                'available', r.available,
                 'visible_availability_share',
-                    case when sum(available) over () > 0
-                         then round(available::numeric / sum(available) over (), 8)
+                    case when t.total_available > 0
+                         then round(r.available::numeric / t.total_available, 8)
                          else null end
-            ) order by price_area_id
+            ) order by r.price_area_id
         ),
         '[]'::jsonb
     ) as payload
-    from area_mix_raw
+    from area_mix_raw r
+    cross join area_total_available t
 ), capture_counts as (
     select count(distinct captured_at)::int as price_capture_count
     from public.ticket_price_observations_v1
