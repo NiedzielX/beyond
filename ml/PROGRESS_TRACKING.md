@@ -12,12 +12,13 @@ Production: `live_adjustment = 0`.
 
 | Item | Status | Current decision |
 |---|---|---|
-| RoboTicket ingestion safety | ✅ LIVE | discovery v8 + hourly scan + 10m private buffer + verified promotion/backfill |
+| Multi-source ticketing coverage | ✅ **18/18 LEAGUE HOME CLUBS** | preserve source coverage; hidden inventory stays fail closed |
+| RoboTicket ingestion safety | ✅ LIVE | hourly discovery + 10m private buffer + verified promotion/backfill |
 | Stellis source expansion | ✅ LIVE | canonical `stellis_collect_v3` every 10m; five additional home sources monitored |
-| Panel ingestion coverage | ✅ MULTI-SOURCE | shared Roboticket + Stellis status contract; Overview + Data Quality |
+| Panel ingestion coverage | ✅ MULTI-SOURCE | shared RoboTicket + Stellis status contract; Overview + Data Quality + recent completed events |
 | Long72 prospective evidence | 🟢 2 genuine scored events | preserve; no retuning |
 | P7 Long168 historical tournament | ✅ EXECUTED | 14.44% point gain; exposed; never retune |
-| P7 prospective validation | 🟢 3 immutable predictions / 3 events / 0 scores | scheduled every 6h; wait for genuine outcomes |
+| P7 prospective validation | 🟢 **3 immutable predictions / 3 events / 0 scores** | real six-hour predict/persist/score workflow now implemented |
 | P9 full-168h Booking Curve | 🟡 5/9 | learner blocked |
 | P9a T-24/T-48 freeze | ✅ COMPLETE | target-free audit frozen |
 | P4a previous-home spacing | 🟡 2 labeled / 2 distinct labeled | gate closed |
@@ -37,14 +38,24 @@ Canonical docs:
 - `ml/ROBOTICKET_INGESTION_SAFETY_NET_2026-10-25.md`
 - `ml/TICKETING_SOURCE_COVERAGE_EXPANSION_2026-10-25.md`
 
+### League coverage
+
+Alias-resolved audit against the current 2026/27 Ekstraklasa home-club universe:
+
+- league clubs: **18**;
+- covered by at least one active ticketing source: **18**;
+- uncovered: **0**.
+
+Coverage means the club has an active acquisition path. It does not mean every future event already exposes model-safe inventory. Hidden inventory, unpublished products and ambiguous fixture mappings remain explicit fail-closed states.
+
 ### RoboTicket
 
 Live controls:
 
-- `roboticket-discovery-v8`;
-- same-element identity;
+- same-element identity and hardened match classification;
 - parking/VIP/premium/reserve/non-football fail closed;
 - raw candidate inventory protected before kickoff mapping;
+- football-universe gate;
 - verified promotion/backfill;
 - discovery hourly;
 - raw candidate buffer every 10 minutes.
@@ -77,22 +88,6 @@ Important gates:
 - hidden inventory is not converted to zero;
 - raw evidence is protected before model-facing promotion.
 
-Fresh future state:
-
-- future Roboticket events: **12**, **11 with snapshots**;
-- future Stellis canonical events: **1**, **1 with snapshots**;
-- total future canonical events: **13**, **12 with snapshots**;
-- `TRACKED_NO_SNAPSHOT`: **1** — Wisła Kraków vs Cracovia;
-- future protected buffers waiting on fixture confirmation: **2**;
-- genuine discovered match without model-safe aggregate inventory: **1**.
-
-Stellis examples:
-
-- event 603 Korona Kielce vs Radomiak Radom: `TRACKED`, 2 snapshots at latest audit;
-- Piast Gliwice vs Korona Kielce: raw curve protected while fixture confirmation is pending;
-- Radomiak Radom vs Śląsk Wrocław: match discovered, aggregate availability hidden by the active source contract;
-- Piast vs Górnik Puchar Polski: `NON_MATCH_EXCLUDED`, no model-facing snapshot.
-
 Shared panel contract:
 
 `public.dashboard_ticketing_ingestion_status_v1`
@@ -101,7 +96,11 @@ Status payload:
 
 `dashboard-ticketing-ingestion-status-v2`
 
-The previous round was not fully lost: genuine pre-kickoff curves were preserved for 5/9 fixtures; the other four were hosted by non-onboarded sources.
+The panel shows future tracked events, protected buffers, ingestion gaps and recent completed matches. The previous round was not fully lost: genuine pre-kickoff curves were preserved for 5/9 fixtures; the other four were hosted by non-onboarded sources at that time.
+
+Known source-side exception:
+
+- Wisła Kraków vs Cracovia is correctly mapped, but RoboTicket currently returns no readable sectors; do not create a fake zero snapshot.
 
 ## P7 Long168 — exposed result
 
@@ -120,11 +119,20 @@ Frozen executor run: `40197742930`.
 
 Do not rerun or tune the inspected tournament.
 
-## P7 prospective validation — ACTIVE
+## P7 prospective validation — ACTIVE / SCHEDULED
 
 Frozen fingerprint:
 
 `70fa929181531276c80a75c0b78a60fb821cf50e714e2bc001de8251cea1793f`
+
+Fingerprint evidence:
+
+- run `40201818862`;
+- artifact digest `a6dab7c220e065a9e2d2b5f32954303bf067387b1d24458b1fa1066d5a507184`.
+
+Canonical execution wrapper:
+
+`ml/p7_long168_prospective_run_v1.py`
 
 Current immutable ledger:
 
@@ -137,9 +145,11 @@ Current immutable ledger:
 - production activation allowed: false;
 - `live_adjustment=0`.
 
-Scheduled cadence:
+Actual GitHub Actions schedule is implemented in `.github/workflows/p7-long168-prospective-v1.yml`:
 
 `37 */6 * * *`
+
+Scheduled/manual predict mode performs exact frozen-model rebuild, hard fingerprint/lineage checks, immutable prediction persistence and only then genuine outcome attachment/scoring.
 
 No score exists yet, so there is nothing to tune or promote.
 
@@ -204,7 +214,7 @@ Capture cadence remains every six hours.
 
 ## Immediate order
 
-`preserve P7 prospective schedule -> preserve/expand multi-source ticketing ingestion -> preserve P11a/P11b/P11d collection -> score Long72/P7 only when genuine outcomes arrive -> accumulate P9 to 9/9 -> accumulate P4a labels -> derive business ΔMAE threshold -> P12 later`
+`preserve P7 prospective schedule -> preserve 18/18 multi-source ticketing ingestion -> preserve P11a/P11b/P11d collection -> score Long72/P7 only when genuine outcomes arrive -> accumulate P9 to 9/9 -> accumulate P4a labels -> derive business ΔMAE threshold -> P12 later`
 
 ## Closed loops
 
