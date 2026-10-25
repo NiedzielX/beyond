@@ -6,12 +6,15 @@ Last updated: **2026-10-25**
 
 Read in this order:
 
-1. `ml/NEXT_SESSION_HANDOFF.md` — latest operational truth;
-2. `ml/EXECUTION_PLAN_CURRENT.md` — exact next work order;
-3. `ml/PROGRESS_TRACKING.md` — canonical status snapshot;
-4. `ml/MAE_RESEARCH_ROADMAP_V4.md` — canonical strategy;
-5. `ml/P7_LONG168_RESULT_2026-10-25.md` and `ml/P9A_FREEZE_AUDIT_2026-10-25.md`;
-6. relevant frozen precommit/result files before touching each workstream.
+1. `ml/NEXT_SESSION_HANDOFF.md`;
+2. `ml/EXECUTION_PLAN_CURRENT.md`;
+3. `ml/PROGRESS_TRACKING.md`;
+4. `ml/MAE_RESEARCH_ROADMAP_V4.md`;
+5. `ml/P7_LONG168_RESULT_2026-10-25.md`;
+6. `ml/P9A_FREEZE_AUDIT_2026-10-25.md`;
+7. `ml/P11A_FIRST_GENUINE_CAPTURE_2026-10-25.md`;
+8. `ml/P11_CONTEXT_AUDIT_2026-10-25.md`;
+9. relevant frozen precommit/result files before touching each workstream.
 
 Do not restart from Roadmap v3. Do not reconstruct frozen experiments from memory.
 
@@ -27,142 +30,122 @@ Production remains:
 
 ## Immediate order
 
-`sync corrected P11 runtime -> first genuine P11 capture/audit -> continue Long72 prospective evidence -> accumulate P9 168h coverage -> accumulate P4a labels -> separately precommit any P7 follow-up -> define business ΔMAE threshold`
+`precommit P7 prospective follow-up -> preserve scheduled P11a accumulation -> preserve P11b/P11d collection -> continue Long72 prospective evidence -> accumulate P9 to 9/9 -> accumulate P4a labels -> define business ΔMAE threshold`
 
 ## Current canonical state
 
-### Repository
+### Long72
 
-Branch reconciliation is complete.
+- genuine scored events: 2;
+- anchor MAE: 9069.52;
+- package MAE: 7641.71;
+- point improvement: 1427.80 / 15.74%;
+- no retuning from n=2.
 
-- P9a/P11a source and workflows are on `main`.
-- PRs #171/#172 are merged.
-- Final reconciliation merge: `c48b0045f371f0b52b98f61d24f39f3be99ec7bb`.
-- Do not repeat branch reconciliation or recreate P9a/P11a.
+### P7 Long168
 
-### Long72 prospective evidence
+Frozen tournament is complete and exposed:
 
-Two genuine post-freeze attendance outcomes are scored:
+- 10 frozen events / 139 rows;
+- 5 forward held-out events/folds;
+- anchor MAE 7409.79;
+- best candidate `gbr-l1-depth2-n50-lr003`;
+- challenger MAE 6339.99;
+- point gain 1069.80 / 14.44%;
+- 95% event-block CI `[-2566.13, +174.47]`;
+- evidence `POINT_GAIN_UNCERTAINTY_LIMITED`;
+- decision `ADVANCE_RESEARCH`;
+- production activation false.
 
-- event 10 Pogoń Szczecin vs Radomiak Radom: **19,050**;
-- event 16 Wisła Kraków vs Raków Częstochowa: **33,000**.
+Do not rerun/tune this tournament. The next allowed P7 step is a separately precommitted prospective validation lane.
 
-Current prospective point evidence:
+### P9 / P9a
 
-- genuine scored events: **2**;
-- anchor MAE: `9069.52`;
-- frozen package MAE: `7641.71`;
-- point improvement: `1427.80` seats / `15.74%`.
+P9a target-free audit is complete and labels/model remain closed.
 
-Do not retune, calibrate or promote from n=2.
+Full P9 coverage:
 
-### P7 Long168 — EXECUTED
+- 168h 5/9 events / 5 clubs;
+- 72h 9/7;
+- 48h 12/7;
+- 24h 15/9.
 
-Frozen execution completed successfully at 10/9 genuine readiness.
-
-- frozen events: **10**;
-- rows: **139**;
-- forward held-out events/folds: **5/5**;
-- anchor MAE: **7409.79**;
-- best candidate: `gbr-l1-depth2-n50-lr003`;
-- challenger MAE: **6339.99**;
-- point improvement: **1069.80 seats / 14.44%**;
-- event improvement rate: **80%**;
-- fold improvement rate: **80%**;
-- 95% paired event-block bootstrap interval for challenger-minus-anchor MAE: **[-2566.13, +174.47]**;
-- interpretation: `POINT_GAIN_UNCERTAINTY_LIMITED`;
-- decision: `ADVANCE_RESEARCH`;
-- `production_activation_allowed=false`;
-- `live_adjustment=0`.
-
-Do not rerun or tune the frozen P7 candidate set from this scorecard. Any follow-up requires a separate precommit.
-
-Canonical result: `ml/P7_LONG168_RESULT_2026-10-25.md`.
-
-### P9a — TARGET-FREE AUDIT COMPLETE
-
-T-24 manifest:
-
-`738a42da33b46361f0ba29d3f90c72e2e0019c0057ef00b78ac7e6a073f0bd1c`
-
-- representation ready 16;
-- freeze ready 12;
-- comparator ready 9.
-
-T-48 manifest:
-
-`ffa6dd178332bf328a24fc7ce15ef346214a0037325d7161426f9f96664babd4`
-
-- representation ready 13;
-- freeze ready 10;
-- comparator ready 7.
-
-Audit guarantees:
-
-- target values not opened;
-- no future target points;
-- no model training;
-- production unchanged.
-
-P9a is freeze tooling only. Do not fit a learner from this audit.
-
-Canonical audit: `ml/P9A_FREEZE_AUDIT_2026-10-25.md`.
-
-### P9 full-168h
-
-Current genuine coverage:
-
-- 168h: **5/9** events / 5 clubs;
-- 72h: 9 / 7;
-- 48h: 12 / 7;
-- 24h: 15 / 9.
-
-Full-168h learner remains blocked. No learner selection/training before 9/9 plus separate precommit.
+Full learner remains blocked until 9/9 plus separate precommit.
 
 ### P4a
 
-- READY events: 5;
-- genuine labels: **2**;
-- distinct labeled spacing values: **2**;
-- gate: `>=9 labels AND >=3 distinct values`;
-- gate remains closed.
+- READY events 5;
+- genuine labels 2;
+- distinct labeled spacing values 2;
+- gate >=9 labels AND >=3 distinct values;
+- gate closed.
 
-### P11a PIT odds
+### P11a odds
 
-- DB capture/readiness/consensus contract: live;
-- `THE_ODDS_API_KEY`: **configured and verified**;
-- GitHub OIDC main-only capture auth: verified;
-- adapter tests/type-check: green;
-- genuine odds rows: **0**;
-- schedule: off.
+Runtime/source sync is complete. Live Edge runtime is version 6.
 
-First provider call failed closed with HTTP 422 because the deployed runtime sent ISO timestamps with milliseconds. No odds rows were written.
+First genuine capture:
 
-Source fix is on `main` in commit:
+- run `40199626764`;
+- 34 raw append-only bookmaker rows;
+- 2 matched events;
+- both kickoff deltas 0;
+- one unmatched event failed closed;
+- target values false;
+- production change false.
 
-`d27d797578f18f09140ccc1723219a3e690d339a`
+Readiness:
 
-The fix strips milliseconds from `commenceTimeFrom/To`; CI passed.
+- `GENUINE_PIT_DATA_ACCUMULATING`;
+- events with genuine PIT 1X2: 2;
+- >=3 bookmakers: 2;
+- 24h / 72h / 168h: 2 / 1 / 0;
+- model precommitted false.
 
-A Dashboard `Deploy updates` created Edge Function version 4 but retained the previous runtime code. Therefore the remaining blocker is **runtime synchronization with the corrected main source**, not the API key.
+Scheduled capture is enabled every six hours:
 
-After runtime sync, run one main-only capture, audit it fully, then consider schedule separately.
+`17 */6 * * *`
 
-### Closed research loops
+Never backfill closing odds into earlier horizons.
+
+### P11b price
+
+Live PIT-safe contract:
+
+`public.p11_price_context_as_known_v1(ticket_event_id, as_of_at)`
+
+It uses only observations captured by `as_of_at` and does not reference outcomes.
+
+Promotion evidence is unavailable and remains null. Never infer promotion from a price change.
+
+No P11b attendance model is opened.
+
+### P11c absences
+
+Only 1 active verified row / 1 team. Data-bound. Missing rows are not negative evidence.
+
+### P11d weather / attention
+
+Weather mechanism is already `research_only_no_uplift`; do not reopen it.
+
+Media attention is prospective-only and still collecting; current feature variance is insufficient for evaluation.
+
+### Governance / P12
+
+Governance framework exists, but numeric business minimum meaningful ΔMAE remains intentionally unset.
+
+P12 pre-plan exists and remains lower priority.
+
+## Closed research loops
 
 Do not reopen without materially new information/mechanism:
 
-- P10/P10b fixed pooled-HGB path;
-- P5a shrinkage;
-- P6 historical Long72 signal;
-- P8 simple club/opponent calibration;
+- P10/P10b;
+- P5a;
+- P6 historical Long72 incremental signal;
+- P8 simple calibration;
+- existing weather mechanism;
 - old estimator-only sweeps;
 - post-hoc tuning on inspected evidence.
-
-## Governance
-
-`ROBUST_RESEARCH_ADVANCE` still requires a predeclared business-derived minimum meaningful MAE improvement and adequate precision.
-
-Do not derive the business threshold from P7, Long72, or any challenger result it will judge.
 
 The old ChatGPT Beyond readiness automations remain intentionally disabled.
