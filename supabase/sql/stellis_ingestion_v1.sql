@@ -1,5 +1,5 @@
 -- Stellis ingestion v1
--- Adds PIT-safe ticket availability collection for clubs using Stellis.
+-- PIT-safe ticket availability collection for clubs using Stellis.
 -- Only explicitly exposed visible availability may enter model-facing snapshots.
 -- Hidden availability / sold-only evidence remains private and does not alter P9/P7 inputs.
 
@@ -65,13 +65,6 @@ create table if not exists private.stellis_raw_observations_v1 (
 create index if not exists stellis_raw_lookup_idx
   on private.stellis_raw_observations_v1(club_slug,external_event_id,captured_at desc);
 
-create unique index if not exists stellis_raw_10m_bucket_uq
-  on private.stellis_raw_observations_v1(
-    club_slug,
-    external_event_id,
-    (date_trunc('hour',captured_at) + floor(extract(minute from captured_at)/10) * interval '10 minutes')
-  );
-
 create or replace function public.insert_stellis_raw_observation_v1(p_payload jsonb)
 returns jsonb
 language plpgsql
@@ -94,8 +87,28 @@ begin
   if nullif(p_payload->>'club_slug','') is null or nullif(p_payload->>'external_event_id','') is null then
     raise exception 'STELLIS_IDENTITY_REQUIRED';
   end if;
-  if not exists(select 1 from public.stellis_clubs_v1 c where c.club_slug=p_payload->>'club_slug' and c.active) then
+  if not exists (
+    select 1 from public.stellis_clubs_v1 c
+    where c.club_slug=p_payload->>'club_slug' and c.active
+  ) then
     raise exception 'STELLIS_CLUB_NOT_ACTIVE';
+  end if;
+
+  if exists (
+    select 1
+    from private.stellis_raw_observations_v1 r
+    where r.club_slug=p_payload->>'club_slug'
+      and r.external_event_id=p_payload->>'external_event_id'
+      and r.captured_at > v_captured - interval '9 minutes'
+      and r.captured_at <= v_captured + interval '1 minute'
+  ) then
+    return jsonb_build_object(
+      'version','stellis-raw-insert-v1',
+      'inserted',false,
+      'reason','recent_observation',
+      'target_values_used',false,
+      'production_change',false
+    );
   end if;
 
   insert into private.stellis_raw_observations_v1(
@@ -107,13 +120,11 @@ begin
     coalesce((p_payload->>'availability_exposed')::boolean,false),nullif(p_payload->>'available_total','')::integer,
     nullif(p_payload->>'sold_total','')::integer,p_payload->>'source_url',coalesce(nullif(p_payload->>'source_version',''),'stellis-collector-v1'),
     coalesce(p_payload->'raw_metadata','{}'::jsonb)
-  )
-  on conflict do nothing
-  returning id into v_id;
+  ) returning id into v_id;
 
   return jsonb_build_object(
     'version','stellis-raw-insert-v1',
-    'inserted',v_id is not null,
+    'inserted',true,
     'raw_observation_id',v_id,
     'target_values_used',false,
     'production_change',false
@@ -129,7 +140,8 @@ set search_path='public','private'
 as $function$
 declare
   v record;
-  f record;
+  v_fixture record;
+  v_raw record;
   v_fixture_count integer;
   v_ticket_event_id bigint;
   v_snapshot_id bigint;
@@ -155,8 +167,10 @@ begin
     from (
       select distinct s.source_event_id
       from public.sporting_league_matches_shadow s
-      join private.structural_prior_club_aliases_v1 ha on ha.alias=s.home_team and ha.is_active and ha.club_key=v.home_club_key
-      join private.structural_prior_club_aliases_v1 aa on aa.alias=s.away_team and aa.is_active and aa.club_key=v.away_club_key
+      join private.structural_prior_club_aliases_v1 ha
+        on ha.alias=s.home_team and ha.is_active and ha.club_key=v.home_club_key
+      join private.structural_prior_club_aliases_v1 aa
+        on aa.alias=s.away_team and aa.is_active and aa.club_key=v.away_club_key
       where s.event_date=(v.kickoff_at at time zone 'Europe/Warsaw')::date
     ) q;
 
@@ -169,10 +183,12 @@ begin
 
     select distinct on (s.source_event_id)
       s.home_team,s.away_team,s.event_date
-    into f
+    into v_fixture
     from public.sporting_league_matches_shadow s
-    join private.structural_prior_club_aliases_v1 ha on ha.alias=s.home_team and ha.is_active and ha.club_key=v.home_club_key
-    join private.structural_prior_club_aliases_v1 aa on aa.alias=s.away_team and aa.is_active and aa.club_key=v.away_club_key
+    join private.structural_prior_club_aliases_v1 ha
+      on ha.alias=s.home_team and ha.is_active and ha.club_key=v.home_club_key
+    join private.structural_prior_club_aliases_v1 aa
+      on aa.alias=s.away_team and aa.is_active and aa.club_key=v.away_club_key
     where s.event_date=(v.kickoff_at at time zone 'Europe/Warsaw')::date
     order by s.source_event_id,s.fetched_at desc;
 
@@ -180,13 +196,19 @@ begin
       provider,external_event_id,home_team,away_team,competition,match_date,kickoff_at,source_url,
       mapping_source,mapping_confidence,club_slug,source_domain,updated_at
     ) values (
-      'stellis',v.external_event_id,f.home_team,f.away_team,'Ekstraklasa',f.event_date,v.kickoff_at,v.source_url,
+      'stellis',v.external_event_id,v_fixture.home_team,v_fixture.away_team,'Ekstraklasa',v_fixture.event_date,v.kickoff_at,v.source_url,
       'stellis-visible-availability-v1+league-fixture-date','verified',v.club_slug,v.source_domain,clock_timestamp()
     )
     on conflict(provider,source_domain,external_event_id) do update set
-      home_team=excluded.home_team,away_team=excluded.away_team,competition=excluded.competition,
-      match_date=excluded.match_date,kickoff_at=excluded.kickoff_at,source_url=excluded.source_url,
-      mapping_source=excluded.mapping_source,mapping_confidence=excluded.mapping_confidence,updated_at=clock_timestamp()
+      home_team=excluded.home_team,
+      away_team=excluded.away_team,
+      competition=excluded.competition,
+      match_date=excluded.match_date,
+      kickoff_at=excluded.kickoff_at,
+      source_url=excluded.source_url,
+      mapping_source=excluded.mapping_source,
+      mapping_confidence=excluded.mapping_confidence,
+      updated_at=clock_timestamp()
     returning id into v_ticket_event_id;
 
     update public.stellis_event_candidates_v1
@@ -194,11 +216,13 @@ begin
       where club_slug=v.club_slug and external_event_id=v.external_event_id;
     v_promoted_events := v_promoted_events + 1;
 
-    for f in
+    for v_raw in
       select r.*
       from private.stellis_raw_observations_v1 r
-      where r.club_slug=v.club_slug and r.external_event_id=v.external_event_id
-        and r.availability_exposed and r.available_total is not null
+      where r.club_slug=v.club_slug
+        and r.external_event_id=v.external_event_id
+        and r.availability_exposed
+        and r.available_total is not null
         and r.promoted_snapshot_id is null
         and r.captured_at < v.kickoff_at
       order by r.captured_at
@@ -207,13 +231,13 @@ begin
         event_id,source,captured_at,ticket_event_id,event_match_date_at_capture,event_kickoff_at_capture,available_total,sector_count
       ) values (
         case when v.external_event_id ~ '^\d+$' then v.external_event_id::bigint else null end,
-        'stellis_visible_available',f.captured_at,v_ticket_event_id,
-        (v.kickoff_at at time zone 'Europe/Warsaw')::date,v.kickoff_at,f.available_total,null
+        'stellis_visible_available',v_raw.captured_at,v_ticket_event_id,
+        (v.kickoff_at at time zone 'Europe/Warsaw')::date,v.kickoff_at,v_raw.available_total,null
       ) returning id into v_snapshot_id;
 
       update private.stellis_raw_observations_v1
         set promoted_ticket_event_id=v_ticket_event_id,promoted_snapshot_id=v_snapshot_id,promoted_at=clock_timestamp()
-        where id=f.id;
+        where id=v_raw.id;
       v_promoted_snapshots := v_promoted_snapshots + 1;
     end loop;
   end loop;
