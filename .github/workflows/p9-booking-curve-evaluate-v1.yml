@@ -1,0 +1,275 @@
+name: P9 Booking Curve Evaluate v1
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/p9-booking-curve-evaluate-v1.yml"
+      - "ml/P9_BOOKING_CURVE_LEARNER_PRECOMMIT_V1.md"
+      - "ml/p9_learner_support_freeze_v1.py"
+      - "ml/p9_booking_curve_learner_v1.py"
+      - "ml/test_p9_booking_curve_learner_v1.py"
+      - "supabase/functions/p9_booking_curve_learner_v1/**"
+      - "supabase/sql/p9_learner_gate_v1.sql"
+      - "supabase/sql/p9_learner_support_gate_v1.sql"
+      - "supabase/sql/p9_learner_result_registry_v1.sql"
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: p9-booking-curve-evaluate-v1
+  cancel-in-progress: false
+
+jobs:
+  evaluate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install pinned ML dependencies
+        run: pip install -r ml/requirements.txt
+      - name: Compile and test fixed P9 evaluator
+        run: |
+          python -m py_compile ml/p9a_booking_curve_freeze_v1.py
+          python -m py_compile ml/p9_learner_support_freeze_v1.py
+          python -m py_compile ml/p9_booking_curve_learner_v1.py
+          python -m ml.test_p9_booking_curve_v1
+          python -m ml.test_p9a_booking_curve_freeze_v1
+          python -m ml.test_p9_booking_curve_learner_v1
+      - name: Request main-only P9a target-free token
+        shell: bash
+        run: |
+          set -euo pipefail
+          response=$(curl --retry 4 --retry-all-errors --retry-delay 2 -fsS \
+            -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
+            "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=beyond-p9a-booking-curve")
+          token=$(printf '%s' "$response" | jq -r '.value')
+          test -n "$token" && test "$token" != "null"
+          echo "::add-mask::$token"
+          echo "P9A_OIDC_TOKEN=$token" >> "$GITHUB_ENV"
+      - name: Request main-only P9 learner token
+        shell: bash
+        run: |
+          set -euo pipefail
+          response=$(curl --retry 4 --retry-all-errors --retry-delay 2 -fsS \
+            -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
+            "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=beyond-p9-booking-curve-learner")
+          token=$(printf '%s' "$response" | jq -r '.value')
+          test -n "$token" && test "$token" != "null"
+          echo "::add-mask::$token"
+          echo "P9_LEARNER_OIDC_TOKEN=$token" >> "$GITHUB_ENV"
+      - name: Verify 9/9 gate and no prior result
+        shell: bash
+        run: |
+          set -euo pipefail
+          learner='https://adchzwqboeekhokapxqi.supabase.co/functions/v1/p9_booking_curve_learner_v1'
+          curl --retry 4 --retry-all-errors --retry-delay 2 -fsS \
+            -H "Authorization: Bearer $P9_LEARNER_OIDC_TOKEN" \
+            "${learner}?mode=status" -o /tmp/p9-status-before.json
+          jq -e '
+            .ok == true
+            and .gate.design_precommitted == true
+            and .gate.readiness_168_events >= 9
+            and .gate.readiness_168_clubs >= 3
+            and .gate.full_window_gate_open == true
+            and .gate.model_results_opened == false
+            and .gate.production_activation_allowed == false
+            and .gate.live_adjustment == 0
+            and .result.result_count == 0
+            and .productionChange == false
+          ' /tmp/p9-status-before.json >/dev/null
+      - name: Export fresh target-free P9 inputs
+        shell: bash
+        run: |
+          set -euo pipefail
+          base='https://adchzwqboeekhokapxqi.supabase.co/functions/v1/p9a_booking_curve_export_v1?version=p9a-booking-curve-inputs-v1'
+          for cutoff in 24 48; do
+            curl --retry 5 --retry-all-errors --retry-delay 2 -fsS \
+              -H "Authorization: Bearer $P9A_OIDC_TOKEN" \
+              "${base}&cutoff=${cutoff}" -o "/tmp/p9a-${cutoff}-wrapper.json"
+            jq -e '.ok == true and .targetFieldsIncluded == false and .labelsIncluded == false and .targetValuesUsed == false and .productionChange == false' "/tmp/p9a-${cutoff}-wrapper.json" >/dev/null
+            jq '.payload' "/tmp/p9a-${cutoff}-wrapper.json" > "/tmp/p9a-${cutoff}-inputs.json"
+          done
+      - name: Freeze target/reference curve identities before labels
+        run: |
+          python -m ml.p9a_booking_curve_freeze_v1 --inputs /tmp/p9a-24-inputs.json --output /tmp/p9a-24-freeze.json
+          python -m ml.p9a_booking_curve_freeze_v1 --inputs /tmp/p9a-48-inputs.json --output /tmp/p9a-48-freeze.json
+      - name: Hard target-free freeze gates
+        shell: bash
+        run: |
+          set -euo pipefail
+          for cutoff in 24 48; do
+            jq -e --argjson cutoff "$cutoff" '
+              .version == "p9a-booking-curve-freeze-v1"
+              and .cutoff_hours == $cutoff
+              and .target_values_opened == false
+              and .model_training_performed == false
+              and .production_change == false
+              and .target_boundary_rule.future_target_snapshot_allowed == false
+              and .summary.freeze_ready_count > 0
+              and .summary.comparator_ready_count > 0
+              and ([.targets[].pickup_features? | select(. != null) | .target_future_points_used] | all(. == false))
+            ' "/tmp/p9a-${cutoff}-freeze.json" >/dev/null
+          done
+      - name: Register immutable P9a freeze manifests
+        shell: bash
+        run: |
+          set -euo pipefail
+          learner='https://adchzwqboeekhokapxqi.supabase.co/functions/v1/p9_booking_curve_learner_v1'
+          for cutoff in 24 48; do
+            jq -n --slurpfile freeze "/tmp/p9a-${cutoff}-freeze.json" '{mode:"register-target-freeze",freeze:$freeze[0]}' > "/tmp/register-p9a-${cutoff}.json"
+            curl --retry 4 --retry-all-errors --retry-delay 2 -fsS \
+              -H "Authorization: Bearer $P9_LEARNER_OIDC_TOKEN" \
+              -H 'content-type: application/json' \
+              --data-binary @"/tmp/register-p9a-${cutoff}.json" \
+              "$learner" -o "/tmp/register-p9a-${cutoff}-response.json"
+            jq -e '.ok == true and .result.registered == true and .result.target_values_opened == false and .result.model_training_performed == false and .result.production_change == false' "/tmp/register-p9a-${cutoff}-response.json" >/dev/null
+          done
+      - name: Export target-free incumbent catalogs
+        shell: bash
+        run: |
+          set -euo pipefail
+          learner='https://adchzwqboeekhokapxqi.supabase.co/functions/v1/p9_booking_curve_learner_v1'
+          for cutoff in 24 48; do
+            curl --retry 4 --retry-all-errors --retry-delay 2 -fsS \
+              -H "Authorization: Bearer $P9_LEARNER_OIDC_TOKEN" \
+              "${learner}?mode=incumbents&cutoff=${cutoff}" -o "/tmp/p9-incumbents-${cutoff}-wrapper.json"
+            jq -e '.ok == true and .targetValuesUsed == false and .payload.attendance_values_included == false and .payload.target_values_used == false and .payload.production_change == false' "/tmp/p9-incumbents-${cutoff}-wrapper.json" >/dev/null
+            jq '.payload' "/tmp/p9-incumbents-${cutoff}-wrapper.json" > "/tmp/p9-incumbents-${cutoff}.json"
+          done
+      - name: Freeze exact target/reference incumbent identities
+        run: |
+          python -m ml.p9_learner_support_freeze_v1 \
+            --p9a-freeze /tmp/p9a-24-freeze.json \
+            --incumbent-catalog /tmp/p9-incumbents-24.json \
+            --output /tmp/p9-support-24-freeze.json
+          python -m ml.p9_learner_support_freeze_v1 \
+            --p9a-freeze /tmp/p9a-48-freeze.json \
+            --incumbent-catalog /tmp/p9-incumbents-48.json \
+            --output /tmp/p9-support-48-freeze.json
+      - name: Hard support-freeze gates
+        shell: bash
+        run: |
+          set -euo pipefail
+          for cutoff in 24 48; do
+            jq -e --argjson cutoff "$cutoff" '
+              .version == "p9-learner-support-freeze-v1"
+              and .precommit_id == "p9-knn-median-residual-k5-v1"
+              and .cutoff_hours == $cutoff
+              and .fixed_neighbor_k == 5
+              and .minimum_residual_neighbors == 3
+              and .attendance_values_opened == false
+              and .target_values_used == false
+              and .model_training_performed == false
+              and .summary.support_ready_targets > 0
+              and .production_activation_allowed == false
+              and .live_adjustment == 0
+              and .production_change == false
+            ' "/tmp/p9-support-${cutoff}-freeze.json" >/dev/null
+          done
+      - name: Register immutable support-freeze manifests
+        shell: bash
+        run: |
+          set -euo pipefail
+          learner='https://adchzwqboeekhokapxqi.supabase.co/functions/v1/p9_booking_curve_learner_v1'
+          for cutoff in 24 48; do
+            jq -n --slurpfile freeze "/tmp/p9-support-${cutoff}-freeze.json" '{mode:"register-support-freeze",freeze:$freeze[0]}' > "/tmp/register-support-${cutoff}.json"
+            curl --retry 4 --retry-all-errors --retry-delay 2 -fsS \
+              -H "Authorization: Bearer $P9_LEARNER_OIDC_TOKEN" \
+              -H 'content-type: application/json' \
+              --data-binary @"/tmp/register-support-${cutoff}.json" \
+              "$learner" -o "/tmp/register-support-${cutoff}-response.json"
+            jq -e '.ok == true and .result.registered == true and .result.attendance_values_opened == false and .result.production_change == false' "/tmp/register-support-${cutoff}-response.json" >/dev/null
+          done
+      - name: Open labels only after both target-free freezes
+        shell: bash
+        run: |
+          set -euo pipefail
+          learner='https://adchzwqboeekhokapxqi.supabase.co/functions/v1/p9_booking_curve_learner_v1'
+          for cutoff in 24 48; do
+            p9a=$(jq -r '.manifest_sha256' "/tmp/p9a-${cutoff}-freeze.json")
+            support=$(jq -r '.manifest_sha256' "/tmp/p9-support-${cutoff}-freeze.json")
+            jq -n --argjson cutoff "$cutoff" --arg p9a "$p9a" --arg support "$support" '{mode:"labels",cutoff_hours:$cutoff,p9a_manifest_sha256:$p9a,support_manifest_sha256:$support}' > "/tmp/labels-${cutoff}-request.json"
+            curl --retry 4 --retry-all-errors --retry-delay 2 -fsS \
+              -H "Authorization: Bearer $P9_LEARNER_OIDC_TOKEN" \
+              -H 'content-type: application/json' \
+              --data-binary @"/tmp/labels-${cutoff}-request.json" \
+              "$learner" -o "/tmp/labels-${cutoff}-wrapper.json"
+            jq -e '.ok == true and .payload.version == "p9-learner-label-support-v2" and .payload.target_free_support_freeze_registered == true and .payload.readiness_168_events >= 9 and .payload.production_activation_allowed == false and .payload.live_adjustment == 0 and .payload.production_change == false' "/tmp/labels-${cutoff}-wrapper.json" >/dev/null
+            jq '.payload' "/tmp/labels-${cutoff}-wrapper.json" > "/tmp/p9-labels-${cutoff}.json"
+          done
+      - name: Run the single precommitted P9 learner
+        run: |
+          python -m ml.p9_booking_curve_learner_v1 \
+            --support-48 /tmp/p9-support-48-freeze.json \
+            --labels-48 /tmp/p9-labels-48.json \
+            --support-24 /tmp/p9-support-24-freeze.json \
+            --labels-24 /tmp/p9-labels-24.json \
+            --output /tmp/p9-learner-result.json
+      - name: Hard result contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          jq -e '
+            .version == "p9-booking-curve-learner-v1"
+            and .precommit_id == "p9-knn-median-residual-k5-v1"
+            and .cutoffs == [48,24]
+            and .learner.neighbor_k == 5
+            and .learner.minimum_residual_neighbors == 3
+            and .learner.fitted_coefficients == false
+            and .learner.candidate_search == false
+            and .independent_event_count > 0
+            and .row_count > 0
+            and .production_activation_allowed == false
+            and .live_adjustment == 0
+            and .production_change == false
+          ' /tmp/p9-learner-result.json >/dev/null
+      - name: Register immutable P9 result
+        shell: bash
+        run: |
+          set -euo pipefail
+          learner='https://adchzwqboeekhokapxqi.supabase.co/functions/v1/p9_booking_curve_learner_v1'
+          jq -n --slurpfile result /tmp/p9-learner-result.json '{mode:"register-result",result:$result[0]}' > /tmp/register-result-request.json
+          curl --retry 4 --retry-all-errors --retry-delay 2 -fsS \
+            -H "Authorization: Bearer $P9_LEARNER_OIDC_TOKEN" \
+            -H 'content-type: application/json' \
+            --data-binary @/tmp/register-result-request.json \
+            "$learner" -o /tmp/register-result-response.json
+          jq -e '.ok == true and .result.registered == true and .result.production_activation_allowed == false and .result.live_adjustment == 0 and .result.production_change == false' /tmp/register-result-response.json >/dev/null
+      - name: Print frozen result
+        run: |
+          jq '{result_sha256,independent_event_count,row_count,primary,cutoff_metrics,uncertainty,evidence_status,business_minimum_meaningful_delta_approved,production_activation_allowed,live_adjustment,production_change}' /tmp/p9-learner-result.json
+      - name: Publish summary
+        shell: bash
+        run: |
+          {
+            echo '### P9 Booking Curve learner v1 — frozen evaluation'
+            echo
+            jq -r '"- result SHA: `\(.result_sha256)`\n- independent events: `\(.independent_event_count)`\n- rows: `\(.row_count)`\n- anchor MAE: `\(.primary.anchor_event_balanced_mae)`\n- challenger MAE: `\(.primary.challenger_event_balanced_mae)`\n- delta MAE: `\(.primary.delta_event_balanced_mae)`\n- relative point improvement: `\(.primary.relative_point_improvement)`\n- event improvement rate: `\(.primary.event_improvement_rate)`\n- 95% event-block CI: `\(.uncertainty.ci95)`\n- evidence: `\(.evidence_status)`\n- production activation: `\(.production_activation_allowed)`"' /tmp/p9-learner-result.json
+          } >> "$GITHUB_STEP_SUMMARY"
+      - name: Upload immutable evaluation evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: p9-booking-curve-evaluate-v1-${{ github.run_id }}
+          path: |
+            /tmp/p9-status-before.json
+            /tmp/p9a-24-inputs.json
+            /tmp/p9a-24-freeze.json
+            /tmp/p9a-48-inputs.json
+            /tmp/p9a-48-freeze.json
+            /tmp/p9-incumbents-24.json
+            /tmp/p9-incumbents-48.json
+            /tmp/p9-support-24-freeze.json
+            /tmp/p9-support-48-freeze.json
+            /tmp/p9-labels-24.json
+            /tmp/p9-labels-48.json
+            /tmp/p9-learner-result.json
+            /tmp/register-result-response.json
+          if-no-files-found: error
+          retention-days: 90
