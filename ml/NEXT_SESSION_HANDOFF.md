@@ -14,235 +14,206 @@ Production remains unchanged:
 
 `live_adjustment = 0`
 
-No research result activates production automatically.
-
----
-
 ## 2. Immediate execution order
 
-Current order:
+`preserve P7 prospective schedule -> preserve RoboTicket ingestion safety net -> preserve P11 collection -> score only genuine completed prospective events -> accumulate P9 to 9/9 -> accumulate P4a labels -> define business ΔMAE threshold -> P12 later`
 
-`precommit P7 prospective follow-up -> preserve scheduled P11a accumulation -> preserve P11b/P11d context collection -> continue Long72 prospective scoring -> accumulate P9 to 9/9 -> accumulate P4a labels -> define business minimum meaningful ΔMAE`
+Do not restart the P7 tournament, P9a freeze, P10 or weather loops.
 
-P7 tournament, P9a freeze, P11a first genuine capture and P11 context audit are already complete.
+## 3. RoboTicket ingestion safety net — LIVE
 
----
+Canonical document:
 
-## 3. Repository state
+`ml/ROBOTICKET_INGESTION_SAFETY_NET_2026-10-25.md`
 
-Canonical repo: `NiedzielX/beyond`.
+The 2026-10-25 incident did **not** mean the whole previous round was lost. Genuine booking curves were preserved for 5/9 round-12 fixtures; the remaining four were hosted by non-onboarded clubs while our onboarded clubs were away teams.
 
-Branch reconciliation is complete. Do not repeat it or rebuild P9a/P11a from memory.
+Root cause fixed:
 
-Roadmap v4 is canonical.
+`discovered RoboTicket product -> verified football match -> ticket_event -> collector`
 
----
+Live controls:
 
-## 4. Long72 prospective evidence
+- discovery `roboticket-discovery-v7`;
+- same-element eventId/label parsing;
+- fail-closed parking/VIP/premium/reserve/non-football exclusions;
+- private raw candidate buffer before exact kickoff mapping;
+- football-universe gate;
+- verified promotion + PIT-preserving backfill;
+- discovery hourly;
+- candidate buffer every 10 minutes;
+- dashboard coverage table refreshed operationally.
 
-Current genuine scored events: **2**.
+Fresh state:
 
-- event 10 — Pogoń Szczecin vs Radomiak Radom: 19,050;
-- event 16 — Wisła Kraków vs Raków Częstochowa: 33,000.
+- 11 future matches `TRACKED`;
+- one `TRACKED_NO_SNAPSHOT`: Wisła Kraków vs Cracovia, event 448 / external 11718; correctly mapped but RoboTicket currently returns zero sectors;
+- no genuine football match silently hangs as an unbuffered candidate;
+- early false-positive raw buffer observations stayed private and never entered model-facing snapshots.
 
-Frozen result on n=2:
+Panel repo: `NiedzielX/BeyondTicketingPanel`.
 
-- anchor MAE: 9069.52;
-- package MAE: 7641.71;
-- point improvement: 1427.80 / 15.74%;
-- production change: false.
+Latest panel main SHA:
 
-Interpretation: first prospective evidence only. Do not retune/calibrate/promote.
+`5ea5a5673317ca34cd06519add668db96e7d369b`
 
----
+Dashboard CI run `40216448478`: **SUCCESS**.
 
-## 5. P7 Long168 — frozen tournament complete
+Coverage is visible on Overview and Data Quality. Completed tracked matches remain visible historically.
 
-GitHub run: `40197742930`.
+GitHub's Deployments API did not expose a deployment record for that SHA, so do not claim Vercel production deployment from GitHub evidence alone.
 
-- frozen events: 10;
-- rows: 139;
-- forward held-out events/folds: 5/5;
+## 4. P7 Long168 — historical tournament is exposed
+
+Run `40197742930`:
+
+- frozen events / rows: 10 / 139;
+- strict forward held-out events/folds: 5 / 5;
 - anchor MAE: 7409.79;
-- best candidate: `gbr-l1-depth2-n50-lr003`;
+- selected candidate: `gbr-l1-depth2-n50-lr003`;
 - challenger MAE: 6339.99;
 - point improvement: 1069.80 / 14.44%;
-- event/fold improvement rate: 80% / 80%;
-- 95% event-block interval: `[-2566.13, +174.47]`;
+- event/fold improvement: 80% / 80%;
+- 95% event-block CI: `[-2566.13,+174.47]`;
 - evidence: `POINT_GAIN_UNCERTAINTY_LIMITED`;
-- decision: `ADVANCE_RESEARCH`;
-- no production activation.
+- decision: `ADVANCE_RESEARCH`.
 
-Canonical result:
+Never retune/rerun this tournament.
 
-`ml/P7_LONG168_RESULT_2026-10-25.md`
+## 5. P7 prospective validation — ACTIVE
 
-The tournament is now exposed. **Do not rerun/tune it.**
+Precommit:
 
-Next allowed P7 action is a new prospective validation precommit for the already-selected mechanism, frozen before new qualifying attendance labels are opened.
+`ml/P7_LONG168_PROSPECTIVE_PRECOMMIT_V1.md`
 
----
+No-backfill addendum:
 
-## 6. P9 / P9a
+`ml/P7_LONG168_PROSPECTIVE_PRECOMMIT_V1_ADDENDUM.md`
 
-P9a target-free freeze audit is complete.
+Pinned fingerprint evidence:
 
-- T-24 manifest: `738a42da33b46361f0ba29d3f90c72e2e0019c0057ef00b78ac7e6a073f0bd1c`;
-- T-48 manifest: `ffa6dd178332bf328a24fc7ce15ef346214a0037325d7161426f9f96664babd4`;
-- labels closed;
-- no model training;
-- no future target trajectory points.
+`ml/P7_LONG168_PROSPECTIVE_FINGERPRINT_V1.md`
 
-Full P9 remains data-bound:
+Frozen training set:
+
+`[1,3,4,5,10,11,15,16,18,19]`, 139 rows.
+
+Training manifest:
+
+`185a9fc90e646bd5fa1bbed3b50c625d65d127a2b2943501761bdfcb89f354ed`
+
+Pinned deterministic model fingerprint:
+
+`70fa929181531276c80a75c0b78a60fb821cf50e714e2bc001de8251cea1793f`
+
+Fingerprint run `40201818862`: **SUCCESS**.
+
+First true prospective predict/persist run `40216860928`: **SUCCESS**.
+
+Current immutable ledger:
+
+- prediction rows: 3;
+- independent events: 3;
+- scored events: 0;
+- evidence status: `PROSPECTIVE_PREDICTIONS_ONLY`;
+- fingerprint count: 1;
+- target values used in prediction: false;
+- production activation allowed: false;
+- `live_adjustment=0`.
+
+Persisted events:
+
+- 6 Lech Poznań vs Wisła Kraków;
+- 444 GKS Katowice vs Widzew Łódź;
+- 446 Wisła Płock vs Piast Gliwice.
+
+Scheduled prospective prediction cadence:
+
+`37 */6 * * *`
+
+Do not tune from these predictions. The scorer may only attach a genuine outcome confirmed after `predicted_at` and never recomputes the forecast.
+
+## 6. Long72
+
+Genuine scored events remain 2:
+
+- event 10 Pogoń–Radomiak: 19,050;
+- event 16 Wisła Kraków–Raków: 33,000.
+
+Fresh score state:
+
+- anchor event-balanced MAE: 9069.52;
+- package event-balanced MAE: 7641.71;
+- improvement: 1427.80 / 15.74%;
+- new scores in latest refresh: 0.
+
+Do not retune from n=2.
+
+## 7. P9 / P9a — fresh state
+
+P9a target-free freeze remains complete.
+
+Full P9 readiness:
 
 - 168h: 5/9 events / 5 clubs;
 - 72h: 9 / 7;
 - 48h: 12 / 7;
 - 24h: 15 / 9;
+- full 168h status: `DATA_BOUND`;
 - learner precommitted: false.
 
-Do not fit/select the first full-168h learner before 9/9 plus a separate precommit.
+The new ingestion safety net should improve future coverage but does not lower the 9/9 gate.
 
----
-
-## 7. P4a
+## 8. P4a — fresh state
 
 - READY events: 5;
-- genuine labels: 2;
-- distinct labeled previous-home-spacing values: 2;
-- required: >=9 labels + >=3 distinct values;
-- trigger: false.
+- labeled READY events: 2;
+- primary previous-home-spacing distinct READY values: 4;
+- distinct labeled values: 2;
+- required: >=9 labeled AND >=3 distinct labeled values;
+- research trigger: false.
 
-Remain frozen/data-bound.
+## 9. P11 — fresh state
 
----
-
-## 8. P11a — genuine bookmaker capture active
-
-The runtime timestamp bug is resolved. Live Edge runtime is version 6 and is synchronized with `main`.
-
-First genuine capture:
-
-- GitHub run `40199626764`;
-- captured at `2026-10-25T13:46:04.688Z`;
-- 3 local candidates;
-- 2 provider events;
-- 2 deterministic matches;
-- 34 raw append-only bookmaker rows;
-- event 22: 18 quotes, kickoff delta 0;
-- event 6: 16 quotes, kickoff delta 0;
-- event 23: `NO_PROVIDER_MATCH`, no insert;
-- target values used: false;
-- production change: false.
-
-Current readiness:
+P11a:
 
 - `GENUINE_PIT_DATA_ACCUMULATING`;
 - genuine PIT events: 2;
+- clubs: 2;
 - events with >=3 bookmakers: 2;
-- coverage at 24h / 72h / 168h: 2 / 1 / 0;
-- model precommitted: false.
+- latest time-relative horizon coverage 24h / 72h / 168h: 1 / 1 / 0;
+- model precommitted: false;
+- target values used: false.
 
-Scheduled GitHub capture is enabled:
+Capture schedule remains `17 */6 * * *`.
 
-`17 */6 * * *`
+P11b:
 
-Pushes only run contract/tests; provider calls occur on schedule or explicit manual dispatch.
+`public.p11_price_context_as_known_v1(ticket_event_id, as_of_at)` remains live; never infer promotion from price changes.
 
-Do not alter matching tolerance or backfill missing historical odds.
+P11c remains data-bound.
 
-Canonical evidence:
-
-`ml/P11A_FIRST_GENUINE_CAPTURE_2026-10-25.md`
-
----
-
-## 9. P11b/c/d target-free context audit
-
-Canonical audit:
-
-`ml/P11_CONTEXT_AUDIT_2026-10-25.md`
-
-### P11b price
-
-Existing real price infrastructure is already substantial and healthy.
-
-Live function:
-
-`public.p11_price_context_as_known_v1(ticket_event_id, as_of_at)`
-
-Verified:
-
-- event 6: `PRICE_CONTEXT_READY`;
-- event 22: `PRICE_AREA_ONLY`;
-- historical cutoff returns historical as-known state;
-- no target table is referenced;
-- promotion flag remains null because no explicit promotion source exists;
-- price changes are not relabeled as promotions.
-
-No P11b attendance model is opened.
-
-### P11c verified absences
-
-Current evidence: only 1 active PIT-valid verified absence / 1 team.
-
-Refresh is healthy, but modeling is **DATA_BOUND**.
-
-Do not interpret missing rows as "player available".
-
-### P11d weather
-
-Existing mechanism status:
-
-`research_only_no_uplift`
-
-Do not reopen the same weather mechanism under a new name.
-
-### P11d media attention
-
-Prospective-only collector is healthy:
-
-- >1,000 samples;
-- 12 events;
-- historical backfill forbidden;
-- media attention remains `prospective_collecting`;
-- mention acceleration remains warm-up;
-- current feature variance is not sufficient for evaluation.
-
-Do not force an ablation yet.
-
----
+P11d weather remains closed/no-uplift; attention remains prospective collecting.
 
 ## 10. Governance / P12
 
-Governance threshold framework:
+Business minimum meaningful ΔMAE remains intentionally unset until independently derived from operational decisions.
 
-`ml/GOVERNANCE_V2_BUSINESS_DMAE_THRESHOLD.md`
-
-Numerical minimum meaningful ΔMAE remains intentionally unset until business-derived.
-
-P12 pre-plan:
-
-`ml/P12_DEMAND_REGIME_AUDIT_PLAN.md`
-
-P12 is lower priority than current P9/P11 evidence work.
-
----
+P12 remains lower priority than active prospective/data-coverage lanes.
 
 ## 11. Closed loops
 
 Do not reopen without a materially new mechanism:
 
+- original P7 tournament;
 - P10/P10b;
-- P5a shrinkage;
+- P5a;
 - P6 historical Long72 incremental signal;
-- P8 simple calibration;
+- P8 calibration;
 - existing weather mechanism;
 - old estimator sweeps;
 - post-hoc tuning on inspected evidence.
 
----
-
 ## 12. Cold-start command
 
-> Read `AI_BOOTSTRAP.md`, this handoff, `ml/EXECUTION_PLAN_CURRENT.md`, `ml/PROGRESS_TRACKING.md`, Roadmap v4, P7 result, P9a audit, P11a first capture and P11 context audit. Query readiness fresh. P7 tournament is exposed and must not be tuned; the next P7 action is a separately frozen prospective validation lane. P11a genuine capture is live on a six-hour schedule and already has 34 raw rows across 2 events. P11b price as-known contract is live. P11c is data-bound. Existing weather is no-uplift; media attention is still prospective collecting. P9 remains 5/9 and P4a 2/9. Keep production unchanged.
+> Read `AI_BOOTSTRAP.md`, this handoff, `ml/EXECUTION_PLAN_CURRENT.md`, `ml/PROGRESS_TRACKING.md`, Roadmap v4, the P7 result/precommit/fingerprint files, the RoboTicket ingestion safety-net document, P9a audit and P11 audit. Query readiness fresh. P7 prospective is live with 3 immutable predictions and 0 scored outcomes. RoboTicket discovery/buffer safety net is live and future coverage is visible in the panel. P9 remains 5/9, P4a 2/9, P11 has 2 genuine odds events, Long72 has 2 genuine scores. Keep production unchanged and never retune exposed evidence.
