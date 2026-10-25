@@ -15,6 +15,7 @@ on:
     paths:
       - "ml/p7_long168_prospective_v1.py"
       - "ml/P7_LONG168_PROSPECTIVE_PRECOMMIT_V1.md"
+      - "ml/P7_LONG168_PROSPECTIVE_PRECOMMIT_V1_ADDENDUM.md"
       - "supabase/sql/p7_long168_prospective_v1.sql"
       - "supabase/sql/p7_long168_prospective_window_fix_2026_10_25.sql"
       - "supabase/functions/p7_long168_prospective_v1/**"
@@ -24,6 +25,7 @@ on:
     paths:
       - "ml/p7_long168_prospective_v1.py"
       - "ml/P7_LONG168_PROSPECTIVE_PRECOMMIT_V1.md"
+      - "ml/P7_LONG168_PROSPECTIVE_PRECOMMIT_V1_ADDENDUM.md"
       - "supabase/sql/p7_long168_prospective_v1.sql"
       - "supabase/sql/p7_long168_prospective_window_fix_2026_10_25.sql"
       - "supabase/functions/p7_long168_prospective_v1/**"
@@ -89,16 +91,42 @@ jobs:
           test "$token" != "null"
           echo "::add-mask::$token"
           echo "P7_PROSPECTIVE_OIDC_TOKEN=$token" >> "$GITHUB_ENV"
-      - name: Fetch historical training + target-free future bundle
+      - name: Fetch bounded historical and target-free inputs
         shell: bash
         run: |
           set -euo pipefail
-          curl --retry 5 --retry-all-errors --retry-delay 2 -fsS \
-            -H "Authorization: Bearer $P7_PROSPECTIVE_OIDC_TOKEN" \
-            'https://adchzwqboeekhokapxqi.supabase.co/functions/v1/p7_long168_prospective_v1?mode=bundle' \
-            -o /tmp/p7-prospective-bundle.json
-          jq -e '.ok == true and .version == "p7-long168-prospective-bundle-v1" and .prospectiveTargetValuesUsed == false and .productionChange == false' /tmp/p7-prospective-bundle.json >/dev/null
-          jq 'del(.ok,.repository,.sha,.generatedAt,.productionActivationAllowed,.liveAdjustment,.productionChange)' /tmp/p7-prospective-bundle.json > /tmp/p7-prospective-builder-bundle.json
+          base='https://adchzwqboeekhokapxqi.supabase.co/functions/v1/p7_long168_prospective_v1?mode='
+          for mode in training-long168 training-events attendance sporting aliases prospective prospective-summary; do
+            file="/tmp/p7-${mode}.json"
+            curl --retry 5 --retry-all-errors --retry-delay 2 -fsS \
+              -H "Authorization: Bearer $P7_PROSPECTIVE_OIDC_TOKEN" \
+              "${base}${mode}" -o "$file"
+            jq -e --arg mode "$mode" '.ok == true and .version == "p7-long168-prospective-gateway-v2" and .mode == $mode and .prospectiveTargetValuesUsed == false and .productionChange == false' "$file" >/dev/null
+          done
+      - name: Compose builder bundle locally
+        shell: bash
+        run: |
+          set -euo pipefail
+          jq -n \
+            --slurpfile long168 /tmp/p7-training-long168.json \
+            --slurpfile events /tmp/p7-training-events.json \
+            --slurpfile attendance /tmp/p7-attendance.json \
+            --slurpfile sporting /tmp/p7-sporting.json \
+            --slurpfile aliases /tmp/p7-aliases.json \
+            --slurpfile prospective /tmp/p7-prospective.json \
+            --slurpfile summary /tmp/p7-prospective-summary.json \
+            '{
+              version:"p7-long168-prospective-bundle-v1",
+              trainingLong168:$long168[0].payload,
+              trainingEvents:$events[0].payload,
+              attendance:$attendance[0].payload,
+              sporting:$sporting[0].payload,
+              aliases:$aliases[0].payload,
+              prospective:$prospective[0].payload,
+              summary:$summary[0].payload,
+              prospectiveTargetValuesUsed:false
+            }' > /tmp/p7-prospective-builder-bundle.json
+          jq -e '.trainingLong168.version == "d2-long-horizon-168-rows-v1" and .trainingEvents.version == "c1-alpha-v7-events-v1" and .attendance.version == "c1-alpha-v7-attendance-v1" and .sporting.version == "c1-alpha-v7-sporting-v1" and .aliases.version == "c1-alpha-v7-aliases-v1" and .prospective.version == "p7-long168-prospective-inputs-v1" and .prospective.targetValuesUsed == false' /tmp/p7-prospective-builder-bundle.json >/dev/null
       - name: Build deterministic fingerprint only
         run: |
           python -m ml.p7_long168_prospective_v1 \
