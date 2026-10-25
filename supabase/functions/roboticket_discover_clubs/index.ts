@@ -1,5 +1,5 @@
 const DISCOVERY_KEY = 'bt-discovery-v1-Q8m2L5x7R4p9V3k6';
-const VERSION = 'roboticket-discovery-v7';
+const VERSION = 'roboticket-discovery-v8';
 
 function unique<T>(arr:T[]):T[]{ return Array.from(new Set(arr)); }
 function clean(value:string|null|undefined):string {
@@ -16,7 +16,7 @@ function attr(tag:string,name:string):string|null {
   return m?clean(m[1]):null;
 }
 function normalized(value:string):string {
-  return clean(value).toLowerCase().normalize('NFKD').replace(/[\u0300-\u036f]/g,'').replace(/ł/g,'l');
+  return clean(value).toLowerCase().normalize('NFKD').replace(/[\u0300-\u036f]/g,'').replace(/ł/g,'l').replace(/[^a-z0-9]+/g,' ').trim().replace(/\s+/g,' ');
 }
 
 async function db(path:string, options:any={}){
@@ -68,8 +68,7 @@ function matchLike(text:string):boolean {
   const n=clean(text);
   if(!n || obviousNonMatch(n) || genericPortalIdentity(n)) return false;
   const parts=n.split(/\s(?:-|–|vs|v)\s/i).map(x=>clean(x)).filter(Boolean);
-  if(parts.length<2) return false;
-  return parts[0].length>=3 && parts[1].length>=3;
+  return parts.length>=2 && parts[0].length>=3 && parts[1].length>=3;
 }
 function extractDirectIdentity(html:string){
   const title=clean(html.match(/<title[^>]*>([\s\S]*?)<\/title>/i)?.[1]||'');
@@ -88,8 +87,6 @@ async function probeEvent(base:string,eventId:string){
 }
 function classify(anchor:any,probe:any){
   const anchorText=[anchor.ariaLabel,anchor.title,anchor.text,anchor.label].filter(Boolean).join(' | ');
-  // Same-element explicit exclusions always win. This prevents generic login
-  // pages from turning parking/VIP/Premium/reserve products into match events.
   if(obviousNonMatch(anchorText)) return {kind:'non_match',reason:'same_element_non_match'};
   const direct=probe?.identity||'';
   if(direct && !probe?.loginRedirect && !genericPortalIdentity(direct)){
@@ -98,6 +95,18 @@ function classify(anchor:any,probe:any){
   }
   if(matchLike(anchorText)) return {kind:'match',reason:'same_element_match_identity'};
   return {kind:'unknown',reason:'insufficient_identity'};
+}
+function duplicateTrackedEvent(clubSlug:string,eventId:string,label:string,tracked:any[]){
+  const text=` ${normalized(label)} `;
+  const cutoff=Date.now()-3*24*3600_000;
+  return tracked.find((row:any)=>{
+    if(row.club_slug!==clubSlug || String(row.external_event_id)===String(eventId)) return false;
+    const kickoff=new Date(row.kickoff_at).getTime();
+    if(!Number.isFinite(kickoff) || kickoff<cutoff) return false;
+    const home=normalized(row.home_team||'');
+    const away=normalized(row.away_team||'');
+    return home.length>=3 && away.length>=3 && text.includes(` ${home} `) && text.includes(` ${away} `);
+  }) || null;
 }
 
 async function inspectClub(club:any){
@@ -119,11 +128,28 @@ async function inspectClub(club:any){
 Deno.serve(async req=>{
   if(req.headers.get('x-discovery-key')!==DISCOVERY_KEY)return new Response(JSON.stringify({error:'unauthorized'}),{status:401,headers:{'content-type':'application/json'}});
   try{
-    const [clubs,existing]=await Promise.all([db('roboticket_clubs?active=eq.true&select=club_slug,club_name,base_url,source_domain',{method:'GET'}),db('roboticket_event_candidates?select=club_slug,external_event_id,status,metadata',{method:'GET'})]);
+    const [clubs,existing,tracked]=await Promise.all([
+      db('roboticket_clubs?active=eq.true&select=club_slug,club_name,base_url,source_domain',{method:'GET'}),
+      db('roboticket_event_candidates?select=club_slug,external_event_id,status,metadata',{method:'GET'}),
+      db('ticket_events?provider=eq.roboticket&select=id,club_slug,external_event_id,home_team,away_team,kickoff_at',{method:'GET'})
+    ]);
     const existingMap=new Map((existing||[]).map((r:any)=>[`${r.club_slug}:${r.external_event_id}`,r]));
     const inspected=await Promise.all((clubs||[]).map(async club=>{try{return await inspectClub(club);}catch(error){return {slug:club.club_slug,base:club.base_url,error:String(error),events:[]};}}));
     const now=new Date().toISOString();const rows:any[]=[];const schedulePayloads:any[]=[];
-    for(const club of inspected){for(const event of(club.events||[])){const key=`${club.slug}:${event.eventId}`;const old=existingMap.get(key);const preservedStatus=old?.status==='collecting'?'collecting':(event.candidateKind==='non_match'?'ignored':'discovered');const metadata={...(old?.metadata||{}),discovery_version:VERSION,discovered_base:club.base,final_url:club.finalUrl||null,home_status:club.homeStatus||null,is_roboticket:true,candidate_kind:event.candidateKind,classification_reason:event.classificationReason,anchor_href:event.href||null,anchor_aria_label:event.ariaLabel||null,direct_page_title:event.probe?.title||null,direct_page_h1:event.probe?.h1||null,direct_page_url:event.probe?.finalUrl||null,direct_page_login_redirect:Boolean(event.probe?.loginRedirect),direct_page_status:event.probe?.status||null,discovered_kickoff_at:event.probe?.kickoffAt||null};rows.push({club_slug:club.slug,external_event_id:String(event.eventId),label:event.label,source_url:event.source,status:preservedStatus,last_seen_at:now,metadata});if(event.candidateKind==='match'&&event.probe?.kickoffAt&&event.probe?.identity&&!event.probe?.loginRedirect&&!genericPortalIdentity(event.probe.identity)){const parts=event.probe.identity.split(/\s(?:-|–|vs|v)\s/i).map((x:string)=>clean(x)).filter(Boolean);if(parts.length===2)schedulePayloads.push({club_slug:club.slug,external_event_id:String(event.eventId),home_team:parts[0],away_team:parts[1],competition:'Ekstraklasa',kickoff_at:event.probe.kickoffAt,source_url:event.probe.finalUrl||event.source,source_type:'roboticket_direct_event_metadata',verification_confidence:'verified'});}}}
+    for(const club of inspected){for(const event of(club.events||[])){
+      const key=`${club.slug}:${event.eventId}`;
+      const old=existingMap.get(key);
+      const duplicate=event.candidateKind==='match'?duplicateTrackedEvent(club.slug,String(event.eventId),String(event.label||''),tracked||[]):null;
+      const effectiveKind=duplicate?'duplicate_match':event.candidateKind;
+      const reason=duplicate?`duplicate_of_ticket_event:${duplicate.id}`:event.classificationReason;
+      const preservedStatus=old?.status==='collecting'?'collecting':((effectiveKind==='non_match'||effectiveKind==='duplicate_match')?'ignored':'discovered');
+      const metadata={...(old?.metadata||{}),discovery_version:VERSION,discovered_base:club.base,final_url:club.finalUrl||null,home_status:club.homeStatus||null,is_roboticket:true,candidate_kind:effectiveKind,classification_reason:reason,duplicate_ticket_event_id:duplicate?.id||null,anchor_href:event.href||null,anchor_aria_label:event.ariaLabel||null,direct_page_title:event.probe?.title||null,direct_page_h1:event.probe?.h1||null,direct_page_url:event.probe?.finalUrl||null,direct_page_login_redirect:Boolean(event.probe?.loginRedirect),direct_page_status:event.probe?.status||null,discovered_kickoff_at:event.probe?.kickoffAt||null};
+      rows.push({club_slug:club.slug,external_event_id:String(event.eventId),label:event.label,source_url:event.source,status:preservedStatus,last_seen_at:now,metadata});
+      if(effectiveKind==='match'&&event.probe?.kickoffAt&&event.probe?.identity&&!event.probe?.loginRedirect&&!genericPortalIdentity(event.probe.identity)){
+        const parts=event.probe.identity.split(/\s(?:-|–|vs|v)\s/i).map((x:string)=>clean(x)).filter(Boolean);
+        if(parts.length===2)schedulePayloads.push({club_slug:club.slug,external_event_id:String(event.eventId),home_team:parts[0],away_team:parts[1],competition:'Ekstraklasa',kickoff_at:event.probe.kickoffAt,source_url:event.probe.finalUrl||event.source,source_type:'roboticket_direct_event_metadata',verification_confidence:'verified'});
+      }
+    }}
     if(rows.length)await db('roboticket_event_candidates?on_conflict=club_slug,external_event_id',{method:'POST',headers:{Prefer:'resolution=merge-duplicates,return=minimal'},body:JSON.stringify(rows)});
     const scheduleResults=[];for(const p of schedulePayloads){try{scheduleResults.push(await rpc('upsert_roboticket_verified_schedule_v1',{p_payload:p}));}catch(error){scheduleResults.push({ok:false,error:String(error),identity:`${p.club_slug}:${p.external_event_id}`});}}
     const promotion=await rpc('promote_roboticket_verified_candidates_v1',{});
