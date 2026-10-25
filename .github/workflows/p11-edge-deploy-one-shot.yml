@@ -1,0 +1,43 @@
+name: P11 Edge Deploy One Shot
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/p11-edge-deploy-one-shot.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    if: github.event.head_commit.message == 'P11 one-shot deploy fixed odds edge function 2026-10-25'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Require Supabase deployment credential
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "${SUPABASE_ACCESS_TOKEN:-}" || {
+            echo "SUPABASE_ACCESS_TOKEN is not configured in GitHub Actions secrets" >&2
+            exit 1
+          }
+
+      - name: Setup Supabase CLI
+        uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Deploy P11 Edge Function
+        shell: bash
+        run: |
+          set -euo pipefail
+          supabase functions deploy p11_odds_capture_v2 \
+            --project-ref adchzwqboeekhokapxqi \
+            --no-verify-jwt
