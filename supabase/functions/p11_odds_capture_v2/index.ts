@@ -105,11 +105,16 @@ function requireProviderApiKey(): string {
   return key;
 }
 
+function providerTimestamp(ms: number): string {
+  if (!Number.isFinite(ms)) throw new Error("invalid provider timestamp");
+  return new Date(ms).toISOString().replace(/\.\d{3}Z$/, "Z");
+}
+
 function providerUrl(apiKey: string, events: LocalTicketEvent[]): URL {
   const kickoffs = events.map((event) => Date.parse(event.kickoff_at)).filter(Number.isFinite);
   if (!kickoffs.length) throw new Error("no valid local kickoff times");
-  const min = new Date(Math.min(...kickoffs) - 2 * 3600_000).toISOString();
-  const max = new Date(Math.max(...kickoffs) + 2 * 3600_000).toISOString();
+  const min = providerTimestamp(Math.min(...kickoffs) - 2 * 3600_000);
+  const max = providerTimestamp(Math.max(...kickoffs) + 2 * 3600_000);
   const url = new URL(PROVIDER_BASE);
   url.searchParams.set("apiKey", apiKey);
   url.searchParams.set("regions", "eu");
