@@ -1,0 +1,134 @@
+name: P7 Long168 Prospective v1
+
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "fingerprint only until model hash is pinned; predict after pin"
+        required: true
+        default: "fingerprint"
+        type: choice
+        options:
+          - fingerprint
+          - predict
+  pull_request:
+    paths:
+      - "ml/p7_long168_prospective_v1.py"
+      - "ml/P7_LONG168_PROSPECTIVE_PRECOMMIT_V1.md"
+      - "supabase/sql/p7_long168_prospective_v1.sql"
+      - "supabase/sql/p7_long168_prospective_window_fix_2026_10_25.sql"
+      - "supabase/functions/p7_long168_prospective_v1/**"
+      - ".github/workflows/p7-long168-prospective-v1.yml"
+  push:
+    branches: [main]
+    paths:
+      - "ml/p7_long168_prospective_v1.py"
+      - "ml/P7_LONG168_PROSPECTIVE_PRECOMMIT_V1.md"
+      - "supabase/sql/p7_long168_prospective_v1.sql"
+      - "supabase/sql/p7_long168_prospective_window_fix_2026_10_25.sql"
+      - "supabase/functions/p7_long168_prospective_v1/**"
+      - ".github/workflows/p7-long168-prospective-v1.yml"
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: p7-long168-prospective-v1
+  cancel-in-progress: false
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install pinned ML dependencies
+        run: pip install -r ml/requirements.txt
+      - name: Compile frozen prospective builder
+        run: python -m py_compile ml/p7_long168_prospective_v1.py
+      - name: Static freeze gates
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -q 'CANDIDATE_ID = "gbr-l1-depth2-n50-lr003"' ml/p7_long168_prospective_v1.py
+          grep -q 'EXPECTED_FREEZE_MANIFEST_SHA256 = "185a9fc90e646bd5fa1bbed3b50c625d65d127a2b2943501761bdfcb89f354ed"' ml/p7_long168_prospective_v1.py
+          grep -q 'SOURCE_SCORECARD_SHA256 = "f684570856e264dae288599a8e24dde6802f84669a43e304c1d900726aa94e45"' ml/p7_long168_prospective_v1.py
+          grep -q 'bootstrap_backfill_performed": False' ml/p7_long168_prospective_v1.py
+
+  fingerprint:
+    if: github.event_name != 'pull_request'
+    needs: validate
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install pinned ML dependencies
+        run: pip install -r ml/requirements.txt
+      - name: Verify frozen Structural Prior bytes
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(sha256sum ml/artifacts/structural_prior_runtime_v1/structural_prior_t7_v1.joblib | awk '{print $1}')" = "97e712245d6539396030e88ea450809f4265bd7538aa90b29e234420231ac927"
+          test "$(sha256sum ml/artifacts/structural_prior_runtime_v1/historical_runtime_v1.csv.gz | awk '{print $1}')" = "3c6b35142c6bd20a484f2aa758cd41284fd6f4c6db1353b138f81cf321161569"
+      - name: Request main-only prospective OIDC token
+        shell: bash
+        run: |
+          set -euo pipefail
+          response=$(curl --retry 4 --retry-all-errors --retry-delay 2 -fsS \
+            -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
+            "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=beyond-p7-long168-prospective")
+          token=$(printf '%s' "$response" | jq -r '.value')
+          test -n "$token"
+          test "$token" != "null"
+          echo "::add-mask::$token"
+          echo "P7_PROSPECTIVE_OIDC_TOKEN=$token" >> "$GITHUB_ENV"
+      - name: Fetch historical training + target-free future bundle
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --retry 5 --retry-all-errors --retry-delay 2 -fsS \
+            -H "Authorization: Bearer $P7_PROSPECTIVE_OIDC_TOKEN" \
+            'https://adchzwqboeekhokapxqi.supabase.co/functions/v1/p7_long168_prospective_v1?mode=bundle' \
+            -o /tmp/p7-prospective-bundle.json
+          jq -e '.ok == true and .version == "p7-long168-prospective-bundle-v1" and .prospectiveTargetValuesUsed == false and .productionChange == false' /tmp/p7-prospective-bundle.json >/dev/null
+          jq 'del(.ok,.repository,.sha,.generatedAt,.productionActivationAllowed,.liveAdjustment,.productionChange)' /tmp/p7-prospective-bundle.json > /tmp/p7-prospective-builder-bundle.json
+      - name: Build deterministic fingerprint only
+        run: |
+          python -m ml.p7_long168_prospective_v1 \
+            --mode fingerprint \
+            --bundle /tmp/p7-prospective-builder-bundle.json \
+            --artifact-dir ml/artifacts/structural_prior_runtime_v1 \
+            --output /tmp/p7-prospective-fingerprint.json
+      - name: Hard fingerprint gates
+        shell: bash
+        run: |
+          set -euo pipefail
+          jq -e '
+            .mode == "fingerprint"
+            and .candidate_id == "gbr-l1-depth2-n50-lr003"
+            and .training_row_count == 139
+            and .training_freeze_manifest_sha256 == "185a9fc90e646bd5fa1bbed3b50c625d65d127a2b2943501761bdfcb89f354ed"
+            and .bootstrap_backfill_performed == false
+            and .target_values_used == false
+            and .production_activation_allowed == false
+            and .live_adjustment == 0
+            and .production_change == false
+            and (.predictions | length) == 0
+          ' /tmp/p7-prospective-fingerprint.json >/dev/null
+      - name: Print fingerprint
+        run: jq '{model_fingerprint_sha256,model_fingerprint_contract_sha256,training_row_count,training_freeze_manifest_sha256,eligible_event_ids,eligible_prediction_count,bootstrap_backfill_performed}' /tmp/p7-prospective-fingerprint.json
+      - name: Upload fingerprint evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: p7-long168-prospective-fingerprint-v1-${{ github.run_id }}
+          path: |
+            /tmp/p7-prospective-fingerprint.json
+          if-no-files-found: error
+          retention-days: 90
