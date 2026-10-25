@@ -36,10 +36,7 @@ async function rpc(name: string, body: Record<string, unknown> = {}) {
   const url = Deno.env.get("SUPABASE_URL");
   if (!url) throw new Error("missing SUPABASE_URL");
   const secret = supabaseSecret();
-  const headers: Record<string, string> = {
-    apikey: secret.value,
-    "content-type": "application/json",
-  };
+  const headers: Record<string, string> = { apikey: secret.value, "content-type": "application/json" };
   if (secret.isLegacyJwt) headers.Authorization = `Bearer ${secret.value}`;
   const response = await fetch(`${url}/rest/v1/rpc/${name}`, {
     method: "POST",
@@ -56,6 +53,16 @@ async function rpc(name: string, body: Record<string, unknown> = {}) {
   return parsed;
 }
 
+const GET_MODES: Record<string, string> = {
+  "training-long168": "export_d2_long_horizon_168_rows_v1",
+  "training-events": "export_c1_alpha_v7_events_v1",
+  "attendance": "export_c1_alpha_v7_attendance_v1",
+  "sporting": "export_c1_alpha_v7_sporting_v1",
+  "aliases": "export_c1_alpha_v7_aliases_v1",
+  "prospective": "export_p7_long168_prospective_inputs_v1",
+  "prospective-summary": "p7_long168_prospective_summary_v1",
+};
+
 Deno.serve(async (req: Request) => {
   let claims: any;
   try {
@@ -66,40 +73,30 @@ Deno.serve(async (req: Request) => {
 
   try {
     const url = new URL(req.url);
-    if (req.method === "GET" && url.searchParams.get("mode") === "bundle") {
-      const [trainingLong168, trainingEvents, attendance, sporting, aliases, prospective, summary] = await Promise.all([
-        rpc("export_d2_long_horizon_168_rows_v1"),
-        rpc("export_c1_alpha_v7_events_v1"),
-        rpc("export_c1_alpha_v7_attendance_v1"),
-        rpc("export_c1_alpha_v7_sporting_v1"),
-        rpc("export_c1_alpha_v7_aliases_v1"),
-        rpc("export_p7_long168_prospective_inputs_v1"),
-        rpc("p7_long168_prospective_summary_v1"),
-      ]);
-      return json({
-        ok: true,
-        version: "p7-long168-prospective-bundle-v1",
-        generatedAt: new Date().toISOString(),
-        repository: claims.repository,
-        sha: claims.sha || null,
-        trainingLong168,
-        trainingEvents,
-        attendance,
-        sporting,
-        aliases,
-        prospective,
-        summary,
-        prospectiveTargetValuesUsed: false,
-        productionActivationAllowed: false,
-        liveAdjustment: 0,
-        productionChange: false,
-      });
-    }
-
-    if (req.method === "GET" && url.searchParams.get("mode") === "summary") {
-      const summary = await rpc("p7_long168_prospective_summary_v1");
-      const scores = await rpc("export_p7_long168_prospective_scores_v1");
-      return json({ ok: true, summary, scores, productionChange: false });
+    if (req.method === "GET") {
+      const mode = String(url.searchParams.get("mode") || "");
+      const rpcName = GET_MODES[mode];
+      if (rpcName) {
+        const payload = await rpc(rpcName);
+        return json({
+          ok: true,
+          version: "p7-long168-prospective-gateway-v2",
+          mode,
+          payload,
+          repository: claims.repository,
+          sha: claims.sha || null,
+          prospectiveTargetValuesUsed: false,
+          productionActivationAllowed: false,
+          liveAdjustment: 0,
+          productionChange: false,
+        });
+      }
+      if (mode === "summary") {
+        const summary = await rpc("p7_long168_prospective_summary_v1");
+        const scores = await rpc("export_p7_long168_prospective_scores_v1");
+        return json({ ok: true, summary, scores, productionChange: false });
+      }
+      return json({ ok: false, error: "unsupported GET mode" }, 400);
     }
 
     if (req.method === "POST") {
@@ -126,7 +123,7 @@ Deno.serve(async (req: Request) => {
   } catch (error) {
     return json({
       ok: false,
-      version: "p7-long168-prospective-gateway-v1",
+      version: "p7-long168-prospective-gateway-v2",
       error: String(error),
       repository: claims.repository,
       sha: claims.sha || null,
