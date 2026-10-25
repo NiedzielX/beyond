@@ -1,5 +1,6 @@
 name: P11 Odds Capture One Shot 2026-10-25
 
+# Retry after watchdog threshold was corrected to 270 minutes.
 on:
   push:
     branches: [main]
