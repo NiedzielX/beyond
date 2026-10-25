@@ -1,27 +1,33 @@
 name: P11 Odds Capture v2
 
 # Genuine forward-only PIT market capture.
-# Scheduled capture is enabled only after the first genuine audited capture succeeded.
+# Primary capture runs every six hours. A second schedule 30 minutes later is a
+# stale-health fallback: it calls the provider only when no fresh capture exists.
 on:
   workflow_dispatch:
     inputs:
       capture:
-        description: "Run one genuine provider capture after contract/tests pass"
+        description: "Force one genuine provider capture after contract/tests pass"
         required: true
         default: false
         type: boolean
   schedule:
     - cron: "17 */6 * * *"
+    - cron: "47 0,6,12,18 * * *"
   pull_request:
     paths:
       - "supabase/functions/p11_odds_capture_v2/**"
+      - "supabase/functions/p11_odds_capture_health_v2/**"
       - "supabase/sql/p11_market_odds_capture_v2.sql"
+      - "supabase/sql/p11_market_odds_capture_health_v2.sql"
       - ".github/workflows/p11-odds-capture-v2.yml"
   push:
     branches: [main]
     paths:
       - "supabase/functions/p11_odds_capture_v2/**"
+      - "supabase/functions/p11_odds_capture_health_v2/**"
       - "supabase/sql/p11_market_odds_capture_v2.sql"
+      - "supabase/sql/p11_market_odds_capture_health_v2.sql"
       - ".github/workflows/p11-odds-capture-v2.yml"
 
 permissions:
@@ -45,10 +51,11 @@ jobs:
         with:
           deno-version: v2.x
 
-      - name: Type-check provider adapter
+      - name: Type-check provider and health adapters
         run: |
           deno check supabase/functions/p11_odds_capture_v2/provider.ts
           deno check supabase/functions/p11_odds_capture_v2/index.ts
+          deno check supabase/functions/p11_odds_capture_health_v2/index.ts
 
       - name: Run provider adapter tests
         run: deno test supabase/functions/p11_odds_capture_v2/provider_test.ts
@@ -72,7 +79,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          response=$(curl -fsS \
+          response=$(curl --retry 4 --retry-all-errors --retry-delay 2 -fsS \
             -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
             "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=beyond-p11-odds-capture")
           token=$(printf '%s' "$response" | jq -r '.value')
@@ -81,11 +88,36 @@ jobs:
           echo "::add-mask::$token"
           echo "BEYOND_OIDC_TOKEN=$token" >> "$GITHUB_ENV"
 
-      - name: Verify capture configuration
+      - name: Decide whether capture is due
+        id: health
         shell: bash
         run: |
           set -euo pipefail
-          curl -fsS \
+          if [ "$GITHUB_EVENT_NAME" = "workflow_dispatch" ]; then
+            echo "capture_due=true" >> "$GITHUB_OUTPUT"
+            echo "reason=manual" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          curl --retry 4 --retry-all-errors --retry-delay 2 -fsS \
+            -H "Authorization: Bearer $BEYOND_OIDC_TOKEN" \
+            'https://adchzwqboeekhokapxqi.supabase.co/functions/v1/p11_odds_capture_health_v2' \
+            -o /tmp/p11-health.json
+          jq . /tmp/p11-health.json
+          test "$(jq -r '.ok' /tmp/p11-health.json)" = "true"
+          test "$(jq -r '.productionChange' /tmp/p11-health.json)" = "false"
+          test "$(jq -r '.health.target_values_used' /tmp/p11-health.json)" = "false"
+          due="$(jq -r '.health.capture_due' /tmp/p11-health.json)"
+          test "$due" = "true" -o "$due" = "false"
+          echo "capture_due=$due" >> "$GITHUB_OUTPUT"
+          echo "reason=schedule_health" >> "$GITHUB_OUTPUT"
+
+      - name: Verify capture configuration
+        if: steps.health.outputs.capture_due == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --retry 4 --retry-all-errors --retry-delay 2 -fsS \
             -H "Authorization: Bearer $BEYOND_OIDC_TOKEN" \
             'https://adchzwqboeekhokapxqi.supabase.co/functions/v1/p11_odds_capture_v2?mode=config' \
             -o /tmp/p11-config.json
@@ -95,12 +127,14 @@ jobs:
             echo "THE_ODDS_API_KEY is not configured in Supabase Edge Function secrets" >&2
             exit 1
           fi
+          test "$(jq -r '.productionChange' /tmp/p11-config.json)" = "false"
 
       - name: Capture genuine pre-match 1X2 odds
+        if: steps.health.outputs.capture_due == 'true'
         shell: bash
         run: |
           set -euo pipefail
-          http_code=$(curl -sS \
+          http_code=$(curl --retry 4 --retry-all-errors --retry-delay 2 -sS \
             -X POST \
             -H "Authorization: Bearer $BEYOND_OIDC_TOKEN" \
             -H 'Content-Type: application/json' \
@@ -110,13 +144,39 @@ jobs:
           jq . /tmp/p11-capture.json
           test "$http_code" = "200"
           test "$(jq -r '.ok' /tmp/p11-capture.json)" = "true"
+          test "$(jq -r '.targetValuesUsed' /tmp/p11-capture.json)" = "false"
           test "$(jq -r '.productionChange' /tmp/p11-capture.json)" = "false"
+
+      - name: Verify fresh health after capture
+        if: steps.health.outputs.capture_due == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --retry 4 --retry-all-errors --retry-delay 2 -fsS \
+            -H "Authorization: Bearer $BEYOND_OIDC_TOKEN" \
+            'https://adchzwqboeekhokapxqi.supabase.co/functions/v1/p11_odds_capture_health_v2' \
+            -o /tmp/p11-health-after.json
+          jq . /tmp/p11-health-after.json
+          test "$(jq -r '.ok' /tmp/p11-health-after.json)" = "true"
+          test "$(jq -r '.health.capture_due' /tmp/p11-health-after.json)" = "false"
+          test "$(jq -r '.health.target_values_used' /tmp/p11-health-after.json)" = "false"
+          test "$(jq -r '.productionChange' /tmp/p11-health-after.json)" = "false"
 
       - name: Publish capture summary
         shell: bash
+        env:
+          CAPTURE_DUE: ${{ steps.health.outputs.capture_due }}
+          CAPTURE_REASON: ${{ steps.health.outputs.reason }}
         run: |
+          set -euo pipefail
           {
             echo '### P11 Odds Capture v2'
             echo
-            jq -r '"- status: `\(.status)`\n- local events: `\(.localEvents // 0)`\n- provider events: `\(.providerEvents // 0)`\n- matched events: `\(.matchedEvents // 0)`\n- inserted raw bookmaker quotes: `\(.insertedQuotes // 0)`\n- quota remaining: `\(.quota.remaining // \"n/a\")`\n- quota used: `\(.quota.used // \"n/a\")`\n- last request cost: `\(.quota.last // \"n/a\")`\n- production change: `\(.productionChange)`"' /tmp/p11-capture.json
+            echo "- capture due: \`${CAPTURE_DUE}\`"
+            echo "- decision source: \`${CAPTURE_REASON}\`"
+            if [ "$CAPTURE_DUE" = "true" ]; then
+              jq -r '"- status: `\(.status)`\n- local events: `\(.localEvents // 0)`\n- provider events: `\(.providerEvents // 0)`\n- matched events: `\(.matchedEvents // 0)`\n- inserted raw bookmaker quotes: `\(.insertedQuotes // 0)`\n- quota remaining: `\(.quota.remaining // \"n/a\")`\n- quota used: `\(.quota.used // \"n/a\")`\n- last request cost: `\(.quota.last // \"n/a\")`\n- production change: `\(.productionChange)`"' /tmp/p11-capture.json
+            else
+              echo '- provider call: `SKIPPED_RECENT_CAPTURE_HEALTHY`'
+            fi
           } >> "$GITHUB_STEP_SUMMARY"
