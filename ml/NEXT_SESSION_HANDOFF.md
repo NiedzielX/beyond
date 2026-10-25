@@ -16,7 +16,7 @@ Production remains unchanged:
 
 ## 2. Immediate execution order
 
-`preserve P7 prospective schedule -> preserve 18/18 multi-source ticketing ingestion -> preserve P11 collection -> score only genuine completed prospective events -> accumulate P9 to 9/9 -> accumulate P4a labels -> define business ΔMAE threshold -> P12 later`
+`preserve P7 prospective schedule -> preserve 18/18 multi-source ticketing ingestion -> preserve resilient P11 collection -> score only genuine completed prospective events -> accumulate P9 to 9/9 -> accumulate P4a labels -> define business ΔMAE threshold -> P12 later`
 
 Do not restart the P7 tournament, P9a freeze, P10 or weather loops.
 
@@ -213,20 +213,32 @@ Current gate remains closed:
 - distinct labeled values: 2;
 - required: >=9 labeled AND >=3 distinct labeled values.
 
-## 9. P11
+## 9. P11 — ACTIVE / RESILIENT CAPTURE
 
-P11a fresh readiness:
+P11a fresh genuine state after recovery run `40223646599`:
 
-- `GENUINE_PIT_DATA_ACCUMULATING`;
-- genuine PIT events: 2;
-- clubs: 2;
-- >=3 bookmaker events: 2;
-- 24h / 72h / 168h coverage: 1 / 1 / 0;
-- model precommitted: false.
+- status: `GENUINE_PIT_DATA_ACCUMULATING`;
+- raw rows: **81**;
+- genuine PIT events / clubs: **4 / 4**;
+- capture batches: **5**;
+- >=3 bookmaker events: **4**;
+- 24h / 72h / 168h coverage: **3 / 3 / 0**;
+- latest capture: `2026-10-25T18:56:51.448Z`;
+- recovery artifact digest: `6c326149cea6d1043eaa3c5a200b5430853a3fb46454aad910cbf0faf188beba`;
+- model precommitted: false;
+- target values used: false;
+- production change: false.
 
-Capture cadence:
+The single six-hour cron was not sufficiently reliable operationally, so capture resilience is now explicit:
 
-`17 */6 * * *`
+- primary: `17 */6 * * *`;
+- fallback: `47 0,6,12,18 * * *`;
+- health RPC: `public.p11_market_odds_capture_health_v2()`;
+- stale threshold: 270 minutes;
+- fallback skips the provider when a recent primary capture is healthy;
+- the recovery one-shot was deleted after successful verification.
+
+Never backfill closing odds.
 
 P11b price as-known remains live. P11c remains data-bound. P11d weather remains closed/no-uplift; attention keeps collecting.
 
@@ -251,4 +263,4 @@ Do not reopen without a materially new mechanism:
 
 ## 12. Cold-start command
 
-> Read `AI_BOOTSTRAP.md`, this handoff, `ml/EXECUTION_PLAN_CURRENT.md`, `ml/PROGRESS_TRACKING.md`, Roadmap v4, P7 frozen/prospective files, `ml/ROBOTICKET_INGESTION_SAFETY_NET_2026-10-25.md` and `ml/TICKETING_SOURCE_COVERAGE_EXPANSION_2026-10-25.md`. Query readiness fresh. Ticketing source coverage is 18/18 current league home clubs. P7 prospective has 6 immutable prediction rows across 3 independent events, 0 scores and a real six-hour predict/persist/score workflow with pinned fingerprint. P9 remains 5/9, P4a 2 labeled, P11 has 2 genuine odds events, Long72 has 2 genuine scores. Keep production unchanged and never retune exposed evidence.
+> Read `AI_BOOTSTRAP.md`, this handoff, `ml/EXECUTION_PLAN_CURRENT.md`, `ml/PROGRESS_TRACKING.md`, Roadmap v4, P7 frozen/prospective files, `ml/ROBOTICKET_INGESTION_SAFETY_NET_2026-10-25.md` and `ml/TICKETING_SOURCE_COVERAGE_EXPANSION_2026-10-25.md`. Query readiness fresh. Ticketing source coverage is 18/18 current league home clubs. P7 prospective has 6 immutable prediction rows across 3 independent events and 0 scores. P11 has 81 genuine raw rows across 4 events with primary+fallback capture health. P9 remains 5/9, P4a 2 labeled, Long72 has 2 genuine scores. Keep production unchanged and never retune exposed evidence.
