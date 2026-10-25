@@ -6,195 +6,167 @@ Beyond Ticketing engineering workspace.
 
 For every new AI / engineering session, read in this order:
 
-1. [`AI_BOOTSTRAP.md`](AI_BOOTSTRAP.md) — cold-start rules and current state;
-2. [`ml/NEXT_SESSION_HANDOFF.md`](ml/NEXT_SESSION_HANDOFF.md) — **latest operational handoff: main vs active branch vs live Supabase**;
-3. [`ml/EXECUTION_PLAN_CURRENT.md`](ml/EXECUTION_PLAN_CURRENT.md) — **exact next work order**;
-4. [`ml/PROGRESS_TRACKING.md`](ml/PROGRESS_TRACKING.md) — canonical status snapshot;
-5. [`ml/MAE_RESEARCH_ROADMAP_V4.md`](ml/MAE_RESEARCH_ROADMAP_V4.md) — literature-grounded MAE-first strategy;
-6. [`ml/CURRENT_MODEL.md`](ml/CURRENT_MODEL.md) — detailed forecasting state;
-7. [`ml/MODEL_ACCURACY_DEVELOPMENT_INSTRUCTIONS_V2.md`](ml/MODEL_ACCURACY_DEVELOPMENT_INSTRUCTIONS_V2.md) — experiment / CI rules;
-8. [`ml/LIVE_DEMAND_ENGINE_V1_PLAN.md`](ml/LIVE_DEMAND_ENGINE_V1_PLAN.md) and [`ml/MODEL_PROMOTION_GOVERNANCE_V1.md`](ml/MODEL_PROMOTION_GOVERNANCE_V1.md) when touching live/promotion logic.
+1. [`AI_BOOTSTRAP.md`](AI_BOOTSTRAP.md)
+2. [`ml/NEXT_SESSION_HANDOFF.md`](ml/NEXT_SESSION_HANDOFF.md)
+3. [`ml/EXECUTION_PLAN_CURRENT.md`](ml/EXECUTION_PLAN_CURRENT.md)
+4. [`ml/PROGRESS_TRACKING.md`](ml/PROGRESS_TRACKING.md)
+5. [`ml/MAE_RESEARCH_ROADMAP_V4.md`](ml/MAE_RESEARCH_ROADMAP_V4.md)
+6. [`ml/CURRENT_MODEL.md`](ml/CURRENT_MODEL.md)
+7. [`ml/MODEL_ACCURACY_DEVELOPMENT_INSTRUCTIONS_V2.md`](ml/MODEL_ACCURACY_DEVELOPMENT_INSTRUCTIONS_V2.md)
 
-Do **not** start from Roadmap v3. Roadmap v4 is canonical.
+Do **not** restart from Roadmap v3. Roadmap v4 is canonical.
 
 ## North star
 
-> **Minimize true out-of-sample attendance-forecast MAE at decision-relevant horizons with point-in-time-safe, reproducible evidence.**
-
-Complexity is not the objective. Lower future MAE is.
+> **Minimize true out-of-sample attendance-forecast MAE at decision-relevant horizons with PIT-safe, reproducible evidence.**
 
 Current mode: **representation-first, not tuning-first**.
 
-## Current execution priority — 2026-10-25
+Production remains unchanged:
 
-The immediate priority is now:
+`live_adjustment = 0`
 
-`reconcile branch -> merge P11/P9a source to main -> first genuine manual P11 capture -> audit -> P9a freeze audit -> outcome-sync diagnostic`
+## Current execution priority — 2026-10-25 11:55 Europe/Warsaw
 
-Why P11 is first: the live P11 v2 Edge Function is already deployed, but genuine PIT evidence is still `0`. Genuine pre-match odds are perishable evidence and cannot be recreated later without violating the PIT contract.
+Immediate order:
 
-Current P11 capture candidates returned by `public.p11_market_capture_inputs_v2(14)` on 2026-10-25 include:
+`first genuine P11 capture -> audit P11 -> execute already-unlocked frozen P7 -> P9a main freeze audit -> continue genuine evidence collection`
 
-- event 23: Śląsk Wrocław vs Wieczysta Kraków — kickoff `2026-10-25 11:15 UTC`;
-- event 21: Jagiellonia Białystok vs Wisła Płock — kickoff `2026-10-25 13:45 UTC`;
-- event 22: Legia Warszawa vs Lech Poznań — kickoff `2026-10-25 16:30 UTC`;
-- event 6: Lech Poznań vs Wisła Kraków — kickoff `2026-10-31 16:30 UTC`.
+### Repository reconciliation — DONE
 
-The first capture must remain manual and audited. No automatic schedule is enabled yet.
+The previous `main` vs `ml/p9-p11-execution-2026-10-24` divergence has been reconciled.
 
-## Repository / live state
+- PR #171 merged `main` into the active branch after deliberate conflict resolution.
+- P11 and P9a contract CI passed.
+- Key P11/P9a implementation blobs were verified identical on both branches.
+- PR #172 merged the reconciled history back into `main` with zero file-content differences.
+- Final `main` reconciliation merge commit: `c48b0045f371f0b52b98f61d24f39f3be99ec7bb`.
 
-Active development branch:
+Do **not** recreate P9a/P11a from scratch. Their source/workflows are already on `main`.
 
-`ml/p9-p11-execution-2026-10-24`
+## Fresh live readiness after genuine 24.10 outcomes
 
-Fresh comparison on 2026-10-25:
+At `2026-10-25 10:54 UTC`, two verified post-match attendance outcomes were added from `frekwencyjny.pl`:
 
-- status: **diverged**;
-- active branch: **32 commits ahead** of `main`;
-- active branch: **14 commits behind** `main`;
-- do **not** blindly force-push or recreate the implementation;
-- first merge current `main` into the active branch, resolve/verify, then open/merge the active branch back to `main`.
+- event 10 — Pogoń Szczecin vs Radomiak Radom: **19,050**;
+- event 16 — Wisła Kraków vs Raków Częstochowa: **33,000**.
 
-The branch contains two implementation slices that must be preserved:
+These are genuine post-match outcomes, not estimates or synthetic labels.
 
-- **P9a target-free T-24/T-48 booking-curve freeze/export harness**;
-- **P11a v2 genuine PIT odds capture**.
+The frozen Long72 scorer was then run without changing model parameters or production.
 
-Live Supabase project: `adchzwqboeekhokapxqi`.
+### Long72
 
-Already live:
+- reproducible rows: **90**;
+- genuine scored events: **2**;
+- first genuine score gate: **OPEN**;
+- frozen package MAE on the first two scored events: **7,641.71**;
+- anchor MAE: **9,069.52**;
+- point `ΔMAE`: **-1,427.80** (~15.7% improvement);
+- evidence is **far too small for promotion or retuning**;
+- `production_change=false`.
 
-### P9a
+Treat n=2 as first prospective evidence only.
 
-- P9a input/label RPCs;
-- Edge Function `p9a_booking_curve_export_v1` — ACTIVE v1.
+### P7 Long168 — GATE NOW OPEN
 
-### P11a v2
+Canonical readiness changed from 8/9 to:
 
-- P11 v2 DB capture/consensus/readiness contract;
-- Edge Function `p11_odds_capture_v2` — **ACTIVE v2**;
-- `verify_jwt=false` intentionally because the function validates GitHub Actions OIDC itself;
-- raw P11 v2 rows: **0** at the latest check;
-- automatic schedule: **off**.
+- independent eligible events: **10**;
+- threshold: **9**;
+- rows >72h: **139**;
+- `research_start_trigger=true`.
 
-The next missing P11 step is **not deployment**. It is verifying/configuring `THE_ODDS_API_KEY`, merging the workflow/source to `main`, and running one genuine manual capture.
+The earlier event-6 diagnosis was correct about the contract — completed event + genuine attendance is required — but event 6 is no longer needed to unlock P7 because events 10 and 16 now supply valid completed outcomes.
 
-## Current MAE workstreams
+Next P7 step is the **already-frozen executor**, not redesign:
 
-### P7 — Long168
+1. freeze exact Long168 event/as-of identities;
+2. replay the frozen T-7 anchor;
+3. execute the fixed precommitted tournament;
+4. keep `production_activation_allowed=false` and `live_adjustment=0`.
 
-Current canonical readiness remains **8/9**.
+The canonical workflow is `.github/workflows/p7-long168-executor-v1.yml` with manual `mode=execute`.
 
-The event-6 issue is now understood: the frozen Long168 export contract requires an event to be completed and to have genuine `actual_attendance`. A T-168 snapshot by itself does **not** make the event eligible.
+### P9 full-window booking curve
 
-Therefore event 6 (Lech Poznań vs Wisła Kraków, 2026-10-31) cannot become the ninth P7 event before the match has been played and a genuine attendance outcome is available.
+Fresh genuine completed-reference coverage:
 
-Do not bypass or relax this gate. P7 stays frozen until canonical readiness genuinely reaches 9/9.
+- 168h: **5/9** events / 5 clubs;
+- 72h: **9** events / 7 clubs;
+- 48h: **12** events / 7 clubs;
+- 24h: **15** events / 9 clubs.
 
-### P9 — Booking Curve / Trajectory Shape
+`P9_BOOKING_CURVE_168_START=false` remains correct. Do not fit the first learnable full-168h P9 model yet.
 
-Highest-priority representation gap:
+### P4a fixture context
 
-`normalized PIT trajectory -> historical curve similarity -> pickup distribution -> remaining-demand estimate -> structural residual`
+- READY independent events: **5**;
+- genuine labeled READY events: **2**;
+- distinct labeled `previous_home_match_days`: **2**;
+- research gate: `>=9 labeled + >=3 distinct labeled values` — **still CLOSED**.
 
-Current full-168h reference coverage: **4/9**.
+Do not retune from the first two labels.
 
-Do not fit the first learnable full-window P9 model before the gate and a separate learner precommit.
+## P11a v2 — immediate time-sensitive priority
 
-P9a target-free freeze/export infrastructure is already live. After branch reconciliation, run the main T-24/T-48 freeze audit and keep:
+P11 v2 is already deployed in live Supabase:
+
+- DB capture/consensus/readiness contract live;
+- Edge Function `p11_odds_capture_v2` ACTIVE v2;
+- workflow/source already on `main`;
+- automatic schedule off;
+- genuine raw odds rows remain **0** until first capture.
+
+Current capture candidates include:
+
+- event 23 — Śląsk Wrocław vs Wieczysta Kraków — `2026-10-25 11:15 UTC`;
+- event 21 — Jagiellonia Białystok vs Wisła Płock — `2026-10-25 13:45 UTC`;
+- event 22 — Legia Warszawa vs Lech Poznań — `2026-10-25 16:30 UTC`;
+- event 6 — Lech Poznań vs Wisła Kraków — `2026-10-31 16:30 UTC`.
+
+First capture must be manual through GitHub Actions because the Edge Function validates a `main`-branch GitHub OIDC token.
+
+Run:
+
+`Actions -> P11 Odds Capture v2 -> Run workflow -> main -> capture=true`
+
+The workflow first verifies whether `THE_ODDS_API_KEY` is configured. Keep schedule off until the first capture is audited.
+
+## P9a target-free freeze
+
+P9a remains freeze/audit tooling, not a trained model.
+
+Latest known target-free exports:
+
+- T-24: 18 target / 19 reference events;
+- T-48: 15 target / 19 reference events;
+- `target_values_used=false`;
+- `post_cutoff_target_snapshots_exported=false`;
+- `production_change=false`.
+
+After the P11/P7 time-sensitive steps, run/verify the main freeze audit and keep:
 
 - `target_values_opened=false`;
 - `model_training_performed=false`.
 
-P9a is freeze tooling, not a trained model.
+## Closed loops / governance
 
-### P10 / P10b — pooled horizon
+Do not reopen P10/P10b, old estimator-only sweeps, P5a shrinkage, P6 historical Long72 signal, P8 simple calibration, or post-hoc tuning on inspected evidence.
 
-Closed for the fixed pooled-HGB architecture.
-
-- P10 beat the same weaker local HGB by `63.47` MAE seats;
-- P10b lost to frozen Pre-Live v3 by `147.51` MAE seats;
-- do not retune this architecture after observing the result.
-
-### P11 — Match Attractiveness / Commercial Context
-
-Priority signal families:
-
-1. genuine PIT market odds / outcome uncertainty / stakes / rivalry;
-2. price / promotion;
-3. lineup / star strength / verified absences;
-4. weather / attention later.
-
-P11a v2 captures raw bookmaker-level 1X2 quotes append-only and derives an as-known de-vigged market consensus. No closing-odds backfill is allowed.
-
-Current P11 status:
-
-- provider: `the-odds-api-v4`;
-- provider selected: true;
-- genuine PIT events: `0`;
-- clubs with PIT 1X2: `0`;
-- events with >=3 bookmakers: `0`;
-- model precommitted: false;
-- status: `CAPTURE_CONTRACT_READY_NO_GENUINE_OBSERVATIONS_YET`;
-- `production_change=false`.
-
-### Long72 / P4a
-
-Latest canonical state:
-
-- Long72: `90` reproducible prediction rows, `0` genuine scored events;
-- P4a: `5` READY independent events, `0` genuine labels;
-- P4a gate: `>=9 labeled + >=3 distinct labeled previous_home_match_days values`.
-
-After the P11/P9a operational work, inspect upstream attendance/outcome sync before assuming these scoring pipelines are broken. Do not retune frozen packages from early labels.
-
-### Governance v2
-
-Statuses:
-
-- `NO_RESEARCH_GAIN`;
-- `POINT_GAIN_UNCERTAINTY_LIMITED`;
-- `ROBUST_RESEARCH_ADVANCE`.
-
-`ROBUST_RESEARCH_ADVANCE` requires a predeclared **business-derived minimum meaningful MAE improvement**. Do not infer that threshold from an experiment being judged.
-
-## Exact immediate work order
-
-1. Reconcile `main` into `ml/p9-p11-execution-2026-10-24` and preserve both P9a/P11a implementations.
-2. Run CI/tests and merge the active branch back to `main`.
-3. Verify/configure Supabase Edge Function secret `THE_ODDS_API_KEY`.
-4. Run exactly one manual P11 capture from `main` through the GitHub OIDC workflow.
-5. Audit mapping, provider event identity, bookmaker count, kickoff delta, quota, payload hash and inserted raw rows.
-6. Verify `public.p11_market_context_as_known_v2(...)` and `public.p11_market_odds_readiness_v2()`.
-7. Keep P11 schedule off until that capture is accepted.
-8. Run/verify P9a target-free T-24/T-48 freeze audit and manifests.
-9. Inspect Long72/P4a upstream outcome sync.
-10. Keep P7 frozen until event 6 is completed and genuine attendance makes canonical readiness 9/9.
-11. Keep P9 full-168h collecting at 4/9; no learner fitting yet.
+`ROBUST_RESEARCH_ADVANCE` still requires a predeclared business-derived minimum meaningful MAE improvement. Do not invent the threshold from observed model results.
 
 ## Never do these
 
 - do not backfill closing odds as historical PIT observations;
-- do not insert synthetic odds into P11 v2;
-- do not capture in-play odds as pre-match evidence;
+- do not insert synthetic odds;
 - do not fuzzy-match ambiguous provider fixtures;
-- do not enable automatic P11 scheduling before the first audited capture;
+- do not enable P11 schedule before first audited capture;
 - do not use future target trajectory points in P9/P9a;
-- do not call P9a freeze tooling a trained model;
-- do not open P9a labels merely because the export contract exists;
-- do not lower P7/P9/P4 gates because data is slow;
-- do not reopen P10/P10b with a hyperparameter sweep;
-- do not claim historical exposed research as prospective evidence;
+- do not open P9a labels merely because freeze tooling exists;
+- do not lower P9/P4 gates;
+- do not retune frozen Long72 from the first two genuine scores;
 - do not change `live_adjustment` from zero without reviewed promotion.
-
-## Production boundary
-
-No research result activates production automatically.
-
-`live_adjustment = 0`
-
-until an explicit reviewed promotion.
 
 ## Engineering rule
 
