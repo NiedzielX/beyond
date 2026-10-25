@@ -16,12 +16,12 @@ Production: `live_adjustment = 0`.
 | RoboTicket ingestion safety | ✅ LIVE | hourly discovery + 10m private buffer + verified promotion/backfill |
 | Stellis source expansion | ✅ LIVE | canonical `stellis_collect_v3` every 10m; five additional home sources monitored |
 | Panel ingestion coverage | ✅ MULTI-SOURCE | shared RoboTicket + Stellis status contract; Overview + Data Quality + recent completed events |
-| Long72 prospective evidence | 🟢 2 genuine scored events | preserve; no retuning |
+| Long72 prospective evidence | 🟢 **4 genuine scored events** | current point gain only 118.43 MAE / 1.71%; preserve freeze; no retuning |
 | P7 Long168 historical tournament | ✅ EXECUTED | 14.44% point gain; exposed; never retune |
 | P7 prospective validation | 🟢 **6 immutable rows / 3 events / 0 scores** | six-hour predict/persist/score workflow validated end to end |
-| P9 full-168h Booking Curve | 🟡 5/9 | learner blocked |
+| P9 full-168h Booking Curve | 🟡 **7/9** | learner still blocked; two more independent full-window labeled events required |
 | P9a T-24/T-48 freeze | ✅ COMPLETE | target-free audit frozen |
-| P4a previous-home spacing | 🟡 2 labeled / 2 distinct labeled | gate closed |
+| P4a previous-home spacing | 🟡 **4 labeled / 3 distinct labeled** | variance gate satisfied; event-count gate still 4/9 |
 | P10/P10b | ✅ CLOSED | do not reopen fixed pooled-HGB path |
 | P11a PIT odds | 🟢 **81 rows / 4 events / 5 batches** | primary + health-guarded fallback capture; no model yet |
 | P11b price context | 🟢 AS-KNOWN CONTRACT LIVE | no inferred promotion |
@@ -30,6 +30,27 @@ Production: `live_adjustment = 0`.
 | P11d media attention | 🟡 PROSPECTIVE COLLECTING | wait for variance/coverage |
 | Governance v2 | ✅ FRAMEWORK / threshold pending | business ΔMAE still required |
 | P12 | 🟡 PRE-PLAN | lower priority |
+
+## 2026-10-25 genuine outcome update
+
+Two additional genuine reported attendances were added after the matches completed:
+
+- event 21 — Jagiellonia Białystok vs Wisła Płock: **17,021**;
+- event 23 — Śląsk Wrocław vs Wieczysta Kraków: **12,391**.
+
+Both were sourced from published post-match reports. No inventory-derived attendance estimate was used.
+
+Immediate effect:
+
+- P9 T-168 readiness: **5/9 -> 7/9**;
+- P9 T-72 readiness: **9 -> 11 events**;
+- P9 T-48 readiness: **12 -> 14 events**;
+- P9 T-24 readiness: **15 -> 17 events**;
+- P4a labeled READY events: **2 -> 4**;
+- P4a distinct labeled previous-home-spacing values: **2 -> 3**;
+- Long72 genuine scored events: **2 -> 4**.
+
+Event 22 — Legia Warszawa vs Lech Poznań — has completed, but its attendance has not yet been added because a sufficiently reliable published attendance value has not been confirmed. Do not estimate it from ticket inventory.
 
 ## Multi-source ingestion coverage
 
@@ -96,7 +117,7 @@ Status payload:
 
 `dashboard-ticketing-ingestion-status-v2`
 
-The panel shows future tracked events, protected buffers, ingestion gaps and recent completed matches. The schedule watchdog currently surfaces future `SCHEDULE_GAP` fixtures before ticket products are available, which is the intended early-warning behavior.
+The panel shows future tracked events, protected buffers, ingestion gaps and recent completed matches. The schedule watchdog surfaces future `SCHEDULE_GAP` fixtures before ticket products are available, which is the intended early-warning behavior.
 
 Known source-side exception:
 
@@ -125,22 +146,6 @@ Frozen fingerprint:
 
 `70fa929181531276c80a75c0b78a60fb821cf50e714e2bc001de8251cea1793f`
 
-Fingerprint evidence:
-
-- run `40201818862`;
-- artifact digest `a6dab7c220e065a9e2d2b5f32954303bf067387b1d24458b1fa1066d5a507184`.
-
-Canonical execution wrapper:
-
-`ml/p7_long168_prospective_run_v1.py`
-
-One-shot end-to-end execution validation:
-
-- run `40223004586`;
-- conclusion: SUCCESS;
-- artifact digest `45eaf3abdd77395702d03733f2956da6be76c854346ca8b267c868577fcadbe7`;
-- temporary one-shot workflow removed after validation.
-
 Current immutable ledger:
 
 - prediction rows: **6**;
@@ -152,49 +157,58 @@ Current immutable ledger:
 - production activation allowed: false;
 - `live_adjustment=0`.
 
-The second set of three rows is a later genuine timepoint for the same three events; independent event N remains 3.
-
-Actual GitHub Actions schedule is implemented in `.github/workflows/p7-long168-prospective-v1.yml`:
+Actual GitHub Actions schedule:
 
 `37 */6 * * *`
 
-Scheduled/manual predict mode performs exact frozen-model rebuild, hard fingerprint/lineage checks, immutable prediction persistence and only then genuine outcome attachment/scoring.
-
 No score exists yet, so there is nothing to tune or promote.
 
-## Long72
+## Long72 — 4 genuine prospective events
 
-Genuine scored events remain **2**:
+Genuine scored events now include events **10, 16, 21 and 23**.
 
-- event 10 Pogoń Szczecin vs Radomiak Radom: 19,050;
-- event 16 Wisła Kraków vs Raków Częstochowa: 33,000.
+Current frozen package evidence:
 
-Point evidence:
+- anchor event-balanced MAE: **6942.59**;
+- package event-balanced MAE: **6824.16**;
+- point improvement: **118.43 MAE / 1.71%**;
+- event improvement rate: **75%**;
+- event-balanced bias: **-712.84**;
+- worst event degradation: **3633.23**.
 
-- anchor MAE: 9069.5168;
-- package MAE: 7641.7132;
-- gain: 1427.8036 / 15.7429%.
+By band:
+
+- 24–48h: package is **5.00 MAE worse** than anchor;
+- 48–72h: package improves MAE by **241.87**.
+
+This is materially weaker than the earlier n=2 point result. Preserve the frozen package and continue prospective scoring. **Do not retune, recalibrate or promote from n=4.**
 
 ## P9 / P9a — fresh readiness
 
-- 168h: **5 events / 5 clubs**;
-- 72h: **9 / 7**;
-- 48h: **12 / 7**;
-- 24h: **15 / 9**;
+- 168h: **7 events / 7 clubs**;
+- 72h: **11 / 9**;
+- 48h: **14 / 9**;
+- 24h: **17 / 10**;
 - full status: `DATA_BOUND`;
-- completed outcome events visible: 17;
+- completed outcome events visible: **19**;
 - learner precommitted: false.
+
+Full P9 remains closed until the precommitted 9-event full-168h threshold is reached and a separate learner precommit is frozen.
 
 Expanded source coverage changes future evidence only. Do not backfill P9 windows.
 
 ## P4a
 
-Gate remains closed:
+Gate remains closed, but the variance condition is now satisfied:
 
 - READY events: 5;
-- labeled READY events: 2;
-- distinct labeled values: 2;
-- required: >=9 labeled AND >=3 distinct labeled values.
+- labeled READY events: **4/9**;
+- distinct labeled previous-home-spacing values: **3**;
+- required: >=9 labeled AND >=3 distinct labeled values;
+- distinct-value condition: **PASS**;
+- event-count condition: **FAIL (4/9)**.
+
+Do not open model results before 9 labeled events.
 
 ## P11a — ACTIVE / RESILIENT
 
@@ -206,7 +220,6 @@ Fresh state after recovery run `40223646599`:
 - >=3 bookmaker events: **4**;
 - 24h / 72h / 168h coverage: **3 / 3 / 0**;
 - latest capture: `2026-10-25T18:56:51.448Z`;
-- recovery artifact digest: `6c326149cea6d1043eaa3c5a200b5430853a3fb46454aad910cbf0faf188beba`;
 - health after capture: `capture_due=false`;
 - model precommitted: false;
 - target values used: false;
@@ -216,10 +229,7 @@ Capture resilience:
 
 - primary schedule: `17 */6 * * *`;
 - fallback schedule: `47 0,6,12,18 * * *`;
-- health RPC: `public.p11_market_odds_capture_health_v2()`;
-- stale threshold: 270 minutes;
-- fallback skips provider work after a healthy fresh primary capture;
-- temporary recovery workflow removed after success.
+- stale threshold: 270 minutes.
 
 Do not backfill closing odds.
 
@@ -237,7 +247,7 @@ Do not backfill closing odds.
 
 ## Immediate order
 
-`preserve P7 prospective schedule -> preserve 18/18 multi-source ticketing ingestion -> preserve resilient P11a/P11b/P11d collection -> score Long72/P7 only when genuine outcomes arrive -> accumulate P9 to 9/9 -> accumulate P4a labels -> derive business ΔMAE threshold -> P12 later`
+`preserve P7 prospective schedule -> preserve 18/18 multi-source ticketing ingestion -> preserve resilient P11a/P11b/P11d collection -> obtain only genuine post-match labels -> P9 7/9 -> P4a 4/9 -> score Long72/P7 only when genuine outcomes arrive -> derive business ΔMAE threshold -> P12 later`
 
 ## Closed loops
 
