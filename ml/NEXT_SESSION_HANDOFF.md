@@ -1,6 +1,6 @@
 # Beyond Ticketing — Next Session Handoff
 
-Last updated: **2026-10-25 11:20 Europe/Warsaw**
+Last updated: **2026-10-25 11:25 Europe/Warsaw**
 
 Status: **READ THIS FIRST AFTER `AI_BOOTSTRAP.md`**
 
@@ -30,22 +30,35 @@ No research result activates production automatically.
 
 `main`
 
-`main` already contains the canonical MAE Roadmap v4, P9/P10/P10b results, Governance v2, P4a/P7 contracts and P11a v1 DB contract.
+`main` contains the canonical Roadmap v4, P9/P10/P10b results, Governance v2, P4a/P7 contracts and current handoff/execution plan.
 
 ### Active development branch
 
 `ml/p9-p11-execution-2026-10-24`
 
-This branch contains the next P11a implementation slice and must not be forgotten or recreated from scratch.
+This branch contains the current P9a freeze and P11a v2 implementation slice. **Do not recreate these components from scratch.**
 
 Important files on this branch:
 
-- `ml/EXECUTION_PLAN_2026-10-24.md`;
+#### P9a target-free freeze
+
+- `ml/p9a_booking_curve_freeze_v1.py`;
+- `ml/test_p9a_booking_curve_freeze_v1.py`;
+- `supabase/sql/p9a_booking_curve_freeze_v1.sql`;
+- `supabase/functions/p9a_booking_curve_export_v1/index.ts`;
+- `.github/workflows/p9a-booking-curve-freeze-v1.yml`.
+
+#### P11a odds v2
+
 - `supabase/sql/p11_market_odds_capture_v2.sql`;
 - `supabase/functions/p11_odds_capture_v2/index.ts`;
 - `supabase/functions/p11_odds_capture_v2/provider.ts`;
 - `supabase/functions/p11_odds_capture_v2/provider_test.ts`;
 - `.github/workflows/p11-odds-capture-v2.yml`.
+
+Also present:
+
+- `ml/EXECUTION_PLAN_2026-10-24.md`.
 
 ### Supabase project
 
@@ -53,9 +66,17 @@ Project ref:
 
 `adchzwqboeekhokapxqi`
 
-Important: **the live Supabase environment is temporarily ahead of `main` for P11a v2**.
+Important: **the live Supabase environment is temporarily ahead of `main` for P9a/P11a source code**.
 
 Already live in Supabase:
+
+#### P9a
+
+- `public.export_p9a_booking_curve_inputs_v1(integer)`;
+- `public.export_p9a_booking_curve_labels_v1(bigint[])` — **do not call casually; labels remain separated from target-free freeze**;
+- Edge Function `p9a_booking_curve_export_v1` — **ACTIVE, version 1**.
+
+#### P11a v2
 
 - `private.p11_market_odds_observations_v2`;
 - `public.p11_market_capture_inputs_v2(integer)`;
@@ -64,9 +85,7 @@ Already live in Supabase:
 - `public.p11_market_odds_readiness_v2()`;
 - Edge Function `p11_odds_capture_v2` — **ACTIVE, version 2**, `verify_jwt=false` because the function performs its own GitHub OIDC verification.
 
-The source for this live Edge Function is currently on the active branch above, not yet canonical on `main`.
-
-Do not deploy a different P11 function from memory. Merge/reconcile the branch first.
+Do not deploy alternative implementations from memory. Merge/reconcile the active branch first.
 
 ---
 
@@ -91,7 +110,7 @@ Canonical source:
 
 Important diagnostic:
 
-Event 6 (Lech Poznań vs Wisła Kraków, kickoff `2026-10-31 16:30Z`) was expected to enter the <=168h window on 2026-10-24, but the canonical P7 readiness is still 8/9 on 2026-10-25.
+Event 6 (Lech Poznań vs Wisła Kraków, kickoff `2026-10-31 16:30Z`) was expected to enter the <=168h window on 2026-10-24, but canonical P7 readiness is still 8/9 on 2026-10-25.
 
 **Do not assume P7 automatically unlocked. First investigate why event 6 is not counted.**
 
@@ -101,7 +120,8 @@ Check in this order:
 2. Long168 export eligibility/window rule;
 3. requested snapshot/as-of selection;
 4. whether the latest exporter/readiness state includes event 6;
-5. only if canonical readiness reaches 9/9, execute the already-frozen P7 sequence.
+5. any data-quality/exclusion rule;
+6. only if canonical readiness reaches 9/9, execute the already-frozen P7 sequence.
 
 Do not lower the 9-event threshold.
 
@@ -123,7 +143,7 @@ P4a is frozen. Do not redesign after labels arrive.
 - sidecar rows: **90**;
 - READY rows: **0**.
 
-### P9 booking curve
+### P9 full-168h booking curve
 
 Current completed reference coverage:
 
@@ -134,7 +154,47 @@ Current completed reference coverage:
 
 `P9_BOOKING_CURVE_168_START = false`.
 
-Do not fit the first learnable P9 residual model yet.
+Do not fit the first learnable full-168h P9 residual model yet.
+
+### P9a T-24/T-48 target-free freeze infrastructure
+
+This is a **separate target-free freeze/audit path**, not permission to train the P9 learner.
+
+Live target-free export checked 2026-10-25:
+
+#### T-24
+
+- version: `p9a-booking-curve-inputs-v1`;
+- target events exported: **18**;
+- reference catalog events: **19**;
+- `target_values_used=false`;
+- `post_cutoff_target_snapshots_exported=false`;
+- `production_change=false`.
+
+#### T-48
+
+- target events exported: **15**;
+- reference catalog events: **19**;
+- `target_values_used=false`;
+- `post_cutoff_target_snapshots_exported=false`;
+- `production_change=false`.
+
+The branch harness explicitly:
+
+- freezes representation/reference/snapshot identities;
+- forbids attendance target fields in the input;
+- forbids target snapshots after cutoff;
+- excludes self-event references;
+- requires references to be completed before target cutoff;
+- accepts only incumbent forecasts genuinely persisted before the target cutoff;
+- **does not train/select a learner**;
+- keeps labels separate.
+
+Workflow:
+
+`.github/workflows/p9a-booking-curve-freeze-v1.yml`
+
+Its main audit should be allowed to run after source is merged to `main`. Do not assume a canonical freeze manifest exists until the main audit run is verified.
 
 ### P11a odds v2
 
@@ -281,7 +341,7 @@ Start from:
 
 `ml/p9-p11-execution-2026-10-24`
 
-Compare it to `main`. Preserve all P11a v2 files listed above. Merge the branch after CI/review; do not recreate the same implementation on another branch.
+Compare it to `main`. Preserve both P9a and P11a v2 file sets listed above. Merge the branch after CI/review; do not recreate the same implementation on another branch.
 
 ### Step 2 — diagnose P7 event 6 before any new P7 modeling
 
@@ -289,7 +349,18 @@ Canonical readiness is unexpectedly still 8/9.
 
 Find why event 6 is not counted after entering the Long168 window. If and only if `ml_research_readiness_v1()` says 9/9, run the frozen P7 executor exactly as precommitted.
 
-### Step 3 — make first genuine P11a capture possible
+### Step 3 — run P9a target-free freeze audit after merge
+
+Once P9a source/workflow is on `main`:
+
+1. run/verify the main target-free freeze audit for T-24 and T-48;
+2. persist/check manifest SHA and frozen identities;
+3. confirm `target_values_opened=false` and `model_training_performed=false`;
+4. **do not open labels or fit a learner** until a separate learner/comparator precommit is explicitly made.
+
+This can proceed while full-168h P9 remains data-bound at 4/9.
+
+### Step 4 — make first genuine P11a capture possible
 
 1. verify/configure `THE_ODDS_API_KEY` in Supabase Edge Function secrets;
 2. merge P11 v2 source/workflow to `main`;
@@ -300,7 +371,7 @@ Find why event 6 is not counted after entering the Long168 window. If and only i
 
 Do not precommit an odds model from zero events.
 
-### Step 4 — P9 continues collecting
+### Step 5 — P9 full-168h continues collecting
 
 Keep genuine 168h trajectory coverage growing. Allowed work before 9/9:
 
@@ -311,13 +382,13 @@ Keep genuine 168h trajectory coverage growing. Allowed work before 9/9:
 
 Not allowed:
 
-- selecting/tuning the first learnable P9 model before the gate and learner precommit.
+- selecting/tuning the first learnable full-168h P9 model before the gate and learner precommit.
 
-### Step 5 — define meaningful MAE threshold
+### Step 6 — define meaningful MAE threshold
 
 Derive a practical minimum MAE improvement from business impact, independently of model scorecards.
 
-### Step 6 — P4a / Long72
+### Step 7 — P4a / Long72
 
 When genuine labels appear:
 
@@ -331,7 +402,9 @@ When genuine labels appear:
 
 - do not backfill closing odds as if they were historical PIT observations;
 - do not insert synthetic odds into P11 v2;
-- do not use future target trajectory points in P9;
+- do not use future target trajectory points in P9/P9a;
+- do not call the P9a target-free freeze a trained model;
+- do not open P9a labels merely because the export contract exists;
 - do not lower P7/P9/P4 gates because data is slow;
 - do not reopen P10/P10b with a hyperparameter sweep;
 - do not claim historical exposed research as prospective evidence;
@@ -342,4 +415,4 @@ When genuine labels appear:
 
 ## 9. Cold-start command for the next AI session
 
-> Read `AI_BOOTSTRAP.md`, then `ml/NEXT_SESSION_HANDOFF.md`, `ml/EXECUTION_PLAN_CURRENT.md`, `ml/PROGRESS_TRACKING.md` and `ml/MAE_RESEARCH_ROADMAP_V4.md`. Check `public.ml_research_readiness_v1()` fresh. Then compare `main` with `ml/p9-p11-execution-2026-10-24`. Do not rebuild or retune closed experiments. First resolve P7 event 6 readiness and finish P11a v2 merge/first genuine capture while P9 continues accumulating data.
+> Read `AI_BOOTSTRAP.md`, then `ml/NEXT_SESSION_HANDOFF.md`, `ml/EXECUTION_PLAN_CURRENT.md`, `ml/PROGRESS_TRACKING.md` and `ml/MAE_RESEARCH_ROADMAP_V4.md`. Check `public.ml_research_readiness_v1()` fresh. Then compare `main` with `ml/p9-p11-execution-2026-10-24`. Do not rebuild or retune closed experiments. Preserve P9a/P11a v2. First diagnose P7 event 6, reconcile the branch, verify the target-free P9a freeze, and enable one audited genuine P11 capture while full P9 continues accumulating data.
