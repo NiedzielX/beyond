@@ -35,7 +35,7 @@ Production remains unchanged:
 - repository reconciliation is complete;
 - RoboTicket ingestion safety net is live: hardened discovery, private pre-mapping buffer, verified promotion/backfill and dashboard coverage;
 - **multi-source ticketing coverage is live: RoboTicket + Stellis**;
-- alias-resolved coverage now reaches **18/18 current Ekstraklasa home clubs / 0 uncovered**;
+- alias-resolved coverage reaches **18/18 current Ekstraklasa home clubs / 0 uncovered**;
 - Stellis v3 continuously monitors Widzew, Radomiak, Piast, Motor and Korona;
 - the shared ingestion dashboard exposes both source families through one status contract;
 - dashboard CI passes with ingestion coverage visible on Overview and Data Quality;
@@ -44,14 +44,14 @@ Production remains unchanged:
 - P7 prospective follow-up is precommitted, fingerprint-pinned and has **6 immutable genuine prediction rows across 3 independent future events**;
 - P7 prospective workflow has a real six-hour `predict -> persist -> score` schedule with immutable model/hash gates;
 - P9a T-24/T-48 target-free freeze audit completed;
-- P11a genuine bookmaker capture is scheduled every 6 hours;
+- P11a genuine bookmaker capture now has **81 raw rows / 4 genuine events / 5 capture batches** and a primary + stale-health fallback schedule;
 - P11b PIT-safe price `as-known` contract is live;
 - P11c/P11d target-free source audit is complete;
 - Governance v2 business-threshold framework and P12 audit pre-plan exist.
 
 ### Immediate execution order
 
-`preserve P7 prospective schedule -> preserve 18/18 multi-source ticketing coverage -> preserve P11a/P11b/P11d collection -> score P7/Long72 only after genuine outcomes -> accumulate P9 to 9/9 -> accumulate P4a labels -> derive business ΔMAE threshold`
+`preserve P7 prospective schedule -> preserve 18/18 multi-source ticketing coverage -> preserve resilient P11a/P11b/P11d collection -> score P7/Long72 only after genuine outcomes -> accumulate P9 to 9/9 -> accumulate P4a labels -> derive business ΔMAE threshold`
 
 No research result activates production automatically.
 
@@ -234,22 +234,30 @@ Gate remains closed.
 
 ### P11a — bookmaker odds
 
-Fresh readiness:
+Fresh genuine state after recovery capture run `40223646599`:
 
-- `GENUINE_PIT_DATA_ACCUMULATING`;
-- genuine PIT events: **2**;
-- clubs: **2**;
-- events with >=3 bookmakers: **2**;
-- 24h / 72h / 168h coverage: **1 / 1 / 0**;
+- status: `GENUINE_PIT_DATA_ACCUMULATING`;
+- raw append-only bookmaker rows: **81**;
+- genuine PIT events / clubs: **4 / 4**;
+- capture batches: **5**;
+- events with >=3 bookmakers: **4**;
+- 24h / 72h / 168h coverage: **3 / 3 / 0**;
+- latest capture: `2026-10-25T18:56:51.448Z`;
+- recovery artifact digest: `6c326149cea6d1043eaa3c5a200b5430853a3fb46454aad910cbf0faf188beba`;
 - model precommitted: false;
 - target values used: false;
 - production change: false.
 
-Capture schedule:
+Capture resilience is now explicit:
 
-`17 */6 * * *`
+- primary schedule: `17 */6 * * *`;
+- fallback schedule: `47 0,6,12,18 * * *`;
+- health RPC: `public.p11_market_odds_capture_health_v2()`;
+- fallback only calls the provider when the latest capture is older than **270 minutes**;
+- a fresh primary capture makes the fallback skip the provider call;
+- health is target-free and production-safe.
 
-Never backfill closing odds.
+The temporary recovery one-shot workflow was removed after successful validation. Never backfill closing odds.
 
 ### P11b/c/d
 
