@@ -17,11 +17,13 @@ Production remains:
 ## Priority 0 — protect data and evidence integrity
 
 - Multi-source ticketing ingestion is live: RoboTicket + Stellis.
+- Alias-resolved current-league source coverage is **18/18 home clubs / 0 uncovered**.
 - Fixture schedule watchdog is live; preserve it so known fixtures cannot silently disappear before a ticketing event opens.
 - Original P7 tournament is exposed; never retune/rerun it.
 - P7 prospective model fingerprint is pinned; any drift must fail closed.
 - P9a target-free freeze remains closed to learner selection.
 - Preserve frozen Long72 and P4a contracts.
+- P11 odds capture has primary + health-guarded fallback schedules; preserve both.
 - Never backfill closing odds or booking curves and call them prospective.
 - Do not promote parking/VIP/reserve/non-football/cup ticket products.
 - Do not convert hidden/unknown availability into zero.
@@ -50,25 +52,33 @@ Prospective lane:
 
 Current prospective ledger:
 
-- predictions: 3;
-- independent events: 3;
-- scored events: 0;
+- prediction rows: **6**;
+- independent events: **3**;
+- scored events: **0**;
 - evidence: `PROSPECTIVE_PREDICTIONS_ONLY`;
 - production activation false.
+
+The second three rows are later genuine timepoints for the same three events; independent event N remains 3.
 
 Schedule:
 
 `37 */6 * * *`
 
-Next P7 action is collection/scoring only. Do not tune.
+End-to-end schedule-path validation run `40223004586` succeeded. Next P7 action is collection/scoring only. Do not tune.
 
-## Priority 2 — preserve and expand multi-source ticketing coverage
+## Priority 2 — preserve full multi-source ticketing coverage
 
 Read:
 
 - `ml/ROBOTICKET_INGESTION_SAFETY_NET_2026-10-25.md`
 - `ml/TICKETING_SOURCE_COVERAGE_EXPANSION_2026-10-25.md`
 - `ml/TICKETING_SCHEDULE_WATCHDOG_2026-10-25.md`
+
+Alias-resolved league coverage:
+
+- current Ekstraklasa home clubs: **18**;
+- covered by an active source: **18**;
+- uncovered: **0**.
 
 ### Layer A — fixture watchdog
 
@@ -88,7 +98,7 @@ Cadence:
 
 `9,19,29,39,49,59 * * * *`
 
-Fresh genuine schedule gaps after manual rechecks: **5**:
+Fresh genuine schedule gaps after source rechecks: **5**:
 
 - Górnik Zabrze – Legia Warszawa;
 - Jagiellonia Białystok – GKS Katowice;
@@ -107,7 +117,7 @@ These are operational alerts, not training rows. They remain until the source ex
 - non-match/non-football fail closed;
 - verified schedule promotion + original PIT backfill.
 
-Fresh manual buffer check confirmed Wieczysta–Jagiellonia is already protected: 3958 visible seats, 7 sectors, and therefore correctly absent from SCHEDULE_GAP.
+Wieczysta–Jagiellonia is already protected and therefore correctly absent from SCHEDULE_GAP.
 
 ### Layer C — Stellis
 
@@ -147,20 +157,37 @@ Panel displays TRACKED / BUFFERING / SCHEDULE_GAP and other actionable states. S
 
 This lane expands future research data only. Never fabricate historical evidence.
 
-## Priority 3 — preserve P11a scheduled PIT odds accumulation
+## Priority 3 — preserve P11a PIT odds accumulation with resilience
 
-Fresh readiness:
+Fresh genuine state after recovery run `40223646599`:
 
-- genuine PIT events: 2;
-- events with >=3 bookmakers: 2;
-- current horizon coverage 24h / 72h / 168h: 1 / 1 / 0;
-- model precommitted: false.
+- raw append-only odds rows: **81**;
+- genuine PIT events / clubs: **4 / 4**;
+- capture batches: **5**;
+- events with >=3 bookmakers: **4**;
+- current horizon coverage 24h / 72h / 168h: **3 / 3 / 0**;
+- latest capture: `2026-10-25T18:56:51.448Z`;
+- health after capture: `capture_due=false`;
+- model precommitted: false;
+- target values used: false;
+- production change: false.
 
-Scheduled capture:
+Capture schedules:
 
-`17 */6 * * *`
+- primary: `17 */6 * * *`;
+- fallback: `47 0,6,12,18 * * *`.
 
-Do not fit a P11a attendance model yet.
+Health contract:
+
+`public.p11_market_odds_capture_health_v2()`
+
+Stale threshold:
+
+`270 minutes`
+
+The fallback calls the provider only when the latest genuine capture is stale. A healthy primary run makes the fallback skip provider work. Recovery artifact digest: `6c326149cea6d1043eaa3c5a200b5430853a3fb46454aad910cbf0faf188beba`.
+
+Do not fit a P11a attendance model yet and never backfill closing odds.
 
 ## Priority 4 — preserve P11b/P11d context collection
 
@@ -233,9 +260,11 @@ Do not start a regime-aware challenger while higher-priority prospective/data-co
 ## Completed in this execution cycle
 
 - P7 historical tournament executed and frozen;
-- P7 prospective precommit + deterministic fingerprint + first 3 immutable predictions completed;
+- P7 prospective precommit + deterministic fingerprint completed;
+- P7 immutable prospective ledger advanced to 6 rows across 3 independent events;
+- P7 real six-hour predict/persist/score workflow validated end to end;
 - RoboTicket discovery/promotion/buffer safety net deployed;
-- source coverage expanded to Stellis family;
+- source coverage expanded to Stellis family and verified at 18/18 current league home clubs;
 - canonical Stellis v3 collector scheduled every 10 minutes;
 - Stellis state-transition and cup fail-closed hardening deployed;
 - shared multi-source ingestion dashboard deployed;
@@ -243,7 +272,11 @@ Do not start a regime-aware challenger while higher-priority prospective/data-co
 - five genuine schedule gaps surfaced;
 - panel updated to render SCHEDULE_GAP and source family correctly;
 - panel CI `40222368344` succeeded;
-- README, handoff, progress tracking and bootstrap synchronized.
+- P11 stale-health contract deployed;
+- P11 primary + fallback schedules implemented;
+- P11 recovery run `40223646599` succeeded and expanded genuine odds coverage to 4 events / 81 rows;
+- temporary P7/P11 one-shot workflows removed after successful validation;
+- README, handoff, progress tracking, bootstrap and execution plan synchronized.
 
 ## Next meaningful milestones
 
@@ -252,6 +285,6 @@ Do not start a regime-aware challenger while higher-priority prospective/data-co
 3. additional Long72 genuine outcomes;
 4. P9 reaches 9/9 at 168h;
 5. P4a reaches 9 labeled / 3 distinct labeled values;
-6. P11a gains broader multi-event/multi-horizon coverage;
+6. P11a reaches genuine 168h coverage and broader multi-event accumulation;
 7. media attention becomes evaluation-ready;
 8. business minimum meaningful ΔMAE is approved.
