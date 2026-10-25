@@ -95,7 +95,9 @@ Panel repo: `NiedzielX/BeyondTicketingPanel`.
 
 Coverage is visible on Overview/Data Quality. The Events page keeps recent completed matches visible instead of showing only future fixtures.
 
-Current known source-side exception:
+Current operational watchdog state includes future `SCHEDULE_GAP` rows before ticket products become available; these are early warnings, not fabricated events.
+
+Known source-side exception:
 
 - Wisła Kraków vs Cracovia is mapped but the active RoboTicket source currently exposes no readable sectors; this is monitored as source inventory unavailable rather than treated as a missing event or fake zero.
 
@@ -140,9 +142,16 @@ Canonical pinned execution wrapper:
 
 `ml/p7_long168_prospective_run_v1.py`
 
+One-shot end-to-end schedule-path validation:
+
+- run: `40223004586`;
+- result: SUCCESS;
+- artifact digest: `45eaf3abdd77395702d03733f2956da6be76c854346ca8b267c868577fcadbe7`;
+- temporary one-shot workflow removed after validation.
+
 Current immutable ledger:
 
-- prediction rows: **3**;
+- prediction rows: **6**;
 - independent events: **3**;
 - scored events: **0**;
 - status: `PROSPECTIVE_PREDICTIONS_ONLY`;
@@ -151,7 +160,9 @@ Current immutable ledger:
 - production activation allowed: false;
 - `live_adjustment=0`.
 
-Actual GitHub Actions schedule is now implemented in:
+Repeated rows are genuine later timepoints for the same events and do not increase independent event N.
+
+Actual GitHub Actions schedule is implemented in:
 
 `.github/workflows/p7-long168-prospective-v1.yml`
 
@@ -240,4 +251,4 @@ Do not reopen without a materially new mechanism:
 
 ## 12. Cold-start command
 
-> Read `AI_BOOTSTRAP.md`, this handoff, `ml/EXECUTION_PLAN_CURRENT.md`, `ml/PROGRESS_TRACKING.md`, Roadmap v4, P7 frozen/prospective files, `ml/ROBOTICKET_INGESTION_SAFETY_NET_2026-10-25.md` and `ml/TICKETING_SOURCE_COVERAGE_EXPANSION_2026-10-25.md`. Query readiness fresh. Ticketing source coverage is 18/18 current league home clubs. P7 prospective has 3 immutable predictions, 0 scores and a real six-hour predict/persist/score workflow with pinned fingerprint. P9 remains 5/9, P4a 2 labeled, P11 has 2 genuine odds events, Long72 has 2 genuine scores. Keep production unchanged and never retune exposed evidence.
+> Read `AI_BOOTSTRAP.md`, this handoff, `ml/EXECUTION_PLAN_CURRENT.md`, `ml/PROGRESS_TRACKING.md`, Roadmap v4, P7 frozen/prospective files, `ml/ROBOTICKET_INGESTION_SAFETY_NET_2026-10-25.md` and `ml/TICKETING_SOURCE_COVERAGE_EXPANSION_2026-10-25.md`. Query readiness fresh. Ticketing source coverage is 18/18 current league home clubs. P7 prospective has 6 immutable prediction rows across 3 independent events, 0 scores and a real six-hour predict/persist/score workflow with pinned fingerprint. P9 remains 5/9, P4a 2 labeled, P11 has 2 genuine odds events, Long72 has 2 genuine scores. Keep production unchanged and never retune exposed evidence.
