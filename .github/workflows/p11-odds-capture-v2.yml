@@ -52,7 +52,7 @@ jobs:
         run: deno test supabase/functions/p11_odds_capture_v2/provider_test.ts
 
   capture:
-    if: github.event_name == 'workflow_dispatch' && inputs.capture == true
+    if: (github.event_name == 'workflow_dispatch' && inputs.capture == true) || (github.event_name == 'push' && github.ref == 'refs/heads/main' && github.event.head_commit.message == 'P11 one-shot genuine capture 2026-10-25')
     needs: contract
     runs-on: ubuntu-latest
     timeout-minutes: 10
