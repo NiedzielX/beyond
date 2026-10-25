@@ -1,10 +1,10 @@
 # Beyond Ticketing — Current MAE Execution Plan
 
-Last updated: **2026-10-25 11:55 Europe/Warsaw**
+Last updated: **2026-10-25**
 
 Status: **CURRENT EXECUTION ORDER**
 
-Canonical strategy remains `ml/MAE_RESEARCH_ROADMAP_V4.md`.
+Canonical strategy: `ml/MAE_RESEARCH_ROADMAP_V4.md`.
 
 ## North star
 
@@ -17,75 +17,45 @@ Production remains:
 ## Priority 0 — protect evidence integrity
 
 - Branch reconciliation is complete; do not recreate P9a/P11a.
-- Preserve frozen P4a/P7/P9 contracts.
-- Do not retune Long72 from the first prospective outcomes.
+- P7 frozen execution is complete; do not rerun/tune its inspected candidate set.
+- P9a target-free audit is complete; keep labels/model closed.
+- Preserve frozen Long72 and P4a contracts.
 - Do not reopen P10/P10b.
 - Do not enable production.
 
-## Priority 1 — first genuine P11 capture NOW
+## Priority 1 — synchronize corrected P11 runtime and perform first genuine capture
 
-P11 is the immediate time-sensitive task because pre-match odds are perishable PIT evidence.
+P11 provider secret is **configured and verified**. The remaining blocker is not credentials.
 
-Already live/on `main`:
+Current live/source state:
 
-- P11 v2 DB contract;
-- `p11_odds_capture_v2` ACTIVE v2;
-- manual GitHub OIDC workflow;
-- no automatic schedule.
+- P11 v2 DB contract live;
+- `THE_ODDS_API_KEY` configured;
+- main-only GitHub OIDC verified;
+- source fix for provider timestamp format committed on `main` as `d27d797578f18f09140ccc1723219a3e690d339a`;
+- type-check/tests green;
+- deployed Edge runtime still contains pre-fix timestamp generation after Dashboard redeploy;
+- genuine rows: **0**;
+- schedule: off.
 
-Current genuine rows: **0**.
+Required sequence after runtime source is synchronized:
 
-Manual dispatch required:
+1. run one genuine main-only capture;
+2. verify local/provider/matched event counts;
+3. inspect every mapping status and kickoff delta;
+4. require verified aliases and complete 1X2 bookmaker quotes;
+5. record provider quota;
+6. verify capture batch + payload SHA lineage;
+7. verify raw append-only rows;
+8. inspect `p11_market_context_as_known_v2(...)`;
+9. inspect `p11_market_odds_readiness_v2()`;
+10. keep schedule off until accepted.
 
-`Actions -> P11 Odds Capture v2 -> Run workflow -> main -> capture=true`
+Do not backfill closing odds.
 
-The workflow must verify `THE_ODDS_API_KEY` first and fail closed if absent.
+## Priority 2 — continue Long72 prospective evidence
 
-After one capture, audit:
-
-1. local/provider/matched event counts;
-2. every mapping status;
-3. verified aliases only;
-4. bookmaker count / complete 1X2;
-5. kickoff delta;
-6. provider quota;
-7. capture batch and payload SHA lineage;
-8. raw append-only rows;
-9. `p11_market_context_as_known_v2(...)`;
-10. `p11_market_odds_readiness_v2()`.
-
-Keep schedule off until accepted.
-
-## Priority 2 — execute frozen P7 Long168
-
-P7 canonical readiness is now **10/9**, trigger **OPEN**.
-
-This changed after genuine outcomes for:
-
-- event 10 Pogoń–Radomiak: 19,050;
-- event 16 Wisła–Raków: 33,000.
-
-Do not redesign the experiment. Run exactly:
-
-`Actions -> P7 Long168 Executor v1 -> Run workflow -> main -> mode=execute`
-
-Frozen workflow must perform:
-
-1. hash verification;
-2. live Long168/support export;
-3. frozen T-7 anchor replay;
-4. exact identity freeze;
-5. fixed precommitted tournament;
-6. artifact upload;
-7. `production_change=false`;
-8. `production_activation_allowed=false`;
-9. `live_adjustment=0`.
-
-Review scorecard only after the freeze is written by the workflow.
-
-## Priority 3 — preserve first Long72 prospective evidence
-
-Current genuine prospective state:
+Current genuine state:
 
 - scored events: **2**;
 - anchor event-balanced MAE: **9069.52**;
@@ -95,53 +65,41 @@ Current genuine prospective state:
 
 Decision:
 
-- record evidence;
-- keep collecting;
+- preserve forecasts/results;
+- keep outcome sync healthy;
+- score new eligible completed events prospectively;
 - no retuning;
 - no promotion conclusion;
 - no post-hoc calibration.
 
-The hourly prospective workflow already scores eligible completed events after outcomes exist.
+## Priority 3 — accumulate P9 full-168h coverage
 
-## Priority 4 — P9a main target-free freeze audit
-
-P9a remains freeze tooling only.
-
-Run/verify T-24 and T-48 main audits and require:
-
-- deterministic manifests/SHAs;
-- exact frozen reference/snapshot/incumbent identities;
-- `target_values_opened=false`;
-- `model_training_performed=false`;
-- no post-cutoff target snapshots.
-
-Do not fit the learner yet.
-
-## Priority 5 — P9 full-168h accumulation
-
-Fresh coverage after the 24.10 outcomes:
+Current coverage:
 
 - 168h: **5/9 events / 5 clubs**;
 - 72h: **9 events / 7 clubs**;
 - 48h: **12 events / 7 clubs**;
 - 24h: **15 events / 9 clubs**.
 
-Full-168h learner remains blocked.
+Full-168h learner remains `DATA_BOUND`.
 
-Allowed:
+Allowed before 9/9:
 
 - readiness reporting;
 - leakage/lineage tests;
 - representation audits;
 - freeze tooling.
 
-Blocked until 9/9 + learner precommit:
+Blocked until 9/9 plus separate learner precommit:
 
 - learner selection;
 - hyperparameter selection;
+- model fitting;
 - opening learner result comparisons.
 
-## Priority 6 — P4a continues prospectively
+P9a T-24/T-48 audit is already complete; do not repeat it without a material contract/data reason.
+
+## Priority 4 — accumulate P4a labels
 
 Current:
 
@@ -150,15 +108,65 @@ Current:
 - distinct labeled `previous_home_match_days`: **2**;
 - required: `>=9 labeled AND >=3 distinct labeled values`.
 
-Gate remains closed. Do not run the ablation yet.
+Gate remains closed. Do not run/retune the ablation yet.
 
-## Priority 7 — business minimum meaningful MAE threshold
+## Priority 5 — P7 follow-up only through a new precommit
 
-Governance v2 still lacks the business-derived minimum meaningful `ΔMAE`.
+Frozen P7 result:
 
-Derive it from decisions such as staffing, security, transport, catering, hospitality and asymmetric forecast-error cost — never from the challenger results themselves.
+- anchor MAE: **7409.79**;
+- best challenger MAE: **6339.99**;
+- point improvement: **1069.80 / 14.44%**;
+- event/fold improvement rates: **80% / 80%**;
+- event-block 95% interval: **[-2566.13, +174.47]**;
+- status: `POINT_GAIN_UNCERTAINTY_LIMITED`;
+- decision: `ADVANCE_RESEARCH`.
 
-Until approved, no result can be called `ROBUST_RESEARCH_ADVANCE`.
+Because the result has now been inspected:
+
+- do not tune `gbr-l1-depth2-n50-lr003` against the same P7 scorecard;
+- do not broaden the candidate set post hoc and call it the same experiment;
+- do not promote to production;
+- if continuing P7, define a **new** challenger/version and evaluation protocol before new results are opened;
+- favor genuinely future/prospective evidence or a materially new information mechanism.
+
+Canonical result: `ml/P7_LONG168_RESULT_2026-10-25.md`.
+
+## Priority 6 — business minimum meaningful MAE threshold
+
+Governance v2 still lacks the approved business-derived minimum meaningful `ΔMAE`.
+
+Derive it from actual forecast-driven decisions such as:
+
+- staffing;
+- security;
+- transport;
+- catering;
+- hospitality;
+- asymmetric cost of over- vs under-forecasting.
+
+Never infer the threshold from P7, Long72, P9 or another result it will judge.
+
+Until approved and precision is sufficient, `ROBUST_RESEARCH_ADVANCE` is unavailable.
+
+## Completed in this execution cycle
+
+### P7 Long168
+
+Frozen tournament executed on 10 independent events / 139 rows. Result is an uncertainty-limited point gain. See `ml/P7_LONG168_RESULT_2026-10-25.md`.
+
+### P9a T-24/T-48
+
+Target-free main freeze audit complete.
+
+- T-24 manifest: `738a42da33b46361f0ba29d3f90c72e2e0019c0057ef00b78ac7e6a073f0bd1c`;
+- T-48 manifest: `ffa6dd178332bf328a24fc7ce15ef346214a0037325d7161426f9f96664babd4`;
+- targets not opened;
+- no model training;
+- no future target points;
+- production unchanged.
+
+See `ml/P9A_FREEZE_AUDIT_2026-10-25.md`.
 
 ## Closed loops
 
@@ -173,9 +181,9 @@ Do not reopen without a materially new mechanism:
 
 ## Next meaningful milestones
 
-1. first genuine P11 capture audited;
-2. P7 frozen tournament executed at genuine 10/9 readiness;
-3. additional Long72 prospective outcomes arrive;
-4. P9 reaches full 9/9 168h references;
-5. P4a reaches 9 labeled / 3 distinct labeled values;
-6. P9a main freeze manifests are verified.
+1. corrected P11 runtime synchronized and first genuine capture audited;
+2. additional Long72 prospective outcomes scored;
+3. P9 reaches full **9/9** 168h reference coverage and a learner is separately precommitted;
+4. P4a reaches **9 labeled / 3 distinct** values;
+5. a separate P7 follow-up is precommitted only if the research question remains valuable;
+6. business minimum meaningful `ΔMAE` is approved.
