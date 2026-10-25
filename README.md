@@ -12,9 +12,10 @@ For every new AI / engineering session, read in this order:
 4. [`ml/PROGRESS_TRACKING.md`](ml/PROGRESS_TRACKING.md)
 5. [`ml/MAE_RESEARCH_ROADMAP_V4.md`](ml/MAE_RESEARCH_ROADMAP_V4.md)
 6. [`ml/CURRENT_MODEL.md`](ml/CURRENT_MODEL.md)
-7. [`ml/ROBOTICKET_INGESTION_SAFETY_NET_2026-10-25.md`](ml/ROBOTICKET_INGESTION_SAFETY_NET_2026-10-25.md)
-8. [`ml/TICKETING_SOURCE_COVERAGE_EXPANSION_2026-10-25.md`](ml/TICKETING_SOURCE_COVERAGE_EXPANSION_2026-10-25.md)
-9. [`ml/MODEL_ACCURACY_DEVELOPMENT_INSTRUCTIONS_V2.md`](ml/MODEL_ACCURACY_DEVELOPMENT_INSTRUCTIONS_V2.md)
+7. [`ml/P9_BOOKING_CURVE_LEARNER_PRECOMMIT_V1.md`](ml/P9_BOOKING_CURVE_LEARNER_PRECOMMIT_V1.md)
+8. [`ml/ROBOTICKET_INGESTION_SAFETY_NET_2026-10-25.md`](ml/ROBOTICKET_INGESTION_SAFETY_NET_2026-10-25.md)
+9. [`ml/TICKETING_SOURCE_COVERAGE_EXPANSION_2026-10-25.md`](ml/TICKETING_SOURCE_COVERAGE_EXPANSION_2026-10-25.md)
+10. [`ml/MODEL_ACCURACY_DEVELOPMENT_INSTRUCTIONS_V2.md`](ml/MODEL_ACCURACY_DEVELOPMENT_INSTRUCTIONS_V2.md)
 
 Do **not** restart from Roadmap v3. Roadmap v4 is canonical.
 
@@ -44,7 +45,8 @@ Production remains unchanged:
 - P7 prospective follow-up is precommitted, fingerprint-pinned and has **6 immutable genuine prediction rows across 3 independent future events**;
 - P7 prospective workflow has a real six-hour `predict -> persist -> score` schedule with immutable model/hash gates;
 - P9a T-24/T-48 target-free freeze audit completed;
-- full P9 T-168 readiness is now **7/9** after two new genuine 2026-10-25 outcomes;
+- full P9 T-168 readiness is now **8/9** after recovering one additional genuine historical outcome;
+- the first P9 learner design is **frozen before the ninth full-window label** and hard-gated in the database;
 - P4a now has **4 labeled events / 3 distinct labeled spacing values**;
 - P11a genuine bookmaker capture has **81 raw rows / 4 genuine events / 5 capture batches** and a primary + stale-health fallback schedule;
 - P11b PIT-safe price `as-known` contract is live;
@@ -53,30 +55,35 @@ Production remains unchanged:
 
 ### Immediate execution order
 
-`preserve P7 prospective schedule -> preserve 18/18 multi-source ticketing coverage -> preserve resilient P11a/P11b/P11d collection -> obtain only genuine post-match labels -> P9 7/9 -> P4a 4/9 -> score frozen forward lanes only when genuine outcomes arrive -> derive business ΔMAE threshold`
+`preserve P7 prospective schedule -> preserve 18/18 multi-source ticketing coverage -> preserve resilient P11a/P11b/P11d collection -> obtain only genuine post-match labels -> P9 8/9 with learner precommit frozen -> when 9/9 arrives freeze exact target-free identities before label export -> P4a 4/9 -> score frozen forward lanes only when genuine outcomes arrive -> derive business ΔMAE threshold`
 
 No research result activates production automatically.
 
 ## 2026-10-25 outcome update
 
-Two additional genuine reported attendances were added after publication of post-match reports:
+Three genuine reported attendances were added/recovered in this evidence cycle:
 
 - event 21 — Jagiellonia Białystok vs Wisła Płock: **17,021**;
-- event 23 — Śląsk Wrocław vs Wieczysta Kraków: **12,391**.
+- event 23 — Śląsk Wrocław vs Wieczysta Kraków: **12,391**;
+- event 20 — Wisła Płock vs Radomiak Radom: **5,014**.
+
+Event 20 was a missing genuine post-match outcome for a booking curve already stored in the database. It was verified from public match reporting; it was not reconstructed from ticket inventory.
 
 No attendance value was inferred from inventory, capacity or model output.
 
-These two labels moved:
+These labels moved:
 
-- P9 T-168: **5/9 -> 7/9**;
-- P9 T-72: **9 -> 11 events**;
-- P9 T-48: **12 -> 14 events**;
-- P9 T-24: **15 -> 17 events**;
+- P9 T-168: **5/9 -> 7/9 -> 8/9**;
+- P9 T-72: **9 -> 12 events**;
+- P9 T-48: **12 -> 15 events**;
+- P9 T-24: **15 -> 18 events**;
 - P4a labeled events: **2 -> 4**;
 - P4a distinct labeled previous-home-spacing values: **2 -> 3**;
 - Long72 genuine scored events: **2 -> 4**.
 
 Event 22 — Legia Warszawa vs Lech Poznań — is completed, but no attendance label is stored yet because a sufficiently reliable published attendance value has not been confirmed. Do not estimate it.
+
+Event 22 is technically full-window ready for P9. Its booking curve satisfies the frozen quality contract with about **648** observations in the T-168/T-6 window and a maximum gap of only about **0.25h**. A genuine event-22 attendance label should therefore provide the ninth full-window event if/when it is published.
 
 ## Ticketing ingestion safety net / source coverage
 
@@ -216,12 +223,46 @@ P9a target-free audit is complete.
 
 Fresh P9 readiness:
 
-- 168h: **7/9 events / 7 clubs**;
-- 72h: **11 / 9**;
-- 48h: **14 / 9**;
-- 24h: **17 / 10**;
-- full 168h status: `DATA_BOUND`;
-- learner precommitted: false.
+- 168h: **8/9 events / 8 clubs**;
+- 72h: **12 / 10**;
+- 48h: **15 / 10**;
+- 24h: **18 / 11**;
+- full 168h status: `DATA_BOUND`.
+
+The learner **design** is already precommitted before the ninth full-window label:
+
+`ml/P9_BOOKING_CURVE_LEARNER_PRECOMMIT_V1.md`
+
+Precommit ID:
+
+`p9-knn-median-residual-k5-v1`
+
+Frozen mechanism:
+
+`PIT booking-curve similarity -> fixed 5 nearest completed curves -> same-incumbent-family historical residuals -> median residual -> incumbent P50 correction`
+
+No fitted coefficient, no regression model, no candidate sweep and no result-driven hyperparameter selection are allowed in v1.
+
+Hard machine gate:
+
+`public.p9_learner_gate_status_v1()`
+
+Current status:
+
+- `design_precommitted=true`;
+- `readiness_168_events=8`;
+- `readiness_168_clubs=8`;
+- `full_window_gate_open=false`;
+- `registered_target_free_manifests=0`;
+- `labels_export_allowed=false`;
+- `model_results_opened=false`;
+- `production_activation_allowed=false`.
+
+Database ordering is enforced:
+
+`9/9 readiness -> fresh target-free T-48/T-24 freeze -> immutable manifest registration -> only then label/support export -> fixed learner evaluation`
+
+At 8/9, both freeze registration and label export were explicitly negative-tested and rejected with `P9_LEARNER_GATE_CLOSED`.
 
 The expanded source coverage improves future evidence only. Do not backfill newly discovered present-day inventory into historical T-168 windows.
 
@@ -302,6 +343,7 @@ Do not reopen without a materially new mechanism:
 - do not infer promotion from price movement;
 - do not use future target trajectory points in P9/P9a;
 - do not lower P9/P4 gates;
+- do not bypass the P9 target-free-manifest-before-label gate;
 - do not retune frozen P7/Long72 from early prospective evidence;
 - do not change `live_adjustment` from zero without reviewed promotion.
 
