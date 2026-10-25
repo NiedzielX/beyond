@@ -31,17 +31,32 @@ Active development branch:
 
 `ml/p9-p11-execution-2026-10-24`
 
-It contains the P11a v2 source/workflow that must be reconciled with `main` before recreating or changing that integration.
+It contains **two active implementation slices** that must not be recreated from scratch:
 
-The live Supabase project is currently temporarily **ahead of `main` for P11a v2**:
+- **P9a target-free T-24/T-48 booking-curve freeze/export harness**;
+- **P11a v2 genuine PIT odds capture**.
 
+The live Supabase project is temporarily **ahead of `main` for both P9a/P11a source code**:
+
+- P9a input/label RPCs are live;
+- Edge Function `p9a_booking_curve_export_v1` is ACTIVE v1;
 - P11 v2 DB contract is live;
 - Edge Function `p11_odds_capture_v2` is ACTIVE v2;
 - genuine P11 v2 odds rows remain `0`;
-- no automatic P11 odds schedule is enabled;
-- provider secret `THE_ODDS_API_KEY` still needs to be configured/verified before the first genuine capture.
+- no automatic P11 odds schedule is enabled.
 
-Read `ml/NEXT_SESSION_HANDOFF.md` before touching this area.
+P9a target-free export currently exposes:
+
+- T-24: `18` target events / `19` reference events;
+- T-48: `15` target events / `19` reference events;
+- `target_values_used=false`;
+- no post-cutoff target snapshots.
+
+This is freeze infrastructure only — it does **not** mean a P9 learner is trained or labels may be opened.
+
+P11 expects external secret `THE_ODDS_API_KEY`; its presence must be configured/verified before the first genuine capture.
+
+Read `ml/NEXT_SESSION_HANDOFF.md` before touching either area.
 
 ## Current MAE workstreams
 
@@ -51,7 +66,9 @@ Highest-priority live representation gap:
 
 `normalized PIT trajectory -> historical curve similarity -> pickup distribution -> remaining-demand estimate -> structural residual`
 
-Current full-168h reference coverage: **4/9**. Do not fit the first learnable P9 model before the gate and a separate learner precommit.
+Current full-168h reference coverage: **4/9**. Do not fit the first learnable full-window P9 model before the gate and a separate learner precommit.
+
+P9a already provides target-free T-24/T-48 freeze tooling. After branch reconciliation, verify the main freeze audit/manifests; keep `target_values_opened=false` and `model_training_performed=false` until a separate learner/comparator precommit.
 
 ### P10 / P10b — pooled horizon
 
@@ -95,7 +112,7 @@ Latest recorded checkpoint: **2026-10-25 10:18 UTC**.
 - Long72: `90` reproducible rows, `0` genuine scored events;
 - P7 Long168: **8/9**, still closed;
 - P4a: `5` READY events, `0` genuine labels, gate `>=9 labeled + >=3 distinct labeled spacing values`;
-- P9 168h: **4/9**;
+- P9 full-168h: **4/9**;
 - P11a v2: `0` genuine odds events.
 
 Important: event 6 was expected to enter the P7 Long168 window, but canonical readiness is still 8/9. The next session must **diagnose event 6 readiness before running any P7 experiment**.
