@@ -1,6 +1,6 @@
 -- Roboticket candidate scope guard + dashboard cache v1.
 -- Defense in depth: candidate buffering is allowed only for a pair of known
--- football clubs from the canonical alias universe (or a verified schedule).
+-- football clubs from the canonical alias universe (or an exact verified schedule).
 -- Public dashboard data is materialized into an RLS-protected cache table.
 
 create or replace function private.normalize_ticketing_name_v1(p_value text)
@@ -34,6 +34,7 @@ $function$;
 
 create or replace function private.roboticket_candidate_is_known_football_match_v1(
   p_club_slug text,
+  p_external_event_id text,
   p_text text
 )
 returns boolean
@@ -55,7 +56,12 @@ with club as (
   select private.roboticket_candidate_football_club_keys_v1(p_text) as value
 )
 select
-  exists(select 1 from private.roboticket_verified_schedule_v1 s where s.club_slug=p_club_slug and s.external_event_id is not null and s.kickoff_at>now())
+  exists(
+    select 1 from private.roboticket_verified_schedule_v1 s
+    where s.club_slug=p_club_slug
+      and s.external_event_id=p_external_event_id
+      and s.kickoff_at>now()
+  )
   or (
     cardinality((select value from keys)) >= 2
     and (
@@ -99,7 +105,7 @@ begin
     and coalesce(c.metadata->>'candidate_kind','')='match'
   limit 1;
   if v_candidate_text is null then raise exception 'ROBOTICKET_CANDIDATE_NOT_VERIFIED_MATCH'; end if;
-  if not private.roboticket_candidate_is_known_football_match_v1(v_club,v_candidate_text) then
+  if not private.roboticket_candidate_is_known_football_match_v1(v_club,v_event,v_candidate_text) then
     raise exception 'ROBOTICKET_CANDIDATE_NOT_KNOWN_FOOTBALL_PAIR';
   end if;
 
@@ -207,7 +213,7 @@ begin
         when ticket_event_id is not null then 'TRACKED'
         when coalesce(metadata->>'candidate_kind','')='non_match' then 'NON_MATCH_EXCLUDED'
         when coalesce(metadata->>'candidate_kind','')<>'match' then 'UNKNOWN_EXCLUDED'
-        when not private.roboticket_candidate_is_known_football_match_v1(club_slug,candidate_text) then 'NON_FOOTBALL_EXCLUDED'
+        when not private.roboticket_candidate_is_known_football_match_v1(club_slug,external_event_id,candidate_text) then 'NON_FOOTBALL_EXCLUDED'
         when verified_kickoff is not null then 'READY_TO_PROMOTE'
         when raw_snapshot_count>0 then 'BUFFERING_AWAITING_KICKOFF'
         else 'MATCH_DISCOVERED_NO_BUFFER'
@@ -221,7 +227,7 @@ begin
         when ticket_event_id is not null then null
         when coalesce(metadata->>'candidate_kind','')='non_match' then 'non-match product intentionally excluded'
         when coalesce(metadata->>'candidate_kind','')<>'match' then 'candidate identity insufficient'
-        when not private.roboticket_candidate_is_known_football_match_v1(club_slug,candidate_text) then 'not a pair of known football clubs in the model universe'
+        when not private.roboticket_candidate_is_known_football_match_v1(club_slug,external_event_id,candidate_text) then 'not a pair of known football clubs in the model universe'
         when verified_kickoff is null and raw_snapshot_count>0 then 'exact kickoff pending; raw curve protected'
         when verified_kickoff is null then 'exact kickoff pending and candidate buffer has no snapshot yet'
         else 'verified schedule exists; promotion pending'
@@ -240,7 +246,7 @@ $function$;
 
 revoke all on function private.normalize_ticketing_name_v1(text) from public;
 revoke all on function private.roboticket_candidate_football_club_keys_v1(text) from public;
-revoke all on function private.roboticket_candidate_is_known_football_match_v1(text,text) from public;
+revoke all on function private.roboticket_candidate_is_known_football_match_v1(text,text,text) from public;
 revoke all on function private.refresh_dashboard_ticketing_ingestion_status_v1() from public;
 
 select private.refresh_dashboard_ticketing_ingestion_status_v1();
