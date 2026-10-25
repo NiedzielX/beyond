@@ -14,191 +14,182 @@ Production remains:
 
 `live_adjustment = 0`
 
-## Priority 0 — protect evidence integrity
+## Priority 0 — protect data and evidence integrity
 
-- Branch reconciliation is complete; do not repeat it.
-- P7 frozen tournament is complete; do not retune/rerun its inspected candidate set.
-- P9a target-free freeze audit is complete; do not open a learner from it.
+- RoboTicket ingestion safety net is live; preserve it as operational infrastructure.
+- Original P7 tournament is exposed; never retune/rerun it.
+- P7 prospective model fingerprint is pinned; any drift must fail closed.
+- P9a target-free freeze remains closed to learner selection.
 - Preserve frozen Long72 and P4a contracts.
-- P11a genuine capture is active; never backfill closing odds.
-- Do not infer promotion from price movement.
-- Do not treat missing absence rows as confirmed availability.
-- Do not reopen the existing weather mechanism.
-- Do not reopen P10/P10b.
+- Never backfill closing odds or booking curves and call them prospective.
+- Do not promote parking/VIP/reserve/non-football ticket products.
+- Do not infer promotions from price movement.
 - Do not enable production.
 
-## Priority 1 — precommit P7 prospective follow-up
+## Priority 1 — P7 prospective validation is now active
 
-P7 produced a meaningful point gain but uncertainty remains wide:
+Historical P7 evidence:
 
 - anchor MAE: 7409.79;
 - challenger MAE: 6339.99;
 - point improvement: 1069.80 / 14.44%;
-- event/fold improvement rate: 80% / 80%;
 - 95% event-block interval: `[-2566.13, +174.47]`;
 - evidence: `POINT_GAIN_UNCERTAINTY_LIMITED`.
 
-The old tournament is now exposed evidence.
+Prospective lane:
 
-Next allowed P7 work is therefore **not** another candidate sweep. Build a separate prospective validation contract for the already-selected mechanism `gbr-l1-depth2-n50-lr003` before any new qualifying Long168 outcomes are opened.
+- precommitted before prospective outcomes;
+- selected mechanism fixed: `gbr-l1-depth2-n50-lr003`;
+- exact training set fixed: events `[1,3,4,5,10,11,15,16,18,19]` / 139 rows;
+- training manifest fixed: `185a9fc90e646bd5fa1bbed3b50c625d65d127a2b2943501761bdfcb89f354ed`;
+- deterministic model fingerprint fixed: `70fa929181531276c80a75c0b78a60fb821cf50e714e2bc001de8251cea1793f`;
+- no bootstrap backfill;
+- prediction persistence must occur while the event is genuinely 72–168h from kickoff.
 
-The prospective lane must predeclare:
+First prospective run `40216860928` succeeded:
 
-1. frozen mechanism and hyperparameters;
-2. eligible future event/as-of rule;
-3. prediction persistence before attendance is available;
-4. frozen Structural Prior comparator;
-5. event as independent unit;
-6. MAE, bias, event-improvement, P90/worst degradation and event-block uncertainty reporting;
-7. no model retuning from incoming outcomes;
-8. `production_activation_allowed=false`;
-9. `live_adjustment=0`.
+- immutable prediction rows: 3;
+- independent events: 3;
+- scored events: 0;
+- evidence: `PROSPECTIVE_PREDICTIONS_ONLY`;
+- production activation: false.
 
-## Priority 2 — preserve P11a scheduled PIT accumulation
+Schedule:
 
-First genuine capture is complete and audited.
+`37 */6 * * *`
 
-Current readiness:
+Next P7 action is **collection only**. Do not tune from incoming outcomes. When a genuine outcome becomes available after `predicted_at`, the existing scorer may attach it without recomputing the prediction.
 
-- raw rows: 34;
-- genuine events: 2;
+## Priority 2 — preserve ingestion coverage for future rounds
+
+Canonical safety document:
+
+`ml/ROBOTICKET_INGESTION_SAFETY_NET_2026-10-25.md`
+
+Operational rules:
+
+1. hourly RoboTicket discovery;
+2. candidate raw buffering every 10 minutes;
+3. same-element event identity;
+4. football-universe gate;
+5. fail-closed non-match/non-football exclusions;
+6. verified schedule promotion;
+7. original PIT timestamps preserved on backfill;
+8. dashboard must expose TRACKED / BUFFERING / READY / GAP states.
+
+Fresh state:
+
+- 11 future matches TRACKED;
+- one `TRACKED_NO_SNAPSHOT`: Wisła Kraków vs Cracovia; source currently returns zero sectors;
+- no genuine match is silently unbuffered.
+
+This operational lane may expand the future research base but must not fabricate historical evidence.
+
+## Priority 3 — preserve P11a scheduled PIT odds accumulation
+
+Fresh readiness:
+
+- genuine PIT events: 2;
 - events with >=3 bookmakers: 2;
-- 24h / 72h / 168h coverage: 2 / 1 / 0;
-- status: `GENUINE_PIT_DATA_ACCUMULATING`;
+- current horizon coverage 24h / 72h / 168h: 1 / 1 / 0;
 - model precommitted: false.
 
-Scheduled capture is enabled:
+Scheduled capture:
 
 `17 */6 * * *`
 
-Do not change cadence based on attendance results. Audit coverage/lineage as the sample grows.
+Do not fit a P11a attendance model yet.
 
-Canonical evidence: `ml/P11A_FIRST_GENUINE_CAPTURE_2026-10-25.md`.
-
-## Priority 3 — preserve P11b/P11d context collection
+## Priority 4 — preserve P11b/P11d context collection
 
 ### P11b price
 
-Live function:
+`public.p11_price_context_as_known_v1(ticket_event_id, as_of_at)` remains live and target-free.
 
-`public.p11_price_context_as_known_v1(ticket_event_id, as_of_at)`
-
-It is PIT-safe and target-free.
-
-Current status:
-
-- event 6: `PRICE_CONTEXT_READY`;
-- event 22: `PRICE_AREA_ONLY`;
-- no explicit promotion source;
-- promotion remains null;
-- no attendance model opened.
-
-Continue collecting real price context. Do not create synthetic promotion labels.
+No explicit promotion source exists; promotion stays null.
 
 ### P11c absences
 
-Only one active verified row / one team exists. Continue collection only.
+Still data-bound. Continue verified collection only.
 
 ### P11d weather
 
-Existing mechanism is `research_only_no_uplift`. Do not repeat it.
+Existing mechanism remains `research_only_no_uplift`; closed unless a materially new mechanism is proposed.
 
-### P11d media attention
+### P11d attention
 
-Prospective-only collection continues. Current feature variance is insufficient for evaluation. Do not force an ablation.
+Continue prospective-only collection. Do not force an evaluation before useful variance/coverage exists.
 
-Canonical audit: `ml/P11_CONTEXT_AUDIT_2026-10-25.md`.
+## Priority 5 — continue Long72 frozen prospective scoring
 
-## Priority 4 — continue Long72 prospective evidence
+Current:
 
-Current genuine state:
-
-- scored events: 2;
-- anchor MAE: 9069.52;
-- frozen package MAE: 7641.71;
+- scored genuine events: 2;
+- anchor event-balanced MAE: 9069.52;
+- package event-balanced MAE: 7641.71;
 - point improvement: 1427.80 / 15.74%;
-- n=2 only.
+- latest score refresh inserted 0 new scores.
 
-Continue frozen scoring as new genuine outcomes arrive. No retuning or post-hoc calibration.
+No retuning from n=2.
 
-## Priority 5 — accumulate P9 full-168h coverage
+## Priority 6 — accumulate P9 full-168h coverage
 
-Current coverage:
+Fresh readiness:
 
 - 168h: 5/9 events / 5 clubs;
 - 72h: 9 / 7;
 - 48h: 12 / 7;
 - 24h: 15 / 9.
 
-Full P9 remains `DATA_BOUND`.
+Full learner remains blocked until 9/9 plus a separate learner precommit.
 
-Blocked until 9/9 + separate learner precommit:
+The ingestion safety net should improve future coverage, but the gate must not be lowered.
 
-- learner selection;
-- hyperparameter selection;
-- fitting;
-- opening learner result comparisons.
+## Priority 7 — accumulate P4a labels
 
-P9a T-24/T-48 freeze audit is already complete.
-
-## Priority 6 — accumulate P4a labels
-
-Current:
+Fresh readiness:
 
 - READY events: 5;
-- genuine labels: 2;
+- labeled READY events: 2;
 - distinct labeled previous-home-spacing values: 2;
-- required: >=9 labeled AND >=3 distinct labeled values.
+- required: >=9 labeled AND >=3 distinct labeled values;
+- trigger: false.
 
-Gate remains closed.
-
-## Priority 7 — business minimum meaningful ΔMAE
+## Priority 8 — business minimum meaningful ΔMAE
 
 Framework:
 
 `ml/GOVERNANCE_V2_BUSINESS_DMAE_THRESHOLD.md`
 
-Derive the threshold from actual forecast-driven decisions, not from the challenger results it will judge.
+Derive the threshold from real forecast-driven operational decisions, independently of challenger results.
 
-Until approved and precision is sufficient, `ROBUST_RESEARCH_ADVANCE` remains unavailable.
-
-## Priority 8 — P12 only after higher-value lanes
-
-P12 pre-plan exists:
+## Priority 9 — P12 later
 
 `ml/P12_DEMAND_REGIME_AUDIT_PLAN.md`
 
-Do not start a regime-aware challenger until the target-free audit establishes a stable mechanism and higher-priority P9/P11 work is sufficiently mature.
+Do not start a regime-aware challenger while higher-priority prospective/data-coverage lanes remain immature.
 
 ## Completed in this execution cycle
 
-- P7 frozen tournament executed and recorded.
-- P9a T-24/T-48 target-free freeze completed.
-- P11 runtime synchronized and first genuine capture completed.
-- P11 schedule enabled after successful audit.
-- P11 readiness messaging corrected.
-- P11b price context `as-known` function deployed and verified against current and historical cutoffs.
-- P11c/P11d target-free source audit completed.
-- existing weather loop correctly classified as no-uplift rather than restarted.
-
-## Closed loops
-
-Do not reopen without a materially new mechanism:
-
-- P10/P10b fixed pooled-HGB tuning;
-- old estimator-only sweeps;
-- P5a shrinkage;
-- P6 historical Long72 incremental signal;
-- P8 simple calibration;
-- existing weather mechanism;
-- blind post-hoc calibration.
+- P7 frozen tournament executed;
+- P7 prospective precommit created;
+- deterministic P7 model fingerprint frozen;
+- P7 service-role summary plumbing fixed without scientific changes;
+- first true P7 prospective predict/persist run succeeded;
+- RoboTicket discovery hardened;
+- private pre-mapping raw buffer deployed;
+- verified promotion/backfill deployed;
+- discovery cadence tightened to hourly and buffer cadence to 10m;
+- dashboard ingestion coverage added to Overview and Data Quality;
+- panel CI succeeded;
+- P11a first genuine capture/schedule and P11b contract remain live.
 
 ## Next meaningful milestones
 
-1. P7 prospective follow-up contract frozen before new labels;
-2. P11a gains genuine multi-horizon / multi-event coverage;
-3. additional Long72 prospective outcomes are scored;
-4. P9 reaches full 9/9 168h coverage;
-5. P4a reaches 9 labeled / 3 distinct values;
-6. media attention gains sufficient prospective variance/eligible events;
+1. first genuine P7 prospective scored event;
+2. additional Long72 genuine outcomes;
+3. P9 reaches 9/9 at 168h;
+4. P4a reaches 9 labeled / 3 distinct labeled values;
+5. P11a gains broader multi-event/multi-horizon coverage;
+6. media attention becomes evaluation-ready;
 7. business minimum meaningful ΔMAE is approved.
