@@ -16,7 +16,7 @@ Production remains unchanged:
 
 ## 2. Immediate execution order
 
-`preserve P7 prospective schedule -> preserve/expand multi-source ticketing ingestion -> preserve P11 collection -> score only genuine completed prospective events -> accumulate P9 to 9/9 -> accumulate P4a labels -> define business ΔMAE threshold -> P12 later`
+`preserve P7 prospective schedule -> preserve 18/18 multi-source ticketing ingestion -> preserve P11 collection -> score only genuine completed prospective events -> accumulate P9 to 9/9 -> accumulate P4a labels -> define business ΔMAE threshold -> P12 later`
 
 Do not restart the P7 tournament, P9a freeze, P10 or weather loops.
 
@@ -27,14 +27,25 @@ Read:
 - `ml/ROBOTICKET_INGESTION_SAFETY_NET_2026-10-25.md`
 - `ml/TICKETING_SOURCE_COVERAGE_EXPANSION_2026-10-25.md`
 
-The previous round was **not** fully lost. Genuine curves were preserved for 5/9 round-12 fixtures; the other four were hosted by non-onboarded sources.
+The previous round was **not** fully lost. Genuine curves were preserved for 5/9 round-12 fixtures; the other four were hosted by non-onboarded sources at that time.
+
+The systemic fix is now live and source coverage has been expanded.
+
+### Current league coverage
+
+Alias-resolved audit against the current 2026/27 Ekstraklasa home-club universe:
+
+- current league clubs: **18**;
+- covered by at least one active ticketing source: **18**;
+- uncovered: **0**.
+
+This is source coverage, not a promise that every event exposes visible aggregate inventory. Hidden inventory and unpublished products remain fail-closed states.
 
 ### RoboTicket
 
 Live controls:
 
-- discovery `roboticket-discovery-v8`;
-- exact same-element product identity;
+- hardened same-element event identity;
 - parking/VIP/premium/reserve/non-football fail closed;
 - private pre-mapping inventory buffer;
 - football-universe gate;
@@ -72,22 +83,6 @@ Stellis promotion is fail closed:
 - no hidden inventory becomes zero;
 - no ambiguous fixture is promoted.
 
-Current genuine state:
-
-- future canonical RoboTicket events: **12**, with **11 snapshot streams**;
-- future canonical Stellis events: **1**, with **1 snapshot stream**;
-- combined future canonical events: **13**, **12 with snapshots**;
-- one `TRACKED_NO_SNAPSHOT`: Wisła Kraków vs Cracovia — mapped, source currently returns no readable sectors;
-- two genuine future match candidates have protected raw inventory while fixture confirmation is pending;
-- one genuine future match is discovered but does not expose model-safe aggregate inventory.
-
-Stellis examples:
-
-- Korona Kielce vs Radomiak Radom — event 603, `TRACKED`, 2 snapshots at latest audit;
-- Piast Gliwice vs Korona Kielce — raw curve protected, waiting for league fixture confirmation;
-- Radomiak Radom vs Śląsk Wrocław — match discovered, aggregate availability hidden by active source contract;
-- Piast vs Górnik Puchar Polski — `NON_MATCH_EXCLUDED`, no model snapshot.
-
 Shared panel table:
 
 `public.dashboard_ticketing_ingestion_status_v1`
@@ -98,7 +93,11 @@ Current payload version:
 
 Panel repo: `NiedzielX/BeyondTicketingPanel`.
 
-Coverage is visible on Overview/Data Quality and completed matches remain visible historically.
+Coverage is visible on Overview/Data Quality. The Events page keeps recent completed matches visible instead of showing only future fixtures.
+
+Current known source-side exception:
+
+- Wisła Kraków vs Cracovia is mapped but the active RoboTicket source currently exposes no readable sectors; this is monitored as source inventory unavailable rather than treated as a missing event or fake zero.
 
 ## 4. P7 Long168 — exposed historical result
 
@@ -117,7 +116,7 @@ Run `40197742930`:
 
 Never rerun/tune this tournament.
 
-## 5. P7 prospective validation — ACTIVE
+## 5. P7 prospective validation — ACTIVE / SCHEDULED
 
 Frozen training set:
 
@@ -131,6 +130,16 @@ Pinned model fingerprint:
 
 `70fa929181531276c80a75c0b78a60fb821cf50e714e2bc001de8251cea1793f`
 
+Fingerprint evidence:
+
+- GitHub Actions run: `40201818862`;
+- artifact digest: `a6dab7c220e065a9e2d2b5f32954303bf067387b1d24458b1fa1066d5a507184`;
+- fingerprint mode persisted zero predictions.
+
+Canonical pinned execution wrapper:
+
+`ml/p7_long168_prospective_run_v1.py`
+
 Current immutable ledger:
 
 - prediction rows: **3**;
@@ -142,11 +151,19 @@ Current immutable ledger:
 - production activation allowed: false;
 - `live_adjustment=0`.
 
-Scheduled prediction cadence:
+Actual GitHub Actions schedule is now implemented in:
+
+`.github/workflows/p7-long168-prospective-v1.yml`
+
+Cadence:
 
 `37 */6 * * *`
 
-Do not tune until genuine outcomes are scored under the frozen scorer.
+Scheduled/manual predict mode performs:
+
+`target-free inputs -> exact frozen-model rebuild -> fingerprint/lineage hard gates -> immutable prediction persistence -> genuine outcome attachment/scoring`
+
+Never recompute an old prospective prediction after the outcome becomes known. Do not tune until genuine outcomes are scored under the frozen scorer.
 
 ## 6. Long72
 
@@ -223,4 +240,4 @@ Do not reopen without a materially new mechanism:
 
 ## 12. Cold-start command
 
-> Read `AI_BOOTSTRAP.md`, this handoff, `ml/EXECUTION_PLAN_CURRENT.md`, `ml/PROGRESS_TRACKING.md`, Roadmap v4, P7 frozen/prospective files, `ml/ROBOTICKET_INGESTION_SAFETY_NET_2026-10-25.md` and `ml/TICKETING_SOURCE_COVERAGE_EXPANSION_2026-10-25.md`. Query readiness fresh. P7 prospective has 3 immutable predictions and 0 scores. Ticketing ingestion is multi-source: RoboTicket + Stellis v3. P9 remains 5/9, P4a 2 labeled, P11 has 2 genuine odds events, Long72 has 2 genuine scores. Keep production unchanged and never retune exposed evidence.
+> Read `AI_BOOTSTRAP.md`, this handoff, `ml/EXECUTION_PLAN_CURRENT.md`, `ml/PROGRESS_TRACKING.md`, Roadmap v4, P7 frozen/prospective files, `ml/ROBOTICKET_INGESTION_SAFETY_NET_2026-10-25.md` and `ml/TICKETING_SOURCE_COVERAGE_EXPANSION_2026-10-25.md`. Query readiness fresh. Ticketing source coverage is 18/18 current league home clubs. P7 prospective has 3 immutable predictions, 0 scores and a real six-hour predict/persist/score workflow with pinned fingerprint. P9 remains 5/9, P4a 2 labeled, P11 has 2 genuine odds events, Long72 has 2 genuine scores. Keep production unchanged and never retune exposed evidence.
