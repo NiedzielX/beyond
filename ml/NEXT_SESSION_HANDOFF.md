@@ -1,6 +1,6 @@
 # Beyond Ticketing — Next Session Handoff
 
-Last updated: **2026-10-25 11:55 Europe/Warsaw**
+Last updated: **2026-10-25**
 
 Status: **READ THIS FIRST AFTER `AI_BOOTSTRAP.md`**
 
@@ -20,11 +20,11 @@ No research result activates production automatically.
 
 ## 2. Immediate execution order
 
-Current order is:
+Current order:
 
-`P11 first genuine manual capture -> P11 audit -> P7 frozen execute -> P9a main freeze audit -> continue prospective evidence`
+`sync corrected P11 Edge runtime -> first genuine P11 capture/audit -> continue Long72 prospective scoring -> accumulate P9 full-168h coverage -> accumulate P4a labels -> separately precommit any P7 follow-up -> define business minimum meaningful ΔMAE`
 
-Why P11 is first: pre-match market odds are perishable PIT evidence. P7 is now unlocked but its frozen execution is not time-critical within minutes; today’s P11 quotes are.
+P7 execution and the P9a main target-free audit are now complete.
 
 ---
 
@@ -34,216 +34,224 @@ Canonical repo: `NiedzielX/beyond`.
 
 Previous active branch: `ml/p9-p11-execution-2026-10-24`.
 
-Completed reconciliation:
-
-- PR #171 merged current `main` into the active branch after deliberate conflict resolution;
+- PR #171 merged `main` into the active branch after deliberate conflict resolution;
 - P11 contract CI passed;
 - P9a freeze CI passed;
-- key P9a/P11a source/workflow blob SHAs were verified identical on `main` and active;
-- active branch reached `behind_by=0` and zero file-content diff vs `main`;
-- PR #172 merged the reconciled history back to `main` with zero changed files;
-- final reconciliation merge on `main`: `c48b0045f371f0b52b98f61d24f39f3be99ec7bb`.
+- key P9a/P11a source/workflow blobs were verified identical on `main` and active;
+- PR #172 merged reconciled history back to `main`;
+- final reconciliation merge: `c48b0045f371f0b52b98f61d24f39f3be99ec7bb`.
 
-Therefore P9a/P11a source **already exists on main**. Do not rebuild or copy it again.
+Do not repeat reconciliation or rebuild P9a/P11a from memory.
 
 ---
 
-## 4. Genuine outcomes added on 2026-10-25
+## 4. Genuine outcomes / Long72 prospective evidence
 
-The first post-freeze completed Long72 events were event 10 and event 16.
-
-Upstream `ticket_event_outcomes` initially had no attendance for them, although the hourly sync cron itself was healthy. `ml_home_attendance_history_v2` also had no rows for those fixtures.
-
-Verified public post-match attendance from the same source family already used by canonical outcomes (`frekwencyjny.pl`):
+Verified genuine attendance inserted on 2026-10-25:
 
 - event 10 — Pogoń Szczecin vs Radomiak Radom: **19,050**;
 - event 16 — Wisła Kraków vs Raków Częstochowa: **33,000**.
 
-These were inserted into `public.ticket_event_outcomes` at `2026-10-25 10:54 UTC` with:
+Existing frozen Long72 scorer result:
 
-- `attendance_definition='reported_match_attendance'`;
-- `source_name='frekwencyjny.pl'`;
-- canonical public source URL;
-- genuine post-match confirmation timestamp.
+- genuine scored events: **2**;
+- anchor MAE: **9069.52**;
+- frozen package MAE: **7641.71**;
+- point improvement: **1427.80 seats / 15.74%**;
+- production change: false.
 
-No synthetic target or estimated attendance was used.
+Interpretation: **first prospective evidence only**. n=2 is insufficient for promotion, redesign, calibration or robust inference.
 
----
-
-## 5. First genuine Long72 prospective scores — COMPLETE
-
-After outcomes were available, the existing frozen scorer was executed:
-
-`public.score_d2_long72_forward_completed_events_v1(now())`
-
-Result:
-
-- inserted score count: **2**;
-- genuine prospective scored events: **2**;
-- anchor event-balanced MAE: **9069.52**;
-- frozen package event-balanced MAE: **7641.71**;
-- point MAE improvement: **1427.80** seats;
-- relative point improvement: **15.74%**;
-- event improvement rate: **1.0** on the two events;
-- `production_change=false`.
-
-Interpretation rule: **n=2 is first prospective evidence only**. Do not retune, promote, calibrate, or claim robust advance from this sample.
-
-The hourly `d2 Long72 Forward Prospective v1` GitHub workflow already contains the score step. The zero-score state was caused by missing upstream outcomes, not a broken scorer.
+Continue normal outcome sync and frozen prospective scoring. Do not retune Long72.
 
 ---
 
-## 6. Fresh canonical readiness — 2026-10-25 10:54 UTC
+## 5. P7 Long168 — FROZEN EXECUTION COMPLETE
 
-Canonical source:
+Run:
 
-`public.ml_research_readiness_v1()`
+`P7 Long168 Executor v1` — GitHub run `40197742930`.
+
+Contract state:
+
+- frozen Long168 events: **10**;
+- frozen rows: **139**;
+- event IDs: `[1,3,4,5,10,11,15,16,18,19]`;
+- identity manifest SHA: `185a9fc90e646bd5fa1bbed3b50c625d65d127a2b2943501761bdfcb89f354ed`;
+- target values absent from freeze;
+- target-attendance invariance: PASS;
+- frozen Structural Prior hashes verified.
+
+Scorecard:
+
+- forward held-out events / folds: **5 / 5**;
+- anchor event-balanced MAE: **7409.79**;
+- best candidate: `gbr-l1-depth2-n50-lr003`;
+- challenger MAE: **6339.99**;
+- point delta MAE challenger-minus-anchor: **-1069.80**;
+- relative point delta: **-14.44%**;
+- event improvement rate: **80%**;
+- fold improvement rate: **80%**;
+- worst event degradation: **712.05**;
+- challenger bias: **-4972.76**.
+
+Paired event-block bootstrap, 5,000 resamples:
+
+- 95% interval: **[-2566.13, +174.47]**;
+- `P(delta_MAE < 0)=0.9322`.
+
+Correct interpretation:
+
+- precommitted research-advance rule: PASS;
+- decision: `ADVANCE_RESEARCH`;
+- evidence status: `POINT_GAIN_UNCERTAINTY_LIMITED`;
+- **not robust proof** because the interval crosses zero and held-out N=5;
+- no production promotion;
+- `production_activation_allowed=false`;
+- `live_adjustment=0`.
+
+Canonical result:
+
+`ml/P7_LONG168_RESULT_2026-10-25.md`
+
+Do not rerun/tune the frozen P7 candidate family using this inspected result. Any follow-up must be a new separately precommitted experiment/prospective lane.
+
+---
+
+## 6. P9a target-free freeze — COMPLETE
+
+Run:
+
+`P9a Booking Curve Freeze v1` — GitHub run `40197782502`.
+
+T-24:
+
+- manifest: `738a42da33b46361f0ba29d3f90c72e2e0019c0057ef00b78ac7e6a073f0bd1c`;
+- input targets: 19;
+- representation ready: 16;
+- freeze ready: 12;
+- comparator ready: 9.
+
+T-48:
+
+- manifest: `ffa6dd178332bf328a24fc7ce15ef346214a0037325d7161426f9f96664babd4`;
+- input targets: 16;
+- representation ready: 13;
+- freeze ready: 10;
+- comparator ready: 7.
+
+Hard gates passed:
+
+- `target_values_opened=false`;
+- `model_training_performed=false`;
+- no future target trajectory points;
+- production unchanged.
+
+Canonical audit:
+
+`ml/P9A_FREEZE_AUDIT_2026-10-25.md`
+
+P9a has completed its current freeze/audit purpose. Do not infer permission to train a P9 learner.
+
+---
+
+## 7. Fresh readiness
+
+Canonical source: `public.ml_research_readiness_v1()`.
 
 ### Long72
 
 - reproducible rows: **90**;
 - genuine scored events: **2**;
-- first genuine score trigger: **true**.
-
-### P7 Long168 — NOW OPEN
-
-- rows >72h: **139**;
-- independent eligible events: **10**;
-- threshold: **9**;
-- `research_start_trigger=true`.
-
-Important correction to the earlier handoff:
-
-The frozen contract diagnosis remains correct: a Long168 event must be completed and have genuine attendance; a T-168 snapshot alone is insufficient. However, event 6 is **no longer required** to unlock P7. Genuine outcomes for events 10 and 16 raised readiness from 8/9 to 10/9.
-
-Next P7 action is to run the existing frozen executor exactly as precommitted:
-
-`.github/workflows/p7-long168-executor-v1.yml`
-
-Manual dispatch:
-
-- branch: `main`;
-- input: `mode=execute`.
-
-That workflow must:
-
-1. verify frozen artifact hashes;
-2. fetch the live Long168/support exports;
-3. replay frozen T-7 anchors;
-4. freeze exact event/as-of identities;
-5. run the fixed candidate tournament;
-6. require `independent_frozen_event_count >= 9`;
-7. keep `production_change=false`;
-8. keep `production_activation_allowed=false`;
-9. keep `live_adjustment=0`.
-
-Do not redesign P7 before execution.
+- trigger: true.
 
 ### P9 full-window booking curve
-
-Fresh completed reference coverage:
 
 - 168h: **5/9 events / 5 clubs**;
 - 72h: **9 events / 7 clubs**;
 - 48h: **12 events / 7 clubs**;
 - 24h: **15 events / 9 clubs**;
-- learner precommitted: false;
-- full 168h status remains `DATA_BOUND`.
+- full 168h status: `DATA_BOUND`;
+- learner precommitted: false.
 
-Do not fit the first full-168h learner yet.
+Do not fit/select the first full-168h learner before 9/9 and a separate precommit.
 
 ### P4a
 
-- READY events: **5**;
+- READY events: 5;
 - genuine labeled READY events: **2**;
-- labeled non-null previous-home-spacing events: **2**;
+- labeled non-null previous-home-spacing events: 2;
 - distinct labeled spacing values: **2**;
-- gate requires `>=9 labeled + >=3 distinct labeled values`;
-- research trigger: **false**.
+- required: `>=9 labeled + >=3 distinct values`;
+- trigger: false.
 
-P4a remains frozen.
-
----
-
-## 7. P11a v2 — immediate time-sensitive blocker
-
-Live Supabase already has:
-
-- P11 v2 DB capture/consensus/readiness contract;
-- Edge Function `p11_odds_capture_v2` ACTIVE v2;
-- GitHub workflow `.github/workflows/p11-odds-capture-v2.yml` on `main`;
-- no automatic schedule.
-
-Current genuine evidence remains:
-
-- raw P11 v2 rows: **0**;
-- genuine PIT events: **0**;
-- events with >=3 bookmakers: **0**;
-- model precommitted: false.
-
-Current capture candidates:
-
-- event 23 — Śląsk Wrocław vs Wieczysta Kraków — `2026-10-25 11:15 UTC`;
-- event 21 — Jagiellonia Białystok vs Wisła Płock — `2026-10-25 13:45 UTC`;
-- event 22 — Legia Warszawa vs Lech Poznań — `2026-10-25 16:30 UTC`;
-- event 6 — Lech Poznań vs Wisła Kraków — `2026-10-31 16:30 UTC`.
-
-Required manual action because capture security intentionally requires a GitHub Actions OIDC token from `refs/heads/main`:
-
-`Actions -> P11 Odds Capture v2 -> Run workflow -> main -> capture=true`
-
-The workflow checks `THE_ODDS_API_KEY` first. If missing, it fails closed before provider capture. Do not work around this with a different authentication path.
-
-After capture, audit:
-
-- local/provider/matched events;
-- every mapping status;
-- bookmaker count and complete 1X2 quotes;
-- kickoff delta;
-- provider quota;
-- capture batch and payload hash lineage;
-- raw rows;
-- `p11_market_context_as_known_v2(...)`;
-- `p11_market_odds_readiness_v2()`.
-
-Keep schedule off until accepted.
+P4a remains frozen/data-bound.
 
 ---
 
-## 8. P9a target-free freeze
+## 8. P11a PIT odds — SECRET READY, RUNTIME SOURCE NOT YET SYNCED
 
-Live infrastructure remains ready.
+Purpose: add PIT market-implied match quality/outcome uncertainty/stakes as a genuinely new information family.
 
-Latest recorded exports before the new outcomes:
+Confirmed:
 
-- T-24: 18 target / 19 reference events;
-- T-48: 15 target / 19 reference events;
-- `target_values_used=false`;
-- `post_cutoff_target_snapshots_exported=false`;
+- DB capture/consensus/readiness contract live;
+- Edge Function `p11_odds_capture_v2` active;
+- `THE_ODDS_API_KEY` **configured and verified**;
+- GitHub main-only OIDC auth works;
+- provider adapter type-check/tests pass;
+- schedule remains off;
+- raw genuine odds rows: **0**;
 - `production_change=false`.
 
-After P11/P7:
+First real provider request failed closed before inserts:
 
-1. run/verify main T-24/T-48 freeze audit;
-2. persist/check manifest SHA values;
-3. verify frozen identities;
-4. confirm `target_values_opened=false`;
-5. confirm `model_training_performed=false`.
+`422 INVALID_COMMENCE_TIME_FROM`
 
-Do not open labels/fit a learner merely because the freeze contract exists.
+Cause: deployed runtime generated millisecond ISO timestamps while The Odds API requires `YYYY-MM-DDTHH:MM:SSZ`.
+
+Source fix is already on `main`:
+
+`d27d797578f18f09140ccc1723219a3e690d339a`
+
+The fixed source strips milliseconds from `commenceTimeFrom` / `commenceTimeTo`; CI is green.
+
+A subsequent Supabase Dashboard `Deploy updates` produced Edge Function version 4, but inspection showed that runtime still contained the pre-fix source. Therefore:
+
+> **P11 is no longer blocked by an API key. It is blocked only by synchronization/deployment of the corrected main source into the live Edge Function runtime.**
+
+After runtime sync:
+
+1. run one main-only capture;
+2. audit event mapping and kickoff deltas;
+3. audit complete bookmaker-level 1X2 quotes;
+4. audit quota / batch / payload hash lineage;
+5. verify append-only raw rows;
+6. run `p11_market_context_as_known_v2(...)`;
+7. run `p11_market_odds_readiness_v2()`;
+8. keep schedule off until accepted.
+
+Never backfill closing odds into earlier cutoffs.
 
 ---
 
 ## 9. Governance / closed loops
 
-Do not reopen P10/P10b, old estimator-only sweeps, P5a shrinkage, P6 historical signal, P8 simple club calibration, or post-hoc tuning on inspected evidence.
+Do not reopen without materially new information/mechanism:
 
-Minimum practically meaningful `ΔMAE` remains intentionally undefined and must be business-derived.
+- P10/P10b fixed pooled-HGB path;
+- old estimator-only sweeps;
+- P5a shrinkage;
+- P6 historical Long72 incremental signal;
+- P8 simple calibration;
+- blind post-hoc calibration.
 
-Until then, `ROBUST_RESEARCH_ADVANCE` is not available as a conclusion.
+Minimum practically meaningful `ΔMAE` remains intentionally undefined and must be business-derived from actual decision consequences.
+
+Until that threshold exists and precision is adequate, no challenger can be called `ROBUST_RESEARCH_ADVANCE`.
 
 ---
 
 ## 10. Cold-start command
 
-> Read `AI_BOOTSTRAP.md`, `ml/NEXT_SESSION_HANDOFF.md`, `ml/EXECUTION_PLAN_CURRENT.md`, `ml/PROGRESS_TRACKING.md` and Roadmap v4. Query readiness fresh. Branch reconciliation is complete. Long72 has 2 genuine prospective scores. P7 is now genuinely unlocked at 10/9 and must be executed only through the frozen precommitted executor. Full P9 is 5/9 and remains learner-blocked. P4a has 2/9 labels and remains blocked. Immediate time-sensitive priority is the first genuine P11 manual capture from main; keep schedule off until audited and keep production unchanged.
+> Read `AI_BOOTSTRAP.md`, `ml/NEXT_SESSION_HANDOFF.md`, `ml/EXECUTION_PLAN_CURRENT.md`, `ml/PROGRESS_TRACKING.md`, Roadmap v4, `ml/P7_LONG168_RESULT_2026-10-25.md`, and `ml/P9A_FREEZE_AUDIT_2026-10-25.md`. Query readiness fresh. P7 has already executed and produced a 14.44% point MAE gain but remains uncertainty-limited because its event-block interval crosses zero. P9a T-24/T-48 target-free audit is complete. P9 full 168h remains 5/9 and learner-blocked. P4a remains 2/9 labels and blocked. P11 provider secret is configured; source fix is on main, but live runtime still needs synchronization before first genuine capture. Keep schedule off and production unchanged.
