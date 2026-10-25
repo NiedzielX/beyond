@@ -1,7 +1,7 @@
 name: P11 Odds Capture v2
 
 # Genuine forward-only PIT market capture.
-# No schedule until THE_ODDS_API_KEY is configured and the capture path is verified.
+# Scheduled capture is enabled only after the first genuine audited capture succeeded.
 on:
   workflow_dispatch:
     inputs:
@@ -10,6 +10,8 @@ on:
         required: true
         default: false
         type: boolean
+  schedule:
+    - cron: "17 */6 * * *"
   pull_request:
     paths:
       - "supabase/functions/p11_odds_capture_v2/**"
@@ -52,7 +54,7 @@ jobs:
         run: deno test supabase/functions/p11_odds_capture_v2/provider_test.ts
 
   capture:
-    if: github.event_name == 'workflow_dispatch' && inputs.capture == true
+    if: (github.event_name == 'workflow_dispatch' && inputs.capture == true) || github.event_name == 'schedule'
     needs: contract
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -116,5 +118,5 @@ jobs:
           {
             echo '### P11 Odds Capture v2'
             echo
-            jq -r '"- status: `\(.status)`\n- local events: `\(.localEvents // 0)`\n- provider events: `\(.providerEvents // 0)`\n- matched events: `\(.matchedEvents // 0)`\n- inserted raw bookmaker quotes: `\(.insertedQuotes // 0)`\n- production change: `\(.productionChange)`"' /tmp/p11-capture.json
+            jq -r '"- status: `\(.status)`\n- local events: `\(.localEvents // 0)`\n- provider events: `\(.providerEvents // 0)`\n- matched events: `\(.matchedEvents // 0)`\n- inserted raw bookmaker quotes: `\(.insertedQuotes // 0)`\n- quota remaining: `\(.quota.remaining // \"n/a\")`\n- quota used: `\(.quota.used // \"n/a\")`\n- last request cost: `\(.quota.last // \"n/a\")`\n- production change: `\(.productionChange)`"' /tmp/p11-capture.json
           } >> "$GITHUB_STEP_SUMMARY"
