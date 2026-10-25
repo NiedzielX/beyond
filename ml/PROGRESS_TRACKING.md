@@ -23,7 +23,7 @@ Production: `live_adjustment = 0`.
 | P9a T-24/T-48 freeze | ✅ COMPLETE | target-free audit frozen |
 | P4a previous-home spacing | 🟡 2 labeled / 2 distinct labeled | gate closed |
 | P10/P10b | ✅ CLOSED | do not reopen fixed pooled-HGB path |
-| P11a PIT odds | 🟢 2 genuine events | scheduled accumulation; no model yet |
+| P11a PIT odds | 🟢 **81 rows / 4 events / 5 batches** | primary + health-guarded fallback capture; no model yet |
 | P11b price context | 🟢 AS-KNOWN CONTRACT LIVE | no inferred promotion |
 | P11c verified absences | 🟡 DATA_BOUND | continue collection |
 | P11d weather | ✅ CLOSED / NO UPLIFT | do not repeat same mechanism |
@@ -196,18 +196,32 @@ Gate remains closed:
 - distinct labeled values: 2;
 - required: >=9 labeled AND >=3 distinct labeled values.
 
-## P11a — fresh readiness
+## P11a — ACTIVE / RESILIENT
 
-- `GENUINE_PIT_DATA_ACCUMULATING`;
-- genuine PIT events: 2;
-- clubs: 2;
-- events with >=3 bookmakers: 2;
-- 24h / 72h / 168h coverage: **1 / 1 / 0**;
+Fresh state after recovery run `40223646599`:
+
+- raw append-only odds rows: **81**;
+- genuine PIT events / clubs: **4 / 4**;
+- capture batches: **5**;
+- >=3 bookmaker events: **4**;
+- 24h / 72h / 168h coverage: **3 / 3 / 0**;
+- latest capture: `2026-10-25T18:56:51.448Z`;
+- recovery artifact digest: `6c326149cea6d1043eaa3c5a200b5430853a3fb46454aad910cbf0faf188beba`;
+- health after capture: `capture_due=false`;
 - model precommitted: false;
 - target values used: false;
 - production change: false.
 
-Capture cadence remains every six hours.
+Capture resilience:
+
+- primary schedule: `17 */6 * * *`;
+- fallback schedule: `47 0,6,12,18 * * *`;
+- health RPC: `public.p11_market_odds_capture_health_v2()`;
+- stale threshold: 270 minutes;
+- fallback skips provider work after a healthy fresh primary capture;
+- temporary recovery workflow removed after success.
+
+Do not backfill closing odds.
 
 ## P11b/c/d
 
@@ -223,7 +237,7 @@ Capture cadence remains every six hours.
 
 ## Immediate order
 
-`preserve P7 prospective schedule -> preserve 18/18 multi-source ticketing ingestion -> preserve P11a/P11b/P11d collection -> score Long72/P7 only when genuine outcomes arrive -> accumulate P9 to 9/9 -> accumulate P4a labels -> derive business ΔMAE threshold -> P12 later`
+`preserve P7 prospective schedule -> preserve 18/18 multi-source ticketing ingestion -> preserve resilient P11a/P11b/P11d collection -> score Long72/P7 only when genuine outcomes arrive -> accumulate P9 to 9/9 -> accumulate P4a labels -> derive business ΔMAE threshold -> P12 later`
 
 ## Closed loops
 
