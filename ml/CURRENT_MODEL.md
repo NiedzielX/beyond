@@ -42,23 +42,30 @@ Frozen Pre-Live v3 remains research-only:
 
 No production activation.
 
-## 3. Long72
+## 3. Long72 — frozen prospective lane
 
 Frozen package:
 
 `d2-long72-stage2-p2-observation-maturity-2026-10-21-v1`
 
-Fresh genuine prospective state:
+Current genuine prospective state:
 
-- scored events: 2;
-- anchor event-balanced MAE: 9069.52;
-- package event-balanced MAE: 7641.71;
-- point improvement: 1427.80 / 15.74%;
-- latest refresh added 0 new scores.
+- scored events: **4** — events `[10,16,21,23]`;
+- anchor event-balanced MAE: **6942.59**;
+- package event-balanced MAE: **6824.16**;
+- point improvement: **118.43 / 1.71%**;
+- event improvement rate: **75%**;
+- package event-balanced bias: **-712.84**;
+- worst event degradation: **3633.23**.
 
-Status: **immutable / prospective scoring active**.
+By horizon band:
 
-Do not retune from n=2.
+- 24–48h: package is about **5 MAE worse** than anchor;
+- 48–72h: package improves by about **241.85 MAE**.
+
+The n=4 evidence is materially weaker than the earlier n=2 point estimate. Status remains **immutable / prospective scoring active**.
+
+Do not retune, recalibrate or promote.
 
 ## 4. P7 Long168 — exposed historical/forward-fold result
 
@@ -95,26 +102,16 @@ Pinned deterministic model fingerprint:
 
 `70fa929181531276c80a75c0b78a60fb821cf50e714e2bc001de8251cea1793f`
 
-Fingerprint run `40201818862`: SUCCESS.
-
-First true prospective predict/persist run `40216860928`: SUCCESS.
-
 Current immutable evidence ledger:
 
-- prediction rows: 3;
-- independent events: 3;
-- scored events: 0;
+- prediction rows: **6**;
+- independent events: **3**;
+- scored events: **0**;
 - evidence status: `PROSPECTIVE_PREDICTIONS_ONLY`;
 - model fingerprint count: 1;
 - bootstrap backfill: false;
 - target values used in prediction: false;
 - production activation: false.
-
-Persisted event IDs:
-
-- 6 — Lech Poznań vs Wisła Kraków;
-- 444 — GKS Katowice vs Widzew Łódź;
-- 446 — Wisła Płock vs Piast Gliwice.
 
 Scheduled prediction cadence:
 
@@ -122,39 +119,134 @@ Scheduled prediction cadence:
 
 Prediction is persisted before outcome. Scoring may only attach a genuine attendance outcome confirmed after `predicted_at` and never recomputes the forecast.
 
-## 6. P9 Booking Curve
+## 6. P9 Booking Curve — 8/9 and design frozen before ninth label
 
 Fresh readiness:
 
-- 168h: 5/9 events / 5 clubs;
-- 72h: 9 / 7;
-- 48h: 12 / 7;
-- 24h: 15 / 9;
-- full-168h status: `DATA_BOUND`;
-- learner precommitted: false.
+- 168h: **8/9 events / 8 clubs**;
+- 72h: **12 / 10**;
+- 48h: **15 / 10**;
+- 24h: **18 / 11**;
+- full-168h status: `DATA_BOUND`.
 
-P9a target-free T-24/T-48 freeze remains complete.
+Full-window event IDs:
 
-Do not fit/select a full P9 learner before 9/9 plus a separate precommit.
+`[5,10,15,18,19,20,21,23]`
 
-## 7. P11 match attractiveness / commercial context
+Event 20 — Wisła Płock vs Radomiak Radom — supplied the eighth genuine full-window label with reported attendance **5,014**.
+
+Event 22 — Legia Warszawa vs Lech Poznań — is technically full-window ready but still has no trusted attendance label. Its 6–168h curve contains about 648 snapshots and the maximum gap is only about 0.25h. Do not estimate attendance from inventory.
+
+Events 3 and 4 remain correctly excluded because their maximum 6–168h gaps exceed the frozen 12h quality ceiling. Do not relax the rule.
+
+### P9a representation freeze
+
+Target-free T-24/T-48 representation audit remains complete.
+
+Canonical representation:
+
+`ml/p9_booking_curve_v1.py`
+
+Core rules:
+
+- canonical hours: `168,144,120,96,72,60,48,36,24,18,12,6`;
+- max interpolation gap: 12h;
+- min overlap: 3 canonical points;
+- weighted-L1 distance;
+- fixed default neighbors: 5;
+- target future trajectory points forbidden.
+
+### P9 learner design precommitted before ninth label
+
+Canonical precommit:
+
+`ml/P9_BOOKING_CURVE_LEARNER_PRECOMMIT_V1.md`
+
+Precommit ID:
+
+`p9-knn-median-residual-k5-v1`
+
+Frozen v1 mechanism:
+
+`PIT booking-curve similarity -> fixed 5 nearest completed curves -> same-incumbent-family historical residuals -> median residual -> incumbent P50 correction`
+
+Rules:
+
+- cutoffs T-48 and T-24 only;
+- fixed `k=5`;
+- minimum 3 residual-bearing neighbors;
+- no fitted scaling coefficient;
+- no intercept;
+- no regression model;
+- no candidate/hyperparameter sweep;
+- final clipping only to `[0, verified_stadium_capacity]`;
+- primary metric = event-balanced MAE across both fixed cutoffs.
+
+Machine status:
+
+`public.p9_learner_gate_status_v1()`
+
+Current state:
+
+- `design_precommitted=true`;
+- `readiness_168_events=8`;
+- `readiness_168_clubs=8`;
+- `full_window_gate_open=false`;
+- `registered_target_free_manifests=0`;
+- `labels_export_allowed=false`;
+- `model_results_opened=false`;
+- `production_activation_allowed=false`.
+
+Hard enforced order when 9/9 arrives:
+
+1. export target-free P9a T-48/T-24 inputs;
+2. freeze representation/reference identities;
+3. register immutable P9a manifest;
+4. export target-free incumbent catalog;
+5. freeze exact target/reference incumbent identities with `ml/p9_learner_support_freeze_v1.py`;
+6. register immutable support manifest;
+7. only then export labels through `public.export_p9_learner_labels_v2(...)`;
+8. run fixed `ml/p9_booking_curve_learner_v1.py`;
+9. report all frozen metrics without post-result tuning.
+
+At 8/9, freeze registration, incumbent-catalog export and v2 label export have all been negative-tested and rejected. Both freeze registries remain empty.
+
+P9 learner CI run `40225788533`: **SUCCESS**.
+
+## 7. P4a fixture context
+
+Fresh readiness:
+
+- READY events: 5;
+- labeled READY events: **4/9**;
+- distinct labeled previous-home-spacing values: **3**;
+- distinct-value requirement: PASS;
+- event-count requirement: FAIL;
+- trigger: false.
+
+Do not open model results before 9 labeled events.
+
+## 8. P11 match attractiveness / commercial context
 
 ### P11a odds
 
-Genuine PIT odds capture is active:
+Genuine PIT odds capture remains active and resilient:
 
-- events with genuine PIT 1X2: 2;
-- clubs: 2;
-- events with >=3 bookmakers: 2;
-- latest time-relative horizon coverage 24h / 72h / 168h: 1 / 1 / 0;
+- raw append-only bookmaker rows: **81**;
+- genuine PIT events / clubs: **4 / 4**;
+- capture batches: **5**;
+- events with >=3 bookmakers: **4**;
+- 24h / 72h / 168h coverage: **3 / 3 / 0**;
+- latest audited capture: `2026-10-25T18:56:51.448Z`;
 - model precommitted: false;
-- target values used: false.
+- target values used: false;
+- production change: false.
 
-Schedule:
+Schedules:
 
-`17 */6 * * *`
-
-The most recent audited database capture remains 2026-10-25 13:53 UTC; the next scheduled slot had not yet become due at the latest health check.
+- primary: `17 */6 * * *`;
+- fallback: `47 0,6,12,18 * * *`;
+- stale threshold: 270 minutes.
 
 Do not backfill closing odds or loosen deterministic mapping.
 
@@ -173,41 +265,57 @@ Still data-bound. Missing records are not negative evidence.
 - weather: existing mechanism `research_only_no_uplift`, closed;
 - media attention: prospective-only collection continues.
 
-## 8. P4a fixture context
-
-Fresh readiness:
-
-- READY events: 5;
-- labeled READY events: 2;
-- previous-home-spacing distinct READY values: 4;
-- distinct labeled values: 2;
-- threshold: >=9 labeled AND >=3 distinct labeled values;
-- trigger: false.
-
-## 9. RoboTicket ingestion safety net
-
-Canonical document:
-
-`ml/ROBOTICKET_INGESTION_SAFETY_NET_2026-10-25.md`
+## 9. Multi-source ticketing ingestion safety net
 
 This is acquisition infrastructure, not a model change.
 
+League source coverage:
+
+- current Ekstraklasa home clubs: **18**;
+- covered by at least one active ticketing source: **18**;
+- uncovered: **0**.
+
+### RoboTicket
+
 Live protections:
 
-- same-element discovery v7;
-- explicit non-match/non-football exclusions;
+- hardened same-element event identity;
+- explicit parking/VIP/premium/reserve/non-football exclusions;
 - hourly discovery;
-- private raw candidate buffering every 10 minutes;
+- private raw candidate buffer every 10 minutes;
 - football-universe gate;
-- verified schedule promotion + original-timestamp backfill;
-- dashboard ingestion coverage/history.
+- verified schedule promotion;
+- original PIT timestamps retained when candidate-buffer rows are promoted.
 
-Fresh state:
+### Stellis
 
-- 11 future matches TRACKED;
-- one `TRACKED_NO_SNAPSHOT`: Wisła Kraków vs Cracovia, source currently returns zero sectors;
-- latest normal collector/discovery/buffer/dashboard cron runs all succeeded;
-- false-positive early buffer rows remained private and did not contaminate model-facing snapshots.
+Canonical collector:
+
+`stellis_collect_v3`
+
+Active sources:
+
+- Widzew Łódź;
+- Radomiak Radom;
+- Piast Gliwice;
+- Motor Lublin;
+- Korona Kielce.
+
+Hidden/ambiguous inventory remains fail closed.
+
+### Panel / schedule watchdog
+
+Panel-facing shared contract:
+
+`public.dashboard_ticketing_ingestion_status_v1`
+
+Panel repo:
+
+`NiedzielX/BeyondTicketingPanel`
+
+Panel displays tracked events, protected buffers, schedule gaps, source family and recent completed matches. Events have `Nadchodzące / Zakończone / Wszystkie`, avoiding the false impression that completed curves disappeared.
+
+Schedule-gap UI CI is green on main.
 
 ## 10. Validation / governance
 
@@ -221,7 +329,7 @@ Live-ticket:
 
 - event is the independent unit;
 - strict prospective/forward evidence preferred;
-- prediction/feature identity must be frozen before target access where possible.
+- prediction/feature identity frozen before target access whenever possible.
 
 Decision vocabulary:
 
@@ -250,7 +358,7 @@ Do not reopen without a materially new mechanism:
 
 ## 13. Production boundary
 
-No historical uplift, Long72 point gain, P7 prospective prediction, P9 representation or P11 context signal activates production automatically.
+No historical uplift, Long72 point gain, P7 prospective prediction, P9 representation/result or P11 context signal activates production automatically.
 
 Until explicit reviewed promotion:
 
@@ -258,4 +366,4 @@ Until explicit reviewed promotion:
 
 ## Immediate decision
 
-> **Keep the P7 prospective lane and ingestion safety net running unchanged. Preserve P11 accumulation and Long72 scoring. Let P9 mature to 9/9 and P4a to its genuine-label gate. Do not tune any exposed lane while waiting for new genuine evidence.**
+> **Protect the now-complete 18/18 ticketing acquisition coverage and keep P7/P11 prospective lanes running unchanged. P9 is the nearest research gate at 8/9; its learner is already frozen and all label paths are hard-blocked until a genuine ninth full-window label plus target-free identity freezes exist. Continue Long72 and P4a only with genuine labels. Do not tune any exposed lane while waiting for new evidence.**
