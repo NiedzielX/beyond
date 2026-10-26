@@ -95,7 +95,7 @@ Current live evidence:
 
 Zero predictions before the first frozen window is expected.
 
-### P9 scheduler — DEPLOYED / E2E GREEN
+### P9 scheduler/gateway — DEPLOYED
 
 Workflow:
 
@@ -105,19 +105,22 @@ Schedule:
 
 `7,37 * * * *`
 
-End-to-end path has been verified on `main`:
+Gateway:
+
+`supabase/functions/p9_booking_curve_prospective_v1`
+
+The workflow is responsible for:
 
 1. main-only GitHub OIDC;
-2. target-free reference-outcome export;
-3. target-free T-48/T-24 inputs;
-4. P9a representation/reference freeze;
-5. PIT incumbent catalog;
-6. frozen prospective builder;
-7. immutable prediction persistence only if support is valid;
-8. genuine-outcome scoring;
-9. production-safety assertions.
-
-The previously missing `p9_booking_curve_prospective_v1` Edge Function is deployed and active.
+2. target-free P9 preflight;
+3. target-free reference-outcome export;
+4. target-free T-48/T-24 inputs;
+5. P9a representation/reference freeze;
+6. PIT incumbent catalog;
+7. frozen prospective builder;
+8. immutable prediction persistence only if support is valid;
+9. genuine-outcome scoring;
+10. production-safety assertions.
 
 ### First-window readiness — PROTECTED
 
@@ -129,9 +132,9 @@ First frozen windows:
 - Lech–Wisła Kraków T-48: **2026-10-29 16:30 UTC**;
 - GKS Katowice–Widzew T-48: **2026-10-29 19:15 UTC**.
 
-Pre-window audit found one critical issue: Cracovia–Motor had booking snapshots but no persisted target incumbent because `sporting_league_matches_shadow.event_date` held a round-date placeholder (`2026-10-31`) while the verified ticketing kickoff is `2026-10-30 17:00 UTC`.
+A pre-window audit found Cracovia–Motor had booking snapshots but no target incumbent because `sporting_league_matches_shadow.event_date` used a round-date placeholder (`2026-10-31`) while the verified ticketing kickoff is `2026-10-30 17:00 UTC`.
 
-The resolver has been hardened:
+The resolver was hardened in:
 
 `supabase/sql/structural_prior_fixture_date_tolerance_2026_10_26.sql`
 
@@ -143,25 +146,17 @@ Rule:
 
 No ticket-event kickoff is changed and no fuzzy club matching is introduced.
 
-The Structural Prior Materializer workflow was rerun successfully. It persisted for event 443:
+The Structural Prior Materializer persisted event 443:
 
 - Structural Prior ID: **40**;
 - horizon: **T-7**;
 - P50: **10632.32**;
-- verified stadium capacity: **15016**;
+- verified capacity: **15016**;
 - `point_in_time_validated=true`;
-- generated: **2026-10-26 16:25 UTC**;
+- persisted **2026-10-26 16:25 UTC**;
 - persisted before P9 T-48 cutoff: **true**.
 
-Although the Structural Prior row is marked `backfilled_pit_forecast=true` relative to its own T-7 materialization time, the frozen feature builder reconstructs attendance/sporting features strictly at the T-7 `target_as_of_at=2026-10-23 17:00 UTC`. For P9 T-48, the forecast itself genuinely exists before the P9 decision cutoff on 2026-10-28. The P9 incumbent catalog additionally enforces `created_at <= analogous_cutoff_at`.
-
-The live orchestrator immediately processed event 443 after persistence.
-
-Other first-window P9 targets already have PIT-validated target incumbents:
-
-- Wisła Płock–Piast;
-- Lech–Wisła Kraków;
-- GKS Katowice–Widzew.
+The P9 incumbent catalog additionally enforces `as_of_at <= analogous_cutoff_at` and `created_at <= analogous_cutoff_at`.
 
 ### P9 v2 decision rule
 
@@ -171,48 +166,70 @@ Only consider a new target-free P9 design if prospective v1 repeatedly enters ge
 
 Any P9 v2 must be precommitted before evaluation labels are opened.
 
-## Priority 2 — maintain the P9 pre-window evidence chain
+## Priority 2 — automated P9 preflight protects immutable windows
 
-Before each near-term P9 window, audit only evidence-enabling conditions that can make an immutable window unrecoverable:
+Canonical function:
 
-- target booking snapshots exist before cutoff;
-- target incumbent exists and is PIT-valid before cutoff;
-- fixture mapping is unambiguous;
-- verified capacity exists where required by the incumbent;
-- scheduler/gateway are green;
-- no outcome is present for the future target.
+`public.p9_prospective_preflight_v1(10)`
 
-Never generate a missing target incumbent after the P9 cutoff and treat it as if it existed at the cutoff.
+Repo source:
 
-Current known future Structural Prior gaps after protecting the first P9 window:
+`supabase/sql/p9_prospective_preflight_v1.sql`
 
-- event 447 Raków–Pogoń: `missing_capacity`;
-- event 603 Korona–Radomiak: `missing_capacity`;
-- event 452 Pogoń–Śląsk: `missing_fixture_round` because the later round is not yet present in the sporting shadow.
+The function is service-role-only, target-free and production-safe. It audits future targets before immutable T-48/T-24 windows and classifies each cutoff as:
 
-These are next acquisition/metadata reliability tasks, not reasons to change the P9 learner.
+- `READY`;
+- `WATCH_NO_SNAPSHOT` / `WATCH_NO_INCUMBENT`;
+- `CRITICAL_NO_SNAPSHOT` / `CRITICAL_NO_INCUMBENT` within 48h of cutoff;
+- `WINDOW_OPEN`;
+- `CAPTURED`;
+- `MISSED_WINDOW`.
+
+The P9 workflow calls the preflight on every run. WATCH/CRITICAL conditions create visible warnings but do not abort the whole job, so one future target cannot block an already-open valid target.
+
+Fresh 10-day audit on 2026-10-26:
+
+- critical: **0**;
+- watch: **0**;
+- all six near-term P9 targets are `READY` at T-48 and T-24;
+- Cracovia–Motor, Wisła Płock–Piast, Lech–Wisła Kraków, GKS–Widzew, Zagłębie–Korona and Raków–Pogoń all have cutoff-eligible snapshots and incumbents.
+
+### Capacity gaps resolved
+
+Officially verified capacities were added for current Structural Prior inference:
+
+- Raków Częstochowa: **5500**;
+- Korona Kielce: **15550**.
+
+Repo source:
+
+`supabase/sql/structural_prior_current_capacities_2026_v1.sql`
+
+Materializer/orchestrator then produced and processed:
+
+- event 447 Raków–Pogoń — Structural Prior ID **45**, P50 **5049.53**, capacity **5500**;
+- event 603 Korona–Radomiak — Structural Prior ID **46**, P50 **12016.93**, capacity **15550**.
+
+Both are PIT-validated. The previous `missing_capacity` state for 447/603 is closed.
+
+### Remaining evidence watches
+
+- event 452 Pogoń–Śląsk remains `missing_fixture_round`; sporting shadow is current but upstream currently exposes only rounds 13–14. Do not invent the later round.
+- event 448 Wisła Kraków–Cracovia is `TRACKED_NO_SNAPSHOT`; the event exists but no inventory snapshot has been observed yet. Do not convert absence of visible inventory to zero.
+
+These are data-acquisition/metadata watches, not learner-design failures.
 
 ## Priority 3 — panel reports MAE lifecycle, not readiness as performance
 
 Completed on 2026-10-26.
 
-P9 browser-facing data now uses an RLS-protected safe cache and `security_invoker` views:
+P9 browser-facing data uses an RLS-protected safe cache and `security_invoker` views:
 
 - `public.dashboard_p9_mae_lifecycle_cache_v1`;
 - `public.dashboard_p9_mae_lifecycle_v1`;
 - `public.dashboard_p9_mae_status_v1`.
 
-The panel distinguishes:
-
-- historical readiness;
-- historical `NOT_EVALUABLE` status;
-- prospective prediction coverage;
-- scored events;
-- incumbent MAE;
-- challenger MAE;
-- ΔMAE;
-- event-level downside;
-- production guardrails.
+The panel distinguishes historical readiness/NOT_EVALUABLE status, prospective prediction coverage, scored events, incumbent MAE, challenger MAE, ΔMAE, event-level downside and production guardrails.
 
 `P9MaeStatusPanel` is visible in Forecast Accuracy and Model Lab. Dashboard CI is green.
 
@@ -296,14 +313,13 @@ Do not start a broad tuning tournament while P7/P9 prospective evidence is immat
 
 ## Immediate execution order
 
-1. Keep the P9 prospective scheduler/gateway healthy through the first T-48 window on 2026-10-28.
-2. Resolve verified-capacity gaps for future Structural Prior targets where authoritative evidence exists; keep unknowns fail-closed.
-3. Keep later fixture-round coverage fresh; do not invent a round when the sporting shadow does not yet contain one.
-4. Collect immutable P9 T-48/T-24 predictions; if frozen support is insufficient, record the failure rather than relaxing the rule.
-5. Score P7 and P9 only after genuine outcomes arrive.
-6. Continue Long72/P4a/P11 accumulation without retuning.
-7. Set the business minimum meaningful ΔMAE.
-8. Only then choose the next new challenger hypothesis using expected prospective MAE impact.
+1. Keep automated P9 preflight + scheduler/gateway healthy through the first T-48 window on **2026-10-28 17:00 UTC**.
+2. Watch event 448 for first genuine ticketing snapshot and event 452 for upstream round coverage; do not fabricate either.
+3. Collect immutable P9 T-48/T-24 predictions; if frozen support is insufficient, record the failure rather than relaxing the rule.
+4. Score P7 and P9 only after genuine outcomes arrive.
+5. Continue Long72/P4a/P11 accumulation without retuning.
+6. Set the business minimum meaningful ΔMAE.
+7. Only then choose the next new challenger hypothesis using expected prospective MAE impact.
 
 ## Next meaningful MAE milestones
 
