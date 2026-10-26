@@ -65,6 +65,14 @@ Deno.serve(async (req: Request) => {
     const url = new URL(req.url);
     if (req.method === "GET") {
       const mode = String(url.searchParams.get("mode") || "summary");
+      if (mode === "preflight") {
+        const rawDays = Number(url.searchParams.get("days") || "10");
+        if (!Number.isInteger(rawDays) || rawDays < 1 || rawDays > 31) {
+          return json({ ok: false, error: "days must be an integer between 1 and 31" }, 400);
+        }
+        const payload = await rpc("p9_prospective_preflight_v1", { p_horizon_days: rawDays });
+        return json({ ok: true, version: "p9-prospective-gateway-v1", mode, horizonDays: rawDays, payload, targetValuesUsed: false, productionChange: false });
+      }
       if (mode === "inputs") {
         const cutoff = Number(url.searchParams.get("cutoff"));
         if (![24, 48].includes(cutoff)) return json({ ok: false, error: "cutoff must be 24 or 48" }, 400);
