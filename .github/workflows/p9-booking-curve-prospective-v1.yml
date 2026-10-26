@@ -1,0 +1,203 @@
+name: P9 Booking Curve Prospective v1
+
+on:
+  workflow_dispatch:
+  schedule:
+    # The frozen contract allows only a 90-minute window after T-48/T-24.
+    # Run twice per hour to reduce the chance of losing an immutable window to scheduler delay.
+    - cron: "7,37 * * * *"
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: p9-booking-curve-prospective-v1
+  cancel-in-progress: false
+
+jobs:
+  predict-and-score:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install pinned ML dependencies
+        run: pip install -r ml/requirements.txt
+
+      - name: Compile fixed P9 prospective code
+        run: |
+          python -m py_compile ml/p9a_booking_curve_freeze_v1.py
+          python -m py_compile ml/p9_booking_curve_prospective_v1.py
+
+      - name: Request main-only P9 prospective token
+        shell: bash
+        run: |
+          set -euo pipefail
+          response=$(curl --retry 4 --retry-all-errors --retry-delay 2 -fsS \
+            -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
+            "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=beyond-p9-booking-curve-prospective")
+          token=$(printf '%s' "$response" | jq -r '.value')
+          test -n "$token" && test "$token" != "null"
+          echo "::add-mask::$token"
+          echo "P9_PROSPECTIVE_OIDC_TOKEN=$token" >> "$GITHUB_ENV"
+
+      - name: Capture reference outcomes known before this run
+        shell: bash
+        run: |
+          set -euo pipefail
+          gateway='https://adchzwqboeekhokapxqi.supabase.co/functions/v1/p9_booking_curve_prospective_v1'
+          curl --retry 5 --retry-all-errors --retry-delay 2 -fsS \
+            -H "Authorization: Bearer $P9_PROSPECTIVE_OIDC_TOKEN" \
+            "${gateway}?mode=reference-outcomes" -o /tmp/p9-reference-outcomes-wrapper.json
+          jq -e '
+            .ok == true
+            and .targetAttendanceIncluded == false
+            and .productionChange == false
+            and .payload.version == "p9-prospective-reference-outcomes-v1"
+            and .payload.production_change == false
+          ' /tmp/p9-reference-outcomes-wrapper.json >/dev/null
+          jq '.payload' /tmp/p9-reference-outcomes-wrapper.json > /tmp/p9-reference-outcomes.json
+
+      - name: Build and persist immutable T-48/T-24 predictions
+        shell: bash
+        run: |
+          set -euo pipefail
+          gateway='https://adchzwqboeekhokapxqi.supabase.co/functions/v1/p9_booking_curve_prospective_v1'
+
+          for cutoff in 48 24; do
+            echo "Checking frozen T-${cutoff} window"
+
+            curl --retry 5 --retry-all-errors --retry-delay 2 -fsS \
+              -H "Authorization: Bearer $P9_PROSPECTIVE_OIDC_TOKEN" \
+              "${gateway}?mode=inputs&cutoff=${cutoff}" -o "/tmp/p9-inputs-${cutoff}-wrapper.json"
+
+            jq -e --argjson cutoff "$cutoff" '
+              .ok == true
+              and .targetValuesUsed == false
+              and .productionChange == false
+              and .payload.version == "p9a-booking-curve-inputs-v1"
+              and .payload.execution_mode == "prospective"
+              and .payload.cutoff_hours == $cutoff
+              and .payload.target_values_used == false
+              and .payload.post_cutoff_target_snapshots_exported == false
+              and .payload.production_change == false
+            ' "/tmp/p9-inputs-${cutoff}-wrapper.json" >/dev/null
+
+            target_count=$(jq '.payload.targets | length' "/tmp/p9-inputs-${cutoff}-wrapper.json")
+            if [ "$target_count" -eq 0 ]; then
+              echo "No eligible T-${cutoff} target is currently inside the immutable 90-minute prediction window."
+              continue
+            fi
+
+            jq '.payload' "/tmp/p9-inputs-${cutoff}-wrapper.json" > "/tmp/p9-inputs-${cutoff}.json"
+
+            python -m ml.p9a_booking_curve_freeze_v1 \
+              --inputs "/tmp/p9-inputs-${cutoff}.json" \
+              --output "/tmp/p9-freeze-${cutoff}.json"
+
+            jq -e --argjson cutoff "$cutoff" '
+              .version == "p9a-booking-curve-freeze-v1"
+              and .cutoff_hours == $cutoff
+              and .target_values_opened == false
+              and .model_training_performed == false
+              and .production_change == false
+              and ([.targets[].pickup_features? | select(. != null) | .target_future_points_used] | all(. == false))
+            ' "/tmp/p9-freeze-${cutoff}.json" >/dev/null
+
+            curl --retry 5 --retry-all-errors --retry-delay 2 -fsS \
+              -H "Authorization: Bearer $P9_PROSPECTIVE_OIDC_TOKEN" \
+              "${gateway}?mode=incumbents&cutoff=${cutoff}" -o "/tmp/p9-incumbents-${cutoff}-wrapper.json"
+
+            jq -e --argjson cutoff "$cutoff" '
+              .ok == true
+              and .targetValuesUsed == false
+              and .productionChange == false
+              and .payload.version == "p9-prospective-incumbent-catalog-v1"
+              and .payload.cutoff_hours == $cutoff
+              and .payload.attendance_values_included == false
+              and .payload.target_values_used == false
+              and .payload.production_change == false
+            ' "/tmp/p9-incumbents-${cutoff}-wrapper.json" >/dev/null
+            jq '.payload' "/tmp/p9-incumbents-${cutoff}-wrapper.json" > "/tmp/p9-incumbents-${cutoff}.json"
+
+            python -m ml.p9_booking_curve_prospective_v1 \
+              --p9a-freeze "/tmp/p9-freeze-${cutoff}.json" \
+              --incumbent-catalog "/tmp/p9-incumbents-${cutoff}.json" \
+              --reference-outcomes /tmp/p9-reference-outcomes.json \
+              --output "/tmp/p9-prospective-${cutoff}.json"
+
+            jq -e --argjson cutoff "$cutoff" '
+              .version == "p9-booking-curve-prospective-builder-v1"
+              and .precommit_id == "p9-knn-median-residual-k5-v1"
+              and .cutoff_hours == $cutoff
+              and .target_values_used == false
+              and .production_activation_allowed == false
+              and .live_adjustment == 0
+              and .production_change == false
+            ' "/tmp/p9-prospective-${cutoff}.json" >/dev/null
+
+            prediction_count=$(jq '.predictions | length' "/tmp/p9-prospective-${cutoff}.json")
+            if [ "$prediction_count" -eq 0 ]; then
+              echo "T-${cutoff}: target window captured, but frozen v1 produced no support-ready prediction."
+              jq '{cutoff_hours, diagnostics, target_values_used, production_change}' "/tmp/p9-prospective-${cutoff}.json"
+              continue
+            fi
+
+            jq -n --slurpfile payload "/tmp/p9-prospective-${cutoff}.json" \
+              '{mode:"persist",payload:$payload[0]}' > "/tmp/p9-persist-${cutoff}-request.json"
+
+            curl --retry 5 --retry-all-errors --retry-delay 2 -fsS \
+              -H "Authorization: Bearer $P9_PROSPECTIVE_OIDC_TOKEN" \
+              -H 'content-type: application/json' \
+              --data-binary @"/tmp/p9-persist-${cutoff}-request.json" \
+              "$gateway" -o "/tmp/p9-persist-${cutoff}-response.json"
+
+            jq -e '
+              .ok == true
+              and .mode == "persist"
+              and .productionChange == false
+            ' "/tmp/p9-persist-${cutoff}-response.json" >/dev/null
+            echo "Persisted ${prediction_count} immutable T-${cutoff} prediction(s)."
+          done
+
+      - name: Score newly completed prospective predictions
+        shell: bash
+        run: |
+          set -euo pipefail
+          gateway='https://adchzwqboeekhokapxqi.supabase.co/functions/v1/p9_booking_curve_prospective_v1'
+          printf '%s\n' '{"mode":"score"}' > /tmp/p9-score-request.json
+          curl --retry 5 --retry-all-errors --retry-delay 2 -fsS \
+            -H "Authorization: Bearer $P9_PROSPECTIVE_OIDC_TOKEN" \
+            -H 'content-type: application/json' \
+            --data-binary @/tmp/p9-score-request.json \
+            "$gateway" -o /tmp/p9-score-response.json
+          jq -e '
+            .ok == true
+            and .mode == "score"
+            and .productionChange == false
+            and .summary.production_change == false
+            and .summary.production_activation_allowed == false
+            and .summary.live_adjustment == 0
+          ' /tmp/p9-score-response.json >/dev/null
+
+      - name: Verify final prospective state remains production-safe
+        shell: bash
+        run: |
+          set -euo pipefail
+          gateway='https://adchzwqboeekhokapxqi.supabase.co/functions/v1/p9_booking_curve_prospective_v1'
+          curl --retry 5 --retry-all-errors --retry-delay 2 -fsS \
+            -H "Authorization: Bearer $P9_PROSPECTIVE_OIDC_TOKEN" \
+            "${gateway}?mode=summary" -o /tmp/p9-summary.json
+          jq -e '
+            .ok == true
+            and .productionChange == false
+            and .payload.production_change == false
+            and .payload.production_activation_allowed == false
+            and .payload.live_adjustment == 0
+          ' /tmp/p9-summary.json >/dev/null
+          jq '.payload | {prediction_events, prediction_rows, scored_events, evidence_status, delta_event_balanced_mae, production_activation_allowed, live_adjustment, production_change}' /tmp/p9-summary.json
