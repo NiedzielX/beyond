@@ -6,6 +6,14 @@ on:
     # The frozen contract allows only a 90-minute window after T-48/T-24.
     # Run twice per hour to reduce the chance of losing an immutable window to scheduler delay.
     - cron: "7,37 * * * *"
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/p9-booking-curve-prospective-v1.yml"
+      - "ml/p9_booking_curve_prospective_v1.py"
+      - "ml/p9a_booking_curve_freeze_v1.py"
+      - "supabase/functions/p9_booking_curve_prospective_v1/**"
+      - "supabase/sql/p9_booking_curve_prospective_v1.sql"
 
 permissions:
   contents: read
