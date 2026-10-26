@@ -133,13 +133,17 @@ If a valid window produces no prediction because support remains insufficient, r
 
 Only consider P9 v2 after prospective v1 has had a fair opportunity to accumulate genuine PIT incumbent history and still shows structural support starvation.
 
-## 5. Panel / MAE visibility
+## 5. Panel / MAE visibility — LIVE AND SECURITY-HARDENED
 
-Supabase canonical read-only view:
+Browser-facing P9 data now uses a safe cache pattern; the browser does **not** execute private-reading P9 research functions directly.
 
-`public.dashboard_p9_mae_status_v1`
+Canonical cache/view contract:
 
-It separates:
+- `public.dashboard_p9_mae_lifecycle_cache_v1` — RLS-protected cache refreshed by the existing service-role-only safe-cache job;
+- `public.dashboard_p9_mae_lifecycle_v1` — `security_invoker=true` read-only lifecycle projection;
+- `public.dashboard_p9_mae_status_v1` — legacy-compatible `security_invoker=true` projection over the same cache.
+
+The contract separates:
 
 - historical 9/9 readiness;
 - historical `NOT_EVALUABLE` status and support counts;
@@ -151,11 +155,27 @@ It separates:
 - event improvement rate / worst degradation;
 - production guardrails.
 
+Security verification on 2026-10-26:
+
+- `anon` can read the dashboard P9 cache/view;
+- `anon` cannot call the private-reading P9 prospective summary directly;
+- `dashboard_p9_mae_status_v1` is no longer a SECURITY DEFINER view;
+- Supabase security advisor no longer flags the P9 MAE view.
+
+Reproducible SQL is committed at:
+
+`supabase/sql/dashboard_p9_mae_lifecycle_v1.sql`
+
 Panel repo:
 
 `NiedzielX/BeyondTicketingPanel`
 
-A dedicated `P9MaeStatusPanel` is wired into Model Lab so generic readiness is no longer the P9 source of truth.
+`P9MaeStatusPanel` is now visible in both:
+
+- **Trafność prognoz** — directly next to the model accuracy view so readiness cannot be mistaken for MAE improvement;
+- **Model Lab** — research/governance context.
+
+Dashboard CI is green on main after the change.
 
 ## 6. P7 prospective
 
@@ -230,6 +250,17 @@ Business minimum meaningful ΔMAE is still intentionally unset until independent
 
 P12/new feature families stay behind active prospective evidence protection. New hypotheses should be ranked by expected incremental prospective MAE impact, not novelty.
 
-## 12. Cold-start command
+## 12. Known security/performance debt not introduced by P9 lifecycle work
 
-> Read `AI_BOOTSTRAP.md`, this handoff, `ml/EXECUTION_PLAN_CURRENT.md`, `ml/CURRENT_MODEL.md`, `ml/P9_SUPPORT_POSTMORTEM_2026-10-26.md` and both P9 precommits. Query live status fresh. Historical P9 is 9/9 but NOT_EVALUABLE due to zero same-family PIT support; do not repair it. P9 prospective scheduler is deployed and CI-verified, with first T-48 window on 2026-10-28 17:00 UTC. P7 prospective has 16 rows / 3 events / 0 scores. Long72 has 4 scores. P4a is 4/9. P11 is collecting. Keep production unchanged and optimize all work toward prospective event-balanced MAE.
+Supabase advisor still reports unrelated pre-existing items, including:
+
+- `public.dashboard_ticketing_fixture_coverage_v1` as a SECURITY DEFINER view;
+- two older SECURITY DEFINER functions callable by anon/authenticated;
+- several RLS-enabled research tables with no policies because they are intentionally not exposed;
+- several unindexed foreign keys, including the P9 prospective score FK.
+
+Do not conflate those advisor items with the P9 lifecycle contract; the P9 dashboard path itself was rechecked after the DDL change.
+
+## 13. Cold-start command
+
+> Read `AI_BOOTSTRAP.md`, this handoff, `ml/EXECUTION_PLAN_CURRENT.md`, `ml/CURRENT_MODEL.md`, `ml/P9_SUPPORT_POSTMORTEM_2026-10-26.md`, `supabase/sql/dashboard_p9_mae_lifecycle_v1.sql` and both P9 precommits. Query live status fresh. Historical P9 is 9/9 but NOT_EVALUABLE due to zero same-family PIT support; do not repair it. P9 prospective scheduler + Edge gateway are deployed and end-to-end CI-verified, with first T-48 window on 2026-10-28 17:00 UTC. P9 MAE status is exposed through an RLS cache/security-invoker dashboard view and is visible in Forecast Accuracy + Model Lab. P7 prospective has 16 rows / 3 events / 0 scores. Long72 has 4 scores. P4a is 4/9. P11 is collecting. Keep production unchanged and optimize all work toward prospective event-balanced MAE.
