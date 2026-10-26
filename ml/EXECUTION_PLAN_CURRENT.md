@@ -14,9 +14,9 @@ Primary decision metric:
 
 `ΔMAE = challenger event-balanced MAE - incumbent event-balanced MAE`
 
-The desired direction is `ΔMAE < 0`.
+Desired direction: `ΔMAE < 0`.
 
-Readiness counters such as T-168 coverage, number of labels, support-ready targets, clubs, snapshot counts, odds rows and prediction rows are **leading indicators / evidence-enablers only**. They are not the objective.
+Readiness counters, snapshot counts, label counts, support counts, odds rows and prediction rows are evidence-enablers only. They are not model success.
 
 Production remains unchanged:
 
@@ -26,110 +26,78 @@ No research lane may activate production automatically.
 
 ## Research decision rules
 
-1. Prefer prospective evidence over historical reconstruction whenever the historical PIT contract cannot be proven.
+1. Prefer prospective evidence over historical reconstruction whenever historical PIT cannot be proven.
 2. Never relax a gate merely to obtain a model result.
-3. Never tune a challenger after opening the target outcomes used to judge that challenger.
-4. A lane that cannot produce a valid MAE comparison is `NOT_EVALUABLE`, not a win and not a loss.
-5. Before starting a new hypothesis, compare its expected MAE value against the active frozen prospective lanes and the cost of delaying those lanes.
-6. Promotion requires a meaningful prospective MAE gain plus acceptable event-level risk; point gain alone is insufficient.
+3. Never tune a challenger after opening the target outcomes used to judge it.
+4. `NOT_EVALUABLE` is a valid research outcome; it is neither a win nor a loss.
+5. Before starting a new hypothesis, compare its expected MAE value against active frozen prospective lanes and the cost of delaying them.
+6. Promotion requires a meaningful prospective MAE gain plus acceptable event-level downside; point gain alone is insufficient.
 7. Preserve `live_adjustment=0` until a separate production decision is explicitly approved.
 
 ## Priority 0 — protect data and evidence integrity
 
-- Multi-source ticketing ingestion remains a reliability guardrail, not the North Star.
-- Current league source coverage remains protected by RoboTicket + Stellis + schedule watchdog/buffer/promotion mechanisms.
-- Preserve original `captured_at`; never manufacture PIT history during promotion/backfill.
-- Never backfill booking curves, odds, context or forecasts and call them prospective.
+- Keep multi-source ticketing acquisition, fixture watchdog, raw buffering and promotion healthy.
+- Preserve original `captured_at`; never manufacture booking-curve history during promotion/backfill.
+- Never backfill odds, booking curves, outcomes or forecasts and call them prospective.
 - Hidden/unknown ticket availability must never become zero.
-- Original P7 tournament remains frozen; do not retune/rerun it.
-- Long72, P4a and P11 contracts remain frozen where already precommitted.
+- Preserve frozen P7, P9, Long72, P4a and P11 contracts.
 - Production remains disabled for every research lane.
 
-## Priority 1 — P9 booking curve: historical cohort closed, prospective lane active
+## Priority 1 — P9 prospective v1: first real MAE lane
 
-### Historical P9 v1 — CLOSED WITHOUT MAE EVIDENCE
-
-The genuine full-window gate has been reached:
-
-- T-168: **9/9 events**;
-- T-168 clubs: **9**;
-- `design_precommitted=true`;
-- `full_window_gate_open=true`;
-- `labels_export_allowed=true`;
-- target-free P9a manifests registered: **2**.
-
-Canonical precommit:
-
-`ml/P9_BOOKING_CURVE_LEARNER_PRECOMMIT_V1.md`
-
-Precommit ID:
-
-`p9-knn-median-residual-k5-v1`
-
-The frozen historical execution correctly failed closed before attendance labels were opened:
+Historical P9 v1 is closed:
 
 `NOT_EVALUABLE_PIT_SUPPORT_INSUFFICIENT`
 
-Frozen support diagnostic:
+Historical frozen state:
 
-- T-24 comparator targets: **11**;
-- T-48 comparator targets: **9**;
-- T-24 support-ready targets: **0**;
-- T-48 support-ready targets: **0**;
-- historical learner result produced: **false**;
-- attendance labels opened by learner: **false**;
-- production change: **false**.
+- T-168: **9/9 events / 9 clubs**;
+- learner precommitted before evaluation;
+- T-24: **0/11 support-ready**;
+- T-48: **0/9 support-ready**;
+- attendance labels were not opened by the learner;
+- no valid historical challenger-vs-incumbent MAE result exists.
 
-Root cause is not missing full T-168 curves. The frozen learner requires at least three selected booking-curve neighbors carrying a valid PIT incumbent forecast from the **same source family** at the analogous historical cutoff. The historical live forecast ledger does not contain enough such incumbent rows for the selected neighbors.
+Do not repair the historical cohort retrospectively.
 
-This historical cohort must **not** be repaired retrospectively. It provides no valid challenger-vs-incumbent MAE evidence.
-
-Canonical result/post-mortem:
+Read:
 
 - `ml/P9_BOOKING_CURVE_HISTORICAL_COHORT_RESULT_2026-10-25.md`
 - `ml/P9_SUPPORT_POSTMORTEM_2026-10-26.md`
 
-### P9 prospective v1 — ACTIVE MAE LANE
-
-The correct continuation is prospective validation of the already frozen mechanism, not historical reconstruction and not immediate P9 v2 tuning.
+### Prospective contract
 
 Canonical precommit:
 
 `ml/P9_BOOKING_CURVE_PROSPECTIVE_PRECOMMIT_V1.md`
 
-Frozen prospective mechanism:
+Frozen mechanism:
 
-- cutoffs: T-48 and T-24;
-- fixed `k=5` nearest PIT-safe booking-curve neighbors;
-- exact target incumbent source family for reference residuals;
-- minimum residual-bearing references: 3;
-- correction: median residual;
-- no fitted coefficient;
-- no candidate sweep;
-- no target attendance available to the prediction builder;
+- T-48 and T-24 only;
+- fixed `k=5` booking-curve neighbors;
+- same incumbent source family for target/reference residuals;
+- minimum 3 residual-bearing references;
+- correction = median residual;
+- no fit/search/tuning;
+- no target attendance in the prediction builder;
 - no late bootstrap;
-- immutable prediction window: cutoff through cutoff + 90 minutes;
-- primary metric: prospective event-balanced MAE vs the frozen incumbent.
+- immutable persistence window = exact cutoff through cutoff + 90 minutes;
+- primary metric = prospective event-balanced MAE vs incumbent.
 
-Current live state at 2026-10-26:
+Current live evidence:
 
 - prediction events: **0**;
 - prediction rows: **0**;
 - scored events: **0**;
 - evidence: `PROSPECTIVE_PREDICTIONS_ONLY`;
-- `production_activation_allowed=false`;
+- production activation false;
 - `live_adjustment=0`.
 
-Zero predictions on 2026-10-26 is expected because the first precommitted windows have not opened yet.
+Zero predictions before the first frozen window is expected.
 
-First frozen windows include:
+### P9 scheduler — DEPLOYED / E2E GREEN
 
-- Cracovia — Motor: T-48 opens **2026-10-28 17:00 UTC**, T-24 opens **2026-10-29 17:00 UTC**;
-- Wisła Płock — Piast: T-48 opens **2026-10-29 11:15 UTC**;
-- Lech — Wisła Kraków: T-48 opens **2026-10-29 16:30 UTC**;
-- GKS Katowice — Widzew: T-48 opens **2026-10-29 19:15 UTC**.
-
-Automation:
+Workflow:
 
 `.github/workflows/p9-booking-curve-prospective-v1.yml`
 
@@ -137,157 +105,211 @@ Schedule:
 
 `7,37 * * * *`
 
-It runs twice per hour so a GitHub scheduler delay is less likely to lose the frozen 90-minute prediction window. The workflow:
+End-to-end path has been verified on `main`:
 
-1. obtains a main-only OIDC token;
-2. captures only already-known reference outcomes;
-3. exports target-free T-48/T-24 inputs;
-4. freezes P9a representation/reference identities;
-5. exports PIT incumbent catalog;
-6. runs the frozen prospective builder;
-7. persists immutable predictions only if support is valid;
-8. scores completed predictions when genuine outcomes arrive;
-9. asserts `production_change=false` and `live_adjustment=0`.
+1. main-only GitHub OIDC;
+2. target-free reference-outcome export;
+3. target-free T-48/T-24 inputs;
+4. P9a representation/reference freeze;
+5. PIT incumbent catalog;
+6. frozen prospective builder;
+7. immutable prediction persistence only if support is valid;
+8. genuine-outcome scoring;
+9. production-safety assertions.
+
+The previously missing `p9_booking_curve_prospective_v1` Edge Function is deployed and active.
+
+### First-window readiness — PROTECTED
+
+First frozen windows:
+
+- Cracovia–Motor T-48: **2026-10-28 17:00 UTC**;
+- Cracovia–Motor T-24: **2026-10-29 17:00 UTC**;
+- Wisła Płock–Piast T-48: **2026-10-29 11:15 UTC**;
+- Lech–Wisła Kraków T-48: **2026-10-29 16:30 UTC**;
+- GKS Katowice–Widzew T-48: **2026-10-29 19:15 UTC**.
+
+Pre-window audit found one critical issue: Cracovia–Motor had booking snapshots but no persisted target incumbent because `sporting_league_matches_shadow.event_date` held a round-date placeholder (`2026-10-31`) while the verified ticketing kickoff is `2026-10-30 17:00 UTC`.
+
+The resolver has been hardened:
+
+`supabase/sql/structural_prior_fixture_date_tolerance_2026_10_26.sql`
+
+Rule:
+
+1. exact Warsaw date first;
+2. if absent, exact aliased home/away identity may fall back only when there is exactly one matching fixture within ±3 calendar days;
+3. zero or multiple nearby matches fail closed.
+
+No ticket-event kickoff is changed and no fuzzy club matching is introduced.
+
+The Structural Prior Materializer workflow was rerun successfully. It persisted for event 443:
+
+- Structural Prior ID: **40**;
+- horizon: **T-7**;
+- P50: **10632.32**;
+- verified stadium capacity: **15016**;
+- `point_in_time_validated=true`;
+- generated: **2026-10-26 16:25 UTC**;
+- persisted before P9 T-48 cutoff: **true**.
+
+Although the Structural Prior row is marked `backfilled_pit_forecast=true` relative to its own T-7 materialization time, the frozen feature builder reconstructs attendance/sporting features strictly at the T-7 `target_as_of_at=2026-10-23 17:00 UTC`. For P9 T-48, the forecast itself genuinely exists before the P9 decision cutoff on 2026-10-28. The P9 incumbent catalog additionally enforces `created_at <= analogous_cutoff_at`.
+
+The live orchestrator immediately processed event 443 after persistence.
+
+Other first-window P9 targets already have PIT-validated target incumbents:
+
+- Wisła Płock–Piast;
+- Lech–Wisła Kraków;
+- GKS Katowice–Widzew.
 
 ### P9 v2 decision rule
 
 Do **not** create P9 v2 merely to force a prediction.
 
-Consider a new target-free P9 design only if prospective v1 repeatedly reaches genuine T-48/T-24 windows but remains unable to emit predictions because the frozen support contract is structurally starved **after new PIT incumbent history has had a fair chance to accumulate**.
+Only consider a new target-free P9 design if prospective v1 repeatedly enters genuine T-48/T-24 windows but remains structurally unable to emit predictions after genuine PIT incumbent history has had a fair opportunity to accumulate.
 
-Any P9 v2 must be precommitted before its evaluation labels are opened.
+Any P9 v2 must be precommitted before evaluation labels are opened.
 
-### P9 source-of-truth warning
+## Priority 2 — maintain the P9 pre-window evidence chain
 
-Use:
+Before each near-term P9 window, audit only evidence-enabling conditions that can make an immutable window unrecoverable:
 
-- `public.p9_learner_gate_status_v1()` for historical learner gate;
-- `public.p9_historical_cohort_status_v1()` for frozen historical result;
-- `public.p9_booking_curve_prospective_summary_v1()` for prospective evidence.
+- target booking snapshots exist before cutoff;
+- target incumbent exists and is PIT-valid before cutoff;
+- fixture mapping is unambiguous;
+- verified capacity exists where required by the incumbent;
+- scheduler/gateway are green;
+- no outcome is present for the future target.
 
-Do **not** use the legacy `public.p9_booking_curve_readiness_v1()` as the canonical learner/precommit status. It contains stale learner-status semantics and can contradict the registered precommit.
+Never generate a missing target incumbent after the P9 cutoff and treat it as if it existed at the cutoff.
 
-## Priority 2 — make the panel report the real MAE lifecycle
+Current known future Structural Prior gaps after protecting the first P9 window:
 
-The panel currently exposes generic research readiness but not the canonical P9 lifecycle.
+- event 447 Raków–Pogoń: `missing_capacity`;
+- event 603 Korona–Radomiak: `missing_capacity`;
+- event 452 Pogoń–Śląsk: `missing_fixture_round` because the later round is not yet present in the sporting shadow.
 
-Required P9 panel state:
+These are next acquisition/metadata reliability tasks, not reasons to change the P9 learner.
 
-- historical full-window gate: 9/9;
-- historical result: `NOT_EVALUABLE_PIT_SUPPORT_INSUFFICIENT`;
-- historical support: T-24 0 ready / T-48 0 ready;
-- prospective prediction events/rows;
-- prospective scored events;
-- incumbent event-balanced MAE once scoreable;
-- challenger event-balanced MAE once scoreable;
-- `Δ event-balanced MAE`;
-- event improvement rate / worst degradation once scoreable;
-- production activation false / live adjustment 0.
+## Priority 3 — panel reports MAE lifecycle, not readiness as performance
 
-The UI must distinguish **readiness**, **prediction coverage**, **scored evidence**, and **MAE result**. A readiness count must never be presented as model improvement.
+Completed on 2026-10-26.
 
-## Priority 3 — P7 prospective validation: collect and score only
+P9 browser-facing data now uses an RLS-protected safe cache and `security_invoker` views:
 
-Historical P7 point estimate remains frozen:
+- `public.dashboard_p9_mae_lifecycle_cache_v1`;
+- `public.dashboard_p9_mae_lifecycle_v1`;
+- `public.dashboard_p9_mae_status_v1`.
 
-- anchor MAE: 7409.79;
-- challenger MAE: 6339.99;
-- point improvement: 1069.80 / 14.44%;
+The panel distinguishes:
+
+- historical readiness;
+- historical `NOT_EVALUABLE` status;
+- prospective prediction coverage;
+- scored events;
+- incumbent MAE;
+- challenger MAE;
+- ΔMAE;
+- event-level downside;
+- production guardrails.
+
+`P9MaeStatusPanel` is visible in Forecast Accuracy and Model Lab. Dashboard CI is green.
+
+Reproducible DB contract:
+
+`supabase/sql/dashboard_p9_mae_lifecycle_v1.sql`
+
+## Priority 4 — P7 prospective: collect and score only
+
+Frozen historical evidence:
+
+- anchor MAE: **7409.79**;
+- challenger MAE: **6339.99**;
+- point improvement: **1069.80 / 14.44%**;
 - 95% event-block interval: `[-2566.13,+174.47]`;
 - evidence: `POINT_GAIN_UNCERTAINTY_LIMITED`.
 
-Prospective mechanism remains frozen:
+Prospective lane:
 
-- `gbr-l1-depth2-n50-lr003`;
-- model fingerprint: `70fa929181531276c80a75c0b78a60fb821cf50e714e2bc001de8251cea1793f`;
-- no bootstrap backfill;
+- model `gbr-l1-depth2-n50-lr003`;
+- fingerprint `70fa929181531276c80a75c0b78a60fb821cf50e714e2bc001de8251cea1793f`;
+- **16 immutable prediction rows / 3 independent events / 0 scored events**;
 - no tuning.
 
-Fresh live prospective state on 2026-10-26:
+Next action: genuine scoring only.
 
-- prediction rows: **16**;
-- independent prediction events: **3**;
-- scored events: **0**;
-- model fingerprint count: **1**;
-- evidence: `PROSPECTIVE_PREDICTIONS_ONLY`;
-- production activation false.
+## Priority 5 — P11 odds: continue genuine PIT accumulation
 
-Next action: collection/scoring only.
+Current state:
 
-## Priority 4 — continue P11 genuine PIT market-odds accumulation
-
-Fresh readiness on 2026-10-26:
-
-- status: `GENUINE_PIT_DATA_ACCUMULATING`;
-- genuine PIT events / clubs: **4 / 4**;
+- `GENUINE_PIT_DATA_ACCUMULATING`;
+- events / clubs: **4 / 4**;
 - events with >=3 bookmakers: **4**;
-- T-24 coverage: **3**;
-- T-72 coverage: **3**;
-- T-168 coverage: **0**;
+- T-24 / T-72 / T-168 coverage: **3 / 3 / 0**;
 - model precommitted: false;
-- target values used: false;
-- production change: false.
+- production false.
 
-Next action: keep append-only scheduled capture. Do not fit an attendance model before the genuine horizon coverage audit and precommit.
+Keep append-only capture. Do not fit an attendance model before genuine horizon coverage audit and precommit.
 
-## Priority 5 — continue frozen Long72 prospective scoring
+## Priority 6 — Long72 frozen scoring
 
-Last verified frozen evidence:
+Last verified n=4:
 
-- genuine scored events: `[10,16,21,23]`;
-- n=4 anchor event-balanced MAE: **6942.59**;
-- n=4 package event-balanced MAE: **6824.16**;
+- events `[10,16,21,23]`;
+- anchor event-balanced MAE: **6942.59**;
+- package event-balanced MAE: **6824.16**;
 - point improvement: **118.43 / 1.71%**;
 - event improvement rate: **75%**;
 - worst event degradation: **3633.23**.
 
-This is not promotion evidence. Preserve the freeze and collect genuine outcomes only.
+Not promotion evidence. Do not retune.
 
-## Priority 6 — P4a accumulation
+## Priority 7 — P4a genuine label accumulation
 
-Last verified readiness:
+Last verified:
 
-- labeled READY events: **4/9**;
-- distinct labeled previous-home-spacing values: **3**;
-- variance gate: PASS;
-- event-count gate: FAIL;
-- research trigger: false.
+- labeled READY: **4/9**;
+- distinct previous-home-spacing values: **3**;
+- variance gate PASS;
+- event-count gate FAIL.
 
-Only genuine new labels move this gate.
+Only genuine labels move this gate.
 
-## Priority 7 — business minimum meaningful ΔMAE
+## Priority 8 — business minimum meaningful ΔMAE
 
 Canonical framework:
 
 `ml/GOVERNANCE_V2_BUSINESS_DMAE_THRESHOLD.md`
 
-The technical North Star is lower prospective event-balanced MAE, but promotion also needs a business-significant gain. Derive the minimum meaningful ΔMAE independently from real forecast-driven operational decisions.
+Derive the threshold from real forecast-driven operational decisions independently of current challenger results.
 
-## Priority 8 — P12 / new feature families only after active evidence lanes are protected
+## Priority 9 — new feature families / P12 later
 
 Canonical plan:
 
 `ml/P12_DEMAND_REGIME_AUDIT_PLAN.md`
 
-New hypotheses such as demand regimes, opponent attractiveness, form, table position, weather or attention should be prioritized by **expected incremental prospective MAE reduction**, not by feature novelty.
+Rank new hypotheses such as demand regimes, opponent attractiveness, form, table position, weather or attention by expected incremental **prospective MAE reduction**, not novelty.
 
 Do not start a broad tuning tournament while P7/P9 prospective evidence is immature.
 
 ## Immediate execution order
 
-1. Keep P9 prospective scheduler healthy before the first T-48 window on 2026-10-28.
-2. Update the panel to show the canonical P9 lifecycle and MAE evidence rather than stale/generic readiness.
-3. Collect immutable P9 T-48/T-24 predictions; if frozen support is insufficient, record the failure rather than relaxing the rule.
-4. Score P7 and P9 only after genuine outcomes arrive.
-5. Continue Long72/P4a/P11 accumulation without retuning.
-6. Set the business minimum meaningful ΔMAE.
-7. Only then choose the next new challenger hypothesis using expected MAE impact.
+1. Keep the P9 prospective scheduler/gateway healthy through the first T-48 window on 2026-10-28.
+2. Resolve verified-capacity gaps for future Structural Prior targets where authoritative evidence exists; keep unknowns fail-closed.
+3. Keep later fixture-round coverage fresh; do not invent a round when the sporting shadow does not yet contain one.
+4. Collect immutable P9 T-48/T-24 predictions; if frozen support is insufficient, record the failure rather than relaxing the rule.
+5. Score P7 and P9 only after genuine outcomes arrive.
+6. Continue Long72/P4a/P11 accumulation without retuning.
+7. Set the business minimum meaningful ΔMAE.
+8. Only then choose the next new challenger hypothesis using expected prospective MAE impact.
 
 ## Next meaningful MAE milestones
 
 1. first valid immutable P9 prospective prediction;
 2. first genuine P7 prospective scored event;
 3. first genuine P9 prospective scored event;
-4. enough independent scored events to report stable event-balanced `ΔMAE` and event-level downside;
+4. enough independent scored events to report stable event-balanced ΔMAE and event-level downside;
 5. business minimum meaningful ΔMAE approved;
 6. only then any production promotion decision.
