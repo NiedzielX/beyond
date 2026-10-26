@@ -15,6 +15,7 @@ on:
       - "ml/p9a_booking_curve_freeze_v1.py"
       - "supabase/functions/p9_booking_curve_prospective_v1/**"
       - "supabase/sql/p9_booking_curve_prospective_v1.sql"
+      - "supabase/sql/p9_prospective_preflight_v1.sql"
 
 permissions:
   contents: read
@@ -54,6 +55,43 @@ jobs:
           test -n "$token" && test "$token" != "null"
           echo "::add-mask::$token"
           echo "P9_PROSPECTIVE_OIDC_TOKEN=$token" >> "$GITHUB_ENV"
+
+      - name: Preflight upcoming immutable P9 windows
+        shell: bash
+        run: |
+          set -euo pipefail
+          gateway='https://adchzwqboeekhokapxqi.supabase.co/functions/v1/p9_booking_curve_prospective_v1'
+          curl --retry 5 --retry-all-errors --retry-delay 2 -fsS \
+            -H "Authorization: Bearer $P9_PROSPECTIVE_OIDC_TOKEN" \
+            "${gateway}?mode=preflight&days=10" -o /tmp/p9-preflight.json
+
+          jq -e '
+            .ok == true
+            and .mode == "preflight"
+            and .targetValuesUsed == false
+            and .productionChange == false
+            and .payload.version == "p9-prospective-preflight-v1"
+            and .payload.target_values_used == false
+            and .payload.production_change == false
+          ' /tmp/p9-preflight.json >/dev/null
+
+          jq '.payload | {checked_at, horizon_days, critical_count, watch_count, events:[.events[]|{ticket_event_id,home_team,away_team,t48_at,t24_at,t48_status,t24_status,snapshots_t48,snapshots_t24,incumbents_t48,incumbents_t24}]}' /tmp/p9-preflight.json
+
+          critical_count=$(jq -r '.payload.critical_count' /tmp/p9-preflight.json)
+          watch_count=$(jq -r '.payload.watch_count' /tmp/p9-preflight.json)
+          {
+            echo "### P9 immutable-window preflight"
+            echo ""
+            echo "- Critical: ${critical_count}"
+            echo "- Watch: ${watch_count}"
+            echo ""
+            echo '| Event | T-48 | T-24 | Snapshots T-48 | Incumbents T-48 |'
+            echo '|---|---|---|---:|---:|'
+            jq -r '.payload.events[] | "| \(.ticket_event_id) \(.home_team)–\(.away_team) | \(.t48_status) | \(.t24_status) | \(.snapshots_t48) | \(.incumbents_t48) |"' /tmp/p9-preflight.json
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          jq -r '.payload.events[] | select((.t48_status|startswith("CRITICAL")) or (.t24_status|startswith("CRITICAL")) or .t48_status=="MISSED_WINDOW" or .t24_status=="MISSED_WINDOW") | "::warning::P9 preflight CRITICAL event=\(.ticket_event_id) \(.home_team)-\(.away_team) T48=\(.t48_status) T24=\(.t24_status)"' /tmp/p9-preflight.json
+          jq -r '.payload.events[] | select((.t48_status|startswith("WATCH")) or (.t24_status|startswith("WATCH"))) | "::warning::P9 preflight WATCH event=\(.ticket_event_id) \(.home_team)-\(.away_team) T48=\(.t48_status) T24=\(.t24_status)"' /tmp/p9-preflight.json
 
       - name: Capture reference outcomes known before this run
         shell: bash
