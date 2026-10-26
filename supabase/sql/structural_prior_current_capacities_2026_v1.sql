@@ -31,6 +31,16 @@ insert into private.structural_prior_capacity_registry_v1(
   'zaglebie_lubin','2026-07-01',null,16086,'verified',
   'Zagłębie Lubin — KGHM Zagłębie Arena','https://www.zaglebie.com/Klub',now(),
   'KGHM Zagłębie Arena current capacity. Added for current-event Structural Prior inference.'
+),
+(
+  'rakow','2026-07-01',null,5500,'verified',
+  'Raków Częstochowa — official club stadium page','https://rakow.com/informacje-i-kontakt-100',now(),
+  'zondacrypto Arena current capacity: 5,500 seated places. Verified 2026-10-26 for 2026/27 current-event Structural Prior inference.'
+),
+(
+  'koronakielce','2026-07-01',null,15550,'verified',
+  'MOSiR Kielce — Stadion Miejski','https://www.mosir.kielce.pl/obiekty.php?oPath=3&obiekt_id=4',now(),
+  'Stadion Miejski / Exbud Arena current capacity: 15,550 seated places. Verified 2026-10-26 for 2026/27 current-event Structural Prior inference.'
 )
 on conflict (club_key,valid_from,stadium_capacity) do update set
   verification_status=excluded.verification_status,
