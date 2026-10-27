@@ -101,6 +101,24 @@ Deno.serve(async (req: Request) => {
     const mode = String(body?.mode || "");
     const githubSha = String(claims.sha || body?.github_sha || "");
 
+    if (mode === "record-attempt") {
+      const payload = body?.payload;
+      if (!payload || typeof payload !== "object") return json({ ok: false, error: "payload required" }, 400);
+      if (
+        payload.target_values_used !== false ||
+        payload.production_activation_allowed !== false ||
+        payload.live_adjustment !== 0 ||
+        payload.production_change !== false
+      ) {
+        return json({ ok: false, error: "target-free / production-safe flags required" }, 400);
+      }
+      const result = await rpc("record_p9_booking_curve_prospective_attempt_v1", {
+        p_payload: payload,
+        p_github_sha: githubSha,
+      });
+      return json({ ok: true, version: "p9-prospective-gateway-v1", mode, result, productionChange: false });
+    }
+
     if (mode === "persist") {
       const payload = body?.payload;
       if (!payload || typeof payload !== "object") return json({ ok: false, error: "payload required" }, 400);
