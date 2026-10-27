@@ -43,7 +43,7 @@ select
   case
     when s.category_key='hype'
       and not exists (select 1 from public.hype_challenger_cv_summary_v1)
-      then 0::numeric
+      then 0::numeric(6,2)
     else s.promotion_progress_pct
   end as promotion_progress_pct,
   s.incumbent_mae,
