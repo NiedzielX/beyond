@@ -40,12 +40,14 @@ select
   end as promotion_evidence_count,
   s.promotion_event_target,
   s.promotion_club_target,
-  case
-    when s.category_key='hype'
-      and not exists (select 1 from public.hype_challenger_cv_summary_v1)
-      then 0::numeric(6,2)
-    else s.promotion_progress_pct
-  end as promotion_progress_pct,
+  (
+    case
+      when s.category_key='hype'
+        and not exists (select 1 from public.hype_challenger_cv_summary_v1)
+        then 0.00
+      else s.promotion_progress_pct
+    end
+  )::numeric(6,2) as promotion_progress_pct,
   s.incumbent_mae,
   s.bias_control_mae,
   s.challenger_mae,
@@ -90,5 +92,6 @@ select
 from public.model_evidence_scorecard_v1 s
 order by s.sort_order;
 
-revoke all on public.dashboard_model_evidence_scorecard_v1 from public;
+-- The dashboard surface is intentionally read-only for browser roles.
+revoke all privileges on public.dashboard_model_evidence_scorecard_v1 from anon, authenticated;
 grant select on public.dashboard_model_evidence_scorecard_v1 to anon, authenticated;
