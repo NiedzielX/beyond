@@ -1,6 +1,6 @@
 # Beyond Ticketing — Next Session Handoff
 
-Last updated: **2026-10-26**
+Last updated: **2026-10-27**
 
 Status: **READ THIS FIRST AFTER `AI_BOOTSTRAP.md`**
 
@@ -31,8 +31,9 @@ Canonical plan:
 3. collect immutable P9 predictions only inside precommitted windows;
 4. score P7/P9 only after genuine attendance outcomes arrive;
 5. continue Long72/P4a/P11 frozen accumulation without retuning;
-6. derive business minimum meaningful ΔMAE;
-7. choose any new challenger by expected incremental prospective MAE reduction.
+6. continue Hype/Attention forward-only collection but do not tune additional windows on the same outcomes;
+7. derive business minimum meaningful ΔMAE;
+8. choose any new challenger by expected incremental prospective MAE reduction.
 
 ## 3. P9 historical v1 — CLOSED / NOT EVALUABLE
 
@@ -276,7 +277,55 @@ Fresh odds readiness:
 
 Continue append-only capture; never backfill closing odds.
 
-## 14. Governance / known debt
+## 14. Hype / Attention — CURRENT 24H UNTESTABLE; 48H HYPOTHESIS REJECTED
+
+Canonical evidence note:
+
+`ml/HYPE_ATTENTION_RESEARCH_2026-10-27.md`
+
+Current prospective T-24 `hype.media_attention` sample:
+
+- **10 completed eligible events / 10 clubs**;
+- distinct values: **1**;
+- all frozen T-24 values are **0**;
+- therefore cross-validation correctly produces no rows because training-fold `x_sd=0`.
+
+This is not a snapshot scheduler bug. T-24 snapshots were captured at the exact checkpoint. Positive GDELT samples seen for some events were outside the current 24h window at T-24, so the frozen zeros are consistent with the feature definition.
+
+`hype.mention_acceleration` currently has:
+
+- **4 completed eligible events / 4 clubs**;
+- **3 distinct values**;
+- gate remains **8 events / 5 clubs / >=2 distinct values**.
+
+One and only one alternative attention-window hypothesis was tested to avoid window-shopping:
+
+- PIT-safe 48h union mentions immediately preceding T-24;
+- comparator = immutable true `baseline`, not rejected Ticketing;
+- fixed ridge alpha 30 and existing fold rules;
+- 10 events / 10 clubs, but only 2 non-zero held-out events;
+- LOEO = LOCO because each event currently comes from a different home club;
+- baseline MAE **4156.0**;
+- 48h challenger MAE **4225.4**;
+- ΔMAE vs baseline **+69.4 worse**.
+
+Decision: **REJECTED_NO_UPLIFT**. Do not search more windows on the same outcomes.
+
+Dashboard evidence was corrected live so Hype now shows:
+
+- `promotion_evidence_count=0`;
+- `promotion_progress_pct=0.00`;
+- explicit variance-gate reason;
+- browser roles `anon` and `authenticated` have `SELECT` only on `dashboard_model_evidence_scorecard_v1`;
+- view remains `security_invoker=true`.
+
+Repo SQL:
+
+`supabase/sql/dashboard_hype_readiness_truth_v1.sql`
+
+Production impact remains none; `live_adjustment=0`.
+
+## 15. Governance / known debt
 
 Business minimum meaningful ΔMAE is still intentionally unset until independently derived from operational decisions.
 
@@ -289,8 +338,8 @@ Unrelated pre-existing Supabase security debt still includes:
 - `public.get_structural_prior_v1(...)` callable as SECURITY DEFINER by anon/authenticated;
 - intentional RLS-protected research tables with no browser policies.
 
-The new P9 preflight itself is service-role-only and does not add browser exposure.
+The Hype dashboard change introduced no new security-advisor finding. The P9 preflight itself is service-role-only and does not add browser exposure.
 
-## 15. Cold-start command
+## 16. Cold-start command
 
-> Read `AI_BOOTSTRAP.md`, this handoff, `ml/EXECUTION_PLAN_CURRENT.md`, `ml/CURRENT_MODEL.md`, `ml/P9_SUPPORT_POSTMORTEM_2026-10-26.md`, `supabase/sql/p9_prospective_preflight_v1.sql`, `supabase/sql/structural_prior_fixture_date_tolerance_2026_10_26.sql`, `supabase/sql/dashboard_p9_mae_lifecycle_v1.sql` and both P9 precommits. Query live status fresh. Historical P9 is 9/9 but NOT_EVALUABLE; never repair it retrospectively. P9 prospective scheduler/gateway/preflight are live. Fresh 10-day preflight is 0 critical / 0 watch with six targets READY. First T-48 is 2026-10-28 17:00 UTC. Event 443 has prior 40 before cutoff; capacity gaps for 447/603 are resolved with priors 45/46. Watch event 448 for a genuine snapshot and event 452 for upstream fixture-round data. P7 has 16 rows / 3 events / 0 scores. Long72 has 4 scores. P4a is 4/9. P11 is collecting. Keep production unchanged and optimize toward prospective event-balanced MAE.
+> Read `AI_BOOTSTRAP.md`, this handoff, `ml/EXECUTION_PLAN_CURRENT.md`, `ml/CURRENT_MODEL.md`, `ml/P9_SUPPORT_POSTMORTEM_2026-10-26.md`, `ml/HYPE_ATTENTION_RESEARCH_2026-10-27.md`, `supabase/sql/p9_prospective_preflight_v1.sql`, `supabase/sql/structural_prior_fixture_date_tolerance_2026_10_26.sql`, `supabase/sql/dashboard_p9_mae_lifecycle_v1.sql`, `supabase/sql/dashboard_hype_readiness_truth_v1.sql` and both P9 precommits. Query live status fresh. Historical P9 is 9/9 but NOT_EVALUABLE; never repair it retrospectively. P9 prospective scheduler/gateway/preflight are live. First T-48 is 2026-10-28 17:00 UTC. Hype 24h is not testable because the feature is constant; the one pre-specified 48h variant was rejected at +69.4 MAE versus baseline. Do not search more Hype windows on the same outcomes. Event 443 has prior 40 before cutoff; capacity gaps for 447/603 are resolved with priors 45/46. Watch event 448 for a genuine snapshot and event 452 for upstream fixture-round data. P7 has 16 rows / 3 events / 0 scores. Long72 has 4 scores. P4a is 4/9. P11 is collecting. Keep production unchanged and optimize toward prospective event-balanced MAE.
