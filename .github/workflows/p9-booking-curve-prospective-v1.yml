@@ -4,9 +4,9 @@ on:
   workflow_dispatch:
   schedule:
     # The frozen contract allows only a 90-minute window after T-48/T-24.
-    # Run twice per hour to reduce the chance of losing an immutable window to scheduler delay.
-    # Gateway deployment is verified by the same end-to-end job before real windows open.
-    - cron: "7,37 * * * *"
+    # GitHub scheduled runs may be delayed or dropped under load, so use four
+    # offset checks per hour. Persistence is immutable/idempotent per event+cutoff.
+    - cron: "11,26,41,56 * * * *"
   push:
     branches: [main]
     paths:
