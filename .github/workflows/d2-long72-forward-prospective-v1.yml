@@ -3,7 +3,11 @@ name: d2 Long72 Forward Prospective v1
 on:
   workflow_dispatch:
   schedule:
-    - cron: "17 * * * *"
+    # GitHub scheduled workflows can be delayed or dropped under load.
+    # Four offset checks per hour reduce forward-evidence gaps while preserving
+    # the frozen Long72 package. Persistence is idempotent and scoring selects
+    # the representative forecast per event x 6h bucket.
+    - cron: "2,17,32,47 * * * *"
   pull_request:
     paths:
       - "ml/d2_long72_forward_materialize_v1.py"
