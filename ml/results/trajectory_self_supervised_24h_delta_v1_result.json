@@ -1,0 +1,78 @@
+{
+  "attendance_labels_used": false,
+  "baseline_event_balanced_mae": 0.09172235921608203,
+  "by_event": {
+    "447": {
+      "baseline_mae": 0.0736435278391816,
+      "club_slug": "rakow",
+      "delta_mae": -0.009887549742599769,
+      "model_mae": 0.06375597809658183,
+      "pairs": 35
+    },
+    "449": {
+      "baseline_mae": 0.1163713689556488,
+      "club_slug": "gornikzabrze",
+      "delta_mae": -0.021405428944578156,
+      "model_mae": 0.09496594001107064,
+      "pairs": 34
+    },
+    "450": {
+      "baseline_mae": 0.11850506902264003,
+      "club_slug": "legia",
+      "delta_mae": -0.04160946093929081,
+      "model_mae": 0.07689560808334922,
+      "pairs": 35
+    },
+    "451": {
+      "baseline_mae": 0.054759815930289446,
+      "club_slug": "lech",
+      "delta_mae": -0.02105813659324586,
+      "model_mae": 0.033701679337043585,
+      "pairs": 29
+    },
+    "452": {
+      "baseline_mae": 0.09533101433265029,
+      "club_slug": "pogonszczecin",
+      "delta_mae": -0.050173376046249135,
+      "model_mae": 0.04515763828640115,
+      "pairs": 35
+    }
+  },
+  "decision": "REPRESENTATION_SUPPORTED",
+  "delta_mae_vs_baseline": -0.028826190453992484,
+  "evidence_class": "target_free_temporal_validation",
+  "export_identity_sha256": "e2f0c1fb30cb296709e1b93e43bad54259a00cfd748dbd2819e0bbeb02d7ce17",
+  "export_sha": "77d693f320ad3b5aa496d96ea98ff6a5500b67e9",
+  "frozen_data_cutoff": "2026-10-28T22:09:43.958409Z",
+  "improved_validation_events": 5,
+  "model_event_balanced_mae": 0.06289616876208954,
+  "pair_mae": 0.06307814281859642,
+  "precommit_id": "trajectory-self-supervised-24h-delta-v1",
+  "prediction_distribution": {
+    "max": -0.012416139245033264,
+    "max_abs": 0.18153874576091766,
+    "median": -0.10105728730559349,
+    "median_abs": 0.10105728730559349,
+    "min": -0.18153874576091766
+  },
+  "production_change": false,
+  "signed_bias": -0.06759149700519364,
+  "structural_prior_used": false,
+  "target_distribution": {
+    "max": 0.10099904752589728,
+    "max_abs": 0.3859250664925331,
+    "median": -0.015251237077127977,
+    "median_abs": 0.00482119877969117,
+    "min": -0.3859250664925331
+  },
+  "train_events": 21,
+  "train_pairs": 3397,
+  "validation_events": 5,
+  "validation_pairs": 168,
+  "version": "trajectory-self-supervised-24h-delta-v1-result",
+  "workflow_run_id": 40778526102,
+  "artifact_id": 12856440874,
+  "artifact_sha256": "0497ae7d00a380857a5e04d9d080ff53af60fbaf112d778c56ca0a27c4132ad3",
+  "result_json_sha256": "c82654792918de699d7b0a184c2e311048412ef1433532fcf93452bffd20a70f",
+  "encoder_pt_sha256": "3740ba690f75623b4722d28c4084f6062c36cc8dd22e5020c1a5135d4d6f1e2e"
+}
