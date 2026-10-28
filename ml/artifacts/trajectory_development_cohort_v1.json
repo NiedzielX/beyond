@@ -1,0 +1,59 @@
+{
+  "version": "trajectory-development-cohort-v1",
+  "frozen_at": "2026-10-28",
+  "evidence_class": "historical_exposed_research",
+  "feature_contract_id": "trajectory-feature-contract-v1",
+  "validation_contract_id": "trajectory-validation-fold-contract-v1",
+  "fold_registry_sha256": "fc59737ab1c0a306920b4961de35664178b14648f679071522d1d07515cb3091",
+  "production_change": false,
+  "notes": [
+    "Event identities are frozen before Lane A/Lane B outer-fold model results.",
+    "All daily prefixes materialized for an event inherit that event's fold.",
+    "Eligible daily cutoffs are recomputed PIT-safely from raw snapshots under trajectory-feature-contract-v1; the eligible_horizons field records currently persisted checkpoint support only.",
+    "Actual attendance is an exposed historical research label and is intentionally not stored in this identity manifest."
+  ],
+  "events": [
+    {"ticket_event_id": 15, "club_slug": "gkskatowice", "kickoff_at": "2026-10-17T15:30:00+00:00", "eligible_horizons": ["T-1"]},
+    {"ticket_event_id": 18, "club_slug": "cracovia", "kickoff_at": "2026-10-17T18:15:00+00:00", "eligible_horizons": ["T-1"]},
+    {"ticket_event_id": 11, "club_slug": "gornikzabrze", "kickoff_at": "2026-10-18T10:15:00+00:00", "eligible_horizons": ["T-1"]},
+    {"ticket_event_id": 19, "club_slug": "zaglebie_lubin", "kickoff_at": "2026-10-18T12:45:00+00:00", "eligible_horizons": ["T-1"]},
+    {"ticket_event_id": 5, "club_slug": "lech", "kickoff_at": "2026-10-18T15:30:00+00:00", "eligible_horizons": ["T-1"]},
+    {"ticket_event_id": 20, "club_slug": "wisla_plock", "kickoff_at": "2026-10-19T17:00:00+00:00", "eligible_horizons": ["T-3", "T-1"]},
+    {"ticket_event_id": 10, "club_slug": "pogonszczecin", "kickoff_at": "2026-10-24T15:30:00+00:00", "eligible_horizons": ["T-7", "T-3", "T-1"]},
+    {"ticket_event_id": 23, "club_slug": "slaskwroclaw", "kickoff_at": "2026-10-25T11:15:00+00:00", "eligible_horizons": ["T-7", "T-3", "T-1"]},
+    {"ticket_event_id": 21, "club_slug": "jagiellonia", "kickoff_at": "2026-10-25T13:45:00+00:00", "eligible_horizons": ["T-7", "T-3", "T-1"]},
+    {"ticket_event_id": 22, "club_slug": "legia", "kickoff_at": "2026-10-25T16:30:00+00:00", "eligible_horizons": ["T-7", "T-3", "T-1"]}
+  ],
+  "folds": [
+    {
+      "fold_id": "forward-2026-10-19T17:00:00+00:00",
+      "train_event_ids": [15, 18, 11, 19, 5],
+      "test_event_ids": [20],
+      "train_clubs": ["cracovia", "gkskatowice", "gornikzabrze", "lech", "zaglebie_lubin"]
+    },
+    {
+      "fold_id": "forward-2026-10-24T15:30:00+00:00",
+      "train_event_ids": [15, 18, 11, 19, 5, 20],
+      "test_event_ids": [10],
+      "train_clubs": ["cracovia", "gkskatowice", "gornikzabrze", "lech", "wisla_plock", "zaglebie_lubin"]
+    },
+    {
+      "fold_id": "forward-2026-10-25T11:15:00+00:00",
+      "train_event_ids": [15, 18, 11, 19, 5, 20, 10],
+      "test_event_ids": [23],
+      "train_clubs": ["cracovia", "gkskatowice", "gornikzabrze", "lech", "pogonszczecin", "wisla_plock", "zaglebie_lubin"]
+    },
+    {
+      "fold_id": "forward-2026-10-25T13:45:00+00:00",
+      "train_event_ids": [15, 18, 11, 19, 5, 20, 10, 23],
+      "test_event_ids": [21],
+      "train_clubs": ["cracovia", "gkskatowice", "gornikzabrze", "lech", "pogonszczecin", "slaskwroclaw", "wisla_plock", "zaglebie_lubin"]
+    },
+    {
+      "fold_id": "forward-2026-10-25T16:30:00+00:00",
+      "train_event_ids": [15, 18, 11, 19, 5, 20, 10, 23, 21],
+      "test_event_ids": [22],
+      "train_clubs": ["cracovia", "gkskatowice", "gornikzabrze", "jagiellonia", "lech", "pogonszczecin", "slaskwroclaw", "wisla_plock", "zaglebie_lubin"]
+    }
+  ]
+}
