@@ -12,7 +12,7 @@ Production: `live_adjustment = 0`
 
 # 1. North Star
 
-> **Minimize true prospective event-balanced attendance-forecast MAE at decision-relevant horizons using PIT-safe, reproducible evidence.**
+> **Minimize true prospective event-balanced attendance-forecast MAE using PIT-safe, reproducible evidence.**
 
 `Delta MAE = challenger MAE - incumbent MAE`
 
@@ -22,173 +22,165 @@ Production: `live_adjustment = 0`
 
 | Item | Status | Current decision |
 |---|---|---|
-| Multi-source ticketing acquisition | ✅ LIVE | preserve PIT evidence; hidden inventory remains unknown, not zero |
-| P7 historical | ✅ FROZEN | historical point gain only; no retuning |
 | P7 prospective | 🟢 53 rows / 6 events / 0 scored | collect/score only |
-| P9 historical v1 | ⚪ NOT_EVALUABLE | PIT support insufficient; no historical MAE |
-| P9 prospective v1 | 🟢 1 genuine attempt / 0 prediction / 0 scored | protect every T-48/T-24 window |
-| P9 Family Fallback v2 | 🟢 PRECOMMITTED / DEPLOYED | separate evidence; never pool with v1 |
+| P9 historical v1 | ⚪ NOT_EVALUABLE | PIT support insufficient |
+| P9 prospective v1 | 🟢 1 attempt / 0 prediction / 0 scored | protect genuine windows |
+| P9 Family Fallback v2 | 🟢 PRECOMMITTED / DEPLOYED | separate evidence only |
 | Form5 prospective | 🟢 FIRST T-24 PENDING | event443 2026-10-29 17:00 UTC |
-| Long72 | 🟡 FROZEN | 5 scored; 0.71% point gain; low priority |
+| Long72 | 🟡 FROZEN | 5 scored; 0.71% point gain |
 | P11 odds | 🟡 COLLECTING | 6 events / 6 clubs; 5/5/0 T-24/T-72/T-168 |
 | P4a | 🟡 COLLECTING | gate still closed |
-| Daily trajectory dataset | ✅ DONE | exact P-N + PIT tests |
-| Daily trajectory coverage audit | ✅ DONE | variable-length data reality confirmed |
-| Immutable daily evidence backend | ✅ LIVE | attempts/predictions/scores + controlled RPCs |
-| MAE-by-horizon backend | ✅ LIVE | post-outcome only |
-| Trajectory Feature Contract v1 | ✅ FROZEN + CODED | shared Lane A/B information boundary |
-| Validation Fold Contract v1 | ✅ FROZEN + CODED | strict expanding temporal event folds |
-| Demand Engine tests | ✅ GREEN | feature/fold contract tests pass |
-| Lane A | 🟡 NEXT | precommit small residual benchmark |
-| Lane B | 🟡 NEXT | precommit first small sequence model |
-| Prospective daily trajectory inference | ⏸️ BLOCKED BY MODEL FREEZE | do not emit challenger forecasts before candidate precommit |
-| Business meaningful Delta MAE | 🟡 PENDING | derive independently from model results |
+| Daily trajectory infrastructure | ✅ DONE | PIT dataset + immutable evidence backend |
+| Trajectory Feature Contract v1 | ✅ FROZEN + CODED | shared A/B information boundary |
+| Validation Fold Contract v1 | ✅ FROZEN + CODED | strict expanding temporal folds |
+| Frozen development cohort | ✅ 10 events / 19 rows | 5 strict-forward outer test events |
+| Lane A v1 | ❌ REJECTED AS CANDIDATE | 4153.3 vs 2594.5 incumbent MAE |
+| Lane B v1 | 🟢 ACTIVE | frozen small GRU; run via OIDC workflow |
+| Frozen development export | ✅ LIVE | service-role RPC + GitHub OIDC gateway |
+| Prospective daily trajectory candidate | ⏸️ NOT YET | only after a justified development win |
+| Business meaningful Delta MAE | 🟡 PENDING | derive independently |
 
 ---
 
-# 3. Current data reality
+# 3. Lane A result — closed
 
-Genuine pre-kickoff inventory:
+Precommit:
 
-- 32 events;
-- 14 clubs;
-- median first observation ~P-9.3;
-- p75 ~P-14;
-- earliest ~P-30.3;
-- P-31...P-60 historical coverage currently zero.
+`trajectory-lane-a-ridge-residual-v1`
 
-Representative coverage:
+Strict-forward result:
 
-| Horizon | Snapshot coverage |
+| Metric | Value |
 |---|---:|
-| P-30 | 3.0% |
-| P-14 | 21.9% |
-| P-7 | 61.5% |
-| P-3 | 75.0% |
-| P-1 | 95.0% |
+| Independent test events | 5 |
+| Test prefix rows | 14 |
+| Incumbent event-balanced MAE | 2594.5 |
+| Lane A event-balanced MAE | 4153.3 |
+| Delta MAE | **+1558.8** |
+| Relative change | **+60.1% worse** |
+| Event improvement rate | 20% |
+| Worst event degradation | +4166.4 |
 
-Shared input-gate checkpoint support:
+By horizon:
 
-| Horizon | Input-ready events | Labeled ready events |
-|---|---:|---:|
-| T-30 | 0 | 0 |
-| T-14 | 1 | 0 |
-| T-7 | 7 | 4 |
-| T-3 | 9 | 5 |
-| T-1 | 10 | 10 |
+| Horizon | Incumbent | Lane A | Delta |
+|---|---:|---:|---:|
+| T-7 | 3399.0 | 4490.9 | +1091.9 |
+| T-3 | 2667.9 | 4224.7 | +1556.8 |
+| T-1 | 2314.9 | 3727.8 | +1412.9 |
 
 Decision:
 
-- keep P-60...P-1 as collection/cutoff frame;
-- do not require a complete P-60 vector;
-- use genuine variable-length prefixes;
-- never fabricate missing observations;
-- show independent-event support with every MAE result.
+`REJECT_AS_CANDIDATE_RETAIN_AS_BENCHMARK`
+
+Do not tune v1 after the result.
 
 ---
 
-# 4. Frozen trajectory contracts
+# 4. Lane B v1 — active
 
-## Feature Contract v1
+Precommit:
 
-`ml/TRAJECTORY_FEATURE_CONTRACT_V1.md`
+`trajectory-lane-b-small-gru-residual-v1`
 
-Shared primary eligibility:
+Fixed model:
 
-- PIT-valid structural incumbent;
-- >=4 clean snapshots;
-- >=24h observation window;
-- `signal_readiness=ready`;
-- no future target trajectory/outcome.
+- GRU 1 layer / hidden 8;
+- five genuine sequence channels;
+- MLP head 8;
+- dropout .20;
+- AdamW 0.001 / wd 0.01;
+- event-balanced weighted L1;
+- 200 fixed epochs;
+- gradient clip 1.0;
+- seeds 17 / 29 / 41;
+- median seed prediction;
+- no architecture search;
+- no self-supervised pretraining in v1.
 
-Lane A = engineered scalar trajectory summary + structural P50.
+Advance requirement:
 
-Lane B = genuine ordered variable-length snapshot sequence + structural P50/global context.
-
-No odds/weather/hype/match-stakes/Form5/P4 context in v1.
-
-## Validation Fold Contract v1
-
-`ml/TRAJECTORY_VALIDATION_FOLD_CONTRACT_V1.md`
-
-Primary method:
-
-- strict expanding temporal event folds;
-- same-kickoff events stay together;
-- min 5 earlier train events;
-- min 4 earlier train clubs;
-- all prefixes from one event inherit the same fold;
-- Lane A/B use identical registry/manifest.
+- Lane B beats incumbent;
+- Lane B beats frozen Lane A;
+- downside/seed stability acceptable;
+- no evidence guard fails.
 
 ---
 
-# 5. Completed trajectory infrastructure
+# 5. Frozen cohort and data path
 
-- [x] canonical daily dataset builder;
-- [x] PIT/future-snapshot/structural-prior tests;
-- [x] coverage/missingness audit;
-- [x] immutable attempt ledger;
-- [x] immutable prediction ledger;
-- [x] immutable score ledger;
-- [x] post-outcome scoring RPC;
-- [x] MAE-by-horizon RPC;
-- [x] service-role-only controlled writes;
-- [x] security/performance review for new backend;
-- [x] Trajectory Feature Contract v1 implementation/tests;
-- [x] strict-forward fold-registry implementation/tests;
-- [x] Demand Engine tests green.
+Cohort:
 
-No synthetic daily prediction was inserted.
+`ml/artifacts/trajectory_development_cohort_v1.json`
 
----
+- 10 independent labeled events;
+- 19 exact persisted checkpoint identities;
+- 5 strict-forward test events.
 
-# 6. Next trajectory milestones
+Fold SHA256:
 
-## Lane A
+`fc59737ab1c0a306920b4961de35664178b14648f679071522d1d07515cb3091`
 
-- [ ] precommit exact candidate set;
-- [ ] freeze fold-local preprocessing;
-- [ ] materialize shared eligible export/fold manifest;
-- [ ] run strict-forward result;
-- [ ] report horizon-wise support + MAE;
-- [ ] freeze candidate for prospective daily shadow only if justified.
+Export RPC:
 
-## Lane B
+`public.export_trajectory_development_rows_v1(bigint[])`
 
-- [ ] precommit first small sequence architecture/protocol;
-- [ ] use exact same eligible export/folds as Lane A;
-- [ ] run small GRU/LSTM/TCN comparison under controlled model-selection rules;
-- [ ] compare directly against Lane A, not only incumbent;
-- [ ] optionally investigate self-supervised pretraining separately;
-- [ ] compact Transformer only if simpler sequence representation adds signal;
-- [ ] freeze candidate for prospective daily shadow only if justified.
+OIDC gateway:
+
+`trajectory_research_export_v1`
+
+Workflow:
+
+`.github/workflows/trajectory-lane-b-v1.yml`
+
+Runner fails closed unless the export matches the frozen cohort exactly.
 
 ---
 
-# 7. Protected evidence windows
+# 6. Completed trajectory engineering
 
-Unless fresh machine state says otherwise:
+- [x] daily PIT dataset builder;
+- [x] future-snapshot / prior leakage tests;
+- [x] coverage audit;
+- [x] immutable daily attempt/prediction/score backend;
+- [x] MAE-by-horizon scoring;
+- [x] feature contract v1;
+- [x] strict-forward fold contract v1;
+- [x] frozen 10-event cohort;
+- [x] shared dataset materializer;
+- [x] Lane A precommit + executable benchmark;
+- [x] Lane A strict-forward result + decision;
+- [x] Lane B precommit + executable GRU;
+- [x] service-role historical research bundle;
+- [x] frozen model-ready development export;
+- [x] GitHub OIDC export gateway;
+- [x] Lane B GitHub Actions workflow.
 
-- event446 Wisła Płock–Piast T-48 — 2026-10-29 11:15 UTC;
-- event6 Lech–Wisła Kraków T-48 — 2026-10-29 16:30 UTC;
-- event443 Cracovia–Motor T-24 — 2026-10-29 17:00 UTC;
-- event444 GKS Katowice–Widzew T-48 — 2026-10-29 19:15 UTC;
-- event445 Zagłębie–Korona T-48 — 2026-10-31 17:00 UTC;
-- event447 Raków–Pogoń T-48 — 2026-10-31 19:30 UTC.
+---
+
+# 7. Data reality
+
+Current genuine pre-kickoff inventory:
+
+- 32 events / 14 clubs with any observation;
+- median first observation ~P-9.3;
+- earliest ~P-30.3;
+- P-31...P-60 historical coverage currently zero.
+
+P-60 remains collection horizon only. Use genuine variable-length sequences; never manufacture missing history.
 
 ---
 
 # 8. Immediate order
 
 1. protect imminent P9/Form5 windows;
-2. score frozen P7/P9 only after genuine outcomes;
+2. score P7/P9 only after genuine outcomes;
 3. keep P11/P4a collection healthy;
-4. precommit Lane A;
-5. precommit first Lane B sequence protocol;
-6. build one shared eligible export + strict-forward fold manifest;
-7. run both lanes on identical evidence;
-8. report support + horizon-wise and event-balanced MAE;
-9. freeze a prospective candidate only if evidence justifies it;
-10. continue forward data collection;
-11. derive business minimum meaningful Delta MAE;
-12. keep production separately review-gated.
+4. inspect/finish the frozen Lane B v1 workflow;
+5. persist Lane B result and decision;
+6. do not tune Lane B v1 after outer result;
+7. if Lane B wins, create a separately frozen prospective daily-shadow candidate;
+8. if Lane B fails, diagnose before any versioned v2;
+9. continue genuine trajectory collection;
+10. derive business minimum meaningful Delta MAE;
+11. production remains review-gated.
