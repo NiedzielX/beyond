@@ -13,14 +13,12 @@ Read in this order:
 5. [`ml/TRAJECTORY_FORECASTING_PLAN_V1.md`](ml/TRAJECTORY_FORECASTING_PLAN_V1.md)
 6. [`ml/TRAJECTORY_FEATURE_CONTRACT_V1.md`](ml/TRAJECTORY_FEATURE_CONTRACT_V1.md)
 7. [`ml/TRAJECTORY_VALIDATION_FOLD_CONTRACT_V1.md`](ml/TRAJECTORY_VALIDATION_FOLD_CONTRACT_V1.md)
-8. [`ml/TRAJECTORY_LANE_A_PRECOMMIT_V1.md`](ml/TRAJECTORY_LANE_A_PRECOMMIT_V1.md)
-9. [`ml/TRAJECTORY_LANE_A_RESULT_V1.md`](ml/TRAJECTORY_LANE_A_RESULT_V1.md)
-10. [`ml/TRAJECTORY_LANE_B_PRECOMMIT_V1.md`](ml/TRAJECTORY_LANE_B_PRECOMMIT_V1.md)
+8. [`ml/TRAJECTORY_LANE_A_RESULT_V1.md`](ml/TRAJECTORY_LANE_A_RESULT_V1.md)
+9. [`ml/TRAJECTORY_LANE_B_RESULT_V1.md`](ml/TRAJECTORY_LANE_B_RESULT_V1.md)
+10. [`ml/TRAJECTORY_LANE_B_V2_PRECOMMIT.md`](ml/TRAJECTORY_LANE_B_V2_PRECOMMIT.md)
 11. [`ml/PROGRESS_TRACKING.md`](ml/PROGRESS_TRACKING.md)
 
-Read the exact precommit before touching a frozen experiment.
-
-Roadmap v5 is canonical. Do not restart from v3/v4.
+Roadmap v5 is canonical. Read the exact precommit before touching a frozen experiment.
 
 ---
 
@@ -30,8 +28,6 @@ Roadmap v5 is canonical. Do not restart from v3/v4.
 
 `Delta MAE = challenger MAE - incumbent MAE`
 
-Desired: `Delta MAE < 0`
-
 Production remains:
 
 `live_adjustment = 0`
@@ -40,141 +36,129 @@ Production remains:
 
 ## Current state in one minute
 
-### Prospective evidence track
+### Prospective evidence
 
 Protect P7 / P9 / Form5 and current evidence-collection contracts. Do not retune frozen learners after outcomes.
 
-### Trajectory R&D track
+### Trajectory research
 
-Infrastructure is complete.
+The infrastructure is complete and two first model experiments are closed.
 
-The first simple trajectory benchmark has already been tested:
+| Model | Event-balanced MAE | Delta vs incumbent | Decision |
+|---|---:|---:|---|
+| Structural incumbent | **2594.54** | — | incumbent |
+| Lane A v1 — Ridge | 4153.34 | **+1558.80** | rejected |
+| Lane B v1 — small GRU / raw seat residual | 2595.40 | **+0.87** | do not advance |
 
-**Lane A v1 — Ridge residual model**
+Lane A made harmful corrections.
 
-- incumbent event-balanced MAE: **2594.5**;
-- Lane A MAE: **4153.3**;
-- Delta MAE: **+1558.8**;
-- about **60.1% worse**;
-- 5 independent strict-forward test events.
+Lane B v1 was very different: it was stable and effectively learned **almost zero correction**. Its predicted residuals were only about `-0.06...+4.33` seats, so its result almost exactly reproduced the structural incumbent.
 
-Decision:
+That means the active question is now narrower:
 
-`REJECT_AS_CANDIDATE_RETAIN_AS_BENCHMARK`
-
-Do not tune Lane A v1 after this result.
-
-The active experiment is now:
-
-**Lane B v1 — small GRU over the genuine ordered trajectory**.
-
-Its job is to test whether sequence representation contains signal that engineered velocity/acceleration summaries missed.
+> **Did Lane B v1 fail because the raw seat residual target was badly scaled for the frozen small-GRU/L1 setup?**
 
 ---
 
-## Frozen development comparison
-
-### Lane A — frozen failed benchmark
-
-`structural P50 + engineered trajectory features -> residual`
+## Active experiment — Lane B v2
 
 Precommit:
 
-`ml/TRAJECTORY_LANE_A_PRECOMMIT_V1.md`
+[`ml/TRAJECTORY_LANE_B_V2_PRECOMMIT.md`](ml/TRAJECTORY_LANE_B_V2_PRECOMMIT.md)
 
-Result:
+V2 changes only the target/output scale:
 
-`ml/TRAJECTORY_LANE_A_RESULT_V1.md`
+`residual_ratio = (actual - structural_p50) / structural_p50`
 
-### Lane B — active
+Then:
 
-`structural P50 + genuine variable-length trajectory -> small GRU -> residual`
+`predicted_seat_residual = predicted_ratio * structural_p50`
 
-Precommit:
+Unchanged from v1:
 
-`ml/TRAJECTORY_LANE_B_PRECOMMIT_V1.md`
+- same 10 events / 19 frozen checkpoint rows;
+- same strict-forward folds;
+- same sequence representation;
+- same GRU architecture;
+- same optimizer / learning rate / weight decay;
+- same L1 loss;
+- same 200 epochs;
+- same seeds 17 / 29 / 41;
+- same event-balanced weighting.
 
-Executable learner:
+Important:
 
-`ml/demand_engine/trajectory_lane_b_v1.py`
+> **The v2 cohort is already exposed. V2 is a mechanism diagnostic, not unseen validation.**
 
-Lane B must beat:
-
-1. the structural incumbent;
-2. the frozen Lane A benchmark.
-
-No architecture search in v1.
+A good v2 result can justify freezing a future prospective candidate. It cannot by itself prove promotion readiness.
 
 ---
 
-## Validation is intentionally strict
+## Frozen development evidence
 
-Frozen cohort:
+Cohort:
 
 `ml/artifacts/trajectory_development_cohort_v1.json`
 
 - 10 labeled independent events;
+- 19 persisted checkpoint rows;
 - 5 strict-forward outer test events;
-- only earlier-kickoff events train a later event;
+- fold SHA256:
+  `fc59737ab1c0a306920b4961de35664178b14648f679071522d1d07515cb3091`.
+
+Rules:
+
+- only earlier-kickoff events train later events;
 - same-kickoff events stay together;
 - every prefix from an event stays in the same fold;
-- minimum 5 previous events / 4 clubs before a fold becomes evaluable.
-
-Random daily-row CV is prohibited.
-
-More prefixes do **not** mean more independent events.
+- random daily-row CV is prohibited.
 
 ---
 
 ## Trajectory data reality
 
-Current genuine history is short:
+Current genuine history remains short:
 
 - 32 events / 14 clubs with any pre-kickoff observation;
 - median first observation around P-9.3;
 - earliest around P-30.3;
 - P-31...P-60 historical coverage currently zero.
 
-So P-60 is a **collection horizon**, not a requirement for a fake complete sequence.
+P-60 is a **collection horizon**, not a requirement for a fabricated 60-day vector.
 
-Lane B uses variable-length genuine sequences with explicit lengths/masks.
-
-No interpolation/forward-fill merely to create model input.
+Use genuine variable-length sequences. Missing/hidden inventory is never zero.
 
 ---
 
-## Implemented trajectory stack
+## Implemented stack
 
-- PIT live trajectory feature store;
-- daily P-N dataset builder;
-- shared Lane A/B dataset materializer;
+- PIT trajectory feature store;
+- exact daily P-N builder;
+- shared Lane A/B materializer;
 - frozen feature contract;
 - frozen strict-forward fold contract;
-- frozen development cohort manifest;
-- Lane A learner + result;
-- Lane B GRU learner;
-- immutable daily attempt/prediction/score ledgers;
+- immutable prospective attempt/prediction/score ledgers;
 - MAE-by-horizon scoring;
-- service-role research event bundle RPC.
+- OIDC-protected historical development export;
+- Lane A v1 learner/result;
+- Lane B v1 learner/result;
+- Lane B v2 ratio-target learner/runner/workflow.
 
-Canonical research bundle SQL:
-
-`supabase/sql/trajectory_research_event_bundle_v1.sql`
+No production activation is connected to any of these research workflows.
 
 ---
 
-## Current execution priorities
+## Current priorities
 
 1. Protect imminent P9/Form5 prospective windows.
 2. Score frozen P7/P9 only after genuine outcomes.
 3. Keep P11/P4a collection healthy.
-4. Validate CI after the new Lane A/B code.
-5. Run **Lane B v1** on the frozen strict-forward cohort.
-6. Persist Lane B result without post-result tuning.
-7. If Lane B wins, freeze a separate prospective daily-shadow candidate before future outcomes.
-8. If Lane B fails, diagnose first; any changed experiment becomes v2.
-9. Keep collecting longer genuine trajectories.
-10. Derive business minimum meaningful Delta MAE independently.
+4. Finish and record **Lane B v2** diagnostic.
+5. Do not tune v2 after seeing its result.
+6. If target scaling is supported, freeze the exact mechanism for **future prospective daily shadow evidence**.
+7. If scaling is not supported, reassess the sequence/data hypothesis before trying more architectures.
+8. Keep collecting longer genuine trajectories.
+9. Derive business minimum meaningful Delta MAE independently.
 
 Operational source of truth:
 
@@ -188,12 +172,10 @@ Public inventory is a **demand/inventory proxy**, not confirmed paid ticket sale
 
 Never infer attendance labels from inventory, capacity, model output or hidden/unknown inventory.
 
-Hidden/unknown inventory is never zero.
-
 ---
 
 ## Engineering rule
 
-`hypothesis -> precommit -> PIT contract -> code -> tests -> strict evidence -> result -> decision -> canonical docs`
+`hypothesis -> precommit -> PIT contract -> code -> strict evidence -> result -> decision -> canonical docs`
 
 > **A failed frozen experiment is evidence. Do not repair it after seeing the answer.**
