@@ -71,7 +71,16 @@ Deno.serve(async (req: Request) => {
           return json({ ok: false, error: "days must be an integer between 1 and 31" }, 400);
         }
         const payload = await rpc("p9_prospective_preflight_v1", { p_horizon_days: rawDays });
-        return json({ ok: true, version: "p9-prospective-gateway-v1", mode, horizonDays: rawDays, payload, targetValuesUsed: false, productionChange: false });
+        const familySupport = await rpc("p9_family_support_preflight_v1", { p_horizon_days: rawDays });
+        return json({
+          ok: true,
+          version: "p9-prospective-gateway-v1",
+          mode,
+          horizonDays: rawDays,
+          payload: { ...payload, family_support: familySupport },
+          targetValuesUsed: false,
+          productionChange: false,
+        });
       }
       if (mode === "inputs") {
         const cutoff = Number(url.searchParams.get("cutoff"));
