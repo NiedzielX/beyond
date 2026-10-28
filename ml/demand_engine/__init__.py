@@ -1,5 +1,11 @@
 from .calibration import CalibrationBand, conformal_radius, fit_calibration_band
 from .contracts import EngineForecast, ForecastRequest, LiveCorrection, LiveFeatures, QuantileForecast
+from .daily_trajectory_dataset import (
+    DATASET_VERSION as DAILY_TRAJECTORY_DATASET_VERSION,
+    DailyTrajectoryRow,
+    build_daily_trajectory_dataset,
+    select_structural_prior_at_cutoff,
+)
 from .engine import DemandEngine, NoOpLiveCorrector
 from .historical import SupabaseStoredHistoricalForecaster
 from .intervals import ConformalIntervalCalibrator, NoOpIntervalCalibrator
@@ -28,6 +34,8 @@ __all__ = [
     "CalibrationBand",
     "ConformalIntervalCalibrator",
     "CURRENT_STRUCTURAL_PRIOR_SPECS",
+    "DAILY_TRAJECTORY_DATASET_VERSION",
+    "DailyTrajectoryRow",
     "DemandEngine",
     "EngineForecast",
     "ForecastRequest",
@@ -49,9 +57,11 @@ __all__ = [
     "StructuralPriorUnavailableError",
     "SupabaseStoredHistoricalForecaster",
     "SupabaseStructuralPriorAdapter",
+    "build_daily_trajectory_dataset",
     "build_live_trajectory_features",
     "conformal_radius",
     "fit_calibration_band",
     "resolve_structural_prior_spec",
+    "select_structural_prior_at_cutoff",
     "to_forecast_observation",
 ]
