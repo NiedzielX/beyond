@@ -2,37 +2,23 @@
 
 Last updated: **2026-10-28**
 
-Status: **STRUCTURAL CORE + FROZEN PROSPECTIVE LANES + DAILY TRAJECTORY R&D**
+Status: **STRUCTURAL INCUMBENT + FROZEN PROSPECTIVE LANES + ACTIVE LANE B SEQUENCE R&D**
 
-Canonical execution plan:
+Canonical execution plan: `ml/EXECUTION_PLAN_CURRENT.md`
 
-`ml/EXECUTION_PLAN_CURRENT.md`
-
-Canonical strategy:
-
-`ml/MAE_RESEARCH_ROADMAP_V5.md`
+Production: `live_adjustment = 0`
 
 ---
 
 # 1. North Star
 
-> **Minimize true prospective event-balanced attendance-forecast MAE at decision-relevant horizons with PIT-safe, reproducible evidence.**
+> **Minimize true prospective event-balanced attendance-forecast MAE with PIT-safe, reproducible evidence.**
 
-Primary metric:
-
-`Delta MAE = challenger event-balanced MAE - incumbent event-balanced MAE`
-
-Desired:
-
-`Delta MAE < 0`
-
-Production remains:
-
-`live_adjustment = 0`
+`Delta MAE = challenger MAE - incumbent MAE`
 
 ---
 
-# 2. Structural core
+# 2. Structural incumbent
 
 Current structural research champion family remains **Global Model v2.1**.
 
@@ -41,241 +27,203 @@ Foundation:
 - 1,530 Ekstraklasa matches;
 - complete 2021/22–2025/26 seasons;
 - 7,650 historical PIT rows;
-- horizons T-30d / T-14d / T-7d / T-3d / T-1d.
+- structural horizons T-30d / T-14d / T-7d / T-3d / T-1d.
 
 Architecture:
 
 `PIT historical state -> club-history baseline -> global residual model -> structural P50`
 
-This structural forecast is the default anchor for incremental trajectory research.
-
-Historical evidence is supporting R&D evidence, not prospective promotion evidence.
+This structural P50 is the anchor that every trajectory challenger must beat.
 
 ---
 
-# 3. P7 prospective
+# 3. Trajectory research — current answer
 
-Historical frozen result:
+The trajectory program is no longer at the infrastructure-design stage.
+
+## Lane A v1 — failed
+
+Model:
+
+`structural P50 + engineered trajectory features -> Ridge residual correction`
+
+Strict-forward historical research result:
+
+- independent test events: **5**;
+- incumbent event-balanced MAE: **2594.5**;
+- Lane A MAE: **4153.3**;
+- Delta MAE: **+1558.8**;
+- **60.1% worse**;
+- event improvement rate: **20%**.
+
+Decision:
+
+`REJECT_AS_CANDIDATE_RETAIN_AS_BENCHMARK`
+
+Lane A v1 must not be retuned after this result.
+
+## Lane B v1 — active
+
+Model:
+
+`structural P50 + genuine ordered variable-length trajectory -> small GRU -> residual correction`
+
+Frozen protocol:
+
+- one GRU layer;
+- hidden dimension 8;
+- 5 sequence channels;
+- small 8-unit MLP head;
+- AdamW;
+- weighted L1 residual loss;
+- 200 fixed epochs;
+- seeds 17 / 29 / 41;
+- median residual across seeds;
+- no architecture search.
+
+Lane B must beat both:
+
+1. structural incumbent MAE;
+2. frozen Lane A MAE.
+
+---
+
+# 4. Frozen development cohort
+
+`ml/artifacts/trajectory_development_cohort_v1.json`
+
+- 10 labeled independent events;
+- 19 persisted eligible checkpoint rows;
+- 5 strict-forward outer test events;
+- only earlier-kickoff events train later targets;
+- all prefixes from one event stay in the same fold.
+
+Fold registry SHA256:
+
+`fc59737ab1c0a306920b4961de35664178b14648f679071522d1d07515cb3091`
+
+Random row CV is prohibited.
+
+---
+
+# 5. Trajectory data reality
+
+Current genuine pre-kickoff history:
+
+- 32 events / 14 clubs with any observation;
+- median first observation ~P-9.3;
+- earliest ~P-30.3;
+- P-31...P-60 historical coverage currently zero.
+
+Therefore:
+
+- P-60 is a collection horizon;
+- models use genuine variable-length prefixes;
+- no fake complete 60-day vector;
+- no forward-fill/interpolation merely for model convenience;
+- hidden/unknown inventory is never zero.
+
+---
+
+# 6. Current trajectory engineering stack
+
+Implemented/live:
+
+- PIT trajectory feature store;
+- exact P-N dataset builder;
+- shared A/B dataset materializer;
+- frozen feature contract v1;
+- frozen strict-forward validation contract v1;
+- frozen cohort manifest;
+- Lane A learner/result;
+- Lane B GRU learner/runner;
+- immutable daily attempt/prediction/score ledgers;
+- post-outcome scoring;
+- MAE-by-horizon backend;
+- service-role development export RPC;
+- GitHub OIDC export gateway;
+- Lane B GitHub Actions experiment workflow.
+
+No production activation is connected to this workflow.
+
+---
+
+# 7. P7 prospective
+
+Historical result remains frozen:
 
 - anchor MAE 7409.79;
 - challenger MAE 6339.99;
 - point gain 1069.80 / 14.44%;
-- 95% event-block CI `[-2566.13,+174.47]`;
-- evidence `POINT_GAIN_UNCERTAINTY_LIMITED`.
+- uncertainty limited.
 
-Latest verified prospective state:
+Latest recorded prospective state:
 
 - 53 immutable prediction rows;
-- 6 independent events;
+- 6 events;
 - 0 scored.
 
-No retuning. Score genuine outcomes only.
+No retuning.
 
 ---
 
-# 4. P9 historical v1
+# 8. P9
 
-Closed:
+## v1
 
-`NOT_EVALUABLE_PIT_SUPPORT_INSUFFICIENT`
+Historical: `NOT_EVALUABLE_PIT_SUPPORT_INSUFFICIENT`.
 
-- T-168 gate: 9/9 events / 9 clubs;
-- T-24 support-ready: 0/11;
-- T-48 support-ready: 0/9;
-- no valid historical challenger MAE.
+First genuine event443 T-48 attempt:
 
-Do not reconstruct/backfill historical incumbents to force a result.
+- `PIT_SUPPORT_INSUFFICIENT`;
+- 1 attempt / 0 predictions / 0 scored;
+- correct fail-closed.
 
----
+## Family Fallback v2
 
-# 5. P9 prospective v1
-
-Frozen mechanism:
-
-`PIT booking-curve similarity -> fixed 5 prior curves -> same-family PIT residuals -> median residual -> incumbent correction`
-
-Frozen prediction windows:
-
-- T-48;
-- T-24.
-
-First genuine attempt:
-
-- event443 Cracovia–Motor T-48;
-- cutoff 2026-10-28 17:00 UTC;
-- immutable attempt persisted;
-- result `PIT_SUPPORT_INSUFFICIENT`;
-- predictions 0;
-- scored 0.
-
-This is correct fail-closed behaviour.
+Separate frozen evidence only. Never pool with v1 and never retro-predict event443.
 
 ---
 
-# 6. P9 Family Fallback v2
+# 9. Form5 / Long72 / P11 / P4a
 
-Separately precommitted and deployed.
+## Form5
 
-It keeps:
-
-- the exact five v1 neighbors;
-- the same minimum support gate;
-- the same T-48/T-24 windows.
-
-It may use Structural family only when v1 selected D2 and D2 selected-neighbor support is insufficient.
-
-Latest verified state:
-
-- attempts 0;
-- predictions 0;
-- scored 0.
-
-Never pool v1/v2 evidence.
-
----
-
-# 7. Form5 prospective
-
-Frozen prospective T-24 challenger.
-
-Key contract:
-
-- TheSportsDB v1 shadow;
-- LOCO primary / LOEO secondary;
-- ridge alpha 30;
-- +/-25% correction cap;
-- 8-event / 5-club / >=2-distinct gate;
-- production OFF.
-
-First legal capture:
+First legal prospective T-24 capture:
 
 **event443 — 2026-10-29 17:00 UTC**.
 
----
+## Long72
 
-# 8. Long72
+- 5 scored events;
+- 6082.40 -> 6039.39 MAE;
+- 0.71% point gain;
+- frozen / low priority.
 
-Frozen / low MAE priority.
-
-Latest verified scored sample:
-
-- 5 events;
-- anchor MAE 6082.40;
-- package MAE 6039.39;
-- improvement 43.01 / 0.71%;
-- event improvement rate 60%;
-- worst event degradation ~3633.
-
-Do not retune.
-
----
-
-# 9. P11 / P4a
-
-## P11 odds
-
-Latest verified:
+## P11
 
 - 6 events / 6 clubs;
-- all 6 with >=3 bookmakers;
-- T-24/T-72/T-168 coverage = 5/5/0;
-- model precommitted false.
-
-Continue append-only genuine capture. No attendance-model fit yet.
+- T-24/T-72/T-168 = 5/5/0;
+- no attendance-model fit yet.
 
 ## P4a
 
-- 4/9 labeled READY;
-- 3 distinct previous-home-spacing values;
-- variance gate PASS;
-- event-count gate FAIL.
-
-Only genuine labels move the gate.
+Still below event-count gate. Continue genuine labels only.
 
 ---
 
-# 10. New daily trajectory R&D
+# 10. Product interpretation
 
-Accepted next-generation model direction:
+Public inventory is a **demand/inventory proxy**, not confirmed paid sales or attendance.
 
-`P-60 -> P-59 -> ... -> today -> predicted remaining path -> final attendance`
+Intended future product view:
 
-The model should receive the **complete genuine observed prefix** at each daily cutoff.
+`observed trajectory | today | predicted remaining trajectory -> final attendance P10/P50/P90`
 
-This is **daily inference, not daily retuning**.
-
-Detailed plan:
-
-`ml/TRAJECTORY_FORECASTING_PLAN_V1.md`
-
-## Required infrastructure
-
-- canonical PIT-safe daily trajectory dataset;
-- immutable daily attempt/forecast ledger;
-- horizon-wise MAE reporting;
-- missingness/coverage audit.
-
-## Lane A
-
-Simple residual trajectory models over the structural incumbent.
-
-## Lane B
-
-Small sequence residual models started early in research/shadow mode:
-
-- GRU;
-- LSTM;
-- TCN;
-- compact Transformer only if justified.
-
-The sequence lane must beat Lane A under identical event-grouped/PIT-safe evaluation before more complexity is justified.
+But a trajectory challenger must first beat the structural incumbent under honest evidence.
 
 ---
 
-# 11. Why daily trajectory is different from the rejected Live Ticketing challenger
+# 11. Immediate model decision
 
-The earlier Live Ticketing challenger is rejected on current evidence.
-
-The new program is not a rerun of that mechanism.
-
-It explicitly models:
-
-- the complete observed prefix;
-- daily forecast revisions;
-- trajectory shape/dynamics;
-- sequence representations;
-- horizon-wise MAE;
-- residual learning over a strong structural anchor.
-
-It therefore receives a new versioned research contract.
-
----
-
-# 12. Product interpretation
-
-Public inventory remains a **demand/inventory proxy**, not confirmed sales or attendance.
-
-The intended future dashboard model is:
-
-`observed proxy trajectory | today | predicted future proxy trajectory -> final attendance P10/P50/P90`
-
-Do not imply that capacity minus public inventory equals paid ticket sales.
-
----
-
-# 13. Governance
-
-- event is the independent unit;
-- daily prefixes from one event remain grouped;
-- no target future trajectory leakage;
-- no target outcome leakage;
-- no manufactured history;
-- prospective evidence outranks favorable historical evidence;
-- business minimum meaningful Delta MAE remains to be independently derived;
-- no automatic production promotion.
-
----
-
-# 14. Immediate model decision
-
-> **Keep P7/P9/Form5 prospective evidence frozen and honest. In parallel, build the daily trajectory data/forecast infrastructure and then compare a simple trajectory residual model against a small sequence residual model. Start sequence research early, but keep all evidence safeguards intact.**
+> **Keep the structural model as incumbent. Lane A v1 failed and is frozen as a benchmark. Finish the precommitted Lane B v1 GRU experiment without tuning; only a clean win over both incumbent and Lane A can justify freezing a prospective daily-shadow candidate.**
