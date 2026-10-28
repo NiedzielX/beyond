@@ -4,80 +4,111 @@ Last updated: **2026-10-28**
 
 Status: **CURRENT SOURCE OF TRUTH**
 
+Production: `live_adjustment = 0`
+
 Canonical strategy: `ml/MAE_RESEARCH_ROADMAP_V5.md`
 
-Trajectory plan: `ml/TRAJECTORY_FORECASTING_PLAN_V1.md`
+---
 
-Feature contract: `ml/TRAJECTORY_FEATURE_CONTRACT_V1.md`
+# 0. Read this first — where we are now
 
-Validation contract: `ml/TRAJECTORY_VALIDATION_FOLD_CONTRACT_V1.md`
+The plan has two parallel tracks.
 
-Coverage audit: `ml/DAILY_TRAJECTORY_COVERAGE_AUDIT_2026-10-28.md`
+## Track 1 — protect real prospective evidence
+
+Do not disturb P7, P9, Form5, Long72 or current evidence-collection contracts.
+
+## Track 2 — improve MAE with trajectory modelling
+
+Infrastructure is done.
+
+The first simple trajectory model, **Lane A Ridge v1**, has already been tested and **failed**:
+
+- incumbent event-balanced MAE: **2594.5**;
+- Lane A MAE: **4153.3**;
+- Delta MAE: **+1558.8**;
+- relative change: **+60.1% worse**;
+- strict-forward independent test events: **5**.
+
+Decision:
+
+`Lane A v1 = REJECT_AS_CANDIDATE_RETAIN_AS_BENCHMARK`
+
+We do **not** tune it after seeing the result.
+
+The active model-development task is now:
+
+> **Lane B v1 — test whether a genuine ordered trajectory sequence can beat both the structural incumbent and the failed engineered-feature Lane A benchmark.**
+
+Lane B precommit and executable GRU learner are already in the repository.
 
 ---
 
 # 1. North Star
 
-> **Minimize true prospective event-balanced attendance-forecast MAE at decision-relevant horizons, with PIT-safe, reproducible evidence.**
+> **Minimize true prospective event-balanced attendance-forecast MAE at decision-relevant horizons with PIT-safe, reproducible evidence.**
 
-Primary decision metric:
+Primary metric:
 
 `Delta MAE = challenger event-balanced MAE - incumbent event-balanced MAE`
 
-Desired: `Delta MAE < 0`
+Desired:
 
-Counts of rows, snapshots, attempts, model parameters or training examples are not success metrics.
+`Delta MAE < 0`
 
-Production remains:
+For Lane B we additionally care about:
 
-`live_adjustment = 0`
+`Delta MAE B_vs_A = Lane B MAE - frozen Lane A MAE`
 
----
-
-# 2. Non-negotiable research rules
-
-1. Genuine prospective evidence outranks favorable historical reconstruction.
-2. Event/match is the independent evaluation unit.
-3. All prefixes from one event stay together.
-4. Never random-split daily rows/snapshots as headline evidence.
-5. Never use future target trajectory at an earlier cutoff.
-6. Never use target attendance during prediction construction.
-7. Never manufacture booking/inventory/forecast history.
-8. Never lower a gate merely to obtain coverage.
-9. Frozen learners remain separately auditable.
-10. No research lane activates production automatically.
+Row count, snapshots, model parameters and number of daily prefixes are **not** independent evidence.
 
 ---
 
-# 3. Priority A — protect current prospective evidence
+# 2. Non-negotiable rules
 
-This remains higher priority than trajectory R&D whenever a genuine window is imminent.
+1. Event/match is the independent unit.
+2. All prefixes from one event stay in one fold.
+3. No random daily-row/snapshot CV.
+4. No future target trajectory at an earlier cutoff.
+5. No target attendance during prediction construction.
+6. No manufactured booking/inventory history.
+7. No gate relaxation merely to obtain coverage.
+8. Frozen learners are not retuned after outer/prospective outcomes.
+9. Genuine prospective evidence outranks favorable historical research evidence.
+10. No research result activates production automatically.
+
+---
+
+# 3. Protect current prospective evidence first
+
+Whenever a genuine prospective window is imminent, it takes priority over trajectory R&D.
 
 ## P9 v1
 
-Historical: `NOT_EVALUABLE_PIT_SUPPORT_INSUFFICIENT`.
+Historical state:
 
-First genuine prospective attempt:
+`NOT_EVALUABLE_PIT_SUPPORT_INSUFFICIENT`
+
+First genuine attempt:
 
 - event443 Cracovia–Motor T-48;
-- 2026-10-28 17:00 UTC;
-- immutable attempt persisted;
+- cutoff 2026-10-28 17:00 UTC;
 - result `PIT_SUPPORT_INSUFFICIENT`;
-- 1 attempt / 0 predictions / 0 scored.
+- 1 genuine attempt / 0 predictions / 0 scored.
 
-Correct fail-closed. Do not lower the minimum support and do not retro-predict.
+This is correct fail-closed behaviour.
+
+Do not lower support and do not retro-predict.
 
 ## P9 Family Fallback v2
 
-Separately precommitted/deployed:
+Separately precommitted/deployed.
 
 - same exact five v1 neighbors;
 - unchanged support threshold;
-- Structural fallback only under frozen rule;
+- Structural fallback only under the frozen rule;
 - never retro-predict event443;
 - never pool v1/v2 evidence.
-
-Latest verified: 0 attempts / 0 predictions / 0 scored.
 
 ## Form5
 
@@ -96,29 +127,20 @@ Latest verified:
 
 ## P11 / P4a
 
-Continue genuine accumulation only.
-
-P11 latest verified:
-
-- 6 events / 6 clubs;
-- >=3 bookmakers on all 6;
-- T-24/T-72/T-168 = 5/5/0;
-- no model fit yet.
-
-P4a remains below event-count gate.
+Continue genuine evidence accumulation only.
 
 ## Long72
 
-Frozen / low priority:
+Frozen / low priority.
 
 - 5 scored events;
-- 6082.40 -> 6039.39 MAE;
-- 43.01 / 0.71% point improvement;
+- MAE 6082.40 -> 6039.39;
+- 43.01 / 0.71% point gain;
 - do not retune.
 
 ---
 
-# 4. Near-term protected windows
+# 4. Near-term windows to protect
 
 Unless fresh machine state says otherwise:
 
@@ -129,283 +151,317 @@ Unless fresh machine state says otherwise:
 - event445 Zagłębie–Korona T-48: **2026-10-31 17:00 UTC**;
 - event447 Raków–Pogoń T-48: **2026-10-31 19:30 UTC**.
 
-Event448 remains a genuine inventory watch. Unknown inventory is not zero.
+Event448 remains an inventory watch.
+
+Unknown inventory is never converted to zero.
 
 ---
 
-# 5. Daily Trajectory infrastructure — DONE
+# 5. Daily trajectory infrastructure — DONE
 
-The core trajectory evidence infrastructure is now implemented.
+The infrastructure phase is complete.
 
-Repo:
+## Canonical PIT dataset / representations
 
+- `ml/demand_engine/live_trajectory_feature_store.py`;
 - `ml/demand_engine/daily_trajectory_dataset.py`;
-- `ml/demand_engine/test_daily_trajectory_dataset.py`;
 - `ml/demand_engine/trajectory_feature_contract_v1.py`;
-- `ml/demand_engine/test_trajectory_feature_contract_v1.py`;
-- `ml/demand_engine/trajectory_validation_folds_v1.py`;
-- `ml/demand_engine/test_trajectory_validation_folds_v1.py`.
+- `ml/demand_engine/trajectory_shared_dataset_v1.py`.
 
-Live Supabase:
+## Validation
+
+- `ml/TRAJECTORY_VALIDATION_FOLD_CONTRACT_V1.md`;
+- `ml/demand_engine/trajectory_validation_folds_v1.py`.
+
+## Prospective evidence backend
+
+Live Supabase tables:
 
 - `private.daily_trajectory_attempts_v1`;
 - `private.daily_trajectory_predictions_v1`;
-- `private.daily_trajectory_scores_v1`;
-- controlled service-role attempt/prediction RPCs;
-- post-outcome scoring RPC;
-- MAE-by-horizon RPC.
+- `private.daily_trajectory_scores_v1`.
+
+Live backend supports:
+
+- immutable daily attempts;
+- immutable daily predictions;
+- post-outcome scoring;
+- MAE by horizon.
+
+## Research bundle access
+
+Service-role-only RPC:
+
+`public.get_trajectory_research_event_bundle_v1(ticket_event_id)`
 
 Canonical SQL:
 
-`supabase/sql/daily_trajectory_prospective_evidence_v1.sql`
+`supabase/sql/trajectory_research_event_bundle_v1.sql`
 
-Demand Engine test suite is green after the feature/fold-contract implementation.
-
-No synthetic daily prediction has been inserted to claim progress.
+Anonymous/authenticated execution is revoked.
 
 ---
 
-# 6. Data reality — do not design for an imaginary complete P-60 dataset
+# 6. Data reality — trajectory history is genuinely short
 
-Current genuine pre-kickoff inventory coverage:
+Current genuine pre-kickoff inventory sample:
 
-- 32 events / 14 clubs with any genuine observation;
-- median first observation ~P-9.3;
-- p75 ~P-14;
-- earliest ~P-30.3;
-- current P-31...P-60 historical coverage = 0.
+- 32 events;
+- 14 clubs;
+- median first observation around **P-9.3**;
+- p75 around **P-14**;
+- earliest observed event around **P-30.3**;
+- P-31...P-60 historical coverage currently zero.
 
-Representative coverage:
+Representative snapshot coverage:
 
-- P-30: 3.0%;
-- P-14: 21.9%;
-- P-7: 61.5%;
-- P-3: 75.0%;
-- P-1: 95.0%.
+| Horizon | Coverage |
+|---|---:|
+| P-30 | 3.0% |
+| P-14 | 21.9% |
+| P-7 | 61.5% |
+| P-3 | 75.0% |
+| P-1 | 95.0% |
 
 Decision:
 
-> **P-60 remains the collection horizon, not a requirement for a fabricated 60-day sequence.**
+> **P-60 is a collection horizon, not a requirement for a fake complete 60-day vector.**
 
-Use genuine variable-length prefixes and explicit missingness/masks.
+Lane B therefore uses genuine variable-length sequences.
+
+No interpolation or forward-fill merely to make the neural input convenient.
 
 ---
 
-# 7. Trajectory Feature Contract v1 — FROZEN
+# 7. Frozen feature contract
 
-Contract ID:
+Contract:
 
-`trajectory-feature-contract-v1`
+`ml/TRAJECTORY_FEATURE_CONTRACT_V1.md`
 
-Shared primary eligibility:
+Shared primary gate:
 
 - P-60...P-1;
 - PIT-valid structural incumbent;
-- >=4 clean genuine snapshots;
-- >=24h genuine observation window;
+- >=4 clean snapshots;
+- >=24h observed trajectory;
 - canonical `signal_readiness=ready`;
 - no future target snapshot/outcome.
 
-## Lane A
+## Lane A representation
 
-Receives fixed engineered trajectory summaries + the structural P50 anchor.
+Engineered scalar trajectory summaries + structural P50.
 
-## Lane B
+## Lane B representation
 
-Receives the genuine ordered variable-length snapshot sequence + the same structural anchor/global quality context.
+Genuine ordered snapshot sequence + structural P50/global quality context.
 
-Sequence v1:
+Sequence rules:
 
-- only genuine observations;
+- genuine observations only;
 - exact timestamp dedupe;
-- at most one real observation per integer hour-to-kickoff bucket;
+- max one real observation per integer hour-to-kickoff bucket;
 - no interpolation;
 - no forward-fill;
 - explicit sequence length/padding mask;
-- padded zero is never genuine zero inventory.
+- padded zero is not genuine zero inventory.
 
-Both lanes exclude unrelated P11 odds, weather, hype, match-stakes, Form5 and P4 context in v1. The first test isolates **trajectory representation**.
+No odds, weather, hype, match-stakes, Form5 or P4 context enters this first A/B comparison.
 
 ---
 
-# 8. Validation Fold Contract v1 — FROZEN
+# 8. Frozen validation contract
 
-Contract ID:
+Contract:
 
-`trajectory-validation-fold-contract-v1`
+`ml/TRAJECTORY_VALIDATION_FOLD_CONTRACT_V1.md`
 
-Primary development validation:
+Primary validation:
 
 - strict expanding temporal event folds;
-- all prefixes from one event inherit the same fold;
-- same-kickoff events are held out together;
-- training contains only events with earlier kickoff;
-- minimum 5 prior train events;
-- minimum 4 prior train clubs;
-- Lane A and Lane B use the exact same registry/manifest.
+- train only on earlier-kickoff events;
+- same-kickoff events held out together;
+- minimum 5 earlier train events;
+- minimum 4 earlier train clubs;
+- every prefix from an event inherits the event fold.
 
-LOEO/LOCO may be secondary diagnostics only.
+Current frozen development cohort:
 
-Random row-level CV is prohibited.
+`ml/artifacts/trajectory_development_cohort_v1.json`
 
-Current checkpoint evidence under the shared input gate is genuinely small:
+Cohort:
 
-| Horizon | Input-ready events | Labeled ready events |
-|---|---:|---:|
-| T-30 | 0 | 0 |
-| T-14 | 1 | 0 |
-| T-7 | 7 | 4 |
-| T-3 | 9 | 5 |
-| T-1 | 10 | 10 |
+- 10 labeled events;
+- 5 expanding outer test events;
+- frozen fold-registry SHA256:
+  `fc59737ab1c0a306920b4961de35664178b14648f679071522d1d07515cb3091`.
 
-Do not overclaim sparse early-horizon results.
+Do not change this registry after seeing Lane A/B outer results.
 
 ---
 
-# 9. Priority B — NEXT: precommit Lane A
+# 9. Lane A v1 — DONE / REJECTED
 
-The next new-model task is a small, auditable benchmark protocol.
+Precommit:
 
-Default formulation:
+`ml/TRAJECTORY_LANE_A_PRECOMMIT_V1.md`
 
-`structural P50 + engineered trajectory residual -> challenger P50`
+Implementation:
 
-Candidate family set must be small and frozen before outer-fold comparison.
+`ml/demand_engine/trajectory_lane_a_v1.py`
 
-Preferred first candidates:
+Result:
 
-- Ridge / ElasticNet;
-- one restrained tree/boosting residual model if justified;
-- optional auditable nearest-trajectory correction.
+`ml/TRAJECTORY_LANE_A_RESULT_V1.md`
 
-No broad feature/model tournament.
+Machine-readable result:
 
-Preprocessing is fit inside train folds only.
+`ml/results/trajectory_lane_a_ridge_residual_v1_result.json`
 
----
+## Result
 
-# 10. Priority C — NEXT: precommit first Lane B sequence model
+| Metric | Result |
+|---|---:|
+| Independent outer test events | 5 |
+| Outer test prefix rows | 14 |
+| Incumbent event-balanced MAE | 2594.5 |
+| Lane A event-balanced MAE | 4153.3 |
+| Delta MAE | **+1558.8** |
+| Relative change | **+60.1% worse** |
+| Event improvement rate | 20% |
+| Worst event degradation | +4166.4 |
 
-Accepted research risk:
+By horizon:
 
-> **Start sequence-model research now despite limited labels.**
+| Horizon | Incumbent | Lane A | Delta |
+|---|---:|---:|---:|
+| T-7 | 3399.0 | 4490.9 | +1091.9 |
+| T-3 | 2667.9 | 4224.7 | +1556.8 |
+| T-1 | 2314.9 | 3727.8 | +1412.9 |
 
-First sequence protocol should stay deliberately small.
+Decision:
 
-Architecture order:
+> **Reject Lane A v1 as a candidate. Keep it frozen as the simple benchmark.**
 
-1. small GRU;
-2. small LSTM;
-3. small TCN;
-4. compact Transformer only if earlier sequence models establish value.
-
-Recommended target:
-
-`actual attendance - structural P50`
-
-Lane B must use the exact same eligible events/folds/cutoffs as Lane A.
-
-The first question is not “which neural net wins?” but:
-
-> **Does reading the ordered trajectory reduce MAE beyond engineered trajectory summaries?**
+No post-result alpha/feature tuning.
 
 ---
 
-# 11. Self-supervised trajectory research
+# 10. Lane B v1 — ACTIVE
 
-Allowed separately as target-free representation research:
+Precommit:
 
-- next genuine observation prediction;
-- short-window proxy-change prediction;
-- chronology-safe trajectory representation learning;
-- masked/reconstruction tasks with no target-future leakage.
+`ml/TRAJECTORY_LANE_B_PRECOMMIT_V1.md`
 
-This may help representation learning but does not increase independent attendance-event count.
+Implementation:
 
----
+`ml/demand_engine/trajectory_lane_b_v1.py`
 
-# 12. Daily MAE reporting
+Model:
 
-Once genuine prospective daily predictions exist and are scored, report at minimum:
+- one-layer GRU;
+- input dimension 5;
+- hidden dimension 8;
+- small MLP head;
+- AdamW;
+- weighted MAE residual loss;
+- 200 fixed epochs;
+- seeds 17 / 29 / 41;
+- median prediction across seeds;
+- event-balanced row weights.
 
-| Horizon | Incumbent MAE | Lane A MAE | Lane B MAE | Events | Clubs |
-|---|---:|---:|---:|---:|---:|
-| P-30 | | | | | |
-| P-21 | | | | | |
-| P-14 | | | | | |
-| P-7 | | | | | |
-| P-3 | | | | | |
-| P-1 | | | | | |
+No architecture search.
 
-Always show support next to MAE.
+No Transformer.
 
-Also report bias, median/P90 AE, improvement rate, worst degradation and event-block uncertainty.
+No self-supervised pretraining in Lane B v1.
 
----
+## Lane B must answer two questions
 
-# 13. Rejected lanes remain closed
+1. Does Lane B beat the structural incumbent?
+2. Does Lane B beat frozen Lane A on exactly the same outer test identities?
 
-Do not reopen on the same exposed evidence:
-
-- previous Live Ticketing challenger;
-- Sporting Match Stakes;
-- timing context;
-- existing weather point forecast;
-- Hype/Attention 48h;
-- old broad estimator/post-hoc sweeps.
-
-The daily trajectory program is allowed because it is a materially new representation/model contract.
+Advance only if both are true and seed/downside diagnostics are acceptable.
 
 ---
 
-# 14. Business meaningful Delta MAE
+# 11. Immediate execution order
 
-Still unresolved.
-
-Derive independently from real operational decisions. A tiny negative Delta MAE is not automatically a meaningful success.
-
----
-
-# 15. Immediate execution order
+## Evidence protection
 
 1. Protect imminent P9/Form5 windows.
 2. Score P7/P9 only after genuine outcomes.
 3. Keep P11/P4a collection healthy.
-4. **Precommit Lane A development protocol.**
-5. **Precommit first small Lane B development protocol.**
-6. Materialize one shared eligible event/cutoff export + fold registry manifest.
-7. Run Lane A and Lane B on identical strict-forward folds.
-8. Report support + horizon-wise MAE; no sparse-horizon overclaiming.
-9. Freeze a candidate only if evidence justifies it.
-10. Start prospective daily shadow inference only after candidate freeze and before relevant outcomes.
-11. Continue collecting longer genuine prefixes forward.
-12. Derive business minimum meaningful Delta MAE.
-13. Production promotion remains a separate reviewed decision.
+
+## Trajectory R&D
+
+4. Validate current repository CI after Lane A/B implementation.
+5. Materialize the frozen cohort through the service-role research bundle path.
+6. Run **Lane B v1** on the frozen strict-forward folds.
+7. Persist machine-readable and human-readable Lane B result.
+8. Compare Lane B vs incumbent and Lane B vs frozen Lane A.
+9. If Lane B fails, do not tune v1 after the result; diagnose before creating v2.
+10. If Lane B wins, freeze a separate prospective daily-shadow candidate before future outcomes.
+11. Continue collecting longer genuine trajectories forward.
+12. Derive the business minimum meaningful Delta MAE independently.
+
+Production promotion remains a separate reviewed decision.
 
 ---
 
-# 16. Next milestones
+# 12. Agent decision rules
 
-Evidence lanes:
+## If Lane B beats both incumbent and Lane A
 
-1. first valid P9 v1 prediction;
-2. first valid P9 v2 fallback prediction, if eligible;
-3. first Form5 prospective capture;
-4. first P7 prospective score;
-5. first P9 prospective score.
+- review event downside and seed stability;
+- freeze candidate parameters;
+- start prospective daily shadow inference before future outcomes;
+- do not activate production.
 
-Trajectory program:
+## If Lane B beats Lane A but not incumbent
 
-6. **DONE** — daily dataset + PIT tests;
-7. **DONE** — coverage audit;
-8. **DONE** — immutable attempt/prediction/score backend;
-9. **DONE** — MAE-by-horizon backend;
-10. **DONE** — Trajectory Feature Contract v1 + executable implementation/tests;
-11. **DONE** — strict-forward Validation Fold Contract v1 + executable implementation/tests;
-12. Lane A precommit + first grouped result;
-13. first small Lane B sequence precommit + grouped result;
-14. first genuine prospective daily trajectory predictions;
-15. first genuine prospective daily trajectory scores;
-16. enough independent events for meaningful Delta MAE comparison;
-17. business meaningful Delta MAE agreed;
-18. only then production-promotion consideration.
+- sequence representation is interesting but not useful enough yet;
+- do not promote;
+- diagnose why structural anchor remains superior.
+
+## If Lane B fails both
+
+- do not launch a broad GRU/LSTM/Transformer sweep on the same outer events;
+- diagnose data/proxy/representation first;
+- any materially changed experiment becomes v2.
+
+## If historical research wins but prospective evidence later loses
+
+Prospective evidence wins.
+
+---
+
+# 13. Milestones
+
+### Completed
+
+- [x] daily PIT dataset and tests;
+- [x] coverage audit;
+- [x] immutable daily evidence backend;
+- [x] MAE-by-horizon backend;
+- [x] Trajectory Feature Contract v1;
+- [x] strict-forward Validation Fold Contract v1;
+- [x] frozen 10-event development cohort/folds;
+- [x] Lane A precommit;
+- [x] Lane A executable learner;
+- [x] Lane A strict-forward result;
+- [x] Lane A rejected without post-result tuning;
+- [x] Lane B precommit;
+- [x] Lane B executable GRU learner;
+- [x] service-role research event bundle RPC.
+
+### Next
+
+- [ ] Lane B strict-forward result;
+- [ ] Lane B decision;
+- [ ] first frozen prospective daily trajectory candidate, only if justified;
+- [ ] first genuine daily trajectory prediction;
+- [ ] first genuine daily trajectory score;
+- [ ] enough independent events for meaningful prospective Delta MAE;
+- [ ] business meaningful Delta MAE threshold;
+- [ ] production review only after the above evidence.
