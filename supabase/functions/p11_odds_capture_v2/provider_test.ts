@@ -117,6 +117,11 @@ Deno.test("provider mapping requires club identity and kickoff tolerance", () =>
     index,
   );
   assert(tooFar.status === "NO_PROVIDER_MATCH", "kickoff mismatch should fail closed");
+  if (tooFar.status === "NO_PROVIDER_MATCH") {
+    assert(tooFar.reason.includes("nearest_provider_fixtures="), "nearest provider diagnostics missing");
+    assert(tooFar.reason.includes('"provider_event_id":"far"'), "provider event id missing from diagnostics");
+    assert(tooFar.reason.includes('"kickoff_delta_seconds":10801'), "kickoff delta missing from diagnostics");
+  }
 });
 
 Deno.test("multiple provider matches are ambiguous", () => {
