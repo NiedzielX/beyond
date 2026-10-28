@@ -1,0 +1,101 @@
+name: Trajectory Frozen Encoder Attendance Head v1
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - "ml/demand_engine/trajectory_frozen_encoder_attendance_head_v1.py"
+      - "ml/demand_engine/test_trajectory_frozen_encoder_attendance_head_v1.py"
+      - "ml/fit_trajectory_frozen_encoder_attendance_head_v1.py"
+      - "ml/TRAJECTORY_FROZEN_ENCODER_ATTENDANCE_HEAD_V1.md"
+      - "ml/artifacts/trajectory_self_supervised_encoder_v1.json"
+      - "ml/artifacts/trajectory_development_cohort_v1.json"
+      - ".github/workflows/trajectory-frozen-encoder-attendance-head-v1.yml"
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: trajectory-frozen-encoder-attendance-head-v1-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  fit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install pinned fit runtime
+        run: |
+          python -m pip install --upgrade pip
+          pip install numpy==2.3.5 scikit-learn==1.8.0
+          pip install torch==2.5.1 --index-url https://download.pytorch.org/whl/cpu
+
+      - name: Compile and run protocol tests
+        run: |
+          python -m py_compile ml/demand_engine/trajectory_frozen_encoder_attendance_head_v1.py
+          python -m py_compile ml/fit_trajectory_frozen_encoder_attendance_head_v1.py
+          python -m unittest ml.demand_engine.test_trajectory_frozen_encoder_attendance_head_v1 -v
+
+      - name: Request historical research OIDC token
+        shell: bash
+        run: |
+          set -euo pipefail
+          response=$(curl -fsS -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
+            "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=beyond-trajectory-research")
+          token=$(printf '%s' "$response" | jq -r '.value')
+          test -n "$token"
+          test "$token" != "null"
+          echo "::add-mask::$token"
+          echo "TRAJECTORY_OIDC_TOKEN=$token" >> "$GITHUB_ENV"
+
+      - name: Fetch exact frozen historical fit export
+        shell: bash
+        run: |
+          set -euo pipefail
+          event_ids=$(jq -c '[.events[].ticket_event_id]' ml/artifacts/trajectory_development_cohort_v1.json)
+          curl -fsS \
+            -X POST \
+            -H "Authorization: Bearer $TRAJECTORY_OIDC_TOKEN" \
+            -H "Content-Type: application/json" \
+            --data "{\"event_ids\":${event_ids}}" \
+            'https://adchzwqboeekhokapxqi.supabase.co/functions/v1/trajectory_research_export_v1' \
+            -o /tmp/trajectory-development-export-v1.json
+          jq -e '.ok == true' /tmp/trajectory-development-export-v1.json >/dev/null
+          test "$(jq -r '.event_count' /tmp/trajectory-development-export-v1.json)" = "10"
+          test "$(jq -r '.row_count' /tmp/trajectory-development-export-v1.json)" = "19"
+
+      - name: Fit single precommitted head
+        run: |
+          python -m ml.fit_trajectory_frozen_encoder_attendance_head_v1 \
+            --input /tmp/trajectory-development-export-v1.json \
+            --cohort ml/artifacts/trajectory_development_cohort_v1.json \
+            --encoder ml/artifacts/trajectory_self_supervised_encoder_v1.json \
+            --output /tmp/trajectory-frozen-encoder-attendance-head-v1.json
+
+      - name: Guard fit-only evidence contract
+        run: |
+          jq -e '.historical_selection_performed == false' /tmp/trajectory-frozen-encoder-attendance-head-v1.json >/dev/null
+          jq -e '.production_change == false' /tmp/trajectory-frozen-encoder-attendance-head-v1.json >/dev/null
+          jq -e '.fit_row_count == 19' /tmp/trajectory-frozen-encoder-attendance-head-v1.json >/dev/null
+          jq -e '(.fit_event_ids | length) == 10' /tmp/trajectory-frozen-encoder-attendance-head-v1.json >/dev/null
+          jq '{version,precommit_id,encoder_artifact_sha256,fit_manifest_sha256,fit_row_count,fit_event_ids,alpha,correction_ratio_cap,historical_selection_performed,evidence_status,production_change}' \
+            /tmp/trajectory-frozen-encoder-attendance-head-v1.json
+
+      - name: Upload frozen head artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: trajectory-frozen-encoder-attendance-head-v1-${{ github.run_id }}
+          path: /tmp/trajectory-frozen-encoder-attendance-head-v1.json
+          if-no-files-found: error
+          retention-days: 90
