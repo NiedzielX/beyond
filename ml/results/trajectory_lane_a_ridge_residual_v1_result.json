@@ -1,0 +1,38 @@
+{
+  "version": "trajectory-lane-a-ridge-residual-v1-result",
+  "precommit_id": "trajectory-lane-a-ridge-residual-v1",
+  "feature_contract_id": "trajectory-feature-contract-v1",
+  "validation_contract_id": "trajectory-validation-fold-contract-v1",
+  "cohort_version": "trajectory-development-cohort-v1",
+  "evidence_class": "historical_exposed_research",
+  "frozen_at": "2026-10-28",
+  "independent_cohort_events": 10,
+  "independent_test_events": 5,
+  "outer_test_rows": 14,
+  "incumbent_event_balanced_mae": 2594.535083,
+  "challenger_event_balanced_mae": 4153.339708,
+  "delta_mae": 1558.804625,
+  "relative_delta_pct": 60.080306,
+  "event_improvement_rate": 0.2,
+  "worst_event_degradation": 4166.379410,
+  "by_horizon": {
+    "T-7": {"events": 4, "incumbent_mae": 3399.025641, "challenger_mae": 4490.887033, "delta_mae": 1091.861392},
+    "T-3": {"events": 5, "incumbent_mae": 2667.927170, "challenger_mae": 4224.684194, "delta_mae": 1556.757024},
+    "T-1": {"events": 5, "incumbent_mae": 2314.885002, "challenger_mae": 3727.776859, "delta_mae": 1412.891857}
+  },
+  "by_event": {
+    "20": {"incumbent_event_mae": 407.862824, "challenger_event_mae": 4574.242234, "delta_mae": 4166.379410},
+    "10": {"incumbent_event_mae": 1786.651770, "challenger_event_mae": 2113.000000, "delta_mae": 326.348230},
+    "23": {"incumbent_event_mae": 6732.876192, "challenger_event_mae": 9881.708529, "delta_mae": 3148.832337},
+    "21": {"incumbent_event_mae": 975.079051, "challenger_event_mae": 881.506522, "delta_mae": -93.572529},
+    "22": {"incumbent_event_mae": 3070.205579, "challenger_event_mae": 3316.241257, "delta_mae": 246.035678}
+  },
+  "decision": "REJECT_AS_CANDIDATE_RETAIN_AS_BENCHMARK",
+  "production_change": false,
+  "notes": [
+    "Lane A was evaluated after its precommit and on the frozen strict-forward cohort.",
+    "No alpha or feature tuning was performed after observing the outer-fold result.",
+    "This result is historical exposed research evidence, not prospective evidence.",
+    "Lane A remains the fixed simple benchmark for Lane B comparison."
+  ]
+}
