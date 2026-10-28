@@ -3,7 +3,6 @@ from __future__ import annotations
 
 import argparse
 from collections import defaultdict
-from dataclasses import asdict
 from datetime import datetime
 import hashlib
 import json
@@ -188,11 +187,7 @@ def main() -> None:
     prediction_values = [row.predicted_delta_index for row in predictions]
     improved_events = score.improved_validation_events
     noncollapsed = float(np.median(np.abs(np.asarray(prediction_values, dtype=float)))) > 1e-6
-    supported = (
-        score.delta_mae_vs_baseline < 0
-        and improved_events >= 2
-        and noncollapsed
-    )
+    supported = score.delta_mae_vs_baseline < 0 and improved_events >= 2 and noncollapsed
 
     result = {
         "version": "trajectory-self-supervised-24h-delta-v1-result",
@@ -214,9 +209,9 @@ def main() -> None:
         "target_distribution": _distribution(target_values),
         "prediction_distribution": _distribution(prediction_values),
         "by_event": _per_event(predictions),
-        "attendance_labels_used": false,
-        "structural_prior_used": false,
-        "production_change": false,
+        "attendance_labels_used": False,
+        "structural_prior_used": False,
+        "production_change": False,
         "decision": "REPRESENTATION_SUPPORTED" if supported else "REPRESENTATION_NOT_SUPPORTED",
     }
 
@@ -224,6 +219,7 @@ def main() -> None:
     args.output.write_text(json.dumps(result, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 
     import torch
+
     args.encoder_output.parent.mkdir(parents=True, exist_ok=True)
     torch.save(
         {
