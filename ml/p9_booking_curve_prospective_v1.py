@@ -10,8 +10,8 @@ No target attendance is accepted. The builder consumes:
 - genuine outcomes only for already-completed reference events.
 
 If fewer than three selected curve neighbors carry a valid same-family PIT
-incumbent + genuine reference outcome, the target fails closed and no
-prediction is emitted.
+incumbent + genuine reference outcome known by the target cutoff, the target
+fails closed and no prediction is emitted.
 """
 from __future__ import annotations
 
@@ -183,6 +183,14 @@ def build_predictions(p9a: dict[str, Any], catalog: dict[str, Any], reference_ou
                 continue
             confirmed = parse_dt(outcome["confirmed_at"], f"reference[{ref_id}].confirmed_at")
             require(confirmed >= ref_kickoff, f"reference outcome confirmed before kickoff ref={ref_id}")
+            if confirmed > target_as_of:
+                missing.append({
+                    "ticket_event_id": ref_id,
+                    "reason": "reference_outcome_not_known_by_target_cutoff",
+                    "confirmed_at": confirmed.isoformat(),
+                    "target_as_of_at": target_as_of.isoformat(),
+                })
+                continue
             actual = int(outcome["actual_attendance"])
             residual_rows.append({
                 "ticket_event_id": ref_id,
