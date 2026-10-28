@@ -2,12 +2,15 @@ name: d2 Long72 Forward Prospective v1
 
 on:
   workflow_dispatch:
-  schedule:
-    # GitHub scheduled workflows can be delayed or dropped under load.
-    # Four offset checks per hour reduce forward-evidence gaps while preserving
-    # the frozen Long72 package. Persistence is idempotent and scoring selects
-    # the representative forecast per event x 6h bucket.
-    - cron: "2,17,32,47 * * * *"
+  workflow_run:
+    # Use the already-proven 4x/hour Structural Prior heartbeat instead of a
+    # second independent GitHub cron. Long72 consumes structural inputs, so
+    # running immediately after a successful materialization keeps the forward
+    # evidence lane fresh without changing the frozen package or scoring logic.
+    workflows:
+      - "Structural Prior Materializer"
+    types:
+      - completed
   pull_request:
     paths:
       - "ml/d2_long72_forward_materialize_v1.py"
@@ -64,7 +67,7 @@ jobs:
           grep -q '"refs/heads/main"' supabase/functions/d2_long72_forward_shadow_v1/index.ts
 
   prospective-main:
-    if: github.event_name != 'pull_request'
+    if: github.event_name != 'pull_request' && (github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success')
     needs: validate
     runs-on: ubuntu-latest
     timeout-minutes: 30
