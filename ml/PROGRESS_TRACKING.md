@@ -14,8 +14,6 @@ Production: `live_adjustment = 0`
 
 > **Minimize true prospective event-balanced attendance-forecast MAE using PIT-safe, reproducible evidence.**
 
-`Delta MAE = challenger MAE - incumbent MAE`
-
 ---
 
 # 2. Current status
@@ -25,162 +23,139 @@ Production: `live_adjustment = 0`
 | P7 prospective | 🟢 53 rows / 6 events / 0 scored | collect/score only |
 | P9 historical v1 | ⚪ NOT_EVALUABLE | PIT support insufficient |
 | P9 prospective v1 | 🟢 1 attempt / 0 prediction / 0 scored | protect genuine windows |
-| P9 Family Fallback v2 | 🟢 PRECOMMITTED / DEPLOYED | separate evidence only |
+| P9 Family Fallback v2 | 🟢 FROZEN / DEPLOYED | separate evidence only |
 | Form5 prospective | 🟢 FIRST T-24 PENDING | event443 2026-10-29 17:00 UTC |
 | Long72 | 🟡 FROZEN | 5 scored; 0.71% point gain |
-| P11 odds | 🟡 COLLECTING | 6 events / 6 clubs; 5/5/0 T-24/T-72/T-168 |
+| P11 odds | 🟡 COLLECTING | 6 events / 6 clubs; no model fit |
 | P4a | 🟡 COLLECTING | gate still closed |
 | Daily trajectory infrastructure | ✅ DONE | PIT dataset + immutable evidence backend |
-| Trajectory Feature Contract v1 | ✅ FROZEN + CODED | shared A/B information boundary |
-| Validation Fold Contract v1 | ✅ FROZEN + CODED | strict expanding temporal folds |
-| Frozen development cohort | ✅ 10 events / 19 rows | 5 strict-forward outer test events |
-| Lane A v1 | ❌ REJECTED AS CANDIDATE | 4153.3 vs 2594.5 incumbent MAE |
-| Lane B v1 | 🟢 ACTIVE | frozen small GRU; run via OIDC workflow |
-| Frozen development export | ✅ LIVE | service-role RPC + GitHub OIDC gateway |
-| Prospective daily trajectory candidate | ⏸️ NOT YET | only after a justified development win |
+| Lane A v1 | ❌ REJECTED | MAE 4153.34 vs 2594.54 incumbent |
+| Lane B v1 | ❌ DO NOT ADVANCE | MAE 2595.40; near-zero corrections |
+| Lane B v2 | ❌ MECHANISM NOT SUPPORTED | MAE 4792.42; harmful over-corrections |
+| Supervised trajectory tuning on exposed cohort | 🛑 STOPPED | no more post-hoc tuning on 5 exposed outer events |
+| Self-supervised trajectory v1 | 🟢 ACTIVE | target-free ~24h delta task |
+| SSP frozen export | ✅ LIVE | 26 events, no attendance/P50 |
+| SSP usable sample | ✅ FROZEN | 21 train events / 3397 pairs; 5 val events / 168 pairs |
+| Prospective attendance trajectory candidate | ⏸️ NOT YET | only after evidence-safe representation freeze |
 | Business meaningful Delta MAE | 🟡 PENDING | derive independently |
 
 ---
 
-# 3. Lane A result — closed
+# 3. Closed supervised trajectory evidence
+
+## Lane A v1
+
+- incumbent MAE: 2594.54;
+- Lane A MAE: 4153.34;
+- Delta: +1558.80;
+- decision: `REJECT_AS_CANDIDATE_RETAIN_AS_BENCHMARK`.
+
+## Lane B v1
+
+- Lane B MAE: 2595.40;
+- Delta vs incumbent: +0.87;
+- predicted seat corrections only about -0.06...+4.33;
+- decision: `DO_NOT_ADVANCE`.
+
+## Lane B v2
+
+- residual-ratio target unlocked realistic correction magnitude;
+- Lane B v2 MAE: 4792.42;
+- Delta vs incumbent: +2197.88;
+- median absolute correction ~1550.78 seats;
+- decision: `MECHANISM_NOT_SUPPORTED`.
+
+Conclusion:
+
+> **Do not keep tuning supervised correction mechanics on the same exposed 10-event cohort.**
+
+---
+
+# 4. Active self-supervised v1
 
 Precommit:
 
-`trajectory-lane-a-ridge-residual-v1`
+`ml/TRAJECTORY_SELF_SUPERVISED_PRETRAIN_V1.md`
 
-Strict-forward result:
+Frozen cutoff:
 
-| Metric | Value |
-|---|---:|
-| Independent test events | 5 |
-| Test prefix rows | 14 |
-| Incumbent event-balanced MAE | 2594.5 |
-| Lane A event-balanced MAE | 4153.3 |
-| Delta MAE | **+1558.8** |
-| Relative change | **+60.1% worse** |
-| Event improvement rate | 20% |
-| Worst event degradation | +4166.4 |
+`2026-10-28T22:09:43.958409Z`
 
-By horizon:
+Target-free corpus after input gate:
 
-| Horizon | Incumbent | Lane A | Delta |
-|---|---:|---:|---:|
-| T-7 | 3399.0 | 4490.9 | +1091.9 |
-| T-3 | 2667.9 | 4224.7 | +1556.8 |
-| T-1 | 2314.9 | 3727.8 | +1412.9 |
+- 26 usable events;
+- 12 clubs;
+- 3565 usable ~24h pairs;
+- 21 train events / 3397 pairs;
+- 5 later validation events / 168 pairs.
 
-Decision:
+Task:
 
-`REJECT_AS_CANDIDATE_RETAIN_AS_BENCHMARK`
+`genuine trajectory prefix -> normalized inventory change ~24h later`
 
-Do not tune v1 after the result.
+Zero-change baseline:
 
----
+`predicted delta = 0`
 
-# 4. Lane B v1 — active
+Frozen model:
 
-Precommit:
+- GRU input 4 / hidden 8;
+- small MLP head;
+- AdamW .001 / wd .01;
+- weighted L1;
+- batch 128;
+- 100 epochs;
+- seed 17;
+- no early stopping;
+- no hyperparameter search.
 
-`trajectory-lane-b-small-gru-residual-v1`
+Evidence label:
 
-Fixed model:
+`target_free_temporal_validation`
 
-- GRU 1 layer / hidden 8;
-- five genuine sequence channels;
-- MLP head 8;
-- dropout .20;
-- AdamW 0.001 / wd 0.01;
-- event-balanced weighted L1;
-- 200 fixed epochs;
-- gradient clip 1.0;
-- seeds 17 / 29 / 41;
-- median seed prediction;
-- no architecture search;
-- no self-supervised pretraining in v1.
-
-Advance requirement:
-
-- Lane B beats incumbent;
-- Lane B beats frozen Lane A;
-- downside/seed stability acceptable;
-- no evidence guard fails.
+No attendance labels and no structural P50 are used.
 
 ---
 
-# 5. Frozen cohort and data path
+# 5. SSP pipeline
 
-Cohort:
-
-`ml/artifacts/trajectory_development_cohort_v1.json`
-
-- 10 independent labeled events;
-- 19 exact persisted checkpoint identities;
-- 5 strict-forward test events.
-
-Fold SHA256:
-
-`fc59737ab1c0a306920b4961de35664178b14648f679071522d1d07515cb3091`
-
-Export RPC:
-
-`public.export_trajectory_development_rows_v1(bigint[])`
-
-OIDC gateway:
-
-`trajectory_research_export_v1`
-
-Workflow:
-
-`.github/workflows/trajectory-lane-b-v1.yml`
-
-Runner fails closed unless the export matches the frozen cohort exactly.
-
----
-
-# 6. Completed trajectory engineering
-
-- [x] daily PIT dataset builder;
-- [x] future-snapshot / prior leakage tests;
-- [x] coverage audit;
-- [x] immutable daily attempt/prediction/score backend;
-- [x] MAE-by-horizon scoring;
-- [x] feature contract v1;
-- [x] strict-forward fold contract v1;
-- [x] frozen 10-event cohort;
-- [x] shared dataset materializer;
-- [x] Lane A precommit + executable benchmark;
-- [x] Lane A strict-forward result + decision;
-- [x] Lane B precommit + executable GRU;
-- [x] service-role historical research bundle;
-- [x] frozen model-ready development export;
+- [x] frozen data cutoff;
+- [x] frozen chronological event split;
+- [x] usable pair audit;
+- [x] split manifest;
+- [x] target-free Supabase export RPC;
+- [x] service-role-only permissions;
 - [x] GitHub OIDC export gateway;
-- [x] Lane B GitHub Actions workflow.
+- [x] executable GRU pretraining code;
+- [x] protocol tests;
+- [x] GitHub Actions workflow;
+- [ ] frozen SSP v1 validation result;
+- [ ] encoder freeze decision.
 
 ---
 
-# 7. Data reality
+# 6. Data semantics
 
-Current genuine pre-kickoff inventory:
+Public inventory is a demand/inventory proxy, not confirmed sales or attendance.
 
-- 32 events / 14 clubs with any observation;
-- median first observation ~P-9.3;
-- earliest ~P-30.3;
-- P-31...P-60 historical coverage currently zero.
+P-60 is a collection horizon, not a requirement for a fabricated full sequence.
 
-P-60 remains collection horizon only. Use genuine variable-length sequences; never manufacture missing history.
+Never forward-fill or interpolate merely to create model input.
+
+Hidden/unknown inventory is never zero.
 
 ---
 
-# 8. Immediate order
+# 7. Immediate order
 
 1. protect imminent P9/Form5 windows;
 2. score P7/P9 only after genuine outcomes;
 3. keep P11/P4a collection healthy;
-4. inspect/finish the frozen Lane B v1 workflow;
-5. persist Lane B result and decision;
-6. do not tune Lane B v1 after outer result;
-7. if Lane B wins, create a separately frozen prospective daily-shadow candidate;
-8. if Lane B fails, diagnose before any versioned v2;
-9. continue genuine trajectory collection;
+4. finish frozen SSP v1 validation run;
+5. persist result and encoder metadata;
+6. do not tune SSP v1 after seeing validation;
+7. if representation is supported, freeze encoder before any attendance-head work;
+8. judge attendance value only on future immutable predictions/outcomes;
+9. continue genuine forward trajectory collection;
 10. derive business minimum meaningful Delta MAE;
 11. production remains review-gated.
