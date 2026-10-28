@@ -154,11 +154,31 @@ def test_same_family_required() -> None:
     assert result["diagnostics"][0]["status"] == "PIT_SUPPORT_INSUFFICIENT"
 
 
+def test_reference_outcome_must_be_known_by_target_cutoff() -> None:
+    outcomes = reference_outcomes()
+    # T-48 target cutoff is 2026-10-30 12:00 UTC. The reference event is
+    # historical, but this attendance value is intentionally confirmed one
+    # minute after the target cutoff and must therefore be unavailable to P9.
+    outcomes["attendance"][2]["confirmed_at"] = "2026-10-30T12:01:00+00:00"
+
+    result = build_predictions(p9a(48), catalog(48), outcomes)
+    assert result["predictions"] == []
+    diag = result["diagnostics"][0]
+    assert diag["status"] == "PIT_SUPPORT_INSUFFICIENT"
+    assert diag["residual_reference_count"] == 2
+    late = [row for row in diag["missing_reference_rows"] if row["ticket_event_id"] == 3]
+    assert len(late) == 1
+    assert late[0]["reason"] == "reference_outcome_not_known_by_target_cutoff"
+    assert late[0]["confirmed_at"] == "2026-10-30T12:01:00+00:00"
+    assert late[0]["target_as_of_at"] == "2026-10-30T12:00:00+00:00"
+
+
 def main() -> None:
     test_prediction_uses_fixed_median_residual()
     test_insufficient_support_emits_no_prediction()
     test_target_attendance_leak_fails_closed()
     test_same_family_required()
+    test_reference_outcome_must_be_known_by_target_cutoff()
     print("P9 prospective builder v1 tests: OK")
 
 
