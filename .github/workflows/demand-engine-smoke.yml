@@ -57,6 +57,7 @@ jobs:
           python -m py_compile ml/demand_engine/storage.py
           python -m py_compile ml/demand_engine/supabase.py
           python -m py_compile ml/demand_engine/live_trajectory_feature_store.py
+          python -m py_compile ml/demand_engine/daily_trajectory_dataset.py
           python -m py_compile ml/demand_engine/structural_prior_runtime.py
           python -m py_compile ml/demand_engine/run_v17_t7_shadow.py
           python -m py_compile ml/features/structural_prior_feature_store_v1.py
