@@ -4,34 +4,25 @@ Last updated: **2026-10-28**
 
 ## Read first
 
-For any Beyond forecasting / ML / Demand Engine task:
-
 1. `AI_BOOTSTRAP.md`;
 2. `ml/EXECUTION_PLAN_CURRENT.md`;
 3. `ml/NEXT_SESSION_HANDOFF.md`;
 4. `ml/MAE_RESEARCH_ROADMAP_V5.md`;
-5. `ml/TRAJECTORY_FORECASTING_PLAN_V1.md`;
-6. `ml/TRAJECTORY_FEATURE_CONTRACT_V1.md`;
-7. `ml/TRAJECTORY_VALIDATION_FOLD_CONTRACT_V1.md`;
-8. `ml/DAILY_TRAJECTORY_COVERAGE_AUDIT_2026-10-28.md`;
-9. `ml/PROGRESS_TRACKING.md`;
-10. `ml/MODEL_ACCURACY_DEVELOPMENT_INSTRUCTIONS_V3.md`.
+5. `ml/TRAJECTORY_FEATURE_CONTRACT_V1.md`;
+6. `ml/TRAJECTORY_VALIDATION_FOLD_CONTRACT_V1.md`;
+7. `ml/TRAJECTORY_LANE_A_RESULT_V1.md`;
+8. `ml/TRAJECTORY_LANE_B_PRECOMMIT_V1.md`;
+9. `ml/PROGRESS_TRACKING.md`.
 
-Read the exact precommit before touching any frozen experiment. Query live/machine state fresh before acting on scheduled windows or readiness assumptions.
+Query live machine state before acting on prospective windows. Read the exact precommit before touching a frozen experiment.
 
-Roadmap v5 is canonical. Do not restart from v3/v4.
+Roadmap v5 is canonical.
 
 ---
 
 ## Core objective
 
 > **Lower true prospective event-balanced attendance MAE, not model complexity.**
-
-Primary metric:
-
-`Delta MAE = challenger MAE - incumbent MAE`
-
-Desired: `Delta MAE < 0`
 
 Production remains:
 
@@ -41,7 +32,7 @@ Production remains:
 
 ## Current phase
 
-### Protect frozen evidence
+### Protect prospective evidence
 
 Do not mutate:
 
@@ -49,137 +40,155 @@ Do not mutate:
 - P9 v1;
 - P9 Family Fallback v2;
 - Form5 prospective;
-- Long72 frozen package;
+- Long72;
 - P11/P4a evidence rules.
 
-### Develop Lane A vs Lane B
+### Active R&D experiment
 
-Daily trajectory infrastructure is already implemented. Do not create a parallel dataset/ledger/scoring stack.
+Lane A v1 is closed and rejected as a candidate.
 
-Canonical code:
+Frozen Lane A result:
 
-- `ml/demand_engine/live_trajectory_feature_store.py`;
-- `ml/demand_engine/daily_trajectory_dataset.py`;
-- `ml/demand_engine/trajectory_feature_contract_v1.py`;
-- `ml/demand_engine/trajectory_validation_folds_v1.py`.
+- incumbent MAE 2594.5;
+- Lane A MAE 4153.3;
+- Delta +1558.8;
+- 60.1% worse;
+- 5 strict-forward independent test events.
 
-Canonical persistence SQL:
+Do **not** retune Lane A v1.
 
-`supabase/sql/daily_trajectory_prospective_evidence_v1.sql`
+Active experiment:
 
-Next work is to precommit and execute the first Lane A and Lane B development protocols on the shared contracts.
+`trajectory-lane-b-small-gru-residual-v1`
 
 ---
 
-## Feature contract v1
+## Lane B fixed protocol
 
-Shared primary eligibility:
+- one-layer GRU;
+- input dim 5;
+- hidden dim 8;
+- MLP head 8;
+- dropout .20;
+- AdamW lr .001, weight decay .01;
+- event-balanced weighted L1 residual loss;
+- 200 fixed epochs;
+- gradient clipping 1.0;
+- seeds 17 / 29 / 41;
+- median residual across all seeds;
+- no architecture search;
+- no Transformer;
+- no self-supervised pretraining in v1.
 
-- P-60...P-1 cutoff;
-- PIT-valid structural incumbent;
-- >=4 clean genuine snapshots;
-- >=24h genuine observation window;
-- canonical `signal_readiness=ready`;
-- no target future trajectory;
-- no target outcome.
+Any change after outer results requires a new version/precommit.
 
-Lane A:
+---
 
-`structural P50 + engineered trajectory scalar features -> residual`
+## Frozen evidence identities
 
-Lane B:
+Cohort:
 
-`structural P50 + genuine ordered variable-length snapshot sequence -> residual`
+`ml/artifacts/trajectory_development_cohort_v1.json`
 
-Lane B v1 sequence rules:
+- 10 labeled events;
+- 19 persisted checkpoint rows;
+- 5 strict-forward outer test events;
+- fold SHA256:
+  `fc59737ab1c0a306920b4961de35664178b14648f679071522d1d07515cb3091`.
 
-- exact timestamp dedupe keeps highest snapshot ID;
+Lane B runner must reject any export that does not exactly match this cohort.
+
+Do not add newer events/cutoffs after seeing the result.
+
+---
+
+## Validation rules
+
+Primary validation is strict expanding temporal event folds:
+
+- only earlier-kickoff events train later events;
+- same-kickoff events held out together;
+- min 5 previous train events;
+- min 4 previous train clubs;
+- all prefixes from one event stay in one fold;
+- no random daily-row/snapshot CV.
+
+Event is the independent unit.
+
+---
+
+## Data/export path
+
+Frozen export RPC:
+
+`public.export_trajectory_development_rows_v1(bigint[])`
+
+OIDC Edge Function:
+
+`trajectory_research_export_v1`
+
+Workflow:
+
+`.github/workflows/trajectory-lane-b-v1.yml`
+
+OIDC restrictions:
+
+- repository `NiedzielX/beyond`;
+- ref `refs/heads/main`;
+- audience `beyond-trajectory-research`.
+
+Do not add a Supabase service-role key to GitHub Secrets for this workflow.
+
+---
+
+## Sequence rules
+
+Lane B uses genuine ordered variable-length inventory trajectories:
+
+- exact timestamp dedupe;
 - max one genuine observation per integer hour-to-kickoff bucket;
 - no interpolation;
 - no forward-fill;
-- explicit padding mask/sequence length;
-- padded zero never means genuine zero inventory.
+- explicit sequence lengths/masks;
+- padded zero is not genuine zero inventory.
 
-Exclude odds/weather/hype/match-stakes/Form5/P4 context from both v1 lanes so the comparison isolates trajectory representation.
+Public inventory is a demand proxy, not confirmed sales/attendance.
 
----
-
-## Validation fold contract v1
-
-Primary validation:
-
-- strict expanding temporal event folds;
-- event/match is the independent unit;
-- same-kickoff events are held out together;
-- minimum 5 prior train events;
-- minimum 4 prior train clubs;
-- all prefixes from one event stay in the same fold;
-- Lane A and Lane B use the exact same fold registry.
-
-LOEO/LOCO may be secondary diagnostics. Random daily-row/snapshot CV is prohibited.
-
-Preprocessing must be fitted inside train folds only.
+Unknown/hidden inventory is never zero.
 
 ---
 
-## Current data reality
+## Decision rule after Lane B result
 
-Current genuine pre-kickoff trajectory sample:
+### If Lane B beats incumbent and Lane A
 
-- 32 events / 14 clubs with any observation;
-- median first observation ~P-9.3;
-- earliest ~P-30.3;
-- P-31...P-60 historical coverage currently zero.
+Review downside/seed spread, then freeze a **new prospective candidate** before future outcomes. Do not activate production.
 
-Representative coverage:
+### If Lane B beats Lane A but not incumbent
 
-- P-30 ~3%;
-- P-14 ~22%;
-- P-7 ~62%;
-- P-3 ~75%;
-- P-1 ~95%.
+Do not promote. Ordered representation may be interesting but not useful enough.
 
-Shared-gate labeled checkpoint counts:
+### If Lane B fails both
 
-- T-30: 0;
-- T-14: 0;
-- T-7: 4;
-- T-3: 5;
-- T-1: 10.
+Do not run a broad GRU/LSTM/Transformer sweep on the same outer cohort. Diagnose first. Any material change becomes v2.
 
-Do not pretend this is a large dataset. The accepted response is variable-length sequence research + strict evidence discipline, not fabricated history or random CV.
+### If later prospective evidence disagrees with historical research
 
----
-
-## Lane A / Lane B model rule
-
-Lane A candidate set must stay small and precommitted.
-
-Lane B accepted architecture order:
-
-1. small GRU;
-2. small LSTM;
-3. small TCN;
-4. compact Transformer only if simpler sequence models establish value.
-
-Self-supervised trajectory pretraining is allowed, but it does not create additional independent attendance outcomes.
-
-Research/model risk is accepted. Evidence/leakage shortcuts are not.
+Prospective evidence wins.
 
 ---
 
 ## Hard rules
 
-- protect imminent genuine P9/Form5 windows first;
-- never lower a gate just to get coverage;
-- never manufacture PIT history;
-- never infer attendance from inventory/capacity/model output;
-- unknown/hidden inventory is not zero;
-- all prefixes from one event stay together;
-- no target future trajectory;
+- protect imminent P9/Form5 windows first;
+- no future target trajectory;
 - no target attendance during inference;
+- no fabricated history;
+- no event-prefix crossing folds;
+- no random row CV;
+- no support-gate relaxation for coverage;
+- no post-result v1 tuning;
 - persist prospective forecasts before outcomes;
-- keep differently frozen learners separately auditable;
 - no automatic production activation.
 
 The old ChatGPT Beyond readiness automations remain disabled. Do not enable them implicitly.
