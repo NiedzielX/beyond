@@ -6,181 +6,163 @@ Status: **CURRENT HANDOFF — QUERY MACHINE STATE FRESH BEFORE ACTING**
 
 Canonical execution plan: `ml/EXECUTION_PLAN_CURRENT.md`
 
-Canonical strategy: `ml/MAE_RESEARCH_ROADMAP_V5.md`
+---
 
-Trajectory plan: `ml/TRAJECTORY_FORECASTING_PLAN_V1.md`
+# 1. What matters most
 
-Feature contract: `ml/TRAJECTORY_FEATURE_CONTRACT_V1.md`
+Two parallel jobs remain:
 
-Validation contract: `ml/TRAJECTORY_VALIDATION_FOLD_CONTRACT_V1.md`
+1. protect genuine prospective P7/P9/Form5 evidence;
+2. finish the frozen **Lane B v1** strict-forward sequence experiment.
+
+Trajectory infrastructure and Lane A work are no longer pending.
 
 ---
 
-# 1. Current phase
+# 2. Lane A is closed
 
-Beyond is doing two things in parallel:
+Precommit:
 
-1. **protect genuine prospective P7/P9/Form5 evidence**;
-2. **develop the first trajectory-first Lane A vs Lane B comparison**.
+`trajectory-lane-a-ridge-residual-v1`
 
-The trajectory infrastructure phase is no longer only planned. The core backend is already implemented/live.
+Result:
 
----
+- incumbent event-balanced MAE **2594.5**;
+- Lane A MAE **4153.3**;
+- Delta MAE **+1558.8**;
+- **60.1% worse**;
+- event improvement rate 20%;
+- 5 independent strict-forward test events.
 
-# 2. What is already delivered for Daily Trajectory
+Decision:
 
-Implemented in repo:
+`REJECT_AS_CANDIDATE_RETAIN_AS_BENCHMARK`
 
-- canonical daily P-N dataset builder;
-- PIT/future-snapshot/structural-prior leakage tests;
-- executable Trajectory Feature Contract v1;
-- executable strict-forward validation fold contract v1;
-- Demand Engine CI coverage.
+Do not change alpha/features or remove bad events after seeing this result.
 
-Live in Supabase:
+Result docs:
 
-- immutable daily attempt ledger;
-- immutable daily prediction ledger;
-- immutable post-outcome score ledger;
-- controlled service-role RPC writes;
-- MAE-by-horizon scoring backend.
-
-Canonical SQL:
-
-`supabase/sql/daily_trajectory_prospective_evidence_v1.sql`
-
-No synthetic daily prediction was inserted to manufacture progress.
+- `ml/TRAJECTORY_LANE_A_RESULT_V1.md`;
+- `ml/results/trajectory_lane_a_ridge_residual_v1_result.json`.
 
 ---
 
-# 3. Data reality
+# 3. Lane B v1 is active
 
-Coverage audit:
+Precommit:
 
-`ml/DAILY_TRAJECTORY_COVERAGE_AUDIT_2026-10-28.md`
+`trajectory-lane-b-small-gru-residual-v1`
 
-Current genuine pre-kickoff inventory sample:
+Implementation:
 
-- 32 events;
-- 14 clubs;
+`ml/demand_engine/trajectory_lane_b_v1.py`
+
+Runner:
+
+`ml/run_trajectory_lane_b_v1.py`
+
+Workflow:
+
+`.github/workflows/trajectory-lane-b-v1.yml`
+
+Frozen model:
+
+- one-layer GRU;
+- hidden dimension 8;
+- 5 genuine sequence channels;
+- 8-unit MLP head;
+- dropout .20;
+- AdamW 0.001 / wd 0.01;
+- weighted L1 loss;
+- 200 epochs;
+- seeds 17,29,41;
+- median prediction across seeds;
+- no architecture search.
+
+Lane B must beat both the structural incumbent and frozen Lane A to earn candidate review.
+
+---
+
+# 4. Frozen cohort
+
+`ml/artifacts/trajectory_development_cohort_v1.json`
+
+- 10 labeled independent events;
+- 19 frozen persisted checkpoint rows;
+- 5 strict-forward outer test events;
+- frozen fold SHA256:
+  `fc59737ab1c0a306920b4961de35664178b14648f679071522d1d07515cb3091`.
+
+The runner fails closed unless the OIDC export materializes exactly the frozen identities.
+
+Do not expand the cohort after seeing Lane B results.
+
+---
+
+# 5. Research data path
+
+Live service-role RPC:
+
+`public.export_trajectory_development_rows_v1(bigint[])`
+
+Live OIDC Edge Function:
+
+`trajectory_research_export_v1`
+
+Allowed identity:
+
+- repository `NiedzielX/beyond`;
+- ref `refs/heads/main`;
+- OIDC audience `beyond-trajectory-research`.
+
+GitHub Actions does not need a stored Supabase service-role key.
+
+The export currently validates to **10 events / 19 rows**.
+
+---
+
+# 6. Existing trajectory infrastructure
+
+Already implemented/live:
+
+- PIT trajectory feature store;
+- exact daily P-N dataset builder;
+- shared Lane A/B data materializer;
+- feature contract v1;
+- strict-forward fold contract v1;
+- immutable daily attempts/predictions/scores;
+- post-outcome scoring;
+- MAE-by-horizon backend;
+- coverage audit;
+- research event bundle RPC;
+- frozen development export RPC.
+
+Do not build parallel versions of these components.
+
+---
+
+# 7. Data reality
+
+- 32 events / 14 clubs with any genuine pre-kickoff inventory;
 - median first observation ~P-9.3;
-- p75 ~P-14;
 - earliest ~P-30.3;
-- current historical P-31...P-60 coverage = 0.
+- current P-31...P-60 historical coverage = 0.
 
-Representative snapshot coverage:
-
-- P-30: 3.0%;
-- P-14: 21.9%;
-- P-7: 61.5%;
-- P-3: 75.0%;
-- P-1: 95.0%.
-
-Therefore:
-
-- P-60 is a collection horizon, not a required full input vector;
-- sequence models use genuine variable-length prefixes;
-- no forward-fill/fabricated daily history;
-- padding requires an explicit mask/length.
-
-Current checkpoint audit under the shared Lane A/B input gate:
-
-| Horizon | Input-ready events | Labeled ready events |
-|---|---:|---:|
-| T-30 | 0 | 0 |
-| T-14 | 1 | 0 |
-| T-7 | 7 | 4 |
-| T-3 | 9 | 5 |
-| T-1 | 10 | 10 |
-
-This is why the primary development validation is strict expanding temporal folds, not random CV.
+Use genuine variable-length sequences. No forward-fill/interpolation merely to create input.
 
 ---
 
-# 4. Frozen trajectory development contracts
-
-## Feature Contract v1
-
-`trajectory-feature-contract-v1`
-
-Shared eligibility requires:
-
-- PIT-valid structural incumbent;
-- >=4 clean snapshots;
-- >=24h genuine observation window;
-- canonical `signal_readiness=ready`;
-- no future target snapshots/outcomes.
-
-Lane A receives engineered scalar summaries.
-
-Lane B receives the ordered genuine snapshot sequence, compressed to at most one real observation per integer hour-to-kickoff bucket, with no interpolation/forward-fill.
-
-Both lanes exclude unrelated odds/weather/hype/match-stakes/context in v1.
-
-## Validation Fold Contract v1
-
-`trajectory-validation-fold-contract-v1`
-
-Primary method:
-
-- strict expanding temporal event folds;
-- same-kickoff events stay together;
-- minimum 5 prior train events;
-- minimum 4 prior train clubs;
-- every prefix from one event inherits the event fold;
-- Lane A and Lane B use the exact same registry.
-
-LOEO/LOCO may be diagnostics only. Random row CV is prohibited.
-
----
-
-# 5. Next new-model work
-
-The next task is now **model-development precommit**, not more infrastructure invention.
-
-## Lane A
-
-Freeze one small benchmark protocol around:
-
-`structural P50 + engineered trajectory residual -> attendance P50`
-
-Candidate families must remain small and precommitted.
-
-## Lane B
-
-Freeze the first small sequence protocol around:
-
-`genuine variable-length trajectory + structural P50 -> residual`
-
-Start with a small GRU/LSTM/TCN design. Do not jump directly to a large Transformer.
-
-Both lanes must use:
-
-- the same event identities;
-- the same strict-forward folds;
-- the same cutoffs;
-- the same incumbent;
-- the same scoring rules.
-
----
-
-# 6. Current frozen prospective state
+# 8. Current prospective evidence state
 
 ## P9 v1
 
 Historical: `NOT_EVALUABLE_PIT_SUPPORT_INSUFFICIENT`.
 
-First genuine attempt:
-
-- event443 Cracovia–Motor T-48;
-- 2026-10-28 17:00 UTC;
-- result `PIT_SUPPORT_INSUFFICIENT`;
-- 1 attempt / 0 predictions / 0 scored;
-- correct fail-closed.
+First real event443 T-48 attempt: `PIT_SUPPORT_INSUFFICIENT`; 1 attempt / 0 predictions / 0 scored. Correct fail-closed.
 
 ## P9 v2
 
-Separately precommitted/deployed. Same exact five v1 neighbors and support gate; Structural fallback only under frozen rule; never retro-predict event443; never pool v1/v2 evidence.
+Separate frozen fallback evidence. Never pool with v1.
 
 ## P7
 
@@ -192,7 +174,7 @@ First legal T-24 capture: **event443 — 2026-10-29 17:00 UTC**.
 
 ## Long72
 
-5 scored; 6082.40 -> 6039.39; improvement 43.01 / 0.71%; frozen/low priority.
+5 scored; 0.71% point gain; frozen / low priority.
 
 ## P11
 
@@ -200,7 +182,7 @@ First legal T-24 capture: **event443 — 2026-10-29 17:00 UTC**.
 
 ---
 
-# 7. Near-term protected windows
+# 9. Near-term protected windows
 
 Unless fresh machine state says otherwise:
 
@@ -215,17 +197,13 @@ Event448 remains an inventory watch. Unknown inventory is not zero.
 
 ---
 
-# 8. Hard rules
+# 10. Next agent action
 
-- protect imminent prospective windows before lower-priority R&D;
-- no target future trajectory at an earlier cutoff;
-- no target attendance during prediction;
-- no manufactured history;
-- no random daily-row split;
-- all prefixes from one event stay together;
-- no gate relaxation for coverage;
-- no retuning on exposed prospective outcomes;
-- no inventory-derived attendance labels;
-- no hidden inventory = zero assumption;
-- no production activation without explicit reviewed promotion;
-- `live_adjustment=0`.
+1. Query current prospective machine state first if a window is imminent.
+2. Check the latest `Trajectory Lane B v1` workflow run.
+3. If the run is technically red, fix only the execution defect without changing the frozen model protocol.
+4. If it succeeds, persist the Lane B machine-readable result and a concise human decision document.
+5. Do not tune v1 after seeing the result.
+6. If Lane B beats incumbent + Lane A, freeze a separate prospective candidate before future outcomes.
+7. If Lane B fails, diagnose and create a separately versioned v2 only if a new hypothesis is justified.
+8. Keep `live_adjustment=0`.
