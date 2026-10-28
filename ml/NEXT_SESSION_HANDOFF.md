@@ -1,6 +1,6 @@
 # Beyond Ticketing — Next Session Handoff
 
-Last updated: **2026-10-27**
+Last updated: **2026-10-28 17:04 UTC**
 
 Status: **READ THIS FIRST AFTER `AI_BOOTSTRAP.md`**
 
@@ -14,36 +14,36 @@ Primary metric:
 
 Desired direction: `ΔMAE < 0`.
 
-Readiness metrics are not model success.
+Readiness metrics are prerequisites for evidence, not model success.
 
-Production remains:
+Production remains unchanged:
 
-`live_adjustment = 0`
+- `live_adjustment = 0`
+- no automatic production activation
+- no historical/PIT backfill that was not genuinely known at the time
+- no retuning of frozen prospective lanes after outcomes
 
-Canonical plan:
-
-`ml/EXECUTION_PLAN_CURRENT.md`
+Canonical plan: `ml/EXECUTION_PLAN_CURRENT.md`.
 
 ## 2. Immediate execution order
 
-1. keep P9 automated preflight + scheduler/gateway healthy before every immutable T-48/T-24 window;
-2. watch event 448 for its first genuine ticketing snapshot and event 452 for later sporting-round coverage;
-3. collect immutable P9 predictions only inside precommitted windows;
-4. score P7/P9 only after genuine attendance outcomes arrive;
-5. continue Long72/P4a/P11 frozen accumulation without retuning;
-6. continue Hype/Attention forward-only collection but do not tune additional windows on the same outcomes;
-7. derive business minimum meaningful ΔMAE;
-8. choose any new challenger by expected incremental prospective MAE reduction.
+1. protect every P9 T-48/T-24 immutable window;
+2. collect/score P9 and P7 prospective evidence without weakening frozen rules;
+3. protect Form5 T-24 forward evidence starting 2026-10-29 17:00 UTC;
+4. fix forward data-acquisition blockers for event 5091 (missing incumbent) and event 448 (missing inventory snapshots) before their 2026-11-04 T-48 windows;
+5. continue P11 append-only odds capture and Long72/P4a accumulation without retuning;
+6. do not reopen rejected Ticketing or Hype hypotheses on the same outcomes;
+7. prioritize new work by expected incremental prospective MAE reduction, not novelty or readiness counts.
 
 ## 3. P9 historical v1 — CLOSED / NOT EVALUABLE
 
-Canonical gate:
+Canonical historical gate:
 
 - T-168: **9/9 events / 9 clubs**;
 - `design_precommitted=true`;
 - `full_window_gate_open=true`.
 
-Frozen result:
+Frozen historical result:
 
 `NOT_EVALUABLE_PIT_SUPPORT_INSUFFICIENT`
 
@@ -54,23 +54,19 @@ Support:
 - attendance labels remained unopened;
 - no historical learner MAE result was produced.
 
-Root cause is historical incumbent-ledger coverage, not booking-curve coverage. Never repair it retrospectively.
+Root cause was historical incumbent-ledger coverage, not booking-curve coverage. Never repair it retrospectively.
 
-Read:
+Read: `ml/P9_SUPPORT_POSTMORTEM_2026-10-26.md`.
 
-`ml/P9_SUPPORT_POSTMORTEM_2026-10-26.md`
+## 4. P9 prospective v1 — FIRST REAL WINDOW CAPTURED
 
-## 4. P9 prospective v1 — ACTIVE / HIGHEST TIME-CRITICAL LANE
-
-Precommit:
-
-`ml/P9_BOOKING_CURVE_PROSPECTIVE_PRECOMMIT_V1.md`
+Precommit: `ml/P9_BOOKING_CURVE_PROSPECTIVE_PRECOMMIT_V1.md`.
 
 Frozen learner:
 
-`PIT booking-curve similarity -> k=5 prior curves -> same-incumbent-family PIT residuals -> median residual -> incumbent correction`
+`PIT booking-curve similarity -> fixed k=5 prior curves -> same-incumbent-family PIT residuals -> median residual -> incumbent correction`
 
-Rules:
+Frozen rules:
 
 - T-48 / T-24 only;
 - minimum 3 residual-bearing references;
@@ -80,150 +76,105 @@ Rules:
 - persistence window = exact cutoff through cutoff + 90m;
 - primary metric = prospective event-balanced MAE.
 
-Automation:
+Workflow:
 
 `.github/workflows/p9-booking-curve-prospective-v1.yml`
 
-Schedule:
+Current schedule:
 
-`7,37 * * * *`
+`11,26,41,56 * * * *`
 
 Gateway:
 
 `supabase/functions/p9_booking_curve_prospective_v1`
 
-Current evidence:
+### First genuine prospective result — event 443 Cracovia–Motor, T-48
 
-- prediction events: **0**;
-- prediction rows: **0**;
+Exact cutoff: **2026-10-28 17:00:00 UTC**.
+
+The immutable attempt was persisted at **17:00:42.692 UTC** and the full workflow completed green.
+
+Canonical attempt status:
+
+`PIT_SUPPORT_INSUFFICIENT`
+
+Details:
+
+- target incumbent family: `d2_long72_forward_predictions_v1`;
+- selected booking-curve neighbors: **[3, 23, 4, 21, 20]**;
+- valid same-family residual references: **2/3 required**;
+- usable same-family refs: **23, 21**;
+- missing same-family PIT incumbents: **3, 4, 20**;
+- prediction rows produced: **0**;
 - scored events: **0**;
 - `production_activation_allowed=false`;
-- `live_adjustment=0`.
+- `live_adjustment=0`;
+- `production_change=false`.
 
-Zero is expected before the first frozen window.
+This is a legitimate frozen fail-closed. It is not a model loss and not a model win. Do not weaken the minimum-three-residual gate.
 
-First windows:
+### Important source-family behavior
 
-- Cracovia–Motor T-48: **2026-10-28 17:00 UTC**;
-- Cracovia–Motor T-24: **2026-10-29 17:00 UTC**;
-- Wisła Płock–Piast T-48: **2026-10-29 11:15 UTC**;
-- Lech–Wisła Kraków T-48: **2026-10-29 16:30 UTC**;
-- GKS Katowice–Widzew T-48: **2026-10-29 19:15 UTC**.
+The frozen builder prefers a fresh `d2_long72_forward_predictions_v1` incumbent when one exists within its 6h staleness limit. Otherwise it falls back to `structural_prior_forecasts_v1`.
 
-If a window produces no prediction because frozen support is insufficient, record it. Do not relax the rule.
+Once the target incumbent family is selected, reference residuals must use that same family.
 
-## 5. Automated P9 preflight — LIVE
+For event443, a fresh Long72 target incumbent existed, so the target used Long72 even though a Structural Prior also existed. Long72 historical same-family coverage among the five selected curve neighbors was only 2/5, causing the fail-closed.
 
-Function:
+Do not change this behavior inside P9 v1. If a structural-anchor-only variant is ever tested, it must be a separately precommitted prospective lane, not an after-the-fact mutation of v1.
 
-`public.p9_prospective_preflight_v1(10)`
+## 5. P9 current live state and upcoming windows
 
-Repo:
+Current canonical summary:
 
-`supabase/sql/p9_prospective_preflight_v1.sql`
+- attempt events: **1**;
+- attempt rows: **1**;
+- prediction-ready attempts: **0**;
+- support-insufficient attempts: **1**;
+- prediction rows: **0**;
+- scored events: **0**;
+- prospective MAE: not available yet.
 
-It is service-role-only, target-free and production-safe. For every future target it checks cutoff-eligible booking snapshots and PIT incumbents at both T-48/T-24 and returns:
-
-- `READY`;
-- `WATCH_*`;
-- `CRITICAL_*` within 48h of cutoff;
-- `WINDOW_OPEN`;
-- `CAPTURED`;
-- `MISSED_WINDOW`.
-
-The P9 gateway exposes it only through main-branch GitHub OIDC. The P9 workflow runs it before prediction capture and writes the result to the GitHub job summary. WATCH/CRITICAL emits warnings but does not abort the whole job.
-
-Fresh live 10-day preflight on 2026-10-26:
+Current 10-day preflight:
 
 - critical: **0**;
-- watch: **0**;
-- all six near-term targets are READY at T-48 and T-24:
-  - 443 Cracovia–Motor;
-  - 446 Wisła Płock–Piast;
-  - 6 Lech–Wisła Kraków;
-  - 444 GKS–Widzew;
-  - 445 Zagłębie–Korona;
-  - 447 Raków–Pogoń.
+- watch: **2**.
 
-## 6. First-window Structural Prior safeguard — FIXED
+Near-term ready windows:
 
-Event 443 Cracovia–Motor originally had snapshots but no target incumbent because sporting shadow carried a round-date placeholder one day after the verified kickoff.
+- event443 Cracovia–Motor T-24: **2026-10-29 17:00 UTC**;
+- event446 Wisła Płock–Piast T-48: **2026-10-29 11:15 UTC**;
+- event6 Lech–Wisła Kraków T-48: **2026-10-29 16:30 UTC**;
+- event444 GKS Katowice–Widzew T-48: **2026-10-29 19:15 UTC**;
+- event445 Zagłębie–Korona T-48: **2026-10-31 17:00 UTC**;
+- event447 Raków–Pogoń T-48: **2026-10-31 19:30 UTC**.
 
-Resolver patch:
+Long72 forward workflow runs hourly at minute `17`. At the 2026-10-28 17:04 UTC check, upcoming 446/6/444/445/447 did not yet have Long72 forward rows, but they may acquire fresh rows before their P9 cutoffs. Therefore tomorrow's P9 source family cannot be assumed in advance.
 
-`supabase/sql/structural_prior_fixture_date_tolerance_2026_10_26.sql`
+Do not assume the event443 support failure will repeat, but treat same-family Long72 support as an elevated risk.
 
-Rule:
+## 6. P9 attempt observability / dashboard — LIVE
 
-1. exact Warsaw date first;
-2. fallback only for one unique exact aliased home/away pair within ±3 days;
-3. zero/multiple candidates fail closed.
+P9 prospective attempts are immutable and stored even when no prediction is emitted.
 
-Structural Prior Materializer run `40358782359` succeeded and persisted:
+Browser-facing aggregate status distinguishes:
 
-- event 443 prior ID **40**;
-- horizon T-7;
-- P50 **10632.32**;
-- capacity **15016**;
-- `point_in_time_validated=true`;
-- created **2026-10-26 16:25 UTC**;
-- before P9 T-48 cutoff **2026-10-28 17:00 UTC**.
+- no window captured yet;
+- `PREDICTION_READY`;
+- `PIT_SUPPORT_INSUFFICIENT`;
+- `NO_TARGET_INCUMBENT`.
 
-The P9 incumbent exporter independently enforces both source `as_of_at` and `created_at` before the analogous cutoff.
+Current dashboard state correctly shows:
 
-## 7. Capacity gaps 447/603 — RESOLVED
+- 1 attempt;
+- 1 support-insufficient;
+- 0 predictions;
+- 0 scored;
+- production OFF.
 
-Verified current capacities added to:
+This prevents `0 predictions` from being misread as `nothing happened`.
 
-`supabase/sql/structural_prior_current_capacities_2026_v1.sql`
-
-- Raków Częstochowa: **5500**;
-- Korona Kielce: **15550**.
-
-Materializer run `40359572478` succeeded and orchestrator processed:
-
-- event 447 Raków–Pogoń — prior ID **45**, P50 **5049.53**, capacity **5500**, PIT-validated;
-- event 603 Korona–Radomiak — prior ID **46**, P50 **12016.93**, capacity **15550**, PIT-validated.
-
-The previous `missing_capacity` state is obsolete.
-
-## 8. Remaining data watches
-
-### Event 452 Pogoń–Śląsk
-
-- ticketing is tracked and has snapshots;
-- Structural Prior remains `missing_fixture_round`;
-- sporting shadow was freshly fetched on 2026-10-26 but currently exposes future rounds 13–14 only;
-- leave fail-closed until the later round appears upstream.
-
-Do not insert a round manually.
-
-### Event 448 Wisła Kraków–Cracovia
-
-- ticket event is tracked;
-- current status `TRACKED_NO_SNAPSHOT`;
-- zero canonical/raw inventory snapshots observed so far;
-- do not interpret hidden/not-yet-visible inventory as zero.
-
-Let discovery/watchdog continue and allow P9 preflight to surface it when the event enters the active horizon.
-
-## 9. Panel / MAE visibility — LIVE AND SECURITY-HARDENED
-
-Browser-facing P9 data uses:
-
-- `public.dashboard_p9_mae_lifecycle_cache_v1`;
-- `public.dashboard_p9_mae_lifecycle_v1`;
-- `public.dashboard_p9_mae_status_v1`.
-
-The panel separates historical NOT_EVALUABLE state, prospective prediction coverage, scored events, incumbent/challenger MAE, ΔMAE, event-level downside and production guards.
-
-`P9MaeStatusPanel` is visible in Forecast Accuracy and Model Lab. Dashboard CI is green.
-
-Repo SQL:
-
-`supabase/sql/dashboard_p9_mae_lifecycle_v1.sql`
-
-## 10. P7 prospective
+## 7. P7 prospective — ACTIVE
 
 Historical frozen result:
 
@@ -233,27 +184,139 @@ Historical frozen result:
 - 95% event-block CI `[-2566.13,+174.47]`;
 - evidence `POINT_GAIN_UNCERTAINTY_LIMITED`.
 
-Prospective lane:
+Current prospective state at 2026-10-28 17:04 UTC:
 
-- model `gbr-l1-depth2-n50-lr003`;
-- fingerprint `70fa929181531276c80a75c0b78a60fb821cf50e714e2bc001de8251cea1793f`;
-- **16 immutable rows / 3 independent events / 0 scored**;
-- collect/score only.
+- immutable prediction rows: **53**;
+- independent prediction events: **6**;
+- scored rows/events: **0 / 0**;
+- latest prediction persisted 2026-10-28 13:29 UTC.
 
-## 11. Long72
+Collect/score only. No retuning.
 
-Last verified n=4:
+## 8. Long72 — LOW PRIORITY, FROZEN
 
-- events `[10,16,21,23]`;
-- anchor MAE **6942.59**;
-- package MAE **6824.16**;
-- point improvement **118.43 / 1.71%**;
-- event improvement rate **75%**;
-- worst event degradation **3633.23**.
+Current prospective scored events: **5**.
 
-No retuning/promotion.
+Overall 24–72h event-balanced result:
 
-## 12. P4a
+- anchor MAE: **6082.40**;
+- package MAE: **6039.39**;
+- improvement: **43.01 / 0.71%**;
+- event improvement rate: **60%**;
+- worst event degradation: **3633.23**.
+
+By band:
+
+- 24–48h: package worsens MAE by **105.08**;
+- 48–72h: package improves MAE by **191.10**.
+
+Do not retune or promote based on this small/weak result.
+
+Prospective forward workflow schedule:
+
+`.github/workflows/d2-long72-forward-prospective-v1.yml` -> `17 * * * *`.
+
+## 9. Form5 prospective challenger — PRECOMMITTED AND LIVE
+
+Precommit:
+
+`ml/FORM5_PROSPECTIVE_PRECOMMIT_V1.md`
+
+Evidence contract:
+
+`supabase/sql/form5_prospective_evidence_v1.sql`
+
+Frozen design:
+
+- source must be exactly `TheSportsDB v1 shadow`;
+- immutable prospective T-24 snapshots only;
+- comparator = true immutable `baseline`, not rejected Ticketing;
+- form5 = points from five most recent completed Ekstraklasa matches known before checkpoint;
+- LOCO primary / LOEO secondary;
+- fixed ridge alpha **30**;
+- correction cap **±25%**;
+- global gate **8 completed events / 5 clubs / >=2 distinct values**;
+- per-fold minimum **5 training events / 4 clubs / non-zero x_sd**;
+- no MAE is exposed until the global gate and full LOCO fold support are satisfied;
+- production always off.
+
+Current live state:
+
+- completed eligible events: **0/8**;
+- completed eligible clubs: **0/5**;
+- completed distinct values: **0/2**;
+- future stream: **13 events / 12 clubs / 9 distinct values**;
+- first qualifying T-24: event443 on **2026-10-29 17:00 UTC**;
+- status `PROSPECTIVE_COLLECTING`;
+- MAE fields null;
+- `live_adjustment=0`.
+
+Do not use older/manual `sport.form5` snapshot values for this v1. Only exact TheSportsDB lineage qualifies.
+
+## 10. P11 odds — ACTIVE FORWARD COLLECTION
+
+Current readiness:
+
+- status `GENUINE_PIT_DATA_ACCUMULATING`;
+- events / clubs with PIT 1X2: **6 / 6**;
+- events with >=3 bookmakers: **6**;
+- T-24 / T-72 / T-168 coverage: **5 / 5 / 0**;
+- model precommitted: **false**;
+- production: **false**.
+
+Continue append-only capture. Never backfill closing odds.
+
+A prior red Actions run was a Step Summary `jq` quoting failure after successful odds capture. Capture itself inserted genuine quotes; current main already contains the safe summary implementation. Do not patch that old failure again.
+
+Cracovia–Motor had no unambiguous provider match in one capture cycle; do not fuzzy-match or backfill it.
+
+## 11. Ticketing challenger — REJECTED
+
+The old positive dashboard signal was stale because its refresh function circularly copied the stale summary table.
+
+After fixing the refresh and using the current leakage-safe CV sample:
+
+- sample: **19 events / 11 clubs**;
+- LOCO baseline MAE: ~**4704.1**;
+- LOCO challenger MAE: ~**5427.7**;
+- challenger worsens MAE by ~**723.6**;
+- LOEO also worsens MAE by ~**610.4**.
+
+Decision: **REJECTED_NO_UPLIFT**.
+
+Evidence chain now has zero positive Ticketing signal and no promotion queue entry. Do not reuse the old 8-event positive snapshot.
+
+## 12. Hype / Attention — CURRENT LANE CLOSED UNTIL NEW FORWARD EVIDENCE
+
+Canonical note:
+
+`ml/HYPE_ATTENTION_RESEARCH_2026-10-27.md`
+
+Current 24h `hype.media_attention`:
+
+- 10 completed eligible events / 10 clubs;
+- distinct values: **1**;
+- all frozen T-24 values are 0;
+- therefore not testable.
+
+`hype.mention_acceleration`:
+
+- 4 completed eligible events / 4 clubs;
+- 3 distinct values;
+- gate remains 8 / 5 / >=2.
+
+One pre-specified 48h alternative was tested with strict PIT rules and true baseline:
+
+- baseline MAE **4156.0**;
+- challenger MAE **4225.4**;
+- ΔMAE = **+69.4 worse**;
+- only 2/10 events non-zero.
+
+Decision: **REJECTED_NO_UPLIFT**.
+
+Do not search more attention windows on the same outcomes.
+
+## 13. P4a
 
 Last verified:
 
@@ -264,82 +327,61 @@ Last verified:
 
 Only genuine labels move the gate.
 
-## 13. P11
+## 14. Current P9 preflight data blockers
 
-Fresh odds readiness:
+### Event 5091 Motor Lublin–Wisła Płock
 
-- `GENUINE_PIT_DATA_ACCUMULATING`;
-- events / clubs **4 / 4**;
-- >=3 bookmaker events **4**;
-- T-24 / T-72 / T-168 **3 / 3 / 0**;
-- model precommitted false;
-- production false.
+Current status:
 
-Continue append-only capture; never backfill closing odds.
+- `WATCH_NO_INCUMBENT` at both T-48 and T-24;
+- T-48 cutoff **2026-11-04 17:00 UTC**;
+- ticketing is healthy: ~49 snapshots and continuing;
+- live orchestrator sees the event but returns `missing_prior`;
+- `get_structural_prior_v1(5091, now())` expects a T-14 prior with target cutoff **2026-10-23 17:00 UTC** and model spec `structural-prior-runtime-v1-t14-hist-base`;
+- no qualifying prior is persisted yet.
 
-## 14. Hype / Attention — CURRENT 24H UNTESTABLE; 48H HYPOTHESIS REJECTED
+Investigate through the existing Structural Prior materializer. Do not invent a prior, fixture round or historical input manually.
 
-Canonical evidence note:
+### Event 448 Wisła Kraków–Cracovia
 
-`ml/HYPE_ATTENTION_RESEARCH_2026-10-27.md`
+Current status:
 
-Current prospective T-24 `hype.media_attention` sample:
+- `WATCH_NO_SNAPSHOT` at both T-48 and T-24;
+- T-48 cutoff **2026-11-04 19:30 UTC**;
+- Structural Prior exists;
+- canonical ticket source points to RoboTicket event **11718**;
+- RoboTicket discovery candidate exists, direct public page is reachable and candidate is already linked to ticket_event 448;
+- canonical snapshots: **0**;
+- private RoboTicket candidate snapshots for external event 11718: **0**.
 
-- **10 completed eligible events / 10 clubs**;
-- distinct values: **1**;
-- all frozen T-24 values are **0**;
-- therefore cross-validation correctly produces no rows because training-fold `x_sd=0`.
+Identity/discovery is therefore not the blocker. Investigate the lower-level inventory collector horizon/scheduling. Do not interpret missing inventory as zero and do not fabricate snapshots.
 
-This is not a snapshot scheduler bug. T-24 snapshots were captured at the exact checkpoint. Positive GDELT samples seen for some events were outside the current 24h window at T-24, so the frozen zeros are consistent with the feature definition.
+## 15. Structural Prior / orchestrator state
 
-`hype.mention_acceleration` currently has:
+Latest checked orchestrator run had:
 
-- **4 completed eligible events / 4 clubs**;
-- **3 distinct values**;
-- gate remains **8 events / 5 clubs / >=2 distinct values**.
+- active events: 20;
+- processed: 18;
+- missing priors: 2;
+- errors: 0.
 
-One and only one alternative attention-window hypothesis was tested to avoid window-shopping:
+Known current issues include event5091 missing prior and event448 missing snapshot.
 
-- PIT-safe 48h union mentions immediately preceding T-24;
-- comparator = immutable true `baseline`, not rejected Ticketing;
-- fixed ridge alpha 30 and existing fold rules;
-- 10 events / 10 clubs, but only 2 non-zero held-out events;
-- LOEO = LOCO because each event currently comes from a different home club;
-- baseline MAE **4156.0**;
-- 48h challenger MAE **4225.4**;
-- ΔMAE vs baseline **+69.4 worse**.
+Previously fixed capacity/fixture resolver work for event443/447/603 remains valid.
 
-Decision: **REJECTED_NO_UPLIFT**. Do not search more windows on the same outcomes.
-
-Dashboard evidence was corrected live so Hype now shows:
-
-- `promotion_evidence_count=0`;
-- `promotion_progress_pct=0.00`;
-- explicit variance-gate reason;
-- browser roles `anon` and `authenticated` have `SELECT` only on `dashboard_model_evidence_scorecard_v1`;
-- view remains `security_invoker=true`.
-
-Repo SQL:
-
-`supabase/sql/dashboard_hype_readiness_truth_v1.sql`
-
-Production impact remains none; `live_adjustment=0`.
-
-## 15. Governance / known debt
+## 16. Governance / security debt
 
 Business minimum meaningful ΔMAE is still intentionally unset until independently derived from operational decisions.
 
-P12/new feature families remain behind active prospective evidence protection.
-
-Unrelated pre-existing Supabase security debt still includes:
+Known unrelated Supabase debt remains, including:
 
 - `public.dashboard_ticketing_fixture_coverage_v1` SECURITY DEFINER view;
-- `public.export_historical_runtime_v1()` callable as SECURITY DEFINER by anon/authenticated;
-- `public.get_structural_prior_v1(...)` callable as SECURITY DEFINER by anon/authenticated;
-- intentional RLS-protected research tables with no browser policies.
+- `public.export_historical_runtime_v1()` callable by anon/authenticated as SECURITY DEFINER;
+- `public.get_structural_prior_v1(...)` callable by anon/authenticated as SECURITY DEFINER;
+- RLS-protected research tables with no browser policies where intentional.
 
-The Hype dashboard change introduced no new security-advisor finding. The P9 preflight itself is service-role-only and does not add browser exposure.
+Do not conflate this debt with current P9/Form5 evidence changes.
 
-## 16. Cold-start command
+## 17. Cold-start command
 
-> Read `AI_BOOTSTRAP.md`, this handoff, `ml/EXECUTION_PLAN_CURRENT.md`, `ml/CURRENT_MODEL.md`, `ml/P9_SUPPORT_POSTMORTEM_2026-10-26.md`, `ml/HYPE_ATTENTION_RESEARCH_2026-10-27.md`, `supabase/sql/p9_prospective_preflight_v1.sql`, `supabase/sql/structural_prior_fixture_date_tolerance_2026_10_26.sql`, `supabase/sql/dashboard_p9_mae_lifecycle_v1.sql`, `supabase/sql/dashboard_hype_readiness_truth_v1.sql` and both P9 precommits. Query live status fresh. Historical P9 is 9/9 but NOT_EVALUABLE; never repair it retrospectively. P9 prospective scheduler/gateway/preflight are live. First T-48 is 2026-10-28 17:00 UTC. Hype 24h is not testable because the feature is constant; the one pre-specified 48h variant was rejected at +69.4 MAE versus baseline. Do not search more Hype windows on the same outcomes. Event 443 has prior 40 before cutoff; capacity gaps for 447/603 are resolved with priors 45/46. Watch event 448 for a genuine snapshot and event 452 for upstream fixture-round data. P7 has 16 rows / 3 events / 0 scores. Long72 has 4 scores. P4a is 4/9. P11 is collecting. Keep production unchanged and optimize toward prospective event-balanced MAE.
+> Read `AI_BOOTSTRAP.md`, this handoff, `ml/EXECUTION_PLAN_CURRENT.md`, `ml/CURRENT_MODEL.md`, `ml/P9_SUPPORT_POSTMORTEM_2026-10-26.md`, `ml/P9_BOOKING_CURVE_PROSPECTIVE_PRECOMMIT_V1.md`, `ml/FORM5_PROSPECTIVE_PRECOMMIT_V1.md`, `ml/HYPE_ATTENTION_RESEARCH_2026-10-27.md`, and the live Supabase summaries. Historical P9 is 9/9 but NOT_EVALUABLE and must never be repaired retrospectively. The first genuine P9 prospective T-48 attempt for event443 was captured at 2026-10-28 17:00:42 UTC and failed closed with `PIT_SUPPORT_INSUFFICIENT`: Long72 was the target incumbent family, only 2/5 selected neighbors had same-family PIT residuals, and no prediction was emitted. Keep v1 frozen. Tomorrow protect event446/6/444 T-48 and event443 T-24. P7 currently has 53 immutable rows / 6 events / 0 scored. Long72 has 5 scored events with only +0.71% MAE improvement. P11 has 6/6 events/clubs and 6 events with >=3 bookmakers. Form5 is precommitted and live with 13 future events but 0 completed eligible events; first T-24 is 2026-10-29 17:00 UTC. Ticketing challenger and the tested Hype 48h variant are rejected. Watch event5091 for a genuine prior and event448 for genuine inventory snapshots. Production remains unchanged; optimize only toward true prospective event-balanced MAE.
