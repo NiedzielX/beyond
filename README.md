@@ -11,12 +11,11 @@ Read in this order:
 3. [`ml/NEXT_SESSION_HANDOFF.md`](ml/NEXT_SESSION_HANDOFF.md)
 4. [`ml/MAE_RESEARCH_ROADMAP_V5.md`](ml/MAE_RESEARCH_ROADMAP_V5.md)
 5. [`ml/TRAJECTORY_FORECASTING_PLAN_V1.md`](ml/TRAJECTORY_FORECASTING_PLAN_V1.md)
-6. [`ml/TRAJECTORY_FEATURE_CONTRACT_V1.md`](ml/TRAJECTORY_FEATURE_CONTRACT_V1.md)
-7. [`ml/TRAJECTORY_VALIDATION_FOLD_CONTRACT_V1.md`](ml/TRAJECTORY_VALIDATION_FOLD_CONTRACT_V1.md)
-8. [`ml/TRAJECTORY_LANE_A_RESULT_V1.md`](ml/TRAJECTORY_LANE_A_RESULT_V1.md)
-9. [`ml/TRAJECTORY_LANE_B_RESULT_V1.md`](ml/TRAJECTORY_LANE_B_RESULT_V1.md)
-10. [`ml/TRAJECTORY_LANE_B_V2_PRECOMMIT.md`](ml/TRAJECTORY_LANE_B_V2_PRECOMMIT.md)
-11. [`ml/PROGRESS_TRACKING.md`](ml/PROGRESS_TRACKING.md)
+6. [`ml/TRAJECTORY_LANE_A_RESULT_V1.md`](ml/TRAJECTORY_LANE_A_RESULT_V1.md)
+7. [`ml/TRAJECTORY_LANE_B_RESULT_V1.md`](ml/TRAJECTORY_LANE_B_RESULT_V1.md)
+8. [`ml/TRAJECTORY_LANE_B_V2_RESULT.md`](ml/TRAJECTORY_LANE_B_V2_RESULT.md)
+9. [`ml/TRAJECTORY_SELF_SUPERVISED_PRETRAIN_V1.md`](ml/TRAJECTORY_SELF_SUPERVISED_PRETRAIN_V1.md)
+10. [`ml/PROGRESS_TRACKING.md`](ml/PROGRESS_TRACKING.md)
 
 Roadmap v5 is canonical. Read the exact precommit before touching a frozen experiment.
 
@@ -26,8 +25,6 @@ Roadmap v5 is canonical. Read the exact precommit before touching a frozen exper
 
 > **Minimize true prospective event-balanced attendance-forecast MAE using PIT-safe, reproducible evidence.**
 
-`Delta MAE = challenger MAE - incumbent MAE`
-
 Production remains:
 
 `live_adjustment = 0`
@@ -36,133 +33,98 @@ Production remains:
 
 ## Current state in one minute
 
-### Prospective evidence
+The structural model remains the incumbent.
 
-Protect P7 / P9 / Form5 and current evidence-collection contracts. Do not retune frozen learners after outcomes.
-
-### Trajectory research
-
-The infrastructure is complete and two first model experiments are closed.
+The first supervised trajectory experiments are closed:
 
 | Model | Event-balanced MAE | Delta vs incumbent | Decision |
 |---|---:|---:|---|
 | Structural incumbent | **2594.54** | — | incumbent |
 | Lane A v1 — Ridge | 4153.34 | **+1558.80** | rejected |
-| Lane B v1 — small GRU / raw seat residual | 2595.40 | **+0.87** | do not advance |
+| Lane B v1 — GRU / raw seat residual | 2595.40 | **+0.87** | do not advance |
+| Lane B v2 — GRU / residual ratio | 4792.42 | **+2197.88** | mechanism not supported |
 
-Lane A made harmful corrections.
+What we learned:
 
-Lane B v1 was very different: it was stable and effectively learned **almost zero correction**. Its predicted residuals were only about `-0.06...+4.33` seats, so its result almost exactly reproduced the structural incumbent.
+- Lane A made harmful corrections;
+- Lane B v1 was stable but learned almost `correction = 0`;
+- Lane B v2 fixed the output-scale problem but over-corrected badly;
+- the 10-event supervised development cohort is now fully exposed.
 
-That means the active question is now narrower:
+Therefore:
 
-> **Did Lane B v1 fail because the raw seat residual target was badly scaled for the frozen small-GRU/L1 setup?**
+> **Stop supervised trajectory tuning on those same five outer test events.**
+
+No post-hoc shrinkage, caps, learning-rate sweeps, loss swaps, LSTM/TCN/Transformer tournament, or manual horizon multipliers on the same exposed cohort.
 
 ---
 
-## Active experiment — Lane B v2
+## Active experiment — target-free trajectory pretraining v1
 
 Precommit:
 
-[`ml/TRAJECTORY_LANE_B_V2_PRECOMMIT.md`](ml/TRAJECTORY_LANE_B_V2_PRECOMMIT.md)
+[`ml/TRAJECTORY_SELF_SUPERVISED_PRETRAIN_V1.md`](ml/TRAJECTORY_SELF_SUPERVISED_PRETRAIN_V1.md)
 
-V2 changes only the target/output scale:
+Goal:
 
-`residual_ratio = (actual - structural_p50) / structural_p50`
+> **Learn trajectory dynamics without attendance labels, then freeze the encoder before future attendance evaluation.**
 
-Then:
+Frozen data cutoff:
 
-`predicted_seat_residual = predicted_ratio * structural_p50`
+`2026-10-28T22:09:43.958409Z`
 
-Unchanged from v1:
+Usable target-free sample:
 
-- same 10 events / 19 frozen checkpoint rows;
-- same strict-forward folds;
-- same sequence representation;
-- same GRU architecture;
-- same optimizer / learning rate / weight decay;
-- same L1 loss;
-- same 200 epochs;
-- same seeds 17 / 29 / 41;
-- same event-balanced weighting.
+- 26 events / 12 clubs;
+- 3565 usable ~24h pairs;
+- 21 train events / 3397 train pairs;
+- 5 later validation events / 168 validation pairs.
 
-Important:
+Task:
 
-> **The v2 cohort is already exposed. V2 is a mechanism diagnostic, not unseen validation.**
+`genuine trajectory prefix -> predict normalized inventory change ~24h later`
 
-A good v2 result can justify freezing a future prospective candidate. It cannot by itself prove promotion readiness.
+Baseline:
 
----
+`predict no change`
 
-## Frozen development evidence
+Model:
 
-Cohort:
+- GRU input 4 / hidden 8;
+- small 8-unit head;
+- AdamW .001 / wd .01;
+- weighted L1;
+- batch 128;
+- 100 epochs;
+- seed 17;
+- no early stopping;
+- no architecture or hyperparameter search.
 
-`ml/artifacts/trajectory_development_cohort_v1.json`
+No attendance labels. No structural P50. No club/event identity as a model feature.
 
-- 10 labeled independent events;
-- 19 persisted checkpoint rows;
-- 5 strict-forward outer test events;
-- fold SHA256:
-  `fc59737ab1c0a306920b4961de35664178b14648f679071522d1d07515cb3091`.
-
-Rules:
-
-- only earlier-kickoff events train later events;
-- same-kickoff events stay together;
-- every prefix from an event stays in the same fold;
-- random daily-row CV is prohibited.
+A win means only that the encoder learned useful **trajectory dynamics**. It does not mean attendance MAE improved.
 
 ---
 
-## Trajectory data reality
+## Evidence-safe next step
 
-Current genuine history remains short:
+If self-supervised v1 beats the zero-change baseline on multiple validation events:
 
-- 32 events / 14 clubs with any pre-kickoff observation;
-- median first observation around P-9.3;
-- earliest around P-30.3;
-- P-31...P-60 historical coverage currently zero.
+1. freeze the encoder artifact;
+2. do not tune it against attendance yet;
+3. define a separately precommitted small attendance head;
+4. create immutable future daily forecasts before outcomes;
+5. judge attendance value on genuinely future independent events.
 
-P-60 is a **collection horizon**, not a requirement for a fabricated 60-day vector.
-
-Use genuine variable-length sequences. Missing/hidden inventory is never zero.
-
----
-
-## Implemented stack
-
-- PIT trajectory feature store;
-- exact daily P-N builder;
-- shared Lane A/B materializer;
-- frozen feature contract;
-- frozen strict-forward fold contract;
-- immutable prospective attempt/prediction/score ledgers;
-- MAE-by-horizon scoring;
-- OIDC-protected historical development export;
-- Lane A v1 learner/result;
-- Lane B v1 learner/result;
-- Lane B v2 ratio-target learner/runner/workflow.
-
-No production activation is connected to any of these research workflows.
+If it fails, any material change becomes self-supervised v2. Do not tune against the same five validation events and still call it v1.
 
 ---
 
-## Current priorities
+## Prospective evidence remains protected
 
-1. Protect imminent P9/Form5 prospective windows.
-2. Score frozen P7/P9 only after genuine outcomes.
-3. Keep P11/P4a collection healthy.
-4. Finish and record **Lane B v2** diagnostic.
-5. Do not tune v2 after seeing its result.
-6. If target scaling is supported, freeze the exact mechanism for **future prospective daily shadow evidence**.
-7. If scaling is not supported, reassess the sequence/data hypothesis before trying more architectures.
-8. Keep collecting longer genuine trajectories.
-9. Derive business minimum meaningful Delta MAE independently.
+P7 / P9 / Form5 and current collection contracts remain separate from trajectory R&D.
 
-Operational source of truth:
-
-[`ml/EXECUTION_PLAN_CURRENT.md`](ml/EXECUTION_PLAN_CURRENT.md)
+Near-term genuine windows take priority over research work.
 
 ---
 
@@ -170,7 +132,9 @@ Operational source of truth:
 
 Public inventory is a **demand/inventory proxy**, not confirmed paid ticket sales or attendance.
 
-Never infer attendance labels from inventory, capacity, model output or hidden/unknown inventory.
+Missing/hidden inventory is never zero.
+
+P-60 is a collection horizon, not a requirement for a fabricated complete sequence.
 
 ---
 
