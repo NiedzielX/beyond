@@ -1,0 +1,50 @@
+name: P9 Family Fallback v2 Contract
+
+on:
+  pull_request:
+    paths:
+      - "ml/P9_BOOKING_CURVE_PROSPECTIVE_FAMILY_FALLBACK_V2.md"
+      - "ml/p9_booking_curve_prospective_family_fallback_v2.py"
+      - "ml/test_p9_booking_curve_prospective_family_fallback_v2.py"
+      - "supabase/sql/p9_booking_curve_prospective_family_fallback_v2.sql"
+      - "supabase/functions/p9_booking_curve_prospective_v1/**"
+      - ".github/workflows/p9-family-fallback-v2-contract.yml"
+      - ".github/workflows/p9-booking-curve-prospective-v1.yml"
+  push:
+    branches: [main]
+    paths:
+      - "ml/P9_BOOKING_CURVE_PROSPECTIVE_FAMILY_FALLBACK_V2.md"
+      - "ml/p9_booking_curve_prospective_family_fallback_v2.py"
+      - "ml/test_p9_booking_curve_prospective_family_fallback_v2.py"
+      - "supabase/sql/p9_booking_curve_prospective_family_fallback_v2.sql"
+      - "supabase/functions/p9_booking_curve_prospective_v1/**"
+      - ".github/workflows/p9-family-fallback-v2-contract.yml"
+      - ".github/workflows/p9-booking-curve-prospective-v1.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install pinned ML dependencies
+        run: pip install -r ml/requirements.txt
+      - name: Compile P9 v1/v2 builders
+        run: |
+          python -m py_compile ml/p9_booking_curve_prospective_v1.py
+          python -m py_compile ml/p9_booking_curve_prospective_family_fallback_v2.py
+          python -m py_compile ml/test_p9_booking_curve_prospective_family_fallback_v2.py
+      - name: Run family fallback v2 contract tests
+        run: python -m ml.test_p9_booking_curve_prospective_family_fallback_v2
+      - name: Static v2 safety checks
+        run: |
+          grep -q 'p9-knn-median-residual-k5-family-fallback-v2' ml/P9_BOOKING_CURVE_PROSPECTIVE_FAMILY_FALLBACK_V2.md
+          grep -q 'fallback_from_family' ml/p9_booking_curve_prospective_family_fallback_v2.py
+          grep -q 'v1_residual_reference_count<3' supabase/sql/p9_booking_curve_prospective_family_fallback_v2.sql
+          grep -q 'production_change=false' supabase/sql/p9_booking_curve_prospective_family_fallback_v2.sql
