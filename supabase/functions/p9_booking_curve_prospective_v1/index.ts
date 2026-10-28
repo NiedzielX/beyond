@@ -53,6 +53,17 @@ async function rpc(name: string, body: Record<string, unknown> = {}) {
   return parsed;
 }
 
+function productionSafePayload(payload: any): boolean {
+  return Boolean(
+    payload &&
+    typeof payload === "object" &&
+    payload.target_values_used === false &&
+    payload.production_activation_allowed === false &&
+    payload.live_adjustment === 0 &&
+    payload.production_change === false
+  );
+}
+
 Deno.serve(async (req: Request) => {
   let claims: any;
   try {
@@ -102,6 +113,10 @@ Deno.serve(async (req: Request) => {
         const payload = await rpc("p9_booking_curve_prospective_summary_v1");
         return json({ ok: true, version: "p9-prospective-gateway-v1", mode, payload, productionChange: false });
       }
+      if (mode === "fallback-summary-v2") {
+        const payload = await rpc("p9_booking_curve_prospective_fallback_summary_v2");
+        return json({ ok: true, version: "p9-prospective-gateway-v1", mode, payload, productionChange: false });
+      }
       return json({ ok: false, error: "unsupported GET mode" }, 400);
     }
 
@@ -112,13 +127,7 @@ Deno.serve(async (req: Request) => {
 
     if (mode === "record-attempt") {
       const payload = body?.payload;
-      if (!payload || typeof payload !== "object") return json({ ok: false, error: "payload required" }, 400);
-      if (
-        payload.target_values_used !== false ||
-        payload.production_activation_allowed !== false ||
-        payload.live_adjustment !== 0 ||
-        payload.production_change !== false
-      ) {
+      if (!productionSafePayload(payload)) {
         return json({ ok: false, error: "target-free / production-safe flags required" }, 400);
       }
       const result = await rpc("record_p9_booking_curve_prospective_attempt_v1", {
@@ -144,6 +153,36 @@ Deno.serve(async (req: Request) => {
     if (mode === "score") {
       const result = await rpc("score_p9_booking_curve_prospective_completed_v1");
       const summary = await rpc("p9_booking_curve_prospective_summary_v1");
+      return json({ ok: true, version: "p9-prospective-gateway-v1", mode, result, summary, productionChange: false });
+    }
+
+    if (mode === "record-fallback-attempt-v2") {
+      const payload = body?.payload;
+      if (!productionSafePayload(payload)) {
+        return json({ ok: false, error: "target-free / production-safe fallback flags required" }, 400);
+      }
+      const result = await rpc("record_p9_booking_curve_prospective_fallback_attempt_v2", {
+        p_payload: payload,
+        p_github_sha: githubSha,
+      });
+      return json({ ok: true, version: "p9-prospective-gateway-v1", mode, result, productionChange: false });
+    }
+
+    if (mode === "persist-fallback-v2") {
+      const payload = body?.payload;
+      if (!productionSafePayload(payload)) {
+        return json({ ok: false, error: "target-free / production-safe fallback flags required" }, 400);
+      }
+      const result = await rpc("insert_p9_booking_curve_prospective_fallback_predictions_v2", {
+        p_payload: payload,
+        p_github_sha: githubSha,
+      });
+      return json({ ok: true, version: "p9-prospective-gateway-v1", mode, result, productionChange: false });
+    }
+
+    if (mode === "score-fallback-v2") {
+      const result = await rpc("score_p9_booking_curve_prospective_fallback_completed_v2");
+      const summary = await rpc("p9_booking_curve_prospective_fallback_summary_v2");
       return json({ ok: true, version: "p9-prospective-gateway-v1", mode, result, summary, productionChange: false });
     }
 

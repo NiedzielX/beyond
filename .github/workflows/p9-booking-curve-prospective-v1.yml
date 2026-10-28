@@ -12,9 +12,13 @@ on:
     paths:
       - ".github/workflows/p9-booking-curve-prospective-v1.yml"
       - "ml/p9_booking_curve_prospective_v1.py"
+      - "ml/p9_booking_curve_prospective_family_fallback_v2.py"
+      - "ml/test_p9_booking_curve_prospective_family_fallback_v2.py"
+      - "ml/P9_BOOKING_CURVE_PROSPECTIVE_FAMILY_FALLBACK_V2.md"
       - "ml/p9a_booking_curve_freeze_v1.py"
       - "supabase/functions/p9_booking_curve_prospective_v1/**"
       - "supabase/sql/p9_booking_curve_prospective_v1.sql"
+      - "supabase/sql/p9_booking_curve_prospective_family_fallback_v2.sql"
       - "supabase/sql/p9_prospective_attempt_registry_v1.sql"
       - "supabase/sql/p9_prospective_preflight_v1.sql"
 
@@ -44,6 +48,9 @@ jobs:
         run: |
           python -m py_compile ml/p9a_booking_curve_freeze_v1.py
           python -m py_compile ml/p9_booking_curve_prospective_v1.py
+          python -m py_compile ml/p9_booking_curve_prospective_family_fallback_v2.py
+          python -m py_compile ml/test_p9_booking_curve_prospective_family_fallback_v2.py
+          python -m ml.test_p9_booking_curve_prospective_family_fallback_v2
 
       - name: Request main-only P9 prospective token
         shell: bash
@@ -189,9 +196,6 @@ jobs:
               and .production_change == false
             ' "/tmp/p9-prospective-${cutoff}.json" >/dev/null
 
-            # Persist the immutable attempt before branching on prediction count.
-            # This distinguishes a captured window with valid fail-closed evidence
-            # from a window that never ran, without changing the frozen learner.
             jq -n --slurpfile payload "/tmp/p9-prospective-${cutoff}.json" \
               '{mode:"record-attempt",payload:$payload[0]}' > "/tmp/p9-attempt-${cutoff}-request.json"
 
@@ -212,10 +216,68 @@ jobs:
               and .result.production_change == false
             ' "/tmp/p9-attempt-${cutoff}-response.json" >/dev/null
 
+            # v2 is fallback-only. It preserves the exact P9a neighbor set and
+            # emits nothing when frozen v1 already has >=3 usable references.
+            python -m ml.p9_booking_curve_prospective_family_fallback_v2 \
+              --p9a-freeze "/tmp/p9-freeze-${cutoff}.json" \
+              --incumbent-catalog "/tmp/p9-incumbents-${cutoff}.json" \
+              --reference-outcomes /tmp/p9-reference-outcomes.json \
+              --output "/tmp/p9-fallback-v2-${cutoff}.json"
+
+            jq -e --argjson cutoff "$cutoff" '
+              .version == "p9-booking-curve-prospective-family-fallback-builder-v2"
+              and .precommit_id == "p9-knn-median-residual-k5-family-fallback-v2"
+              and .cutoff_hours == $cutoff
+              and .target_values_used == false
+              and .production_activation_allowed == false
+              and .live_adjustment == 0
+              and .production_change == false
+            ' "/tmp/p9-fallback-v2-${cutoff}.json" >/dev/null
+
+            jq -n --slurpfile payload "/tmp/p9-fallback-v2-${cutoff}.json" \
+              '{mode:"record-fallback-attempt-v2",payload:$payload[0]}' > "/tmp/p9-fallback-attempt-v2-${cutoff}-request.json"
+
+            curl --retry 5 --retry-all-errors --retry-delay 2 -fsS \
+              -H "Authorization: Bearer $P9_PROSPECTIVE_OIDC_TOKEN" \
+              -H 'content-type: application/json' \
+              --data-binary @"/tmp/p9-fallback-attempt-v2-${cutoff}-request.json" \
+              "$gateway" -o "/tmp/p9-fallback-attempt-v2-${cutoff}-response.json"
+
+            jq -e '
+              .ok == true
+              and .mode == "record-fallback-attempt-v2"
+              and .productionChange == false
+              and .result.version == "p9-booking-curve-prospective-fallback-attempt-insert-v2"
+              and .result.target_values_used == false
+              and .result.production_activation_allowed == false
+              and .result.live_adjustment == 0
+              and .result.production_change == false
+            ' "/tmp/p9-fallback-attempt-v2-${cutoff}-response.json" >/dev/null
+
+            fallback_prediction_count=$(jq '.predictions | length' "/tmp/p9-fallback-v2-${cutoff}.json")
+            if [ "$fallback_prediction_count" -gt 0 ]; then
+              jq -n --slurpfile payload "/tmp/p9-fallback-v2-${cutoff}.json" \
+                '{mode:"persist-fallback-v2",payload:$payload[0]}' > "/tmp/p9-fallback-persist-v2-${cutoff}-request.json"
+              curl --retry 5 --retry-all-errors --retry-delay 2 -fsS \
+                -H "Authorization: Bearer $P9_PROSPECTIVE_OIDC_TOKEN" \
+                -H 'content-type: application/json' \
+                --data-binary @"/tmp/p9-fallback-persist-v2-${cutoff}-request.json" \
+                "$gateway" -o "/tmp/p9-fallback-persist-v2-${cutoff}-response.json"
+              jq -e '
+                .ok == true
+                and .mode == "persist-fallback-v2"
+                and .productionChange == false
+                and .result.production_change == false
+                and .result.live_adjustment == 0
+              ' "/tmp/p9-fallback-persist-v2-${cutoff}-response.json" >/dev/null
+              echo "Persisted ${fallback_prediction_count} immutable P9 v2 family-fallback prediction(s) at T-${cutoff}."
+            fi
+
             prediction_count=$(jq '.predictions | length' "/tmp/p9-prospective-${cutoff}.json")
             if [ "$prediction_count" -eq 0 ]; then
               echo "T-${cutoff}: target window captured and registered, but frozen v1 produced no support-ready prediction."
               jq '{cutoff_hours, diagnostics, target_values_used, production_change}' "/tmp/p9-prospective-${cutoff}.json"
+              jq '{cutoff_hours, diagnostics, target_values_used, production_change}' "/tmp/p9-fallback-v2-${cutoff}.json"
               continue
             fi
 
@@ -256,6 +318,21 @@ jobs:
             and .summary.live_adjustment == 0
           ' /tmp/p9-score-response.json >/dev/null
 
+          printf '%s\n' '{"mode":"score-fallback-v2"}' > /tmp/p9-fallback-score-v2-request.json
+          curl --retry 5 --retry-all-errors --retry-delay 2 -fsS \
+            -H "Authorization: Bearer $P9_PROSPECTIVE_OIDC_TOKEN" \
+            -H 'content-type: application/json' \
+            --data-binary @/tmp/p9-fallback-score-v2-request.json \
+            "$gateway" -o /tmp/p9-fallback-score-v2-response.json
+          jq -e '
+            .ok == true
+            and .mode == "score-fallback-v2"
+            and .productionChange == false
+            and .summary.production_change == false
+            and .summary.production_activation_allowed == false
+            and .summary.live_adjustment == 0
+          ' /tmp/p9-fallback-score-v2-response.json >/dev/null
+
       - name: Verify final prospective state remains production-safe
         shell: bash
         run: |
@@ -272,3 +349,15 @@ jobs:
             and .payload.live_adjustment == 0
           ' /tmp/p9-summary.json >/dev/null
           jq '.payload | {attempt_events, attempt_rows, prediction_ready_attempts, support_insufficient_attempts, no_target_incumbent_attempts, prediction_events, prediction_rows, scored_events, evidence_status, delta_event_balanced_mae, production_activation_allowed, live_adjustment, production_change}' /tmp/p9-summary.json
+
+          curl --retry 5 --retry-all-errors --retry-delay 2 -fsS \
+            -H "Authorization: Bearer $P9_PROSPECTIVE_OIDC_TOKEN" \
+            "${gateway}?mode=fallback-summary-v2" -o /tmp/p9-fallback-summary-v2.json
+          jq -e '
+            .ok == true
+            and .productionChange == false
+            and .payload.production_change == false
+            and .payload.production_activation_allowed == false
+            and .payload.live_adjustment == 0
+          ' /tmp/p9-fallback-summary-v2.json >/dev/null
+          jq '.payload | {attempt_events, attempt_rows, v1_covered_attempts, fallback_ready_attempts, fallback_support_insufficient_attempts, prediction_events, prediction_rows, scored_events, delta_event_balanced_mae, production_activation_allowed, live_adjustment, production_change}' /tmp/p9-fallback-summary-v2.json
