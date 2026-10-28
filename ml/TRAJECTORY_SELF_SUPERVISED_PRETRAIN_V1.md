@@ -32,13 +32,21 @@ Continuing to tune supervised correction magnitude, caps, loss functions or sequ
 
 However, trajectory data are much richer than attendance labels.
 
-At the frozen data cutoff, the target-free trajectory corpus contains:
+At the frozen data cutoff, the raw target-free trajectory corpus contains:
 
 - **32** events with genuine pre-kickoff sequences;
 - **14** clubs;
 - **4869** genuine hourly-bucket observations;
 - **4837** generic next-observation pairs;
-- **4227** clean ~24h future-observation pairs across **29 events / 12 clubs**.
+- **4227** raw clean ~24h future-observation pairs across **29 events / 12 clubs** before the minimum-prefix gate.
+
+After the frozen input-prefix quality gate (>=4 genuine observations and >=24h observed prefix span within the 168h context), the actual v1 modelling cohort is:
+
+- **26** usable events;
+- **12** clubs;
+- **3565** usable ~24h pairs;
+- **21 train events / 3397 train pairs**;
+- **5 validation events / 168 validation pairs**.
 
 This makes target-free representation learning the next evidence-safe direction.
 
@@ -58,25 +66,37 @@ The purpose is to learn a trajectory encoder before using future attendance outc
 
 The split is chronological by event kickoff and frozen before any self-supervised validation result.
 
-## Training events — 24
+## Raw training assignment — 24 events
 
 `[3, 1, 4, 12, 8, 9, 17, 14, 15, 18, 11, 19, 5, 20, 10, 16, 23, 21, 22, 443, 446, 6, 444, 445]`
 
-Current ~24h pairs: **3940**.
+Three of those events do not satisfy the frozen minimum-prefix gate for any 24h pair:
+
+- event12 Cracovia;
+- event8 Jagiellonia;
+- event17 Legia.
+
+They remain documented as part of the pre-gate assignment but contribute **zero** training pairs.
+
+## Actual usable training events — 21
+
+`[3, 1, 4, 9, 14, 15, 18, 11, 19, 5, 20, 10, 16, 23, 21, 22, 443, 446, 6, 444, 445]`
+
+Usable training pairs: **3397**.
 
 ## Validation events — 5
 
 `[447, 449, 450, 451, 452]`
 
-Current ~24h pairs: **287**.
+Usable validation pairs: **168**.
 
-Validation clubs:
+Per-validation-event usable pairs:
 
-- Raków;
-- Górnik Zabrze;
-- Legia;
-- Lech;
-- Pogoń Szczecin.
+- event447 Raków: **35**;
+- event449 Górnik Zabrze: **34**;
+- event450 Legia: **35**;
+- event451 Lech: **29**;
+- event452 Pogoń Szczecin: **35**.
 
 No event may appear in both train and validation.
 
@@ -111,14 +131,23 @@ For each source observation, find a later genuine observation from the same even
 
 Choose the candidate closest to exactly 24h, then earliest timestamp as deterministic tie-break.
 
-Current frozen pair audit:
+Raw frozen pair audit before the prefix gate:
 
 - pairs: **4227**;
+- events: **29**;
+- clubs: **12**;
 - median elapsed: **24.00h**;
 - P10 elapsed: **23.69h**;
 - P90 elapsed: **24.15h**.
 
-This prevents the task from primarily learning scraper cadence.
+After the prefix gate:
+
+- usable pairs: **3565**;
+- usable events: **26**;
+- train pairs: **3397**;
+- validation pairs: **168**.
+
+This fixed ~24h task prevents the model from primarily learning scraper cadence.
 
 ---
 
@@ -241,8 +270,9 @@ The single seed avoids choosing a favorable representation after validation.
 
 Report:
 
-- train events / clubs / pairs;
-- validation events / clubs / pairs;
+- raw vs usable event/pair counts;
+- train events / clubs / usable pairs;
+- validation events / clubs / usable pairs;
 - zero-change event-balanced MAE;
 - model event-balanced MAE;
 - Delta MAE vs zero-change;
