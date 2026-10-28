@@ -163,6 +163,7 @@ jobs:
           test "$(jq -r '.productionChange' /tmp/p11-health-after.json)" = "false"
 
       - name: Publish capture summary
+        if: always()
         shell: bash
         env:
           CAPTURE_DUE: ${{ steps.health.outputs.capture_due }}
@@ -172,10 +173,29 @@ jobs:
           {
             echo '### P11 Odds Capture v2'
             echo
-            echo "- capture due: \`${CAPTURE_DUE}\`"
-            echo "- decision source: \`${CAPTURE_REASON}\`"
-            if [ "$CAPTURE_DUE" = "true" ]; then
-              jq -r '"- status: `\(.status)`\n- local events: `\(.localEvents // 0)`\n- provider events: `\(.providerEvents // 0)`\n- matched events: `\(.matchedEvents // 0)`\n- inserted raw bookmaker quotes: `\(.insertedQuotes // 0)`\n- quota remaining: `\(.quota.remaining // \"n/a\")`\n- quota used: `\(.quota.used // \"n/a\")`\n- last request cost: `\(.quota.last // \"n/a\")`\n- production change: `\(.productionChange)`"' /tmp/p11-capture.json
+            echo "- capture due: \`${CAPTURE_DUE:-unknown}\`"
+            echo "- decision source: \`${CAPTURE_REASON:-unknown}\`"
+            if [ "${CAPTURE_DUE:-false}" = "true" ] && [ -s /tmp/p11-capture.json ]; then
+              status=$(jq -r '.status // "n/a"' /tmp/p11-capture.json)
+              local_events=$(jq -r '.localEvents // 0' /tmp/p11-capture.json)
+              provider_events=$(jq -r '.providerEvents // 0' /tmp/p11-capture.json)
+              matched_events=$(jq -r '.matchedEvents // 0' /tmp/p11-capture.json)
+              inserted_quotes=$(jq -r '.insertedQuotes // 0' /tmp/p11-capture.json)
+              quota_remaining=$(jq -r '.quota.remaining // "n/a"' /tmp/p11-capture.json)
+              quota_used=$(jq -r '.quota.used // "n/a"' /tmp/p11-capture.json)
+              quota_last=$(jq -r '.quota.last // "n/a"' /tmp/p11-capture.json)
+              production_change=$(jq -r '.productionChange // false' /tmp/p11-capture.json)
+              echo "- status: \`${status}\`"
+              echo "- local events: \`${local_events}\`"
+              echo "- provider events: \`${provider_events}\`"
+              echo "- matched events: \`${matched_events}\`"
+              echo "- inserted raw bookmaker quotes: \`${inserted_quotes}\`"
+              echo "- quota remaining: \`${quota_remaining}\`"
+              echo "- quota used: \`${quota_used}\`"
+              echo "- last request cost: \`${quota_last}\`"
+              echo "- production change: \`${production_change}\`"
+            elif [ "${CAPTURE_DUE:-false}" = "true" ]; then
+              echo '- capture result: `MISSING_CAPTURE_FILE`'
             else
               echo '- provider call: `SKIPPED_RECENT_CAPTURE_HEALTHY`'
             fi
