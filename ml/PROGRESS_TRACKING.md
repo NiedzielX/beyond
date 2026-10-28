@@ -1,203 +1,187 @@
 # Beyond Ticketing — ML Progress Tracking
 
-Last updated: **2026-10-26**
+Last updated: **2026-10-28**
 
 Status: **CANONICAL TRACKING SNAPSHOT**
 
-Canonical execution plan: `ml/EXECUTION_PLAN_CURRENT.md`
+Canonical execution plan:
 
-Production: `live_adjustment = 0`.
+`ml/EXECUTION_PLAN_CURRENT.md`
 
-## North Star
+Production:
+
+`live_adjustment = 0`
+
+---
+
+# 1. North Star
 
 > **Minimize true prospective event-balanced attendance-forecast MAE at decision-relevant horizons using PIT-safe, reproducible evidence.**
 
 Primary metric:
 
-`ΔMAE = challenger event-balanced MAE - incumbent event-balanced MAE`
+`Delta MAE = challenger event-balanced MAE - incumbent event-balanced MAE`
 
-Readiness counts are leading indicators only.
+Readiness/row counts are leading indicators only.
 
-## Current status
+---
+
+# 2. Current status
 
 | Item | Status | Current decision |
 |---|---|---|
-| Multi-source ticketing coverage | ✅ **18/18 LEAGUE HOME CLUBS** | preserve acquisition/PIT evidence; hidden inventory stays fail closed |
-| Panel ingestion coverage | ✅ LIVE | tracked / buffering / schedule-gap / recent completed visible |
-| Long72 prospective evidence | 🟢 **4 scored events** | 1.71% point gain only; preserve freeze; no retuning |
-| P7 historical tournament | ✅ FROZEN / EXPOSED | 14.44% point gain; never retune |
-| P7 prospective | 🟢 **16 rows / 3 events / 0 scores** | collect/score only |
-| P9 historical T-168 | ✅ **9/9 / 9 clubs** | gate complete; not a model-success metric |
-| P9 historical learner | ⚪ **NOT_EVALUABLE_PIT_SUPPORT_INSUFFICIENT** | 0 support-ready at T-24/T-48; no MAE result; do not repair retrospectively |
-| P9 prospective | 🟢 **SCHEDULED / CI VERIFIED** | collect immutable T-48/T-24 predictions and later score genuine outcomes |
-| P9 prospective evidence | 🟡 **0 predictions / 0 scored** | expected before first frozen window on 2026-10-28 |
-| P4a previous-home spacing | 🟡 **4/9 labeled / 3 distinct** | event-count gate still closed |
-| P11a PIT odds | 🟢 **4 events / 4 clubs** | T-24/T-72/T-168 = 3/3/0; keep collecting; no model yet |
-| P11b price context | 🟢 AS-KNOWN LIVE | no inferred promotion |
-| P11c verified absences | 🟡 DATA_BOUND | continue collection |
-| P11d weather | ✅ CLOSED / NO UPLIFT | do not repeat same mechanism |
-| P11d media attention | 🟡 PROSPECTIVE COLLECTING | wait for genuine coverage |
-| Governance | 🟡 BUSINESS ΔMAE PENDING | derive independently from operational value |
-| P12 / new features | 🟡 DEFERRED | rank later by expected incremental prospective MAE reduction |
+| Multi-source ticketing coverage | ✅ LIVE | preserve acquisition/PIT evidence; hidden inventory stays fail-closed |
+| P7 historical | ✅ FROZEN | 14.44% point gain; no retuning |
+| P7 prospective | 🟢 53 rows / 6 events / 0 scored | collect/score only |
+| P9 historical v1 | ⚪ NOT_EVALUABLE_PIT_SUPPORT_INSUFFICIENT | no historical MAE; do not repair retrospectively |
+| P9 prospective v1 | 🟢 1 genuine attempt / 0 prediction / 0 scored | protect every T-48/T-24 window |
+| P9 Family Fallback v2 | 🟢 PRECOMMITTED / DEPLOYED | run separately; never pool with v1 |
+| Form5 prospective | 🟢 READY FOR FIRST T-24 | protect event443 2026-10-29 17:00 UTC |
+| Long72 | 🟡 5 scored / 0.71% point gain | frozen / low priority |
+| P11 odds | 🟡 6 events / 6 clubs | 5/5/0 at T-24/T-72/T-168; keep collecting |
+| P4a | 🟡 4/9 labeled / 3 distinct | gate still closed |
+| Ticketing challenger | ❌ REJECTED | current 19-event LOCO challenger ~723.6 MAE worse |
+| Hype 48h | ❌ REJECTED | ~69.4 MAE worse |
+| Daily trajectory infrastructure | 🆕 START NOW | dataset + immutable daily ledger + horizon-wise MAE |
+| Trajectory Lane A | 🆕 PLANNED | simple residual benchmark |
+| Trajectory Lane B | 🆕 ACCEPTED R&D | small sequence model research starts early |
+| Self-supervised trajectory | 🆕 PLANNED | target-free representation research |
+| Business Delta MAE threshold | 🟡 PENDING | derive independently from operational value |
 
-## P9 historical closure
+---
 
-The old `8/9` state is obsolete.
+# 3. P9 state
 
-Canonical gate:
+## Historical v1
 
-- T-168 events / clubs: **9 / 9**;
-- `design_precommitted=true`;
-- `full_window_gate_open=true`.
+- 9/9 T-168 events / 9 clubs;
+- T-24 support-ready 0/11;
+- T-48 support-ready 0/9;
+- result `NOT_EVALUABLE_PIT_SUPPORT_INSUFFICIENT`;
+- no valid historical challenger MAE.
 
-Frozen historical support diagnostic:
+## Prospective v1
 
-- T-24 comparator targets: **11**;
-- T-24 support-ready: **0**;
-- T-48 comparator targets: **9**;
-- T-48 support-ready: **0**;
-- learner attendance labels opened: false;
-- learner result produced: false.
+First real attempt:
 
-Status:
+- event443 Cracovia–Motor T-48;
+- cutoff 2026-10-28 17:00 UTC;
+- immutable attempt persisted;
+- `PIT_SUPPORT_INSUFFICIENT`;
+- correct fail-closed.
 
-`NOT_EVALUABLE_PIT_SUPPORT_INSUFFICIENT`
+Do not relax support and do not retro-predict.
 
-Root cause is missing genuine historical PIT incumbent rows from the exact target incumbent source family among selected curve-neighbors. Booking-curve coverage itself is not the blocker.
+## Family Fallback v2
 
-Read:
+- separately precommitted/deployed;
+- exact v1 neighbors;
+- unchanged support threshold;
+- Structural fallback only under the frozen v2 rule;
+- no event443 retro prediction;
+- current verified attempts/predictions/scores: 0/0/0.
 
-`ml/P9_SUPPORT_POSTMORTEM_2026-10-26.md`
+---
 
-## P9 prospective — active
+# 4. Near-term protected evidence
 
-Precommit:
+Unless fresh machine state says otherwise:
 
-`ml/P9_BOOKING_CURVE_PROSPECTIVE_PRECOMMIT_V1.md`
+- event446 Wisła Płock–Piast T-48 — 2026-10-29 11:15 UTC;
+- event6 Lech–Wisła Kraków T-48 — 2026-10-29 16:30 UTC;
+- event443 Cracovia–Motor T-24 — 2026-10-29 17:00 UTC;
+- event444 GKS Katowice–Widzew T-48 — 2026-10-29 19:15 UTC;
+- event445 Zagłębie–Korona T-48 — 2026-10-31 17:00 UTC;
+- event447 Raków–Pogoń T-48 — 2026-10-31 19:30 UTC.
 
-Workflow:
+Event448 stays a genuine no/unknown-inventory watch until the source exposes valid data.
 
-`.github/workflows/p9-booking-curve-prospective-v1.yml`
+---
 
-Schedule:
+# 5. New trajectory program
 
-`7,37 * * * *`
+Canonical plan:
 
-The Supabase Edge Function `p9_booking_curve_prospective_v1` is deployed and the workflow has passed an end-to-end run on main:
+`ml/TRAJECTORY_FORECASTING_PLAN_V1.md`
 
-- GitHub OIDC authorization;
-- target-free/reference export;
-- frozen builder path;
-- scoring path;
-- production-safety assertions.
+Target behaviour:
 
-Current state:
+`P-60 -> P-59 -> ... -> today -> predicted remaining trajectory -> final attendance`
 
-- prediction events: **0**;
-- prediction rows: **0**;
-- scored events: **0**;
-- `production_activation_allowed=false`;
-- `live_adjustment=0`.
+Immediate infrastructure milestones:
 
-First T-48 window:
+- [ ] canonical daily trajectory dataset;
+- [ ] PIT lineage/missingness audit;
+- [ ] immutable daily attempt ledger;
+- [ ] immutable daily prediction ledger;
+- [ ] horizon-wise MAE reporting;
+- [ ] prospective daily shadow inference path.
 
-**2026-10-28 17:00 UTC — Cracovia vs Motor**.
+## Lane A milestones
 
-No late bootstrap. If support is insufficient inside a real frozen window, record the failure; do not relax the rule.
+- [ ] freeze feature contract;
+- [ ] freeze event-grouped folds;
+- [ ] precommit simple residual challenger;
+- [ ] historical/grouped result;
+- [ ] prospective daily shadow predictions;
+- [ ] genuine scored prospective result.
 
-## P7 prospective
+## Lane B milestones
 
-Frozen fingerprint:
+- [ ] define sequence representation contract;
+- [ ] small GRU/LSTM/TCN first benchmark;
+- [ ] identical event-grouped folds as Lane A;
+- [ ] compare against Lane A, not only incumbent;
+- [ ] self-supervised pretraining experiment where justified;
+- [ ] compact Transformer only if sequence representation already shows value;
+- [ ] prospective daily shadow predictions;
+- [ ] genuine scored prospective result.
 
-`70fa929181531276c80a75c0b78a60fb821cf50e714e2bc001de8251cea1793f`
+---
 
-Fresh state:
+# 6. Critical validation rule
 
-- prediction rows: **16**;
-- independent events: **3**;
-- scored events: **0**;
-- one fixed model fingerprint;
-- production activation false.
+Daily rows are not independent.
 
-Next action: collect/score only.
+`N events x M prefixes` still gives only `N independent events` for attendance evaluation.
 
-## Long72
+Therefore:
 
-Last verified frozen n=4 evidence:
+- split by event;
+- keep all event prefixes in one fold;
+- no random daily-row headline validation;
+- event-block uncertainty;
+- no future target trajectory leakage;
+- persist forecasts before outcomes.
 
-- events `[10,16,21,23]`;
-- anchor event-balanced MAE **6942.59**;
-- challenger event-balanced MAE **6824.16**;
-- point gain **118.43 / 1.71%**;
-- event improvement rate **75%**;
-- worst event degradation **3633.23**.
+---
 
-Not promotion evidence.
+# 7. MAE reporting target
 
-## P4a
+Add an accuracy-by-horizon view such as:
 
-- labeled READY events: **4/9**;
-- distinct labeled previous-home-spacing values: **3**;
-- variance gate PASS;
-- event-count gate FAIL.
+| Horizon | Incumbent MAE | Lane A MAE | Lane B MAE | Events | Clubs |
+|---|---:|---:|---:|---:|---:|
+| P-30 | | | | | |
+| P-21 | | | | | |
+| P-14 | | | | | |
+| P-7 | | | | | |
+| P-3 | | | | | |
+| P-1 | | | | | |
 
-Only genuine labels move the gate.
+This answers not only whether MAE improves, but **how early Beyond becomes accurate enough to be operationally useful**.
 
-## P11a odds
+---
 
-Fresh 2026-10-26 readiness:
+# 8. Immediate order
 
-- status `GENUINE_PIT_DATA_ACCUMULATING`;
-- events / clubs **4 / 4**;
-- events with >=3 bookmakers **4**;
-- T-24 / T-72 / T-168 coverage **3 / 3 / 0**;
-- model precommitted false;
-- production false.
-
-Continue append-only capture. Never backfill closing odds.
-
-## Panel / MAE lifecycle
-
-Canonical dashboard view:
-
-`public.dashboard_p9_mae_status_v1`
-
-Panel repo:
-
-`NiedzielX/BeyondTicketingPanel`
-
-Model Lab has a dedicated P9 lifecycle widget that distinguishes:
-
-1. readiness;
-2. historical evaluability;
-3. prospective prediction coverage;
-4. scored evidence;
-5. incumbent/challenger event-balanced MAE;
-6. ΔMAE;
-7. production safety.
-
-Dashboard TypeScript check and production build are green after the integration.
-
-## Immediate order
-
-1. keep ticketing/PIT acquisition healthy;
-2. preserve P9 scheduler before first real window;
-3. collect immutable P9 predictions;
-4. score P7/P9 only on genuine outcomes;
-5. continue Long72/P4a/P11 frozen accumulation;
-6. derive business minimum meaningful ΔMAE;
-7. select the next challenger only by expected prospective MAE impact.
-
-## Closed loops
-
-Do not reopen without a materially new mechanism:
-
-- original P7 tournament;
-- P9 historical cohort;
-- P10/P10b;
-- P5a;
-- P6 historical Long72 incremental signal;
-- P8 calibration;
-- existing weather mechanism;
-- old estimator sweeps;
-- post-hoc tuning.
+1. protect imminent P9/Form5 windows;
+2. score frozen P7/P9 only after genuine outcomes;
+3. keep P11/P4a collection healthy;
+4. start daily trajectory dataset/ledger/reporting work in parallel;
+5. keep Long72 frozen;
+6. precommit Lane A and Lane B only after the trajectory data contract is audited;
+7. run both under identical event-grouped/PIT-safe evaluation;
+8. collect prospective daily predictions before outcomes;
+9. derive business minimum meaningful Delta MAE;
+10. production remains separately review-gated.
