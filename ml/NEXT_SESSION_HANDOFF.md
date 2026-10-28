@@ -252,7 +252,7 @@ Current v1 dashboard state:
 
 P9 v2 has a separate private summary/RPC and must remain separately auditable. Do not merge v1/v2 into one MAE result.
 
-## 8. Long72 — FROZEN / LOW MAE PRIORITY, HEARTBEAT HARDENED
+## 8. Long72 — FROZEN / LOW MAE PRIORITY, HEARTBEAT VERIFIED
 
 Current scored events: **5**.
 
@@ -285,12 +285,17 @@ Fix:
 - `workflow_dispatch`, PR and push validation remain available;
 - frozen package, persistence and scoring are unchanged.
 
-Proof:
+End-to-end proof:
 
-- Structural Prior Materializer run149 attempt3 was deliberately rerun after the fix;
-- it completed its materialize path successfully around **2026-10-28 19:58 UTC**;
-- this emitted Long72 run **40759137164 / run #45**, event=`workflow_run`, on current main SHA `e710d8b...`;
-- at handoff-write time its `validate` job is SUCCESS and `prospective-main` is running. Verify final conclusion once more if resuming immediately.
+- Structural Prior Materializer run149 attempt3 was deliberately rerun after the fix and completed successfully;
+- its completion automatically created Long72 run **40759137164 / run #45**, event=`workflow_run`, on current main SHA `e710d8b...`;
+- Long72 `validate` = **SUCCESS**;
+- Long72 `prospective-main` = **SUCCESS**;
+- forward fetch, frozen materialization, immutable persist, scoring and artifact upload all completed successfully;
+- resulting DB rows created at **2026-10-28 19:59:58 UTC** include fresh Long72 observations for event443, 446 and 444;
+- event6 retains its earlier valid Long72 row; 445/447 still have no Long72 row and remain Structural candidates.
+
+Heartbeat issue is CLOSED unless a future Structural completion fails to trigger Long72.
 
 ## 9. Form5 prospective challenger — PRECOMMITTED AND READY FOR FIRST T-24
 
@@ -440,8 +445,8 @@ Current important state:
 
 - event5091 fixed and normal;
 - event448 issue is missing ticket snapshot, not prior;
-- Structural Prior Materializer remains the upstream heartbeat used by Long72;
-- a successful materializer completion must now trigger Long72 via GitHub `workflow_run`.
+- Structural Prior Materializer is the verified upstream heartbeat for Long72;
+- deliberate Structural rerun -> Long72 `workflow_run` -> full prospective persistence succeeded end-to-end on 2026-10-28.
 
 ## 17. Governance / security debt
 
@@ -457,4 +462,4 @@ Do not conflate these with current P9/Form5 evidence work.
 
 ## 18. Cold-start command
 
-> Read `AI_BOOTSTRAP.md`, this handoff, `ml/EXECUTION_PLAN_CURRENT.md`, `ml/CURRENT_MODEL.md`, `ml/P9_SUPPORT_POSTMORTEM_2026-10-26.md`, `ml/P9_BOOKING_CURVE_PROSPECTIVE_PRECOMMIT_V1.md`, `ml/P9_BOOKING_CURVE_PROSPECTIVE_FAMILY_FALLBACK_V2.md`, `ml/FORM5_PROSPECTIVE_PRECOMMIT_V1.md`, and `ml/HYPE_ATTENTION_RESEARCH_2026-10-27.md`. Historical P9 is closed as NOT_EVALUABLE. P9 prospective v1 remains frozen. Event443 T-48 was captured correctly and failed closed because D2 had only 2/5 same-family refs. A separate fallback-only P9 v2 was precommitted before any target outcome: it preserves the exact same five neighbors and only falls D2->Structural when D2 has <3 refs and Structural has >=3 among those same five; event443 is never retro-predicted. PR199 is merged on main SHA e710d8b49e7a764561e2bdc7663bca74ed0d1174; contract CI and P9 integration run40758645007 are green; v2 DB ledgers are still zero. Tomorrow protect event446/6/444 T-48 and event443 T-24. Long72 now triggers from successful Structural Prior Materializer workflow completion; run40759137164 proves the workflow_run wiring and should be checked for final prospective-main success if not yet completed. Form5 first qualifying T-24 is event443 at 2026-10-29 17:00 UTC. Event448 remains unknown/no-snapshot and must never be fabricated as zero. Production remains unchanged and live_adjustment=0.
+> Read `AI_BOOTSTRAP.md`, this handoff, `ml/EXECUTION_PLAN_CURRENT.md`, `ml/CURRENT_MODEL.md`, `ml/P9_SUPPORT_POSTMORTEM_2026-10-26.md`, `ml/P9_BOOKING_CURVE_PROSPECTIVE_PRECOMMIT_V1.md`, `ml/P9_BOOKING_CURVE_PROSPECTIVE_FAMILY_FALLBACK_V2.md`, `ml/FORM5_PROSPECTIVE_PRECOMMIT_V1.md`, and `ml/HYPE_ATTENTION_RESEARCH_2026-10-27.md`. Historical P9 is closed as NOT_EVALUABLE. P9 prospective v1 remains frozen. Event443 T-48 was captured correctly and failed closed because D2 had only 2/5 same-family refs. A separate fallback-only P9 v2 was precommitted before any target outcome: it preserves the exact same five neighbors and only falls D2->Structural when D2 has <3 refs and Structural has >=3 among those same five; event443 is never retro-predicted. PR199 is merged on main SHA e710d8b49e7a764561e2bdc7663bca74ed0d1174; contract CI and P9 integration run40758645007 are green; v2 DB ledgers are still zero. Tomorrow protect event446/6/444 T-48 and event443 T-24. Long72 heartbeat is verified end-to-end: Structural completion automatically created workflow_run 40759137164 and both validate/prospective-main succeeded, with fresh rows at 19:59:58 UTC. Form5 first qualifying T-24 is event443 at 2026-10-29 17:00 UTC. Event448 remains unknown/no-snapshot and must never be fabricated as zero. Production remains unchanged and live_adjustment=0.
