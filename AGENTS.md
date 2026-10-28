@@ -1,245 +1,312 @@
 # Beyond Agent Instructions
 
+Last updated: **2026-10-28**
+
 For any Beyond forecasting / ML / Demand Engine task:
 
 1. **Read `AI_BOOTSTRAP.md` first.**
-2. Read `ml/NEXT_SESSION_HANDOFF.md`.
-3. Read `ml/EXECUTION_PLAN_CURRENT.md`.
-4. Read `ml/PROGRESS_TRACKING.md` for the latest canonical state.
-5. Read `ml/MAE_RESEARCH_ROADMAP_V4.md` for strategy.
-6. Query `public.ml_research_readiness_v1()` fresh before acting on any data gate.
-7. Never rebuild frozen history merely to recover context.
-8. Never store secrets/tokens/service-role keys in repo files.
+2. Read `ml/EXECUTION_PLAN_CURRENT.md`.
+3. Read `ml/NEXT_SESSION_HANDOFF.md`.
+4. Read `ml/MAE_RESEARCH_ROADMAP_V5.md`.
+5. Read `ml/TRAJECTORY_FORECASTING_PLAN_V1.md` for trajectory work.
+6. Read `ml/CURRENT_MODEL.md` and `ml/PROGRESS_TRACKING.md` for the latest recorded state.
+7. Read `ml/MODEL_ACCURACY_DEVELOPMENT_INSTRUCTIONS_V3.md` before model-development work.
+8. Read the exact precommit before touching any frozen experiment.
+9. Query live/machine state fresh before acting on a data gate or scheduled window.
+10. Never rebuild frozen history merely to recover context.
+11. Never store secrets/tokens/service-role keys in repository files.
+
+Do **not** restart from Roadmap v3/v4. Roadmap v5 is canonical.
+
+---
 
 ## Core principle
 
-> **The objective is lower true out-of-sample MAE, not model complexity.**
+> **The objective is lower true prospective event-balanced MAE, not model complexity.**
 
-Current phase: **representation-first, not tuning-first**.
+Current phase:
+
+**protect genuine prospective evidence + build daily trajectory capability in parallel.**
 
 Production remains:
 
 `live_adjustment = 0`
 
-## Repository / live-state
+No research result activates production automatically.
 
-Canonical repository branch is `main`.
+---
 
-The former active branch `ml/p9-p11-execution-2026-10-24` has already been reconciled with `main`; do not repeat branch reconciliation unless a fresh compare shows a new divergence.
+## Current research mode
 
-Live Supabase project:
+### Protect frozen/precommitted evidence
 
-`adchzwqboeekhokapxqi`
+Do not mutate these contracts after their relevant outcomes are exposed:
 
-P9a and P11a v2 source are present on canonical `main` and live Supabase.
+- P7 prospective;
+- P9 v1;
+- P9 Family Fallback v2;
+- Form5 prospective;
+- Long72 frozen package;
+- P11/P4a evidence collection rules.
 
-Do not redeploy from memory or create parallel implementations.
+### Build the next trajectory-first capability
 
-## Ticketing ingestion safety net — live 2026-10-25
+Accepted target behaviour:
 
-A permanent pre-mapping protection layer is now active to prevent losing booking-curve history when a new RoboTicket match appears before exact kickoff mapping is ready.
+`P-60 -> P-59 -> ... -> today -> predicted remaining trajectory -> final attendance`
 
-Live controls:
+This is **daily inference, not daily retuning**.
 
-- RoboTicket discovery hardened to same-element/direct-event identity instead of nearby-text heuristics;
-- explicit parking / VIP / Premium / reserve / non-match exclusion;
-- football eligibility fail-closed before raw buffering;
-- discovery cadence tightened from 6h to hourly;
-- candidate raw inventory buffer runs every 10 minutes;
-- raw candidate observations are isolated in `private.roboticket_candidate_snapshots_v1` and are not model-facing;
-- exact original `captured_at` is preserved;
-- verified schedule mapping promotes the event and safely backfills eligible raw observations into normal `snapshots`;
-- normal RoboTicket collector remains active every 15 minutes;
-- dashboard ingestion cache refreshes every 10 minutes;
-- Beyond Ticketing Panel Data Quality page exposes tracking / buffer / gap state.
+New work starts with:
 
-Important safety rule:
+1. canonical PIT-safe daily trajectory dataset;
+2. immutable daily attempt/forecast ledger;
+3. horizon-wise MAE reporting;
+4. Lane A simple trajectory residual benchmark;
+5. Lane B small sequence residual challenger;
+6. target-free/self-supervised trajectory representation research where useful.
 
-> A candidate raw buffer is evidence preservation only. It must not become model-facing until a verified event identity and kickoff exist.
+---
 
-Known non-football / ambiguous products remain fail-closed even if they share the same RoboTicket storefront.
+## Daily trajectory implementation rule
 
-## Validation / evidence
+Use existing trajectory infrastructure. **Do not duplicate trajectory semantics.**
 
-Historical/global:
+Canonical feature builder:
 
-- strict expanding temporal folds;
-- complete `match_key` blocking across all horizons;
-- no future-season leakage;
-- persist exact identities/manifest SHA.
+`ml/demand_engine/live_trajectory_feature_store.py`
 
-Live/context:
+Canonical daily dataset wrapper:
 
-- `ticket_event` is the independent unit;
-- strict forward-event validation by kickoff;
-- tied kickoffs cannot train one another;
-- no random snapshot split as headline evidence;
-- freeze target-free identities/features before labels/model-result selection whenever prospective evidence is possible.
+`ml/demand_engine/daily_trajectory_dataset.py`
 
-## Governance v2
-
-Use `ml/research_advance_governance_v2.py`.
-
-Statuses:
-
-- `NO_RESEARCH_GAIN`;
-- `POINT_GAIN_UNCERTAINTY_LIMITED`;
-- `ROBUST_RESEARCH_ADVANCE`.
-
-A positive point estimate alone is not a robust advance. Robust advancement requires a predeclared business-derived minimum meaningful MAE improvement plus precision, stability and evidence-integrity gates.
-
-Do not infer the meaningful threshold from the experiment being judged.
-
-## Fresh readiness checkpoint recorded 2026-10-25 16:58 UTC
-
-Always query fresh before acting, but current recorded state is:
-
-- Long72: `90` reproducible rows / `2` genuine scored events; first-score trigger open;
-- P7 Long168: **10/9** independent events / `139` rows >72h — gate OPEN;
-- P4a: `5` READY / `2` labeled / `2` distinct labeled spacing values — gate CLOSED (`>=9` labeled and `>=3` distinct required);
-- P9 full 168h: **5** ready events / 5 clubs — still `DATA_BOUND`;
-- P9 T-72: `9` ready events / 7 clubs;
-- P9 T-48: `12` ready events / 7 clubs;
-- P9 T-24: `15` ready events / 9 clubs;
-- production change remains `false`.
-
-### P7 Long168 — execute now
-
-P7 research-start gate is open.
-
-Required action:
-
-1. freeze exact event/as-of identities before any Long168 model selection;
-2. replay the frozen T-7 structural anchors;
-3. run only the precommitted fixed P7 tournament;
-4. evaluate with existing governance;
-5. keep `production_change=false`, `production_activation_allowed=false`, `live_adjustment=0`.
-
-A temporary one-shot CI trigger is armed only to execute this frozen contract once from `main`; restore the workflow immediately after the run.
-
-Do not redesign candidates after seeing the result.
-
-## P10 / P10b — frozen closeout
-
-P10 v1:
-
-- local HGB `2120.93`;
-- pooled HGB `2057.46`;
-- `ΔMAE=-63.47`;
-- status `POINT_GAIN_UNCERTAINTY_LIMITED`.
-
-P10b against actual frozen Pre-Live v3:
-
-- incumbent `1919.92`;
-- pooled `2067.43`;
-- challenger-incumbent `ΔMAE=+147.51`;
-- 95% CI `[+82.97,+210.67]`;
-- 0/4 folds and 0/5 horizons improved;
-- status `NO_RESEARCH_GAIN`.
-
-Do **not** retune P10/P10b after these results. A future pooling experiment requires a materially new mechanism and a new precommit.
-
-## P9 full-window booking curves
-
-Use existing trajectory infrastructure; do not duplicate it.
+The daily dataset must reuse `build_live_trajectory_features(...)` for every exact daily cutoff.
 
 Hard rules:
 
+- exact cutoff: `as_of_at = kickoff_at - N * 24h`;
 - no target snapshot after `as_of_at`;
-- no future target canonical point;
-- no self-event historical reference;
-- reference event completed before target cutoff;
-- public inventory is a demand proxy, not confirmed sales.
+- no future target trajectory point;
+- missing daily history stays missing;
+- do not interpolate/manufacture history merely to obtain complete sequences;
+- structural/incumbent data must have genuinely existed by the cutoff;
+- public inventory is a demand proxy, not confirmed paid sales or attendance;
+- unknown/hidden inventory is never zero.
 
-Current full-168h coverage: **5** genuine completed reference events.
+---
 
-Do not fit the first full-window P9 residual challenger before the 9-event gate. At 9/9, freeze the learner contract before opening model-result comparisons.
+## Validation / evidence
 
-## P9a T-24/T-48 target-free freeze
+The independent evaluation unit is the **event/match**.
 
-P9a is **freeze/audit infrastructure**, not a trained model.
+A large number of daily prefixes does not create a large number of independent events.
 
-The harness freezes exact target/reference/snapshot/incumbent identities and a deterministic SHA. It rejects attendance target fields, post-cutoff target snapshots and self references.
+Example:
 
-Run/verify the main P9a freeze audit after P7. Require:
+`50 events x 40 prefixes = 2,000 rows`
 
-- `target_values_opened=false`;
-- `model_training_performed=false`;
-- future target snapshots not used;
-- labels remain separate.
+still means:
 
-Do **not** call `export_p9a_booking_curve_labels_v1` merely because it exists. Label opening/model fitting requires a separate explicit learner/comparator precommit.
+`50 independent events`.
 
-## P11a market odds v2
+Therefore:
 
-Provider target:
+- all prefixes from one event stay in the same fold;
+- no random daily-row/snapshot split as headline evidence;
+- strict forward/time-respecting validation;
+- tied kickoffs cannot train one another where chronological ordering matters;
+- normalization/scalers are fitted inside training folds;
+- target outcomes remain closed during prediction construction;
+- immutable prospective forecasts must exist before outcome exposure;
+- event-block uncertainty is used for independent-event inference.
 
-`the-odds-api-v4` / `soccer_poland_ekstraklasa` / pre-match `h2h`.
+Prospective evidence outranks favorable historical/grouped evidence when they disagree.
 
-Architecture:
+---
 
-- append-only raw bookmaker-level 1X2 quotes;
-- provider event + capture batch lineage;
-- verified alias mapping;
-- kickoff tolerance 5,400 seconds;
-- ambiguous mappings fail closed;
-- actual capture timestamp is authoritative;
-- source payload SHA-256;
-- de-vig each bookmaker first;
-- median bookmaker consensus, then renormalize;
-- as-known lookup uses only batches captured by requested cutoff and pre-kickoff.
+## Model program
 
-Semantic guard:
+### Lane A — simple benchmark
 
-`outcome_uncertainty != expected_match_quality`
+Default formulation:
 
-Current architecture is live, but genuine odds capture must still be verified before enabling any schedule.
+`structural P50 + trajectory residual model`
 
-Required secret:
+Typical inputs:
 
-`THE_ODDS_API_KEY`
+- current proxy level;
+- 1d/3d/7d change;
+- velocity;
+- acceleration;
+- short/long slope;
+- slope change;
+- volatility;
+- observation maturity/density;
+- curve similarity.
 
-Configure/verify it in Supabase Edge Function secrets; never commit it.
+Candidate families stay small and hypothesis-driven: Ridge/ElasticNet, restrained tree/boosting models, nearest-curve/pickup residual methods.
 
-First genuine capture must be manual and audited before any schedule is enabled.
+### Lane B — accepted high-risk sequence research
 
-Never backfill closing odds into earlier PIT cutoffs.
+Do **not** wait for a conventionally large labeled dataset before testing sequence models.
 
-## P4a / Long72
+Preferred order:
 
-P4a remains frozen/data-bound:
+1. small GRU;
+2. small LSTM;
+3. small TCN;
+4. compact attention/Transformer encoder only if simpler sequence models establish value.
 
-- 5 READY events;
-- 2 labeled events;
-- 2 distinct labeled previous-home-spacing values;
-- gate `>=9` labeled + `>=3` distinct labeled spacing values;
-- fixed previous-home-spacing challenger.
+Sequence models remain research/shadow-only until genuine evidence supports them.
 
-Long72 remains immutable forecast-before-label evidence. Two genuine events are now scored; inspect as prospective evidence only and do not retune the frozen package from them.
+They must beat Lane A under the same event-grouped/PIT-safe folds before extra complexity is justified.
 
-## Closed loops
+Research/model risk is accepted. Evidence/leakage shortcuts are not.
 
-Do not reopen without materially new evidence/mechanism:
+---
 
-- estimator-only tuning;
-- estimator uncertainty re-analysis on same sample;
-- simple structural/live shrinkage;
-- historical Long72 incremental-value loop;
-- simple club/opponent post-hoc calibration;
-- fixed P10/P10b pooled-HGB direct replacement;
-- blind model or weight sweeps.
+## Self-supervised trajectory research
+
+Allowed target-free tasks include:
+
+- next genuine proxy observation prediction;
+- short-window proxy-change prediction;
+- chronology-safe trajectory representation learning;
+- masked/reconstruction tasks that do not expose a target event's future trajectory to its own earlier cutoff.
+
+Self-supervised prefixes may improve representation learning but do **not** increase the number of independent attendance evaluation events.
+
+---
+
+## Current key state — recorded 2026-10-28
+
+Always query fresh before acting.
+
+### P9 v1
+
+Historical: `NOT_EVALUABLE_PIT_SUPPORT_INSUFFICIENT`.
+
+First genuine prospective attempt:
+
+- event443 Cracovia–Motor T-48;
+- cutoff 2026-10-28 17:00 UTC;
+- immutable attempt persisted;
+- result `PIT_SUPPORT_INSUFFICIENT`;
+- 1 attempt / 0 predictions / 0 scored.
+
+This is correct fail-closed. Do not lower support and do not retro-predict.
+
+### P9 Family Fallback v2
+
+Separately precommitted/deployed:
+
+- same exact five v1 neighbors;
+- unchanged support gate;
+- Structural fallback only under the frozen v2 rule;
+- never retro-predict event443;
+- never pool v1/v2 evidence.
+
+### P7
+
+Latest recorded handoff:
+
+- 53 immutable prediction rows;
+- 6 independent events;
+- 0 scored;
+- no retuning.
+
+### Form5
+
+First legal T-24 capture:
+
+**event443 — 2026-10-29 17:00 UTC**.
+
+### Long72
+
+Latest recorded:
+
+- 5 scored events;
+- MAE 6082.40 -> 6039.39;
+- improvement 43.01 / 0.71%;
+- low priority / frozen.
+
+### P11
+
+Latest recorded:
+
+- 6 events / 6 clubs;
+- >=3 bookmakers on all 6;
+- T-24/T-72/T-168 = 5/5/0;
+- no model fit yet.
+
+---
+
+## Near-term protected windows
+
+Unless fresh machine state says otherwise:
+
+- event446 Wisła Płock–Piast T-48: 2026-10-29 11:15 UTC;
+- event6 Lech–Wisła Kraków T-48: 2026-10-29 16:30 UTC;
+- event443 Cracovia–Motor T-24: 2026-10-29 17:00 UTC;
+- event444 GKS Katowice–Widzew T-48: 2026-10-29 19:15 UTC;
+- event445 Zagłębie–Korona T-48: 2026-10-31 17:00 UTC;
+- event447 Raków–Pogoń T-48: 2026-10-31 19:30 UTC.
+
+Event448 remains a genuine inventory watch. Unknown inventory is not zero.
+
+---
+
+## Governance
+
+Use the existing governance framework and explicit evidence states.
+
+A negative point Delta MAE is necessary but not automatically a robust advance.
+
+The business minimum meaningful Delta MAE must be derived independently from real operational decisions, not from the experiment being judged.
+
+Mandatory diagnostics include:
+
+- incumbent/challenger MAE;
+- absolute/relative Delta MAE;
+- signed bias;
+- median AE;
+- P90 AE;
+- event improvement rate;
+- worst event degradation;
+- per-club diagnostics;
+- event-block uncertainty;
+- for daily trajectory work: MAE by precommitted horizon/band.
+
+---
+
+## Rejected/closed mechanisms
+
+Do not reopen on the same exposed evidence without a materially new mechanism/information source:
+
+- previous Live Ticketing challenger;
+- Sporting Match Stakes;
+- timing-context candidate;
+- existing weather point-forecast mechanism;
+- Hype/Attention 48h;
+- old estimator/broad weight sweeps;
+- post-hoc retuning of frozen results.
+
+The new daily trajectory program is allowed because it is a materially different representation/model contract.
+
+---
 
 ## Immediate development order
 
-1. **execute frozen P7 Long168 now**;
-2. run/verify P9a target-free T-24/T-48 main freeze audit; do not open labels/train;
-3. configure/verify `THE_ODDS_API_KEY` if not already set;
-4. run one manual P11a v2 genuine capture and audit it; keep schedule off until audited;
-5. keep full-168h P9 genuine curve capture running toward 9 events;
-6. derive the business minimum meaningful MAE threshold;
-7. keep P4a/Long72 evidence collection unchanged;
-8. keep ingestion safety-net monitoring active and fail closed on ambiguous/non-football candidates.
+1. protect any imminent genuine P9/Form5 window first;
+2. score frozen P7/P9 only after genuine outcomes;
+3. keep P11/P4a collection healthy;
+4. build/audit the canonical daily trajectory dataset and tests;
+5. build immutable daily attempt/forecast persistence;
+6. add horizon-wise MAE reporting;
+7. only then freeze/precommit Lane A and Lane B contracts;
+8. evaluate both on identical event-grouped/PIT-safe folds;
+9. begin prospective daily shadow inference before target outcomes;
+10. derive the business minimum meaningful Delta MAE;
+11. keep `live_adjustment=0` until explicit reviewed promotion.
 
 The old ChatGPT Beyond readiness automations are intentionally disabled. Do not enable them implicitly.
-
-No research result activates production automatically.
