@@ -119,6 +119,31 @@ function parseIsoMs(value: string, label: string): number {
   return parsed;
 }
 
+function nearestProviderFixtures(
+  localKickoff: number,
+  providerEvents: ProviderOddsEvent[],
+  aliasIndex: Map<string, string>,
+  limit = 3,
+) {
+  return providerEvents
+    .map((event) => {
+      const providerKickoff = Date.parse(event.commence_time);
+      if (!Number.isFinite(providerKickoff)) return null;
+      return {
+        provider_event_id: event.id,
+        commence_time: event.commence_time,
+        home_team: event.home_team,
+        away_team: event.away_team,
+        resolved_home_club_key: resolveClubKey(event.home_team, aliasIndex),
+        resolved_away_club_key: resolveClubKey(event.away_team, aliasIndex),
+        kickoff_delta_seconds: Math.round((providerKickoff - localKickoff) / 1000),
+      };
+    })
+    .filter((row): row is NonNullable<typeof row> => row !== null)
+    .sort((a, b) => Math.abs(a.kickoff_delta_seconds) - Math.abs(b.kickoff_delta_seconds))
+    .slice(0, limit);
+}
+
 export function matchProviderEvent(
   localEvent: LocalTicketEvent,
   providerEvents: ProviderOddsEvent[],
@@ -149,9 +174,10 @@ export function matchProviderEvent(
   }
 
   if (candidates.length === 0) {
+    const nearest = nearestProviderFixtures(localKickoff, providerEvents, aliasIndex);
     return {
       status: "NO_PROVIDER_MATCH",
-      reason: `no provider event matched ${localHome} vs ${localAway} within ${kickoffToleranceSeconds}s`,
+      reason: `no provider event matched ${localHome} vs ${localAway} within ${kickoffToleranceSeconds}s; nearest_provider_fixtures=${JSON.stringify(nearest)}`,
     };
   }
   if (candidates.length > 1) {
