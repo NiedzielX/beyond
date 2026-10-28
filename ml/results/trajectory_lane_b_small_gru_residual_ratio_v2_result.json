@@ -1,0 +1,42 @@
+{
+  "by_event": {
+    "10": {"challenger_event_mae": 6062.31078819023, "delta_mae": 4275.659018368962, "incumbent_event_mae": 1786.6517698212676},
+    "20": {"challenger_event_mae": 2611.1020840523443, "delta_mae": 2203.2392601810293, "incumbent_event_mae": 407.86282387131496},
+    "21": {"challenger_event_mae": 996.4114075350457, "delta_mae": 21.3323569909129, "incumbent_event_mae": 975.0790505441328},
+    "22": {"challenger_event_mae": 2911.4873942477534, "delta_mae": -158.71818456501342, "incumbent_event_mae": 3070.205578812767},
+    "23": {"challenger_event_mae": 11380.773104223577, "delta_mae": 4647.896912501076, "incumbent_event_mae": 6732.876191722501}
+  },
+  "by_horizon": {
+    "T-1": {"challenger_mae": 3421.153163995639, "delta_mae": 1106.2681622634445, "events": 5, "incumbent_mae": 2314.8850017321943, "rows": 5},
+    "T-3": {"challenger_mae": 4567.299084667252, "delta_mae": 1899.3719147667198, "events": 5, "incumbent_mae": 2667.927169900532, "rows": 5},
+    "T-7": {"challenger_mae": 7333.222751845015, "delta_mae": 3934.1971112747647, "events": 4, "incumbent_mae": 3399.0256405702507, "rows": 4}
+  },
+  "cohort_version": "trajectory-development-cohort-v1",
+  "decision": "MECHANISM_NOT_SUPPORTED",
+  "delta_mae_vs_incumbent": 2197.881872695393,
+  "delta_mae_vs_lane_a": 639.0772476497896,
+  "delta_mae_vs_lane_b_v1": 2197.0148394124776,
+  "event_improvement_rate": 0.2,
+  "evidence_class": "historical_exposed_research",
+  "export_sha": "1bbf71166b047603784e731ee22e0bc8170b6b35",
+  "fold_registry_sha256": "fc59737ab1c0a306920b4961de35664178b14648f679071522d1d07515cb3091",
+  "incumbent_event_balanced_mae": 2594.535082954397,
+  "independent_cohort_events": 10,
+  "independent_test_events": 5,
+  "lane_a_event_balanced_mae": 4153.339708,
+  "lane_b_v1_event_balanced_mae": 2595.4021162373124,
+  "lane_b_v2_event_balanced_mae": 4792.41695564979,
+  "max_seed_ratio_spread": 0.38809314370155334,
+  "median_seed_ratio_spread": 0.13741300255060196,
+  "outer_test_rows": 14,
+  "precommit_id": "trajectory-lane-b-small-gru-residual-ratio-v2",
+  "predicted_residual_ratio_distribution": {"max": 0.44715315103530884, "max_abs": 0.5961154103279114, "median": 0.026753894984722137, "median_abs": 0.09298227727413177, "min": -0.5961154103279114},
+  "predicted_seat_residual_distribution": {"max": 6126.9145474191255, "max_abs": 9673.162196745538, "median": 653.8925328818748, "median_abs": 1550.7843511393237, "min": -9673.162196745538},
+  "production_change": false,
+  "target_values_used_in_features": false,
+  "version": "trajectory-lane-b-small-gru-residual-ratio-v2-result",
+  "worst_event_degradation": 4647.896912501076,
+  "workflow_run_id": 40776864173,
+  "artifact_id": 12855781638,
+  "artifact_sha256": "119aff564d431944f792f24c80022cc06258645a5b4e69534f6b19b349e11ca9"
+}
