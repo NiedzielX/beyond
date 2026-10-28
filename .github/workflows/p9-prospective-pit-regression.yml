@@ -1,0 +1,36 @@
+name: P9 Prospective PIT Regression
+
+on:
+  pull_request:
+    paths:
+      - "ml/p9_booking_curve_prospective_v1.py"
+      - "ml/test_p9_booking_curve_prospective_v1.py"
+      - ".github/workflows/p9-prospective-pit-regression.yml"
+  push:
+    branches: [main]
+    paths:
+      - "ml/p9_booking_curve_prospective_v1.py"
+      - "ml/test_p9_booking_curve_prospective_v1.py"
+      - ".github/workflows/p9-prospective-pit-regression.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  pit-regression:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install pinned ML dependencies
+        run: pip install -r ml/requirements.txt
+      - name: Compile P9 builder and regression checks
+        run: |
+          python -m py_compile ml/p9_booking_curve_prospective_v1.py
+          python -m py_compile ml/test_p9_booking_curve_prospective_v1.py
+      - name: Run P9 prospective PIT regression checks
+        run: python -m ml.test_p9_booking_curve_prospective_v1
