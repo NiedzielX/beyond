@@ -12,14 +12,15 @@ Read in this order:
 2. `ml/NEXT_SESSION_HANDOFF.md`;
 3. `ml/MAE_RESEARCH_ROADMAP_V5.md`;
 4. `ml/TRAJECTORY_FORECASTING_PLAN_V1.md`;
-5. `ml/DAILY_TRAJECTORY_COVERAGE_AUDIT_2026-10-28.md`;
-6. `ml/CURRENT_MODEL.md`;
-7. `ml/PROGRESS_TRACKING.md`;
-8. `ml/MODEL_ACCURACY_DEVELOPMENT_INSTRUCTIONS_V3.md`.
+5. `ml/TRAJECTORY_FEATURE_CONTRACT_V1.md`;
+6. `ml/TRAJECTORY_VALIDATION_FOLD_CONTRACT_V1.md`;
+7. `ml/DAILY_TRAJECTORY_COVERAGE_AUDIT_2026-10-28.md`;
+8. `ml/PROGRESS_TRACKING.md`;
+9. `ml/MODEL_ACCURACY_DEVELOPMENT_INSTRUCTIONS_V3.md`.
 
-Then read the exact precommit for any frozen experiment you are about to touch.
+Read the exact precommit before touching a frozen experiment. Query live/machine state fresh before acting on scheduled windows or readiness assumptions.
 
-Do not restart from Roadmap v3/v4. Query live/machine state fresh before changing operational assumptions.
+Roadmap v5 is canonical. Do not restart from v3/v4.
 
 ---
 
@@ -29,119 +30,162 @@ Do not restart from Roadmap v3/v4. Query live/machine state fresh before changin
 
 Primary metric:
 
-`Delta MAE = challenger event-balanced MAE - incumbent event-balanced MAE`
+`Delta MAE = challenger MAE - incumbent MAE`
 
 Desired: `Delta MAE < 0`
 
 Production remains: `live_adjustment = 0`
 
-Readiness, snapshot counts, trajectory rows, support counts and prediction counts are prerequisites, not model success.
-
 ---
 
-## 3. Current execution mode
+## 3. Current phase
 
-Beyond is in **prospective validation + trajectory model development** mode.
+Beyond is in **prospective validation + first trajectory-model development** mode.
 
 ### Protect frozen evidence first
 
 - P7 prospective: collect/score only;
-- P9 v1: protect every T-48/T-24 window;
+- P9 v1: protect T-48/T-24 windows;
 - P9 Family Fallback v2: run separately, never pool with v1;
 - Form5: protect genuine T-24 captures;
 - Long72: frozen / low priority;
 - P11/P4a: genuine evidence accumulation only.
 
-### Daily trajectory infrastructure is already delivered
+### Trajectory infrastructure is already delivered
 
-Implemented/live:
-
-- canonical P-N dataset builder + PIT tests;
-- immutable daily attempt/prediction/score ledgers;
-- post-outcome scoring;
-- MAE-by-horizon backend;
-- coverage/missingness audit;
-- controlled service-role write RPCs.
-
-Do not rebuild these as a parallel implementation.
+Do not rebuild another daily dataset/ledger/scoring stack.
 
 Canonical code:
 
 - `ml/demand_engine/live_trajectory_feature_store.py`;
 - `ml/demand_engine/daily_trajectory_dataset.py`;
-- `supabase/sql/daily_trajectory_prospective_evidence_v1.sql`.
+- `ml/demand_engine/trajectory_feature_contract_v1.py`;
+- `ml/demand_engine/trajectory_validation_folds_v1.py`.
+
+Canonical persistence:
+
+`supabase/sql/daily_trajectory_prospective_evidence_v1.sql`
 
 ---
 
-## 4. Data reality that changes model design
+## 4. Frozen trajectory development contracts
 
-Current genuine Ekstraklasa inventory data:
+### Feature Contract v1
 
-- 32 events / 14 clubs with any pre-kickoff inventory observation;
+`trajectory-feature-contract-v1`
+
+Shared primary eligibility:
+
+- P-60...P-1;
+- PIT-valid structural incumbent;
+- >=4 clean genuine snapshots;
+- >=24h genuine observation window;
+- canonical `signal_readiness=ready`;
+- no target future trajectory/outcome.
+
+Lane A receives engineered trajectory scalar summaries + structural P50.
+
+Lane B receives the genuine ordered variable-length snapshot sequence + structural P50/global quality context.
+
+Lane B uses no interpolation/forward-fill and requires an explicit padding mask/sequence length.
+
+### Validation Fold Contract v1
+
+`trajectory-validation-fold-contract-v1`
+
+Primary method:
+
+- strict expanding temporal event folds;
+- all prefixes from one event stay in the same fold;
+- same-kickoff events stay together;
+- minimum 5 prior train events;
+- minimum 4 prior train clubs;
+- Lane A/B use identical fold registry/manifest.
+
+Random row/snapshot CV is prohibited.
+
+---
+
+## 5. Current data reality
+
+Current genuine pre-kickoff inventory sample:
+
+- 32 events / 14 clubs with any observation;
 - median first observation ~P-9.3;
 - p75 ~P-14;
 - earliest ~P-30.3;
-- coverage ~3% P-30, 22% P-14, 62% P-7, 75% P-3, 95% P-1;
 - P-31...P-60 historical coverage currently zero.
 
-Therefore:
+Representative coverage:
 
-- P-60 is a collection horizon, not a mandatory complete input;
-- use genuine variable-length prefixes;
-- missing does not become zero;
-- Lane B must use lengths/masks or equivalent missingness-aware handling;
-- preferred sequence input is the ordered genuine snapshot sequence with time-to-kickoff/time-gap information, not fabricated daily forward-fill.
+- P-30 ~3%;
+- P-14 ~22%;
+- P-7 ~62%;
+- P-3 ~75%;
+- P-1 ~95%.
+
+Shared-gate labeled checkpoint support:
+
+- T-30: 0;
+- T-14: 0;
+- T-7: 4;
+- T-3: 5;
+- T-1: 10.
+
+Do not pretend this is a large independent sample. More prefixes help training/representation learning, not independent-event evidence.
 
 ---
 
-## 5. Next new-model task
+## 6. Next new-model work
 
-The next task is **not** another broad feature tournament.
-
-Freeze a shared `Trajectory Feature Contract v1` and an event-grouped fold/export registry.
-
-Then compare on identical evidence:
+The next task is **model-development precommit**, not more generic infrastructure.
 
 ### Lane A
 
-`structural P50 + simple engineered-trajectory residual model`
+Freeze a small benchmark protocol around:
 
-Candidate families remain restrained: Ridge/ElasticNet, small tree/boosting residual model, nearest-trajectory correction.
+`structural P50 + engineered trajectory residual -> challenger P50`
+
+Keep candidate families small: Ridge/ElasticNet, optionally one restrained tree/boosting residual model, optionally one auditable nearest-trajectory method.
 
 ### Lane B
 
-`structural P50 + genuine variable-length sequence encoder residual model`
+Freeze the first small sequence protocol around:
 
-Accepted research order:
+`structural P50 + genuine variable-length trajectory -> residual`
+
+Accepted architecture order:
 
 1. small GRU;
 2. small LSTM;
 3. small TCN;
 4. compact Transformer only if simpler sequence models establish value.
 
-Sequence research starts early despite limited labels, but remains research/shadow-only.
+Lane A/B must use the same event identities, cutoffs, fold registry, incumbent and scoring rules.
 
 ---
 
-## 6. Accepted model-risk decision
+## 7. Accepted risk decision
 
-Research risk is allowed. Evidence shortcuts are not.
+> **Test sequence models early despite limited labels.**
+
+Research/model risk is allowed. Evidence shortcuts are not.
 
 Never:
 
 - random-split daily rows;
 - treat prefixes as independent events;
 - expose future target trajectory;
-- expose target attendance during prediction;
+- expose target attendance during inference;
 - fabricate missing history;
 - retune frozen challengers on prospective outcomes;
-- call model complexity a success metric.
+- use complexity as a success metric.
 
-Self-supervised trajectory pretraining is allowed, but it does not increase independent attendance-event count.
+Self-supervised trajectory pretraining is allowed but does not increase independent attendance-event count.
 
 ---
 
-## 7. Current key state
+## 8. Current protected state
 
 ### P9 v1
 
@@ -150,14 +194,14 @@ Historical: `NOT_EVALUABLE_PIT_SUPPORT_INSUFFICIENT`.
 First genuine prospective attempt:
 
 - event443 Cracovia–Motor T-48;
-- cutoff 2026-10-28 17:00 UTC;
+- 2026-10-28 17:00 UTC;
 - `PIT_SUPPORT_INSUFFICIENT`;
-- 1 genuine attempt / 0 predictions / 0 scored;
+- 1 attempt / 0 predictions / 0 scored;
 - correct fail-closed.
 
 ### P9 v2
 
-Separately precommitted/deployed. Same five v1 neighbors, unchanged support gate, Structural fallback only under frozen rule. No retro event443. Never pool with v1.
+Separately precommitted/deployed; same exact five v1 neighbors/support gate; Structural fallback only under frozen rule; never retro-predict event443; never pool v1/v2 evidence.
 
 ### Form5
 
@@ -177,7 +221,7 @@ First legal T-24 capture: **event443 — 2026-10-29 17:00 UTC**.
 
 ---
 
-## 8. Near-term protected windows
+## 9. Near-term protected windows
 
 Unless fresh machine state says otherwise:
 
@@ -188,18 +232,19 @@ Unless fresh machine state says otherwise:
 - event445 Zagłębie–Korona T-48: 2026-10-31 17:00 UTC;
 - event447 Raków–Pogoń T-48: 2026-10-31 19:30 UTC.
 
-Event448 remains a genuine inventory watch. Unknown inventory is not zero.
+Event448 remains an inventory watch. Unknown inventory is not zero.
 
 ---
 
-## 9. Hard rules
+## 10. Hard rules
 
 - protect genuine prospective windows before lower-priority R&D;
-- never lower a gate just to get coverage;
+- never lower a gate for coverage;
 - never manufacture PIT history;
 - never infer attendance from inventory/capacity/model output;
-- keep all prefixes from one event in one fold;
-- persist forecasts before outcomes;
+- unknown/hidden inventory is not zero;
+- keep all prefixes from one event together;
+- persist prospective forecasts before outcomes;
 - keep frozen learners separately auditable;
 - query machine state fresh;
-- keep `live_adjustment=0` until explicit reviewed promotion.
+- no automatic production activation.
