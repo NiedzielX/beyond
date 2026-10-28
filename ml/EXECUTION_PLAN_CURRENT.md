@@ -4,13 +4,11 @@ Last updated: **2026-10-28**
 
 Status: **CURRENT SOURCE OF TRUTH**
 
-Canonical research strategy:
+Canonical research strategy: `ml/MAE_RESEARCH_ROADMAP_V5.md`
 
-`ml/MAE_RESEARCH_ROADMAP_V5.md`
+Detailed trajectory plan: `ml/TRAJECTORY_FORECASTING_PLAN_V1.md`
 
-Detailed trajectory plan:
-
-`ml/TRAJECTORY_FORECASTING_PLAN_V1.md`
+Current trajectory coverage audit: `ml/DAILY_TRAJECTORY_COVERAGE_AUDIT_2026-10-28.md`
 
 ---
 
@@ -26,7 +24,7 @@ Desired direction:
 
 `Delta MAE < 0`
 
-Readiness counters, snapshot counts, support counts, odds rows, daily rows and prediction rows are experiment prerequisites only. They are not model success.
+Readiness counters, snapshot counts, support counts, odds rows, daily rows and prediction rows are prerequisites only. They are not model success.
 
 Production remains unchanged:
 
@@ -87,7 +85,7 @@ First genuine prospective attempt:
 - event443 Cracovia–Motor;
 - T-48 cutoff: **2026-10-28 17:00 UTC**;
 - attempt persisted;
-- outcome: `PIT_SUPPORT_INSUFFICIENT`;
+- result: `PIT_SUPPORT_INSUFFICIENT`;
 - genuine attempts: **1**;
 - predictions: **0**;
 - scored: **0**.
@@ -105,7 +103,7 @@ Near-term protected windows:
 - event445 Zagłębie–Korona T-48: **2026-10-31 17:00 UTC**;
 - event447 Raków–Pogoń T-48: **2026-10-31 19:30 UTC**.
 
-Rule: capture every valid window and record the exact reason whenever no prediction is produced.
+Rule: capture every valid window and persist the exact reason whenever no prediction is emitted.
 
 ---
 
@@ -114,10 +112,6 @@ Rule: capture every valid window and record the exact reason whenever no predict
 Precommit:
 
 `ml/P9_BOOKING_CURVE_PROSPECTIVE_FAMILY_FALLBACK_V2.md`
-
-Purpose:
-
-address v1 source-family support starvation without changing the frozen five neighbors or minimum support gate.
 
 Frozen rule:
 
@@ -147,13 +141,13 @@ Precommit:
 
 Frozen design:
 
-- source: `TheSportsDB v1 shadow`;
+- source `TheSportsDB v1 shadow`;
 - immutable prospective T-24 only;
 - true immutable baseline comparator;
 - LOCO primary / LOEO secondary;
 - ridge alpha 30;
 - correction cap +/-25%;
-- gate: 8 events / 5 clubs / >=2 distinct values;
+- gate 8 events / 5 clubs / >=2 distinct values;
 - production OFF.
 
 First qualifying capture:
@@ -184,61 +178,96 @@ Collect/score only. No retuning.
 
 ---
 
-# 8. Priority 5 — start Daily Trajectory infrastructure now
+# 8. Priority 5 — Daily Trajectory infrastructure: backend delivered
 
-This is the new highest-priority **new model direction**, but it must not interrupt protected P9/Form5 windows.
+Accepted direction:
 
-Accepted strategy:
+`P-60 -> P-59 -> ... -> genuine observed prefix -> today -> predicted remaining trajectory -> final attendance`
 
-`P-60 -> P-59 -> ... -> today -> forecast remaining trajectory -> final attendance`
+Important data reality from the 2026-10-28 audit:
 
-At every daily cutoff the system should eventually consume the complete observed prefix genuinely available at that cutoff.
+- 32 events / 14 clubs currently have any genuine pre-kickoff inventory observation;
+- median first observation is only around **P-9.3**;
+- earliest observed event begins around **P-30.3**;
+- coverage: P-30 3.0%, P-14 21.9%, P-7 61.5%, P-3 75.0%, P-1 95.0%;
+- P-31...P-60 historical coverage is currently zero.
 
-Start now with infrastructure because this does not mutate frozen experiments.
+Therefore P-60 is a **collection horizon**, not a requirement for a complete 60-day vector.
 
-## Immediate deliverables
+Models must support genuine variable-length prefixes and explicit missingness. Do not fabricate early history.
 
-1. canonical PIT-safe daily trajectory dataset;
-2. one event/cutoff row for each supported daily horizon;
-3. immutable daily attempt/forecast ledger;
-4. horizon-wise MAE reporting;
-5. observation-density and missingness audit by event/club/horizon.
+Completed infrastructure:
 
-Initial daily range:
+- [x] canonical daily P-N dataset builder: `ml/demand_engine/daily_trajectory_dataset.py`;
+- [x] PIT/leakage tests: `ml/demand_engine/test_daily_trajectory_dataset.py`;
+- [x] Demand Engine smoke CI green;
+- [x] live data coverage/missingness audit;
+- [x] immutable attempt ledger live;
+- [x] immutable prediction ledger live;
+- [x] immutable post-outcome score ledger live;
+- [x] horizon-wise MAE backend live;
+- [x] service-role permissions locked to read tables + controlled RPC writes;
+- [x] Supabase security/performance review; new FK-index finding fixed.
 
-`P-60 ... P-1`
+Live evidence tables:
 
-Missing history remains missing. Never fabricate daily values.
+- `private.daily_trajectory_attempts_v1`;
+- `private.daily_trajectory_predictions_v1`;
+- `private.daily_trajectory_scores_v1`.
 
-Detailed contract:
+Canonical SQL:
 
-`ml/TRAJECTORY_FORECASTING_PLAN_V1.md`
+`supabase/sql/daily_trajectory_prospective_evidence_v1.sql`
+
+No synthetic daily prediction was inserted to claim progress.
 
 ---
 
-# 9. Priority 6 — trajectory model research: two lanes in parallel
+# 9. Priority 6 — freeze the shared Trajectory Feature Contract v1
+
+This is the next new-model engineering task.
+
+The shared contract must define exactly what Lane A and Lane B may see at each cutoff.
+
+## Lane A representation
+
+Structural P50 anchor plus PIT-safe engineered trajectory state, drawn from the canonical trajectory feature store/dataset rather than a new duplicate implementation.
+
+Candidate families remain small:
+
+- Ridge / ElasticNet;
+- restrained tree/boosting residual learner;
+- auditable nearest-trajectory/pickup residual method.
+
+## Lane B representation
+
+Use the ordered **genuine snapshot sequence** available by the cutoff rather than inventing one value for every missing day.
+
+Preferred conceptual sequence element:
+
+`(hours_to_kickoff, normalized_proxy, time_since_previous, quality/missingness context)`
+
+plus structural prior/context and explicit sequence length/padding mask.
+
+Padding zero must never mean genuine zero inventory.
+
+---
+
+# 10. Priority 7 — trajectory model development: two lanes in parallel
 
 Do **not** wait for a conventionally large labeled dataset before starting research.
 
 ## Lane A — simple benchmark
 
-Use the structural P50 as anchor and predict a residual using engineered trajectory information:
+Target default:
 
-- level;
-- 1d/3d/7d change;
-- velocity;
-- acceleration;
-- slope/slope change;
-- volatility;
-- trajectory similarity.
+`actual attendance - structural incumbent P50`
 
-Candidate families stay small: Ridge/ElasticNet, restrained tree/boosting residual model, curve-similarity/pickup methods.
+Purpose: establish whether trajectory information itself adds value with low-capacity, auditable models.
 
 ## Lane B — controlled high-risk sequence research
 
-Start early in shadow mode.
-
-Architecture order:
+Accepted architecture order:
 
 1. small GRU;
 2. small LSTM;
@@ -247,47 +276,45 @@ Architecture order:
 
 Recommended formulation:
 
-`observed prefix + structural prior/context -> residual correction / final attendance distribution`
+`genuine observed sequence + structural prior/context -> residual correction / final attendance distribution`
 
-The sequence model must beat Lane A on the same event-grouped/PIT-safe evaluation before more complexity is justified.
+The sequence model must beat Lane A on the same events, cutoffs and folds before more complexity is justified.
 
 Research risk is accepted. Leakage/evidence shortcuts are not.
 
 ---
 
-# 10. Priority 7 — self-supervised trajectory research
+# 11. Priority 8 — self-supervised trajectory research
 
 Because trajectory observations are more abundant than attendance labels, investigate target-free pretraining such as:
 
-- next-observation prediction;
+- next genuine observation prediction;
 - short-window proxy-change prediction;
 - trajectory-shape representation learning;
 - chronology-safe masked/reconstruction tasks.
 
 Later attach an attendance/residual head using labeled events.
 
-Important:
-
-> more prefixes may help representation learning, but they do not increase the number of independent events in final evaluation.
+More prefixes may improve representation learning, but they do not increase independent-event count for attendance evaluation.
 
 ---
 
-# 11. Priority 8 — P11 odds and P4a evidence collection
+# 12. Priority 9 — P11 odds and P4a evidence collection
 
 P11 current verified state:
 
 - 6 events / 6 clubs;
 - >=3 bookmakers on all 6;
-- T-24 coverage: 5;
-- T-72 coverage: 5;
-- T-168 coverage: 0;
+- T-24 coverage 5;
+- T-72 coverage 5;
+- T-168 coverage 0;
 - no model fit yet.
 
 Continue append-only genuine collection. Do not fit/select an attendance model until a genuine horizon audit and precommit exist.
 
 P4a:
 
-- labeled READY: 4/9;
+- labeled READY 4/9;
 - 3 distinct previous-home-spacing values;
 - variance gate PASS;
 - event-count gate FAIL.
@@ -296,11 +323,9 @@ Only genuine labels move the gate.
 
 ---
 
-# 12. Priority 9 — Long72 frozen / low priority
+# 13. Priority 10 — Long72 frozen / low priority
 
 Current scored sample: **5 events**.
-
-Overall:
 
 - anchor MAE **6082.40**;
 - package MAE **6039.39**;
@@ -317,22 +342,22 @@ Do not retune. Monitor operational health only.
 
 ---
 
-# 13. Priority 10 — rejected/closed lanes
+# 14. Priority 11 — rejected/closed lanes
 
 Keep closed on the same evidence:
 
-- Live Ticketing challenger: ~**723.6 MAE worse** on current 19-event LOCO sample;
-- Sporting Match Stakes: worse;
-- timing context candidate: worse;
-- existing weather point forecast: rejected/no uplift;
-- Hype/Attention 48h: **69.4 MAE worse**;
+- previous Live Ticketing challenger: ~723.6 MAE worse on current 19-event LOCO sample;
+- Sporting Match Stakes;
+- timing context;
+- existing weather point forecast;
+- Hype/Attention 48h: 69.4 MAE worse;
 - old estimator sweeps/post-hoc tuning.
 
-The new daily trajectory program is allowed because it is a materially different representation/mechanism, not a rerun of the rejected live-ticketing challenger.
+The new daily trajectory program is allowed because it is a materially different representation/mechanism.
 
 ---
 
-# 14. Priority 11 — business minimum meaningful Delta MAE
+# 15. Priority 12 — business minimum meaningful Delta MAE
 
 Framework:
 
@@ -340,19 +365,17 @@ Framework:
 
 Still unresolved.
 
-Derive the threshold independently from real operational decisions so that a tiny improvement such as ~50 seats is not automatically called meaningful success.
-
-Until then, small positive gains remain research evidence only.
+Derive independently from real operational decisions so a tiny improvement is not automatically called meaningful success.
 
 ---
 
-# 15. MAE reporting must evolve
+# 16. Daily MAE reporting rule
 
-For daily trajectory work, show MAE as a function of horizon, not only one aggregate.
+The live backend now supports MAE by daily horizon once genuine predictions are scored.
 
-Minimum view:
+Minimum analytical view:
 
-| Horizon | Incumbent MAE | Challenger MAE | Delta MAE | Events | Clubs |
+| Horizon | Incumbent MAE | Lane A MAE | Lane B MAE | Events | Clubs |
 |---|---:|---:|---:|---:|---:|
 | P-30 | | | | | |
 | P-21 | | | | | |
@@ -361,32 +384,36 @@ Minimum view:
 | P-3 | | | | | |
 | P-1 | | | | | |
 
-Primary governance still uses event-balanced MAE under a precommitted aggregation, but horizon-wise reporting tells us **how early the model becomes useful**.
+Always show independent-event/club support next to MAE.
+
+Primary governance remains precommitted event-balanced MAE, with downside/uncertainty guardrails.
 
 ---
 
-# 16. Immediate execution order
+# 17. Immediate execution order
 
 1. Protect the upcoming P9 v1/v2 windows.
 2. Protect Form5 event443 T-24 on 2026-10-29 17:00 UTC.
 3. Watch event448 for genuine inventory; never fabricate zero.
 4. Score P7/P9 only after genuine outcomes arrive.
-5. In parallel, start the daily trajectory dataset/ledger/reporting infrastructure.
-6. Continue P11/P4a evidence accumulation.
-7. Keep Long72 frozen.
-8. Precommit Lane A and Lane B only after the canonical trajectory dataset contract is implemented/audited.
-9. Run simple and sequence trajectory challengers under identical event-grouped/PIT-safe evaluation.
-10. Begin daily prospective shadow inference before relevant outcomes are known.
-11. Derive the business meaningful Delta MAE threshold.
-12. Production promotion remains a separate reviewed decision.
+5. Keep P11/P4a collection healthy.
+6. Freeze `Trajectory Feature Contract v1` shared by Lane A/B.
+7. Freeze one event-grouped fold/export registry shared by both lanes.
+8. Precommit Lane A development protocol and first small Lane B sequence protocol.
+9. Run Lane A/B on identical events/cutoffs/PIT rules.
+10. Report support + horizon-wise MAE; do not overclaim sparse early horizons.
+11. Start prospective daily shadow inference only after candidate contracts are frozen and before relevant outcomes are known.
+12. Keep collecting longer genuine prefixes forward rather than waiting for complete P-60 history.
+13. Derive business meaningful Delta MAE threshold.
+14. Production promotion remains a separate reviewed decision.
 
 ---
 
-# 17. Decision rules
+# 18. Decision rules
 
 ## P9
 
-- if v1 emits predictions: keep it frozen and wait for outcomes;
+- if v1 emits predictions: keep frozen and wait for outcomes;
 - if v1 repeatedly support-starves while v2 emits valid predictions: evaluate v2 separately;
 - if both repeatedly fail: diagnose support structure before a new P9 design;
 - never lower support merely for coverage.
@@ -394,13 +421,13 @@ Primary governance still uses event-balanced MAE under a precommitted aggregatio
 ## Daily trajectory program
 
 - if Lane A improves MAE but Lane B does not: prefer the simpler model;
-- if Lane B materially beats Lane A: continue sequence research and prospective validation;
-- if both fail: diagnose data/proxy/coverage before launching another model tournament;
+- if Lane B materially beats Lane A: continue sequence research and require prospective confirmation;
+- if both fail: diagnose proxy quality, coverage, independent-event count and structural-incumbent strength before another tournament;
 - if historical/grouped evidence is strong but prospective evidence fails: prospective evidence wins.
 
 ---
 
-# 18. Next meaningful milestones
+# 19. Next meaningful milestones
 
 Current evidence milestones:
 
@@ -410,14 +437,17 @@ Current evidence milestones:
 4. first genuine P7 prospective scored event;
 5. first genuine P9 prospective scored event.
 
-New trajectory milestones:
+Trajectory milestones:
 
-6. canonical daily trajectory dataset implemented and audited;
-7. immutable daily forecast/attempt ledger live;
-8. horizon-wise MAE view live;
-9. Lane A precommitted and evaluated;
-10. first small Lane B sequence challenger evaluated under identical folds;
-11. first genuine prospective daily trajectory forecasts scored;
-12. enough independent events to compare meaningful prospective Delta MAE;
-13. business minimum meaningful Delta MAE agreed;
-14. only then any production promotion decision.
+6. **DONE** — canonical daily dataset builder/PIT tests;
+7. **DONE** — live coverage audit;
+8. **DONE** — immutable daily attempt/prediction/score ledger;
+9. **DONE** — horizon-wise MAE backend;
+10. freeze Trajectory Feature Contract v1 + fold registry;
+11. first Lane A grouped result;
+12. first small Lane B sequence result on identical folds;
+13. first genuine prospective daily trajectory predictions;
+14. first genuine prospective daily trajectory scores;
+15. enough independent events for meaningful Delta MAE comparison;
+16. business minimum meaningful Delta MAE agreed;
+17. only then any production promotion decision.
