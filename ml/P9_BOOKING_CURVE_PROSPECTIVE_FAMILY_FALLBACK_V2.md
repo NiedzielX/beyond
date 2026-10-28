@@ -2,6 +2,7 @@
 
 Status: **PRECOMMITTED BEFORE ANY TARGET OUTCOME**
 
+Precommit ID: `p9-knn-median-residual-k5-family-fallback-v2`
 Precommit date: 2026-10-28
 Production impact: **none**
 Live adjustment: **0**
