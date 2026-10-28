@@ -1,6 +1,6 @@
 # Beyond Ticketing — Next Session Handoff
 
-Last updated: **2026-10-28 17:15 UTC**
+Last updated: **2026-10-28 20:00 UTC**
 
 Status: **READ THIS FIRST AFTER `AI_BOOTSTRAP.md`**
 
@@ -16,7 +16,7 @@ Desired: `ΔMAE < 0`.
 
 Readiness is only an experiment prerequisite. It is not model success.
 
-Global guardrails remain unchanged:
+Global guardrails:
 
 - `live_adjustment = 0` unless explicitly promoted after review;
 - no synthetic attendance labels;
@@ -31,10 +31,10 @@ Global guardrails remain unchanged:
 ## 2. Immediate execution order
 
 1. Protect every P9 T-48/T-24 immutable window.
-2. Collect/score P9 and P7 prospective evidence without changing frozen rules.
-3. Protect Form5 T-24 forward evidence starting 2026-10-29 17:00 UTC.
-4. Keep event448 under inventory watch; do not fabricate zero inventory.
-5. Continue P11 append-only odds capture and Long72/P4a accumulation without retuning.
+2. Run/score P9 v1 and the separately precommitted fallback-only P9 v2 without changing either frozen rule set.
+3. Protect Form5 T-24 forward evidence starting event443 on 2026-10-29 17:00 UTC.
+4. Keep event448 under inventory watch; never fabricate zero inventory.
+5. Continue P7, P11 and Long72 prospective accumulation without retuning.
 6. Do not reopen rejected Ticketing or Hype hypotheses on the same outcomes.
 7. Rank new work by expected incremental prospective MAE reduction.
 
@@ -61,7 +61,7 @@ Do not repair historical P9 retrospectively.
 
 Read: `ml/P9_SUPPORT_POSTMORTEM_2026-10-26.md`.
 
-## 4. P9 prospective v1 — FIRST REAL T-48 CAPTURED
+## 4. P9 prospective v1 — FIRST REAL WINDOW CAPTURED
 
 Precommit:
 
@@ -74,6 +74,7 @@ Frozen learner:
 Frozen rules:
 
 - T-48 / T-24 only;
+- exact frozen 5-neighbor P9a set;
 - k=5;
 - minimum 3 residual-bearing references;
 - no fit/search/tuning;
@@ -86,7 +87,7 @@ Workflow:
 
 `.github/workflows/p9-booking-curve-prospective-v1.yml`
 
-Current schedule:
+Schedule:
 
 `11,26,41,56 * * * *`
 
@@ -104,7 +105,7 @@ Details:
 
 - target incumbent family: `d2_long72_forward_predictions_v1`;
 - selected curve neighbors: **[3,23,4,21,20]**;
-- usable same-family residual references: **2/3 required**;
+- usable same-family D2 residual references: **2/3 required**;
 - usable refs: **23,21**;
 - missing same-family PIT incumbents: **3,4,20**;
 - prediction rows: **0**;
@@ -113,52 +114,126 @@ Details:
 - `live_adjustment=0`;
 - production change: false.
 
-This is a correct fail-closed. It is neither a model win nor a model loss. Do not relax the 3-reference gate.
+This is a correct fail-closed. It is neither a model win nor a model loss. Do not relax the 3-reference gate and do not retro-predict event443 in v1.
 
-### Source-family rule
+### Current source-family support pools
 
-P9 v1 prefers a fresh Long72 incumbent when one exists within the frozen staleness limit; otherwise it falls back to Structural Prior. Reference residuals must use the same family selected for the target.
+T-48 outcome-backed residual-ready events:
 
-Current historical outcome-backed reference coverage at T-48:
+- D2 Long72: **5** `[10,16,21,22,23]`;
+- Structural Prior: **9** `[5,10,11,16,19,20,21,22,23]`.
 
-- Long72 family: **5 events** `[10,16,21,22,23]`;
-- Structural Prior family: **9 events** `[5,10,11,16,19,20,21,22,23]`.
+T-24:
 
-Long72 therefore carries materially higher same-family support risk. Do not change target-family selection inside v1 after observing the first fail-closed.
+- D2 Long72: **5** `[10,16,21,22,23]`;
+- Structural Prior: **11** `[5,10,11,15,16,18,19,20,21,22,23]`.
 
-## 5. P9 live preflight
+Global pool size is diagnostic only. Actual eligibility still depends on support among the exact frozen five selected neighbors.
 
-Current summary:
+## 5. P9 prospective Family Fallback v2 — PRECOMMITTED, DEPLOYED, MAIN
 
-- attempt events: **1**;
-- attempt rows: **1**;
-- prediction-ready attempts: **0**;
-- support-insufficient attempts: **1**;
+Scientific contract:
+
+`ml/P9_BOOKING_CURVE_PROSPECTIVE_FAMILY_FALLBACK_V2.md`
+
+Precommit ID:
+
+`p9-knn-median-residual-k5-family-fallback-v2`
+
+Why v2 exists:
+
+- event443 v1 failed before outcome because D2 had only 2/5 usable selected-neighbor residuals;
+- the **same exact five neighbors** had 3 Structural Prior residuals (`23,21,20`);
+- this is a target-free coverage failure, not an MAE result.
+
+Frozen v2 rule:
+
+1. Reproduce the exact v1 target-family decision and exact five P9a neighbors.
+2. If the v1 family has >=3 usable selected-neighbor residuals, v2 emits nothing: `V1_COVERED`.
+3. Only if v1 selected D2 and D2 support is <3 may v2 check Structural on those same five neighbors.
+4. Structural fallback is allowed only with a valid PIT Structural target incumbent and >=3 usable Structural residuals.
+5. If neither family satisfies the unchanged minimum support gate, v2 fails closed.
+6. If v1 already selected Structural and Structural support is insufficient, v2 does not search another family.
+
+Unchanged from v1:
+
+- T-48 / T-24 only;
+- k=5;
+- minimum 3 refs;
+- same neighbors;
+- median residual correction;
+- no model fit/search/tuning;
+- target attendance forbidden at prediction time;
+- exact +90m immutable persistence window;
+- no production activation;
+- `live_adjustment=0`.
+
+Hard no-retro rule:
+
+- event443 T-48 must never receive a retrospective v2 prediction;
+- live DB verification after rollout: event443 v2 attempts **0**, predictions **0**, scores **0**.
+
+Implementation:
+
+- builder: `ml/p9_booking_curve_prospective_family_fallback_v2.py`;
+- tests: `ml/test_p9_booking_curve_prospective_family_fallback_v2.py`;
+- 5 contract tests cover fallback-ready, v1-covered D2, v1-covered Structural, both-insufficient and target-outcome leak rejection;
+- migration: `supabase/sql/p9_booking_curve_prospective_family_fallback_v2.sql`;
+- separate immutable private attempt/prediction/score ledgers;
+- service-role-only RPCs;
+- gateway modes: `fallback-summary-v2`, `record-fallback-attempt-v2`, `persist-fallback-v2`, `score-fallback-v2`.
+
+Security:
+
+- anon/authenticated EXECUTE denied for v2 RPCs;
+- anon/authenticated SELECT denied on v2 private tables;
+- service_role only;
+- post-DDL security advisor showed no new v2 security finding.
+
+Repo/main:
+
+- PR **#199** merged;
+- main SHA: **`e710d8b49e7a764561e2bdc7663bca74ed0d1174`**;
+- `P9 Family Fallback v2 Contract` run #3 = **SUCCESS**;
+- P9 integration run **40758645007 / run #20 = SUCCESS** after merge.
+
+Current v2 live state after integration run:
+
+- attempt rows: **0**;
 - prediction rows: **0**;
 - scored events: **0**;
-- prospective MAE: unavailable.
+- event443 rows: **0**;
+- production activation false;
+- `live_adjustment=0`;
+- production change false.
+
+No genuine post-precommit P9 window has occurred yet, so zero v2 rows are expected.
+
+## 6. P9 live preflight — 2026-10-28 ~19:58 UTC
 
 Current 10-day preflight:
 
 - **critical: 0**;
 - **watch: 1**.
 
-The only watch is event448 Wisła Kraków–Cracovia (`WATCH_NO_SNAPSHOT`).
+Only watch:
 
-Near-term P9 windows:
+- event448 Wisła Kraków–Cracovia = `WATCH_NO_SNAPSHOT`.
 
-- event446 Wisła Płock–Piast T-48: **2026-10-29 11:15 UTC**;
-- event6 Lech–Wisła Kraków T-48: **2026-10-29 16:30 UTC**;
-- event443 Cracovia–Motor T-24: **2026-10-29 17:00 UTC**;
-- event444 GKS Katowice–Widzew T-48: **2026-10-29 19:15 UTC**;
-- event445 Zagłębie–Korona T-48: **2026-10-31 17:00 UTC**;
-- event447 Raków–Pogoń T-48: **2026-10-31 19:30 UTC**.
+Near-term windows:
 
-`export_p9_prospective_inputs_v1()` intentionally exposes targets only inside the exact immutable cutoff window. Do not bypass this to precompute tomorrow's nearest neighbors.
+- event446 Wisła Płock–Piast T-48: **2026-10-29 11:15 UTC** — READY;
+- event6 Lech–Wisła Kraków T-48: **2026-10-29 16:30 UTC** — READY;
+- event443 Cracovia–Motor T-24: **2026-10-29 17:00 UTC** — READY;
+- event444 GKS Katowice–Widzew T-48: **2026-10-29 19:15 UTC** — READY;
+- event445 Zagłębie–Korona T-48: **2026-10-31 17:00 UTC** — READY;
+- event447 Raków–Pogoń T-48: **2026-10-31 19:30 UTC** — READY.
 
-## 6. P9 observability — LIVE
+Current family diagnostic is still allowed to change before future cutoffs because fresh Long72 incumbents can appear. Do not precompute tomorrow's exact neighbors outside the immutable window.
 
-Immutable attempt registry records genuine windows even when no prediction is emitted.
+## 7. P9 observability
+
+P9 v1 immutable attempt registry is live and dashboard-safe.
 
 Dashboard distinguishes:
 
@@ -167,7 +242,7 @@ Dashboard distinguishes:
 - `PIT_SUPPORT_INSUFFICIENT`;
 - `NO_TARGET_INCUMBENT`.
 
-Current dashboard correctly shows:
+Current v1 dashboard state:
 
 - attempts 1;
 - support-insufficient 1;
@@ -175,96 +250,9 @@ Current dashboard correctly shows:
 - scored 0;
 - production OFF.
 
-## 7. Event5091 Motor Lublin–Wisła Płock — FIXED END-TO-END
+P9 v2 has a separate private summary/RPC and must remain separately auditable. Do not merge v1/v2 into one MAE result.
 
-Previous P9 blocker: `WATCH_NO_INCUMBENT`.
-
-Root cause:
-
-Structural Prior Materializer skipped the event with `missing_capacity`.
-
-Verified football capacity was added through the normal capacity registry:
-
-- club key: `motorlublin`;
-- venue: Arena Lublin;
-- seated football capacity: **15,243**;
-- source: official MOSiR Lublin venue material;
-- 19,000 is the broader maximum event capacity including floor use and is not used as football capacity.
-
-Repo migration:
-
-`supabase/sql/motor_lublin_verified_capacity_v1.sql`
-
-PR 191 merged, commit:
-
-`214694ee142785ee64896ae21b4934c843183cbf`
-
-After the data fix:
-
-- Structural Prior input became `ready`;
-- normal materializer produced prior `id=52`;
-- Structural Prior P50 = **13,569**;
-- live orchestrator run 178 processed the event normally;
-- missing prior count dropped **2 -> 1**;
-- P9 preflight for 5091 is now `READY` at T-48 and T-24.
-
-Do not revisit 5091 as a missing-prior problem unless live state changes.
-
-## 8. Event448 Wisła Kraków–Cracovia — GENUINE NO-INVENTORY WATCH
-
-Current:
-
-- kickoff `2026-11-06 19:30 UTC`;
-- T-48 `2026-11-04 19:30 UTC`;
-- Structural Prior exists;
-- P9 status `WATCH_NO_SNAPSHOT`;
-- canonical ticket event provider = `roboticket`;
-- external event id = **11718**;
-- discovery identity is correct;
-- direct page is public, HTTP 200, no login redirect;
-- direct page identity is `Wisła Kraków - Cracovia`;
-- candidate is linked to ticket_event448.
-
-Main promoted RoboTicket collector is dynamic and already includes event448. Cron:
-
-`roboticket_additional_15m` -> `5,20,35,50 * * * *`
-
-Observed collector behavior across repeated runs:
-
-`wislakrakow/11718 returned no ticket sectors`
-
-The other tracked RoboTicket events collect normally in the same runs.
-
-Therefore:
-
-- discovery is not the blocker;
-- canonical event mapping is not the blocker;
-- collector is not being skipped;
-- no canonical snapshot is written because provider currently exposes no ticket sectors.
-
-This must remain **unknown / unavailable**, not `available_total=0`.
-
-Do not fabricate a snapshot. Continue forward polling. Investigate parser/API shape only if the provider visibly opens ticket sectors while the collector still returns none.
-
-## 9. P7 prospective — ACTIVE
-
-Historical frozen result:
-
-- anchor MAE **7409.79**;
-- challenger MAE **6339.99**;
-- point gain **1069.80 / 14.44%**;
-- 95% event-block CI `[-2566.13,+174.47]`;
-- evidence `POINT_GAIN_UNCERTAINTY_LIMITED`.
-
-Current prospective state:
-
-- immutable prediction rows: **53**;
-- independent events: **6**;
-- scored events: **0**.
-
-Collect/score only. No retuning.
-
-## 10. Long72 — FROZEN / LOW PRIORITY
+## 8. Long72 — FROZEN / LOW MAE PRIORITY, HEARTBEAT HARDENED
 
 Current scored events: **5**.
 
@@ -281,27 +269,34 @@ By band:
 - 24–48h worsens MAE by **105.08**;
 - 48–72h improves MAE by **191.10**.
 
-Forward workflow:
-
-`.github/workflows/d2-long72-forward-prospective-v1.yml`
-
-Schedule:
-
-`17 * * * *`
-
-At **2026-10-28 17:15 UTC**, upcoming 446/6/444/445/447 still had no Long72 rows. Recheck after the normal `:17` run because fresh Long72 rows can change which incumbent family P9 v1 selects tomorrow.
-
 Do not retune Long72.
 
-## 11. Form5 prospective challenger — PRECOMMITTED AND LIVE
+Operational issue found 2026-10-28:
+
+- independent 4x/hour Long72 cron did not emit scheduled runs for roughly two hours;
+- manual safe rerun of the existing forward workflow succeeded and refreshed rows around **19:44 UTC** for events 443/446/6/444.
+
+Fix:
+
+- PR **#198** merged;
+- commit **`c8769d49c06a536adb1500e8f54c528bb45f644e`**;
+- Long72 no longer relies on its independent cron;
+- it now runs from `workflow_run` after successful **Structural Prior Materializer** completion;
+- `workflow_dispatch`, PR and push validation remain available;
+- frozen package, persistence and scoring are unchanged.
+
+Proof:
+
+- Structural Prior Materializer run149 attempt3 was deliberately rerun after the fix;
+- it completed its materialize path successfully around **2026-10-28 19:58 UTC**;
+- this emitted Long72 run **40759137164 / run #45**, event=`workflow_run`, on current main SHA `e710d8b...`;
+- at handoff-write time its `validate` job is SUCCESS and `prospective-main` is running. Verify final conclusion once more if resuming immediately.
+
+## 9. Form5 prospective challenger — PRECOMMITTED AND READY FOR FIRST T-24
 
 Precommit:
 
 `ml/FORM5_PROSPECTIVE_PRECOMMIT_V1.md`
-
-Evidence contract:
-
-`supabase/sql/form5_prospective_evidence_v1.sql`
 
 Frozen:
 
@@ -316,20 +311,39 @@ Frozen:
 - MAE hidden until complete gate/fold support;
 - production OFF.
 
-Current:
+Current 2026-10-28 state:
 
 - completed eligible events: **0/8**;
 - future stream: **13 events / 12 clubs / 9 distinct values**;
 - first qualifying T-24 = event443 on **2026-10-29 17:00 UTC**;
+- event443 has fresh `sport.form5=4`, full five-match lineage, captured before cutoff;
 - status `PROSPECTIVE_COLLECTING`;
 - MAE null;
 - `live_adjustment=0`.
 
 Do not use older/manual Form5 values for this v1.
 
-## 12. P11 odds — ACTIVE FORWARD COLLECTION
+## 10. P7 prospective — ACTIVE
 
-Current:
+Historical frozen result:
+
+- anchor MAE **7409.79**;
+- challenger MAE **6339.99**;
+- point gain **1069.80 / 14.44%**;
+- 95% event-block CI `[-2566.13,+174.47]`;
+- evidence `POINT_GAIN_UNCERTAINTY_LIMITED`.
+
+Current prospective state from latest verified handoff:
+
+- immutable prediction rows: **53**;
+- independent events: **6**;
+- scored events: **0**.
+
+Collect/score only. No retuning.
+
+## 11. P11 odds — ACTIVE FORWARD COLLECTION
+
+Latest verified:
 
 - status `GENUINE_PIT_DATA_ACCUMULATING`;
 - events / clubs **6 / 6**;
@@ -340,9 +354,9 @@ Current:
 
 Continue append-only capture. Never backfill closing odds.
 
-A previous red Actions run was only a Step Summary jq quoting failure after successful quote insertion; current main already contains the reporting fix.
+Previous red Actions runs were reporting-only failures after successful quote insertion; current main contains the safe summary fix. Do not treat them as lost odds evidence.
 
-## 13. Rejected research lanes
+## 12. Rejected research lanes
 
 ### Ticketing challenger
 
@@ -383,7 +397,33 @@ Decision: `REJECTED_NO_UPLIFT`.
 
 Do not search more attention windows on the same outcomes.
 
-## 14. P4a
+Read: `ml/HYPE_ATTENTION_RESEARCH_2026-10-27.md`.
+
+## 13. Event5091 Motor Lublin–Wisła Płock — FIXED
+
+Verified football capacity:
+
+- Arena Lublin seated football capacity: **15,243**;
+- normal Structural Prior materializer produced prior id52 / P50 **13,569**;
+- P9 preflight is READY.
+
+Do not revisit unless live state changes.
+
+## 14. Event448 Wisła Kraków–Cracovia — GENUINE NO-INVENTORY WATCH
+
+Current:
+
+- kickoff `2026-11-06 19:30 UTC`;
+- P9 status `WATCH_NO_SNAPSHOT`;
+- canonical provider = `roboticket`;
+- external event id = **11718**;
+- discovery/mapping is correct;
+- public page exists;
+- repeated collector runs report no ticket sectors for this event while other RoboTicket events work.
+
+Keep this **unknown/unavailable**, never zero. Continue forward polling. Investigate parser/API shape only if provider visibly opens sectors while collector still returns none.
+
+## 15. P4a
 
 Last verified:
 
@@ -394,18 +434,16 @@ Last verified:
 
 Only genuine labels move this gate.
 
-## 15. Structural Prior / orchestrator
+## 16. Structural Prior / orchestrator
 
-Latest verified state after Motor capacity fix:
+Current important state:
 
-- event5091 is processed normally with prior id52 / P50 13,569;
-- current missing-prior count = **1**;
-- remaining missing prior is far-future event452;
-- current event448 issue is a missing ticket snapshot, not a prior issue.
+- event5091 fixed and normal;
+- event448 issue is missing ticket snapshot, not prior;
+- Structural Prior Materializer remains the upstream heartbeat used by Long72;
+- a successful materializer completion must now trigger Long72 via GitHub `workflow_run`.
 
-Previously fixed fixture/capacity work for 443/447/603 remains valid.
-
-## 16. Governance / security debt
+## 17. Governance / security debt
 
 Business minimum meaningful ΔMAE remains unset until independently derived from operational decisions.
 
@@ -417,6 +455,6 @@ Known unrelated Supabase debt includes:
 
 Do not conflate these with current P9/Form5 evidence work.
 
-## 17. Cold-start command
+## 18. Cold-start command
 
-> Read `AI_BOOTSTRAP.md`, this handoff, `ml/EXECUTION_PLAN_CURRENT.md`, `ml/CURRENT_MODEL.md`, `ml/P9_SUPPORT_POSTMORTEM_2026-10-26.md`, `ml/P9_BOOKING_CURVE_PROSPECTIVE_PRECOMMIT_V1.md`, `ml/FORM5_PROSPECTIVE_PRECOMMIT_V1.md`, and `ml/HYPE_ATTENTION_RESEARCH_2026-10-27.md`. Historical P9 is closed as NOT_EVALUABLE. P9 prospective v1 is frozen. The first real T-48 attempt for event443 was captured at 2026-10-28 17:00:42 UTC and failed closed because Long72 was the selected incumbent family and only 2/5 nearest curve neighbors had same-family PIT residuals; no prediction was emitted. Do not weaken v1. Tomorrow protect event446/6/444 T-48 and event443 T-24. Event5091 is fixed and READY after verified Motor Lublin capacity 15,243 produced Structural Prior id52 / P50 13,569 through the normal materializer. The only current P9 preflight watch is event448, where the normal RoboTicket collector probes event11718 every 15 minutes but the provider still returns no ticket sectors; keep it unknown, never zero. P7 has 53 immutable rows / 6 events / 0 scored. Long72 has 5 scored events and only +0.71% MAE improvement. P11 has 6/6 events/clubs. Form5 is precommitted with a 13-event forward stream and 0 completed eligible events. Ticketing and the tested Hype 48h variant are rejected. Production remains unchanged and `live_adjustment=0`.
+> Read `AI_BOOTSTRAP.md`, this handoff, `ml/EXECUTION_PLAN_CURRENT.md`, `ml/CURRENT_MODEL.md`, `ml/P9_SUPPORT_POSTMORTEM_2026-10-26.md`, `ml/P9_BOOKING_CURVE_PROSPECTIVE_PRECOMMIT_V1.md`, `ml/P9_BOOKING_CURVE_PROSPECTIVE_FAMILY_FALLBACK_V2.md`, `ml/FORM5_PROSPECTIVE_PRECOMMIT_V1.md`, and `ml/HYPE_ATTENTION_RESEARCH_2026-10-27.md`. Historical P9 is closed as NOT_EVALUABLE. P9 prospective v1 remains frozen. Event443 T-48 was captured correctly and failed closed because D2 had only 2/5 same-family refs. A separate fallback-only P9 v2 was precommitted before any target outcome: it preserves the exact same five neighbors and only falls D2->Structural when D2 has <3 refs and Structural has >=3 among those same five; event443 is never retro-predicted. PR199 is merged on main SHA e710d8b49e7a764561e2bdc7663bca74ed0d1174; contract CI and P9 integration run40758645007 are green; v2 DB ledgers are still zero. Tomorrow protect event446/6/444 T-48 and event443 T-24. Long72 now triggers from successful Structural Prior Materializer workflow completion; run40759137164 proves the workflow_run wiring and should be checked for final prospective-main success if not yet completed. Form5 first qualifying T-24 is event443 at 2026-10-29 17:00 UTC. Event448 remains unknown/no-snapshot and must never be fabricated as zero. Production remains unchanged and live_adjustment=0.
