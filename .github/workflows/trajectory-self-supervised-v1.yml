@@ -1,0 +1,102 @@
+name: Trajectory Self-Supervised v1
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - "ml/demand_engine/trajectory_self_supervised_v1.py"
+      - "ml/demand_engine/test_trajectory_self_supervised_v1.py"
+      - "ml/run_trajectory_self_supervised_v1.py"
+      - "ml/TRAJECTORY_SELF_SUPERVISED_PRETRAIN_V1.md"
+      - "ml/artifacts/trajectory_self_supervised_v1_split.json"
+      - "supabase/functions/trajectory_self_supervised_export_v1/**"
+      - "supabase/sql/trajectory_self_supervised_export_v1.sql"
+      - ".github/workflows/trajectory-self-supervised-v1.yml"
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: trajectory-self-supervised-v1-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  pretrain:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install pinned runtime
+        run: |
+          python -m pip install --upgrade pip
+          pip install numpy==2.3.5
+          pip install torch==2.5.1 --index-url https://download.pytorch.org/whl/cpu
+
+      - name: Compile and run protocol tests
+        run: |
+          python -m py_compile ml/demand_engine/trajectory_self_supervised_v1.py
+          python -m py_compile ml/run_trajectory_self_supervised_v1.py
+          python -m unittest ml.demand_engine.test_trajectory_self_supervised_v1 -v
+
+      - name: Request target-free trajectory OIDC token
+        shell: bash
+        run: |
+          set -euo pipefail
+          response=$(curl -fsS -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
+            "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=beyond-trajectory-self-supervised")
+          token=$(printf '%s' "$response" | jq -r '.value')
+          test -n "$token"
+          test "$token" != "null"
+          echo "::add-mask::$token"
+          echo "TRAJECTORY_SSP_OIDC_TOKEN=$token" >> "$GITHUB_ENV"
+
+      - name: Fetch frozen target-free export
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -fsS \
+            -X POST \
+            -H "Authorization: Bearer $TRAJECTORY_SSP_OIDC_TOKEN" \
+            -H "Content-Type: application/json" \
+            --data '{}' \
+            'https://adchzwqboeekhokapxqi.supabase.co/functions/v1/trajectory_self_supervised_export_v1' \
+            -o /tmp/trajectory-self-supervised-export-v1.json
+          jq -e '.ok == true' /tmp/trajectory-self-supervised-export-v1.json >/dev/null
+          test "$(jq -r '.event_count' /tmp/trajectory-self-supervised-export-v1.json)" = "26"
+          test "$(jq -r '.attendance_labels_used' /tmp/trajectory-self-supervised-export-v1.json)" = "false"
+          test "$(jq -r '.structural_prior_used' /tmp/trajectory-self-supervised-export-v1.json)" = "false"
+          jq '{version,event_count,observation_count,frozen_data_cutoff,attendance_labels_used,structural_prior_used,repository,sha}' \
+            /tmp/trajectory-self-supervised-export-v1.json
+
+      - name: Run frozen target-free pretraining
+        run: |
+          python -m ml.run_trajectory_self_supervised_v1 \
+            --input /tmp/trajectory-self-supervised-export-v1.json \
+            --split ml/artifacts/trajectory_self_supervised_v1_split.json \
+            --output /tmp/trajectory-self-supervised-v1-result.json \
+            --encoder-output /tmp/trajectory-self-supervised-encoder-v1.pt
+
+      - name: Print result summary
+        run: |
+          jq '{version,decision,evidence_class,train_events,train_pairs,validation_events,validation_pairs,baseline_event_balanced_mae,model_event_balanced_mae,delta_mae_vs_baseline,improved_validation_events,signed_bias,target_distribution,prediction_distribution,by_event}' \
+            /tmp/trajectory-self-supervised-v1-result.json
+
+      - name: Upload target-free evidence and encoder
+        uses: actions/upload-artifact@v4
+        with:
+          name: trajectory-self-supervised-v1-${{ github.run_id }}
+          path: |
+            /tmp/trajectory-self-supervised-v1-result.json
+            /tmp/trajectory-self-supervised-encoder-v1.pt
+          if-no-files-found: error
+          retention-days: 90
