@@ -115,9 +115,12 @@ begin
     a.latest_source_fetch,
     a.form5_points,
     format(
-      'Recent league form: %s points from the last 5 completed matches; goal difference %+s.',
+      'Recent league form: %s points from the last 5 completed matches; goal difference %s.',
       a.form5_points,
-      a.form5_goal_difference
+      case
+        when a.form5_goal_difference > 0 then '+' || a.form5_goal_difference::text
+        else a.form5_goal_difference::text
+      end
     ),
     round(a.form5_points::numeric / 15.0, 4),
     'TheSportsDB v1 shadow',
