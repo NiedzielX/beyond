@@ -1,0 +1,33 @@
+{
+  "version": "trajectory-self-supervised-v1-split",
+  "precommit_id": "trajectory-self-supervised-24h-delta-v1",
+  "frozen_data_cutoff": "2026-10-28T22:09:43.958409Z",
+  "evidence_class": "target_free_temporal_validation",
+  "raw_24h_pairs": 4227,
+  "raw_events": 29,
+  "usable_pairs": 3565,
+  "usable_events": 26,
+  "train_event_ids": [3, 1, 4, 9, 14, 15, 18, 11, 19, 5, 20, 10, 16, 23, 21, 22, 443, 446, 6, 444, 445],
+  "train_pairs": 3397,
+  "validation_event_ids": [447, 449, 450, 451, 452],
+  "validation_pairs": 168,
+  "pre_gate_zero_pair_train_event_ids": [12, 8, 17],
+  "validation_pair_counts": {
+    "447": 35,
+    "449": 34,
+    "450": 35,
+    "451": 29,
+    "452": 35
+  },
+  "guards": {
+    "attendance_labels_used": false,
+    "structural_prior_used": false,
+    "max_context_hours": 168,
+    "minimum_prefix_observations": 4,
+    "minimum_prefix_span_hours": 24,
+    "future_pair_min_hours": 18,
+    "future_pair_target_hours": 24,
+    "future_pair_max_hours": 30,
+    "production_change": false
+  }
+}
