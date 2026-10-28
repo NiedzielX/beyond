@@ -1,65 +1,151 @@
 # Beyond Ticketing — Daily Trajectory Forecasting Plan v1
 
-Status: **PLANNED / RESEARCH-ONLY**
+Last updated: **2026-10-28**
 
-Purpose: define the next MAE research direction without modifying or invalidating any frozen prospective lane.
+Status: **ACCEPTED / RESEARCH-ONLY / START NOW**
 
-Canonical North Star remains:
+Canonical strategy: `ml/MAE_RESEARCH_ROADMAP_V5.md`
 
-> **Minimize true prospective event-balanced attendance-forecast MAE at decision-relevant horizons, with PIT-safe, reproducible evidence.**
+Operational priorities: `ml/EXECUTION_PLAN_CURRENT.md`
 
-This plan does **not** change P7, P9 v1/v2, Form5, Long72 or any other frozen/precommitted experiment. Production remains unchanged unless a later explicit promotion decision is made.
+Production remains unchanged:
 
 `live_adjustment = 0`
 
 ---
 
-## 1. Problem statement
+# 1. In plain language
 
-The current system uses booking/inventory trajectory only partially:
+Today Beyond does not fully behave like this:
 
-- the historical structural core is evaluated at a small set of horizons;
-- P9 compresses trajectory into selected canonical hours and currently evaluates only fixed T-48/T-24 prediction windows;
-- the product chart displays inventory proxy and persisted P50 forecasts together, but this is not yet a model that continuously consumes the full observed trajectory and forecasts the remaining path.
+`P-50 -> P-49 -> P-48 -> ... -> today -> forecast what happens next -> final attendance`
 
-The missing research question is:
+It uses trajectory information, but only partially and at selected horizons/cutoffs.
 
-> **Does the complete point-in-time trajectory observed up to today contain enough incremental information to reduce prospective attendance MAE beyond the structural incumbent and the current fixed-window challengers?**
+This plan changes the research direction so that **the full observed trajectory becomes a first-class model input**.
 
-Target conceptual behaviour:
-
-`P-50 -> P-49 -> P-48 -> ... -> today -> forecast remaining trajectory -> final attendance P50`
-
-At every new daily cutoff the model must receive the whole observed prefix available at that cutoff, not only the latest point.
-
----
-
-## 2. Core principle: daily inference, not daily retuning
-
-The system should create a new immutable forecast at every eligible daily cutoff for every active event.
+For every active event we want a new forecast every day.
 
 Example:
 
-- P-30: use only data visible by kickoff - 30 days;
-- P-29: use the same historical prefix plus the new information visible by kickoff - 29 days;
-- P-28: recalculate using the longer observed prefix;
-- continue until P-1 where support exists.
+- at P-30 the model sees everything genuinely known up to P-30;
+- at P-29 it sees the same history plus the new P-29 evidence;
+- at P-28 it sees an even longer observed prefix;
+- and so on until P-1.
 
-The model version remains frozen during an evaluation cohort.
+The model should understand not only **where demand is today**, but **how it got there**.
 
-**Allowed:** new inputs arrive and the frozen model produces a new forecast.
+Two matches can have the same current inventory/demand proxy but completely different trajectories:
 
-**Not allowed:** refitting/tuning the model every day against newly exposed outcomes during the same evaluation cohort.
+- one may be accelerating quickly;
+- another may have been flat for a week.
 
-Daily forecast generation therefore creates richer prospective evidence without weakening governance.
+Those should not automatically receive the same forecast.
 
 ---
 
-## 3. Canonical daily trajectory dataset
+# 2. What we are deciding now
 
-Create a PIT-safe dataset with one event/cutoff row for each integer daily horizon where genuine observations exist.
+We accept two parallel research lanes.
 
-Canonical cutoff definition:
+## Lane A — simple trajectory model
+
+Use interpretable engineered trajectory features such as:
+
+- current level;
+- 1d / 3d / 7d change;
+- velocity;
+- acceleration;
+- slope;
+- slope change;
+- volatility;
+- curve similarity.
+
+Predict a residual over the structural forecast rather than relearning attendance from scratch.
+
+This is the benchmark.
+
+## Lane B — high-risk sequence model
+
+We will **not wait for a large textbook-quality dataset before testing sequence models**.
+
+We accept the research risk and start early in shadow mode.
+
+Initial order:
+
+1. small GRU;
+2. small LSTM;
+3. small TCN;
+4. compact attention/Transformer encoder only if sequence modelling already looks promising.
+
+Do not begin with a large Transformer or TFT.
+
+The sequence lane must beat Lane A under the same PIT-safe, event-grouped evaluation.
+
+---
+
+# 3. Why taking this risk is reasonable
+
+We may wait a long time before we have hundreds of perfectly labeled booking curves.
+
+Waiting for an ideal dataset could therefore delay the most interesting model direction by many months or years.
+
+But we must keep one distinction clear:
+
+> **More daily rows do not mean more independent events.**
+
+For example:
+
+`50 events x 40 daily prefixes = 2,000 training rows`
+
+but still only:
+
+`50 independent events`
+
+This means sequence models may overfit easily.
+
+Therefore we accept **model risk**, but not **evidence risk**.
+
+---
+
+# 4. Non-negotiable evidence rules
+
+1. Split by event, never by random daily rows.
+2. All prefixes from one event stay in the same fold.
+3. No snapshot captured after a cutoff may enter that cutoff's features.
+4. No target future trajectory may enter an earlier prediction.
+5. No target attendance may enter prediction construction.
+6. Scalers/normalizers must be fitted inside training folds.
+7. Hyperparameter/model selection must stay separate from final prospective evaluation.
+8. Persist forecasts before outcomes are known.
+9. Never count correlated daily rows as independent evidence.
+10. Existing frozen P7/P9/Form5/Long72 experiments remain unchanged.
+
+---
+
+# 5. Daily inference, not daily retuning
+
+The system should produce a new immutable forecast at each eligible daily cutoff.
+
+The model itself remains frozen during its evaluation cohort.
+
+Allowed:
+
+`same frozen model + new genuine daily evidence -> new forecast`
+
+Not allowed:
+
+`new daily evidence -> retune model against newly exposed outcomes -> new forecast`
+
+This gives us a useful forecast history without destroying prospective validity.
+
+---
+
+# 6. Canonical daily trajectory dataset
+
+Create one PIT-safe row per event and daily cutoff.
+
+Canonical cutoff:
 
 `as_of_at(P-N) = kickoff_at - N * 24h`
 
@@ -67,107 +153,96 @@ Initial research range:
 
 `P-60 ... P-1`
 
-The exact supported range may be narrower for an event depending on when genuine ticketing observation starts.
+Use only data genuinely visible by the cutoff.
 
-For each cutoff use only records with:
+Missing observations stay missing.
 
-`captured_at <= as_of_at`
+Never manufacture history to complete the sequence.
 
-Never use a future snapshot to fill an earlier cutoff.
+## Required information
 
-Never manufacture historical booking-curve data.
-
-If a daily observation is unavailable, preserve it as missing and expose the reason/staleness explicitly.
-
-### Minimum row schema
-
-Identity / PIT lineage:
+### Identity and lineage
 
 - ticket_event_id;
 - club_slug;
 - kickoff_at;
 - as_of_at;
 - days_to_event;
-- latest_snapshot_id_visible_at_cutoff;
-- latest_snapshot_captured_at;
-- snapshot_age_hours;
-- source lineage / source version;
-- dataset build SHA/version.
+- latest visible snapshot ID/time;
+- snapshot staleness;
+- source lineage;
+- dataset/code version.
 
-Current trajectory state:
+### Current trajectory state
 
-- inventory_proxy;
-- inventory_proxy_share_of_verified_capacity;
-- first_visible_inventory_proxy;
-- days_since_first_visible_observation;
-- raw_snapshot_count_visible;
-- clean_snapshot_count_visible;
-- missing_daily_points;
-- observation_density;
-- data-quality flags.
+- inventory/demand proxy;
+- share of verified capacity;
+- first visible proxy;
+- days since first observation;
+- observation density;
+- missingness/data-quality state.
 
-Trajectory dynamics, derived PIT-safely from the observed prefix only:
+### Dynamics
 
-- delta_1d;
-- delta_3d;
-- delta_7d;
-- velocity_1d;
-- velocity_3d;
-- velocity_7d;
-- acceleration_1d_vs_7d;
+- delta_1d / delta_3d / delta_7d;
+- velocity_1d / velocity_3d / velocity_7d;
+- acceleration;
 - recent slope;
-- longer-window slope;
+- longer slope;
 - slope change;
-- trajectory volatility;
-- days since last material acceleration/deceleration;
+- volatility;
 - normalized curve position;
-- similarity statistics vs completed prior PIT-safe curves.
+- trajectory similarity statistics.
 
-Structural context available at cutoff:
+### Structural anchor
 
-- structural incumbent P10/P50/P90;
-- relevant incumbent/model family identity;
-- verified stadium capacity;
-- existing PIT-safe static/context features already approved for the relevant research dataset.
-
-No actual target attendance belongs in the inference dataset before the event outcome is genuinely known.
+- incumbent P10/P50/P90;
+- incumbent family/version;
+- verified capacity;
+- approved PIT-safe context for that model version.
 
 ---
 
-## 4. Daily forecast ledger
+# 7. Immutable daily forecast ledger
 
-For every eligible `(ticket_event_id, days_to_event, model_version)` persist exactly one immutable forecast attempt.
+For each eligible:
 
-Persist both successful predictions and fail-closed attempts.
+`(ticket_event_id, days_to_event, model_version)`
 
-Required fields include:
+persist exactly one immutable attempt.
 
-- ticket_event_id;
-- days_to_event;
+Persist both:
+
+- successful predictions;
+- fail-closed attempts.
+
+Minimum lineage:
+
+- event;
+- daily horizon;
 - exact as_of_at;
 - predicted_at;
 - model/precommit version;
-- feature/dataset manifest SHA;
-- observed-prefix start/end;
-- latest visible snapshot lineage;
-- incumbent P10/P50/P90;
-- challenger P10/P50/P90;
-- forecast status;
-- fail-closed reason when no prediction is emitted;
+- dataset/feature manifest SHA;
+- observed prefix range;
+- latest source snapshot lineage;
+- incumbent forecast;
+- challenger forecast;
+- status/fail reason;
 - `target_values_used=false`;
 - `production_change=false`.
 
-After genuine attendance arrives, score each previously persisted forecast without recomputing it.
+Once real attendance is known, score the stored forecast. Never regenerate it after the fact.
 
 ---
 
-## 5. Evaluation view: MAE as a curve, not one number
+# 8. MAE should be viewed as a curve
 
-Primary governance metric remains prospective event-balanced MAE, but trajectory work must expose MAE by horizon.
+We still need one event-balanced primary MAE for governance, but product/research analysis must show accuracy by horizon.
 
 Minimum reporting:
 
-| Horizon | Incumbent MAE | Challenger MAE | Delta MAE | Event count | Club count |
+| Horizon | Incumbent MAE | Challenger MAE | Delta MAE | Events | Clubs |
 |---|---:|---:|---:|---:|---:|
 | P-30 | | | | | |
 | P-21 | | | | | |
@@ -178,236 +253,145 @@ Minimum reporting:
 
 Also report:
 
-- event-balanced MAE across precommitted horizon bands;
 - signed bias;
+- median AE;
+- P90 AE;
 - event improvement rate;
-- median event AE;
-- P90 event AE;
 - worst event degradation;
 - per-club downside;
-- forecast stability between consecutive days;
-- calibration / interval coverage for P10-P90 when available.
+- forecast revision/stability between consecutive days;
+- P10/P90 coverage when available.
 
-Daily rows from the same event are **not independent events**. Never treat a large number of daily rows as a large independent evaluation sample.
+The useful product question is not only:
 
----
+> What is our MAE?
 
-## 6. Model strategy: run two lanes in parallel
+but also:
 
-Waiting for a theoretically ideal dataset may delay learning for too long. Therefore use a controlled two-lane strategy.
-
-### Lane A — conservative / high-signal baseline
-
-Goal: establish the value of trajectory information with models that are difficult to overfit and easy to audit.
-
-Candidate family:
-
-1. structural incumbent + regularized residual model;
-2. Ridge / ElasticNet on PIT-safe trajectory features;
-3. small tree-based residual learner (for example the same restrained model families already used elsewhere in the repository);
-4. nearest-trajectory / curve-similarity residual correction.
-
-Primary target:
-
-`attendance - structural_incumbent_P50`
-
-Prefer predicting a residual/correction rather than learning attendance from scratch. The structural incumbent already contains substantial information and gives the trajectory model a stronger prior.
-
-This lane is the benchmark that any sequence model must beat.
-
-### Lane B — high-risk sequence research
-
-Start this lane **before** the dataset is conventionally considered large enough, but keep it shadow/research-only.
-
-The purpose is to learn whether representation learning over the full observed prefix can extract signal that engineered features miss.
-
-Candidate progression:
-
-1. small GRU;
-2. small LSTM;
-3. temporal convolutional network (TCN);
-4. compact attention/Transformer-style encoder;
-5. only later, more complex architectures such as TFT-style models if the evidence justifies them.
-
-Do not begin with a large Transformer.
-
-The first sequence challengers should be deliberately small and strongly regularized.
-
-Recommended formulation:
-
-`observed trajectory prefix + structural prior/context -> residual correction / final attendance distribution`
-
-not:
-
-`raw trajectory -> attendance from scratch`
+> **How early before kickoff does Beyond become meaningfully accurate?**
 
 ---
 
-## 7. Why sequence models are worth testing despite limited labels
+# 9. Sequence learning with limited attendance labels
 
-The risk is real: daily rows do not create independent matches, and a high-capacity sequence model can memorize clubs/events quickly.
+We have more trajectory observations than final attendance labels.
 
-However, waiting for hundreds or thousands of perfect labeled booking curves may be commercially unrealistic.
+Therefore Lane B may use target-free/self-supervised pretraining.
 
-Therefore the correct strategy is **controlled research risk**, not indefinite waiting.
+Possible tasks:
 
-Possible ways to make limited data more useful without leaking targets:
+- predict the next genuine proxy observation from the prefix;
+- predict short-horizon proxy change;
+- learn representations of curve shape;
+- chronology-safe masked/reconstruction tasks on training sequences.
 
-### A. Pool trajectories across clubs
+Then use the learned representation together with the structural prior to predict:
 
-Train one global sequence representation rather than separate club-specific deep models. Preserve club/context identity as features rather than fragmenting the sample.
+`attendance residual = actual attendance - structural P50`
 
-### B. Use every genuine prefix for representation learning
-
-One completed event can provide many valid prefixes:
-
-`P-30 prefix`, `P-29 prefix`, ..., `P-1 prefix`.
-
-These are useful training examples but remain grouped under the same event for all splits, bootstraps and evaluation.
-
-### C. Self-supervised trajectory pretraining
-
-Use genuine unlabeled inventory trajectories to learn representations without requiring final attendance labels.
-
-Examples of target-free pretraining tasks:
-
-- predict the next observed inventory point from the historical prefix;
-- reconstruct masked historical trajectory points using only observations that would be available within the training sequence;
-- classify/cluster trajectory shape;
-- predict future inventory-proxy change on completed historical sequences.
-
-A later attendance head can then be trained on the smaller labeled attendance cohort.
-
-Any pretraining implementation must preserve chronology and must never expose a target event's future trajectory to its own earlier inference cutoff.
-
-### D. Residual learning against structural prior
-
-Reduce the problem complexity by asking the sequence model to learn only the part the structural model misses.
-
-### E. Strong regularization and tiny capacity
-
-For early experiments prefer:
-
-- small hidden dimensions;
-- few layers;
-- dropout / weight decay;
-- early stopping based on event-grouped validation;
-- no architecture/hyperparameter sweep on the final prospective cohort.
+This can help representation learning, but it does **not** increase the number of independent events in final evaluation.
 
 ---
 
-## 8. Non-negotiable leakage rules for daily/sequence models
+# 10. First model comparison
 
-1. Split by event, never random daily rows.
-2. Prefer temporal and club-aware validation (LOEO/LOCO or equivalent grouped designs) depending on the research question.
-3. All prefixes from one target event stay in the same fold.
-4. No snapshot with `captured_at > as_of_at` enters target features.
-5. No target attendance enters prediction building.
-6. No target future trajectory enters an earlier target cutoff.
-7. Any normalization/scaler fitted from training data must be fitted inside the training fold.
-8. Hyperparameter/model selection must remain separate from the final prospective evaluation cohort.
-9. Immutable prospective predictions must exist before outcomes are opened.
-10. Never count correlated daily rows as independent evidence when reporting confidence or readiness.
+The clean first comparison should be:
 
----
+## Lane A
 
-## 9. Forecast-the-curve extension
+`Structural P50 + engineered trajectory residual model`
 
-The long-term product model should not be restricted to a single final attendance number.
+versus
 
-At each daily cutoff it should eventually be able to emit:
+## Lane B
 
-- expected next-day inventory/demand proxy;
-- expected remaining trajectory;
-- final attendance P10/P50/P90.
+`Structural P50 + small sequence encoder residual model`
 
-Example at P-14:
+Both use:
 
-`observed P-30 ... P-14 -> predicted P-13 ... P-1 -> final attendance distribution`
+- the same eligible events;
+- the same event-grouped folds;
+- the same PIT cutoffs;
+- the same primary metric;
+- the same downstream scoring rules.
 
-At P-13 the genuine P-13 observation replaces the previous predicted P-13 and the remaining path is recalculated.
+The core question is:
 
-This is a later extension. The first success criterion remains lower prospective final-attendance MAE.
+> **Does reading the sequence itself add signal beyond velocity/acceleration/slope features?**
 
 ---
 
-## 10. Product/dashboard consequence
+# 11. Relationship to P9
 
-The chart should evolve from two visually adjacent series into an explicit observed-vs-forecast trajectory view.
+Do not replace or rewrite P9.
 
-Target display:
+P9 remains a separate frozen experiment:
 
-- solid line: genuinely observed inventory/demand proxy prefix;
-- dashed future line: model-predicted remaining proxy trajectory (when supported);
-- separate final attendance distribution/P50;
-- vertical `today/as-of` boundary;
-- visible forecast revision versus previous daily cutoff;
-- explicit statement that inventory proxy is not confirmed ticket sales.
+`curve similarity -> fixed historical neighbors -> residual correction at T-48/T-24`
 
-The UI must never imply that `capacity - publicly available inventory` is confirmed paid attendance.
+This plan asks a different question:
+
+`full observed daily prefix -> evolving forecast across many horizons`
+
+P9 v1/v2 evidence must remain separately auditable.
 
 ---
 
-## 11. Execution order
+# 12. Product direction
 
-### Now — do not wait for current P9 scoring
+The dashboard should eventually distinguish four things clearly:
 
-1. Preserve all currently frozen prospective lanes unchanged.
+1. **observed inventory/demand proxy**;
+2. **today / as-of boundary**;
+3. **predicted future proxy trajectory**;
+4. **predicted final attendance P10/P50/P90**.
+
+Conceptually:
+
+`observed P-30 ... P-14 | today | predicted P-13 ... P-1 -> final attendance`
+
+The next day, the real P-13 observation replaces yesterday's predicted P-13 and the remaining path is recalculated.
+
+Inventory proxy must never be presented as confirmed paid ticket sales.
+
+---
+
+# 13. Execution order
+
+## Start now
+
+1. Preserve all frozen prospective lanes unchanged.
 2. Materialize the canonical daily trajectory dataset.
-3. Persist immutable daily forecast/attempt rows for active events using the current incumbent where available.
-4. Add horizon-wise MAE reporting infrastructure.
-5. Audit observation density and missingness by event/club/horizon.
+3. Create immutable daily forecast/attempt persistence.
+4. Add horizon-wise MAE reporting.
+5. Audit observation density/missingness by event/club/horizon.
 
-These steps create evidence and do not require changing the production model.
+## Then, in parallel
 
-### Next — conservative trajectory challenger
+6. Precommit Lane A simple trajectory challenger.
+7. Precommit a small Lane B sequence challenger.
+8. Run both under identical event-grouped/PIT-safe validation.
+9. Investigate self-supervised trajectory pretraining.
+10. Start prospective daily shadow inference before outcomes are known.
 
-6. Precommit a simple residual trajectory baseline (Lane A).
-7. Evaluate with event-grouped historical validation where PIT support is honest.
-8. Begin prospective daily shadow predictions before target outcomes exist.
+## Decision
 
-### In parallel — intentionally risky sequence lane
-
-9. Build a very small sequence challenger (GRU/LSTM/TCN first).
-10. Benchmark it against Lane A under identical grouped/PIT-safe splits.
-11. Investigate target-free/self-supervised trajectory pretraining.
-12. Only test a compact Transformer-style architecture if the smaller sequence models show that sequential representation itself adds signal.
-
-### Promotion boundary
-
-13. Score frozen challengers only after genuine outcomes.
-14. Compare horizon-wise and event-balanced Delta MAE plus event-level downside.
-15. Do not promote based on training fit, row count, one event, or one favorable horizon.
-16. Production change requires a separate reviewed decision.
+11. Score only genuine frozen predictions.
+12. Compare horizon-wise and event-balanced Delta MAE.
+13. Compare downside/uncertainty.
+14. Increase model complexity only if sequence representation materially beats Lane A.
+15. Production remains a separate reviewed decision.
 
 ---
 
-## 12. Decision rule on 'risking' deep sequence models
+# 14. Accepted research decision
 
-Decision: **YES — test them early, but as a separate high-risk research lane.**
+> **YES — test sequence models early.**
 
-Reasoning:
+But the acceptance is specifically:
 
-- waiting for a conventionally large labeled dataset may take too long;
-- the cost of a shadow experiment is low compared with the potential signal from full trajectory shape;
-- we can exploit many genuine prefixes and unlabeled trajectory data for representation learning;
-- but correlated prefixes do not solve the independent-event sample-size problem;
-- therefore a deep model must earn its place by beating simple trajectory baselines on event-grouped and then prospective evidence.
+> **Take controlled model risk in research; do not take shortcuts with PIT safety, event independence or prospective evidence.**
 
-The objective is not to prove that a Transformer/LSTM can fit the existing curves.
+The objective is not to demonstrate that an LSTM/Transformer can fit the existing curves.
 
-The objective is to prove that sequential representation reduces **true prospective event-balanced attendance MAE** beyond the structural incumbent and simpler trajectory challengers.
-
----
-
-## 13. Immediate research hypothesis
-
-Primary new hypothesis:
-
-> **A PIT-safe model that consumes the full observed daily inventory/demand trajectory prefix and predicts a residual over the structural attendance prior will reduce prospective MAE, particularly at medium/late horizons, compared with models that use only sparse fixed horizons or the latest snapshot.**
-
-Secondary high-risk hypothesis:
-
-> **A small sequence encoder pretrained or trained on genuine booking-curve prefixes can extract incremental trajectory-shape information that engineered velocity/acceleration features fail to capture.**
-
-Both hypotheses must be evaluated prospectively and independently from currently frozen lanes.
+The objective is to prove that sequence representation reduces **true prospective event-balanced attendance MAE** beyond the structural incumbent and simpler trajectory models.
