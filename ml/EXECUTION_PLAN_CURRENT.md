@@ -1,6 +1,6 @@
 # Beyond Ticketing — Current MAE Execution Plan
 
-Last updated: **2026-10-28**
+Last updated: **2026-10-29**
 
 Status: **CURRENT SOURCE OF TRUTH**
 
@@ -14,30 +14,36 @@ Canonical strategy: `ml/MAE_RESEARCH_ROADMAP_V5.md`
 
 There are two parallel tracks.
 
-## Track 1 — protect real prospective evidence
+## Track 1 — protect genuine prospective evidence
 
-Keep P7, P9, Form5, Long72 and current evidence-collection contracts frozen and honest. An imminent genuine window always takes priority over trajectory R&D.
+Keep P7, P9, Form5, Long72 and the frozen trajectory shadow honest. An imminent immutable cutoff always has priority over new R&D.
 
-## Track 2 — improve MAE with trajectory modelling
+## Track 2 — improve attendance MAE with trajectory information
 
-The trajectory infrastructure is complete. The first three supervised experiments on the frozen 10-event development cohort are also complete.
+The first supervised trajectory cohort is exhausted for model selection. Lane A v1, Lane B v1 and Lane B v2 are closed.
 
-| Model | Event-balanced MAE | Delta vs incumbent | Decision |
-|---|---:|---:|---|
-| Structural incumbent | **2594.54** | — | incumbent |
-| Lane A v1 — Ridge | 4153.34 | **+1558.80** | rejected |
-| Lane B v1 — GRU / raw seat residual | 2595.40 | **+0.87** | do not advance |
-| Lane B v2 — GRU / residual ratio | 4792.42 | **+2197.88** | mechanism not supported |
+Target-free self-supervised trajectory pretraining v1 is also complete and produced a **supported representation**:
 
-The supervised 10-event cohort is now **fully exposed**. We stop tuning correction magnitude, caps, loss functions or sequence architectures against those same five outer test events.
+| Target-free SSP v1 metric | Result |
+|---|---:|
+| zero-change event-balanced MAE | 0.091722 |
+| GRU event-balanced MAE | **0.062896** |
+| Delta MAE | **-0.028826** |
+| validation events improved | **5 / 5** |
 
-The active research direction is now:
+Decision: `REPRESENTATION_SUPPORTED`.
 
-> **Target-free self-supervised trajectory representation learning using genuine inventory sequences, followed later by prospective attendance validation on future independent events.**
+This is evidence that the encoder learned reusable inventory-trajectory dynamics. It is **not attendance-forecast evidence**.
 
-Active precommit:
+The encoder is frozen. A single conservative attendance head has been fitted once on the already-exposed historical cohort without historical model selection:
 
-`ml/TRAJECTORY_SELF_SUPERVISED_PRETRAIN_V1.md`
+`trajectory-frozen-encoder-ridge-ratio-head-v1`
+
+The current active attendance experiment is therefore:
+
+> **Frozen encoder + frozen Ridge residual-ratio head -> immutable P-7 / P-3 / P-1 prospective shadow -> future event-balanced attendance Delta MAE.**
+
+No tuning is allowed against early prospective outcomes under the same candidate version.
 
 ---
 
@@ -53,8 +59,6 @@ Desired:
 
 `Delta MAE < 0`
 
-Self-supervised trajectory metrics are representation-learning evidence only. They are **not** attendance-forecast evidence.
-
 ---
 
 # 2. Non-negotiable rules
@@ -67,47 +71,193 @@ Self-supervised trajectory metrics are representation-learning evidence only. Th
 6. No manufactured inventory/history.
 7. Frozen experiments are not tuned after their result.
 8. The exposed 10-event supervised cohort is not reused as unseen confirmation.
-9. Genuine prospective attendance evidence outranks historical research.
-10. No research workflow activates production automatically.
+9. SSP v1 validation events are representation-learning validation only, never attendance confirmation.
+10. Genuine prospective attendance evidence outranks historical research.
+11. Any material candidate change after prospective outcomes requires a new precommit/version.
+12. No research workflow activates production automatically.
 
 ---
 
-# 3. Protect current prospective evidence
+# 3. Structural incumbent
+
+The structural model remains the attendance incumbent.
+
+Frozen supervised trajectory results on the exposed 10-event cohort:
+
+| Model | Event-balanced MAE | Delta vs incumbent | Decision |
+|---|---:|---:|---|
+| Structural incumbent | **2594.54** | — | incumbent |
+| Lane A v1 — Ridge | 4153.34 | +1558.80 | rejected |
+| Lane B v1 — GRU / raw seat residual | 2595.40 | +0.87 | do not advance |
+| Lane B v2 — GRU / residual ratio | 4792.42 | +2197.88 | mechanism not supported |
+
+Do not perform post-hoc shrinkage, cap, learning-rate, epoch, loss or architecture tuning on those same exposed outer events.
+
+---
+
+# 4. SSP v1 — CLOSED / REPRESENTATION SUPPORTED
+
+Precommit:
+
+`ml/TRAJECTORY_SELF_SUPERVISED_PRETRAIN_V1.md`
+
+Result:
+
+`ml/results/trajectory_self_supervised_24h_delta_v1_result.json`
+
+Frozen encoder:
+
+`ml/artifacts/trajectory_self_supervised_encoder_v1.json`
+
+Frozen data cutoff:
+
+`2026-10-28T22:09:43.958409Z`
+
+Evidence class:
+
+`target_free_temporal_validation`
+
+Sample:
+
+- 26 usable events / 12 clubs;
+- 3565 usable ~24h pairs;
+- 21 train events / 3397 pairs;
+- 5 temporally later validation events / 168 pairs.
+
+Result:
+
+- baseline event-balanced MAE: **0.0917223592**;
+- model event-balanced MAE: **0.0628961688**;
+- Delta: **-0.0288261905**;
+- improved events: **5/5**;
+- attendance labels used: **false**;
+- structural P50 used: **false**.
+
+The encoder is now immutable for candidate v1. SSP v1 must not be retuned against the same validation events.
+
+---
+
+# 5. Active trajectory attendance candidate — prospective shadow v1
+
+Precommit:
+
+`ml/TRAJECTORY_FROZEN_ENCODER_PROSPECTIVE_SHADOW_V1.md`
+
+Candidate:
+
+`trajectory-frozen-encoder-ridge-ratio-head-v1`
+
+Components:
+
+- frozen SSP v1 GRU encoder;
+- 8-dimensional embedding;
+- one fixed Ridge residual-ratio head;
+- Ridge alpha: **10**;
+- correction cap: **+/-10%**;
+- fit cohort: exact exposed 10-event / 19-row historical cohort;
+- historical candidate selection performed: **false**;
+- horizons: **P-7 / P-3 / P-1**.
+
+Frozen head artifact:
+
+`ml/artifacts/trajectory_frozen_encoder_attendance_head_v1.json`
+
+The original successful fit workflow generated the head as an Actions artifact. On 2026-10-29 the exact frozen artifact was persisted to `main` so the prospective shadow runner can execute without refitting.
+
+Operational verification after persistence:
+
+- checkout: success;
+- pinned inference runtime: success;
+- compile: success;
+- main-only OIDC: success;
+- immutable shadow check: **success**;
+- production change: **false**.
+
+As of **2026-10-29 16:09 UTC**, before the first due P-1 cutoff:
+
+- shadow attempts: **0**;
+- shadow predictions: **0**;
+- shadow scores: **0**.
+
+This is expected. Do not create retrospective rows.
+
+---
+
+# 6. Frozen shadow evidence contract
+
+Exact cutoff:
+
+`target_as_of_at = kickoff_at - N days`, where `N in {7,3,1}`.
+
+Eligibility requires:
+
+- future event and no known attendance outcome;
+- execution inside the immutable cutoff window;
+- genuine observations only;
+- >=4 eligible hourly-bucket observations;
+- >=24h observed prefix span;
+- positive first genuine inventory observation;
+- PIT-valid structural prior genuinely available by the cutoff;
+- no previous immutable attempt for the same event/horizon/candidate.
+
+Prediction:
+
+`challenger_p50 = structural_p50 * (1 + clipped_head_ratio)`
+
+with ratio clipped to `[-0.10,+0.10]`.
+
+Persist to the existing immutable trajectory backend:
+
+- `private.daily_trajectory_attempts_v1`;
+- `private.daily_trajectory_predictions_v1`;
+- `private.daily_trajectory_scores_v1`.
+
+Never insert synthetic or retrospective prospective evidence.
+
+---
+
+# 7. Live prospective evidence snapshot — 2026-10-29 16:09 UTC
 
 ## P9 v1
 
-First genuine event443 T-48 attempt:
-
-`PIT_SUPPORT_INSUFFICIENT`
-
-- 1 attempt;
+- 2 genuine attempts / 2 events;
 - 0 predictions;
-- 0 scored.
+- 0 scored;
+- both attempts support-insufficient;
+- correct fail-closed;
+- production change false.
 
-Correct fail-closed. Do not lower support or retro-predict.
+Do not lower support or retro-predict.
 
 ## P9 Family Fallback v2
 
-Separate frozen evidence only. Never pool with v1.
+- 1 genuine attempt;
+- 1 immutable prediction;
+- 0 scored;
+- separate evidence only;
+- production change false.
+
+Never pool v1 and v2 evidence.
 
 ## Form5
 
-First legal prospective T-24 capture:
-
-**event443 — 2026-10-29 17:00 UTC**.
+- `PROSPECTIVE_COLLECTING`;
+- 0/8 completed eligible events;
+- 0/5 clubs;
+- 0/2 distinct values;
+- future stream: 13 events / 12 clubs / 9 distinct values;
+- Ridge alpha 30;
+- cap +/-25%;
+- production change false.
 
 ## P7
 
-Latest recorded:
+Latest recorded canonical state:
 
 - 53 immutable rows;
 - 6 events;
 - 0 scored;
 - no retuning.
-
-## P11 / P4a
-
-Continue genuine evidence accumulation only.
 
 ## Long72
 
@@ -117,46 +267,39 @@ Frozen / low priority:
 - 6082.40 -> 6039.39 MAE;
 - 0.71% point gain.
 
+## P11 / P4a
+
+Continue genuine evidence accumulation only. No forced model fit below gates.
+
 ---
 
-# 4. Near-term windows to protect
+# 8. Imminent immutable windows
 
-Unless fresh machine state says otherwise:
+Fresh machine state at **2026-10-29 16:09 UTC**:
 
-- event446 Wisła Płock–Piast T-48: **2026-10-29 11:15 UTC**;
-- event6 Lech–Wisła Kraków T-48: **2026-10-29 16:30 UTC**;
-- event443 Cracovia–Motor T-24: **2026-10-29 17:00 UTC**;
-- event444 GKS Katowice–Widzew T-48: **2026-10-29 19:15 UTC**;
-- event445 Zagłębie–Korona T-48: **2026-10-31 17:00 UTC**;
-- event447 Raków–Pogoń T-48: **2026-10-31 19:30 UTC**.
+- event6 Lech Poznań–Wisła Kraków P9 T-48: **2026-10-29 16:30 UTC** — READY;
+- event443 Cracovia–Motor P9/Form5 T-24: **2026-10-29 17:00 UTC** — READY;
+- event443 Cracovia–Motor frozen-encoder P-1: **2026-10-29 17:00 UTC** — first shadow opportunity;
+- event444 GKS Katowice–Widzew P9 T-48: **2026-10-29 19:15 UTC** — READY;
+- event446 Wisła Płock–Piast P9 T-24: **2026-10-30 11:15 UTC** — READY.
+
+P9 cadence:
+
+`11,26,41,56 * * * *`
+
+plus the redundant Structural Prior Materializer -> P9 heartbeat bridge.
+
+Frozen-encoder shadow cadence:
+
+`20 * * * *`
+
+The runner reconstructs inputs strictly at the exact cutoff even if execution happens later inside the immutable window.
 
 Unknown inventory is never converted to zero.
 
 ---
 
-# 5. Trajectory infrastructure — DONE
-
-Canonical code:
-
-- `ml/demand_engine/live_trajectory_feature_store.py`;
-- `ml/demand_engine/daily_trajectory_dataset.py`;
-- `ml/demand_engine/trajectory_feature_contract_v1.py`;
-- `ml/demand_engine/trajectory_shared_dataset_v1.py`;
-- `ml/demand_engine/trajectory_validation_folds_v1.py`.
-
-Live prospective evidence backend:
-
-- `private.daily_trajectory_attempts_v1`;
-- `private.daily_trajectory_predictions_v1`;
-- `private.daily_trajectory_scores_v1`;
-- post-outcome scoring;
-- MAE-by-horizon reporting.
-
-No synthetic prospective prediction has been inserted.
-
----
-
-# 6. Data reality
+# 9. Data reality
 
 Current genuine pre-kickoff inventory history:
 
@@ -170,209 +313,32 @@ Therefore:
 
 > **P-60 is a collection horizon, not a requirement for a fabricated complete 60-day sequence.**
 
-Use genuine variable-length prefixes. No interpolation/forward-fill merely for model convenience.
-
----
-
-# 7. Supervised trajectory evidence — CLOSED
-
-Frozen development cohort:
-
-`ml/artifacts/trajectory_development_cohort_v1.json`
-
-- 10 labeled events;
-- 19 persisted checkpoint rows;
-- 5 strict-forward outer test events;
-- fold SHA256:
-  `fc59737ab1c0a306920b4961de35664178b14648f679071522d1d07515cb3091`.
-
-This cohort is now exposed.
-
-## Lane A v1
-
-Result:
-
-- MAE 4153.34 vs 2594.54 incumbent;
-- +60.1% worse.
-
-Decision:
-
-`REJECT_AS_CANDIDATE_RETAIN_AS_BENCHMARK`
-
-## Lane B v1
-
-Result:
-
-- MAE 2595.40;
-- +0.87 worse than incumbent;
-- predictions collapsed near zero correction.
-
-Decision:
-
-`DO_NOT_ADVANCE`
-
-## Lane B v2
-
-Target scaling changed raw seat residual into residual ratio while keeping architecture/folds/optimizer/seeds fixed.
-
-Result:
-
-- MAE 4792.42;
-- +2197.88 worse than incumbent;
-- median absolute correction ~1551 seats;
-- worst event degradation +4647.90.
-
-Decision:
-
-`MECHANISM_NOT_SUPPORTED`
-
-Conclusion:
-
-> **Target scaling solved the zero-output problem mechanically, but produced harmful over-corrections. Stop supervised tuning on this exposed cohort.**
-
-Do not now try post-hoc shrinkage factors, caps, different LR/epochs, Huber, LSTM, TCN or Transformer against the same five exposed events.
-
----
-
-# 8. Active research — target-free trajectory pretraining v1
-
-Precommit:
-
-`ml/TRAJECTORY_SELF_SUPERVISED_PRETRAIN_V1.md`
-
-Split manifest:
-
-`ml/artifacts/trajectory_self_supervised_v1_split.json`
-
-Frozen data cutoff:
-
-`2026-10-28T22:09:43.958409Z`
-
-This experiment uses **no attendance labels and no structural P50**.
-
-## Frozen usable sample
-
-- 26 usable events / 12 clubs;
-- 3565 usable ~24h pairs;
-- 21 train events / 3397 train pairs;
-- 5 temporally later validation events / 168 validation pairs.
-
-Validation events:
-
-`[447, 449, 450, 451, 452]`
-
-## Target-free task
-
-Input:
-
-- genuine trajectory prefix up to source observation;
-- max 168h context;
-- >=4 observations;
-- >=24h observed prefix span.
-
-Target:
-
-`future_available_index_~24h - source_available_index`
-
-Zero-change baseline:
-
-`predicted delta = 0`
-
-## Frozen model
-
-- one-layer GRU;
-- input 4;
-- hidden 8;
-- 8-unit MLP head;
-- dropout .20;
-- AdamW .001 / wd .01;
-- weighted L1;
-- batch 128;
-- 100 epochs;
-- grad clip 1;
-- seed 17;
-- no early stopping;
-- no hyperparameter search.
-
-Evidence label:
-
-`target_free_temporal_validation`
-
-A win means only that the encoder learns trajectory dynamics better than a zero-change baseline. It does **not** mean attendance MAE improves.
-
----
-
-# 9. Self-supervised data/export path
-
-Frozen target-free export:
-
-`public.export_trajectory_self_supervised_v1()`
-
-OIDC gateway:
-
-`trajectory_self_supervised_export_v1`
-
-GitHub workflow:
-
-`.github/workflows/trajectory-self-supervised-v1.yml`
-
-Guards:
-
-- exact frozen cutoff;
-- exactly 26 exported events;
-- exactly 3397 train + 168 validation usable pairs after reconstruction;
-- `attendance_labels_used=false`;
-- `structural_prior_used=false`;
-- `production_change=false`.
+Use genuine variable-length prefixes. No interpolation or forward-fill merely for model convenience.
 
 ---
 
 # 10. Immediate execution order
 
-## Evidence protection
-
-1. Protect imminent P9/Form5 windows.
-2. Score P7/P9 only after genuine outcomes.
-3. Keep P11/P4a collection healthy.
-
-## Trajectory R&D
-
-4. Finish frozen self-supervised v1 run.
-5. Persist result and encoder artifact.
-6. Do not tune SSP v1 after validation result.
-7. If it beats zero-change on multiple validation events, freeze the encoder before any attendance-head experiment.
-8. If it fails, do not tune against those same five validation events; any material change becomes SSP v2.
-9. Continue collecting genuine trajectories and independent future attendance labels.
-10. Derive business minimum meaningful attendance Delta MAE independently.
-
-Production remains separately review-gated.
+1. Protect imminent P9 / Form5 / frozen-encoder shadow cutoffs.
+2. Confirm immutable rows after each due window; never backfill a missed window with later information.
+3. Score P7/P9/trajectory shadow only after genuine confirmed outcomes.
+4. Keep the frozen encoder and attendance head unchanged while prospective evidence accumulates.
+5. Report trajectory attendance evidence separately by P-7 / P-3 / P-1 and event-balanced overall.
+6. Do not react to the first one or two prospective outcomes by changing alpha, cap, encoder or features.
+7. Continue genuine trajectory, P11 and P4a collection.
+8. Derive a business minimum meaningful attendance Delta MAE independently of observed candidate results.
+9. Production remains separately review-gated and OFF.
 
 ---
 
-# 11. Decision rules after SSP v1
+# 11. Next model decision
 
-## `REPRESENTATION_SUPPORTED`
+No new model search is justified now.
 
-Require:
+The next meaningful question is no longer whether trajectory dynamics can be represented — SSP v1 says they can.
 
-- validation event-balanced MAE < zero-change baseline;
-- improvement on at least two of five validation events;
-- non-collapsed predictions;
-- all data guards pass.
+The next question is:
 
-Then:
+> **Does the frozen representation add genuinely prospective attendance accuracy over the structural incumbent?**
 
-- freeze encoder artifact;
-- do not call it attendance validation;
-- define a separately precommitted small attendance head;
-- judge attendance value only on future immutable predictions/outcomes.
-
-## `REPRESENTATION_NOT_SUPPORTED`
-
-Then:
-
-- do not tune architecture/hyperparameters on the same five validation events;
-- reassess trajectory representation/task;
-- any material change becomes SSP v2.
-
-Prospective attendance evidence remains the final authority.
+Only future immutable attendance outcomes can answer that.
