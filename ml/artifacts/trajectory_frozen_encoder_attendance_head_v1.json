@@ -1,0 +1,65 @@
+{
+  "alpha": 10.0,
+  "correction_ratio_cap": 0.1,
+  "encoder_artifact_sha256": "91cd670b789f4294bf554c50d3c897f9fa2b8f671527102cb1193476533fe188",
+  "encoder_source_pt_sha256": "3740ba690f75623b4722d28c4084f6062c36cc8dd22e5020c1a5135d4d6f1e2e",
+  "evidence_status": "FITTED_PROSPECTIVE_CANDIDATE_NOT_HISTORICALLY_VALIDATED",
+  "fit_cohort_version": "trajectory-development-cohort-v1",
+  "fit_event_ids": [
+    5,
+    10,
+    11,
+    15,
+    18,
+    19,
+    20,
+    21,
+    22,
+    23
+  ],
+  "fit_export_sha": "2ca072b6c163e935094352f08ab98d090c34b467",
+  "fit_fold_registry_sha256": "fc59737ab1c0a306920b4961de35664178b14648f679071522d1d07515cb3091",
+  "fit_manifest_sha256": "3325b99fc2092b1184d1781dd145a1c046deb8364cceaa49c477a13b56b3194f",
+  "fit_only_no_historical_mae_selection": true,
+  "fit_row_count": 19,
+  "historical_selection_performed": false,
+  "precommit_id": "trajectory-frozen-encoder-ridge-ratio-head-v1",
+  "production_change": false,
+  "prospective_horizons_days": [
+    7,
+    3,
+    1
+  ],
+  "ridge_coef": [
+    -0.009700660267433586,
+    0.009318214622172331,
+    -0.002248702428814328,
+    0.013251386820949458,
+    -0.01064912853043804,
+    -0.025740969752199593,
+    -0.0002622932243337515,
+    -0.0039099387238678875
+  ],
+  "ridge_intercept": 0.08449932341249909,
+  "scaler_mean": [
+    -0.19361030957416484,
+    -0.2801980058613576,
+    0.11281570262814823,
+    -0.1321198041550815,
+    0.4983896660177331,
+    -0.058068631903121344,
+    -0.08760984536064298,
+    0.128534999136862
+  ],
+  "scaler_std": [
+    0.08738272129959879,
+    0.11249198359264159,
+    0.28965014361139046,
+    0.12085713404968865,
+    0.07141186875073383,
+    0.017634509822686256,
+    0.20141601880847929,
+    0.24780547312896423
+  ],
+  "version": "trajectory-frozen-encoder-attendance-head-v1"
+}
