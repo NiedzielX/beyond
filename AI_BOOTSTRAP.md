@@ -1,6 +1,6 @@
 # Beyond — AI Bootstrap / Read This First
 
-Last updated: **2026-10-28**
+Last updated: **2026-10-29**
 
 Status: **CANONICAL AI ENTRYPOINT**
 
@@ -11,15 +11,14 @@ Read in this order:
 1. `ml/EXECUTION_PLAN_CURRENT.md`;
 2. `ml/NEXT_SESSION_HANDOFF.md`;
 3. `ml/MAE_RESEARCH_ROADMAP_V5.md`;
-4. `ml/TRAJECTORY_FORECASTING_PLAN_V1.md`;
-5. `ml/TRAJECTORY_LANE_A_RESULT_V1.md`;
-6. `ml/TRAJECTORY_LANE_B_RESULT_V1.md`;
-7. `ml/TRAJECTORY_LANE_B_V2_RESULT.md`;
-8. `ml/TRAJECTORY_SELF_SUPERVISED_PRETRAIN_V1.md`;
-9. `ml/PROGRESS_TRACKING.md`;
-10. `ml/MODEL_ACCURACY_DEVELOPMENT_INSTRUCTIONS_V3.md`.
+4. `ml/TRAJECTORY_FROZEN_ENCODER_PROSPECTIVE_SHADOW_V1.md`;
+5. `ml/TRAJECTORY_FROZEN_ENCODER_ATTENDANCE_HEAD_V1.md`;
+6. `ml/TRAJECTORY_SELF_SUPERVISED_PRETRAIN_V1.md`;
+7. `ml/results/trajectory_self_supervised_24h_delta_v1_result.json`;
+8. `ml/PROGRESS_TRACKING.md`;
+9. `ml/MODEL_ACCURACY_DEVELOPMENT_INSTRUCTIONS_V3.md`.
 
-Read the exact precommit before touching a frozen experiment. Query live machine state before acting on scheduled prospective windows.
+Query live machine state before acting on scheduled prospective windows. Read the exact precommit before touching a frozen experiment.
 
 Roadmap v5 is canonical.
 
@@ -37,9 +36,9 @@ Production remains:
 
 ## 3. Current model state
 
-Structural forecast remains the incumbent.
+Structural forecast remains the attendance incumbent.
 
-Supervised trajectory experiments on the frozen 10-event cohort are closed:
+Supervised trajectory experiments on the exposed 10-event cohort are closed:
 
 | Model | MAE | Delta vs incumbent | Decision |
 |---|---:|---:|---|
@@ -48,155 +47,129 @@ Supervised trajectory experiments on the frozen 10-event cohort are closed:
 | Lane B v1 | 2595.40 | +0.87 | do not advance |
 | Lane B v2 | 4792.42 | +2197.88 | mechanism not supported |
 
-Do not tune A/B v1/v2 further on the same exposed five outer events.
-
-In particular, do not run post-hoc:
-
-- shrinkage/correction caps;
-- LR/epoch/loss sweeps;
-- LSTM/TCN/Transformer tournament;
-- manual horizon multipliers.
-
-Any such work would be increasingly optimized against known answers.
+Do not retune these experiments on the same exposed outer events.
 
 ---
 
-## 4. Active trajectory task
-
-Active experiment:
-
-`trajectory-self-supervised-24h-delta-v1`
+## 4. SSP v1 result — frozen
 
 Precommit:
 
-`ml/TRAJECTORY_SELF_SUPERVISED_PRETRAIN_V1.md`
+`trajectory-self-supervised-24h-delta-v1`
 
-Purpose:
+Target-free temporal validation result:
 
-> **Learn trajectory dynamics without attendance labels, then freeze the encoder before future attendance evaluation.**
+- zero-change event-balanced MAE: **0.091722**;
+- GRU event-balanced MAE: **0.062896**;
+- Delta: **-0.028826**;
+- validation events improved: **5/5**;
+- attendance labels used: false;
+- structural P50 used: false.
 
-Frozen cutoff:
-
-`2026-10-28T22:09:43.958409Z`
-
-Usable sample:
-
-- 26 events / 12 clubs;
-- 3565 usable ~24h pairs;
-- 21 train events / 3397 pairs;
-- 5 later validation events / 168 pairs.
-
-No attendance labels. No structural P50. No club/event identity as a model feature.
-
----
-
-## 5. Frozen SSP v1 protocol
-
-Task:
-
-`trajectory prefix -> normalized inventory delta ~24h later`
-
-Baseline:
-
-`predict delta = 0`
-
-Input prefix:
-
-- genuine observations only;
-- max 168h context;
-- >=4 observations;
-- >=24h observed span;
-- no interpolation/forward-fill.
-
-Model:
-
-- GRU input 4;
-- hidden 8;
-- 8-unit MLP head;
-- dropout .20;
-- AdamW .001 / wd .01;
-- weighted L1;
-- batch 128;
-- 100 epochs;
-- grad clip 1;
-- seed 17;
-- no early stopping;
-- no hyperparameter search.
-
-Evidence label:
-
-`target_free_temporal_validation`
-
-A win means useful representation learning only, not attendance-model validation.
-
----
-
-## 6. SSP data/export path
-
-Split manifest:
-
-`ml/artifacts/trajectory_self_supervised_v1_split.json`
-
-Export RPC:
-
-`public.export_trajectory_self_supervised_v1()`
-
-OIDC gateway:
-
-`trajectory_self_supervised_export_v1`
-
-Workflow:
-
-`.github/workflows/trajectory-self-supervised-v1.yml`
-
-Runner:
-
-`ml/run_trajectory_self_supervised_v1.py`
-
-Hard guards require:
-
-- exact frozen cutoff;
-- 26 exported events;
-- reconstructed 3397 train + 168 validation pairs;
-- `attendance_labels_used=false`;
-- `structural_prior_used=false`;
-- `production_change=false`.
-
----
-
-## 7. Decision after SSP v1
-
-If validation event-balanced MAE beats zero-change on at least two validation events and predictions are non-collapsed:
+Decision:
 
 `REPRESENTATION_SUPPORTED`
 
-Then freeze the encoder before any attendance-head experiment.
+Frozen encoder:
 
-If not:
+`ml/artifacts/trajectory_self_supervised_encoder_v1.json`
 
-`REPRESENTATION_NOT_SUPPORTED`
+Interpretation:
 
-Do not tune v1 against the same five validation events. Any material change becomes SSP v2.
+> The encoder learned useful inventory-trajectory dynamics. This is not evidence that attendance MAE improved.
 
-Attendance value must ultimately be judged on genuinely future immutable predictions/outcomes.
-
----
-
-## 8. Prospective evidence remains protected
-
-P7 / P9 / Form5 and current collection contracts remain separate from trajectory R&D.
-
-An imminent genuine prospective window takes priority over research work.
+Do not retune SSP v1 against the same five validation events.
 
 ---
 
-## 9. Hard rules
+## 5. Active attendance experiment
 
-- no future target trajectory;
-- no target attendance in self-supervised research;
-- no structural P50 in SSP v1;
-- no fabricated history;
-- no random event leakage;
-- no post-result tuning and still call it v1;
-- missing/hidden inventory is never zero;
-- no automatic production activation.
+Candidate:
+
+`trajectory-frozen-encoder-ridge-ratio-head-v1`
+
+Precommit:
+
+`ml/TRAJECTORY_FROZEN_ENCODER_PROSPECTIVE_SHADOW_V1.md`
+
+Frozen components:
+
+- SSP v1 encoder;
+- one fixed Ridge residual-ratio head;
+- alpha 10;
+- +/-10% correction cap;
+- exact exposed 10-event / 19-row fit cohort;
+- no historical candidate selection;
+- P-7 / P-3 / P-1 only.
+
+Frozen head artifact:
+
+`ml/artifacts/trajectory_frozen_encoder_attendance_head_v1.json`
+
+The head was fitted once by the successful fit-only workflow and the exact artifact is now persisted on `main`. Do not refit merely because the prospective runner needs an artifact.
+
+---
+
+## 6. Prospective shadow contract
+
+The shadow asks:
+
+> **Does the frozen encoder + frozen attendance head reduce future attendance MAE relative to the structural incumbent?**
+
+Hard rules:
+
+- exact PIT cutoff;
+- genuine observations only;
+- no later snapshot leakage;
+- PIT-valid structural prior required;
+- immutable attempt/prediction before outcome;
+- no retrospective prediction;
+- no tuning after early future outcomes under the same version;
+- production off.
+
+Persistence:
+
+- `private.daily_trajectory_attempts_v1`;
+- `private.daily_trajectory_predictions_v1`;
+- `private.daily_trajectory_scores_v1`.
+
+Workflow:
+
+`.github/workflows/trajectory-frozen-encoder-shadow-v1.yml`
+
+Schedule:
+
+`20 * * * *`
+
+The full shadow workflow was verified end-to-end on 2026-10-29 after persisting the frozen head artifact.
+
+---
+
+## 7. Current prospective state
+
+Fresh snapshot at **2026-10-29 16:09 UTC**:
+
+- P9 v1: 2 attempts / 0 predictions / 0 scored; both support-insufficient;
+- P9 v2: 1 attempt / 1 immutable prediction / 0 scored;
+- Form5: collecting, 0/8 completed eligible events;
+- frozen-encoder shadow: 0 attempts / 0 predictions / 0 scores before first due P-1 cutoff;
+- production change false everywhere.
+
+Imminent windows are listed in `ml/EXECUTION_PLAN_CURRENT.md` and take priority over new research.
+
+---
+
+## 8. What not to do
+
+Do not:
+
+- reopen Lane A/B tuning on the exposed cohort;
+- use SSP validation as attendance evidence;
+- change encoder/head alpha/cap after seeing early prospective scores and keep the same candidate ID;
+- manufacture missing inventory;
+- random-split daily rows;
+- pool P9 v1/v2 evidence;
+- lower support gates for coverage;
+- auto-activate production.
+
+Any material candidate change after future outcomes requires a new precommit/version.
