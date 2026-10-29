@@ -1,0 +1,41 @@
+name: P9 Prospective Heartbeat v1
+
+on:
+  workflow_dispatch:
+  workflow_run:
+    # GitHub cron runs can be delayed or dropped. Reuse the proven 4x/hour
+    # Structural Prior heartbeat as a second trigger for the frozen P9 workflow.
+    workflows:
+      - "Structural Prior Materializer"
+    types:
+      - completed
+
+permissions:
+  actions: write
+  contents: read
+
+concurrency:
+  group: p9-prospective-heartbeat-v1
+  cancel-in-progress: false
+
+jobs:
+  dispatch-p9:
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Dispatch frozen P9 prospective workflow
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --retry 4 --retry-all-errors --retry-delay 2 -fsS \
+            -X POST \
+            -H "Authorization: Bearer ${GH_TOKEN}" \
+            -H "Accept: application/vnd.github+json" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            "https://api.github.com/repos/${REPO}/actions/workflows/p9-booking-curve-prospective-v1.yml/dispatches" \
+            -d '{"ref":"main"}'
+          echo "Frozen P9 prospective workflow dispatched from redundant heartbeat."
