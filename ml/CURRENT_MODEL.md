@@ -1,8 +1,8 @@
 # Beyond Ticketing — Current Model & Product State
 
-Last updated: **2026-10-28**
+Last updated: **2026-10-29**
 
-Status: **STRUCTURAL INCUMBENT + FROZEN PROSPECTIVE LANES + ACTIVE LANE B SEQUENCE R&D**
+Status: **STRUCTURAL INCUMBENT + FROZEN PROSPECTIVE LANES + FROZEN-ENCODER ATTENDANCE SHADOW**
 
 Canonical execution plan: `ml/EXECUTION_PLAN_CURRENT.md`
 
@@ -15,6 +15,8 @@ Production: `live_adjustment = 0`
 > **Minimize true prospective event-balanced attendance-forecast MAE with PIT-safe, reproducible evidence.**
 
 `Delta MAE = challenger MAE - incumbent MAE`
+
+Desired: `Delta MAE < 0`.
 
 ---
 
@@ -33,80 +35,138 @@ Architecture:
 
 `PIT historical state -> club-history baseline -> global residual model -> structural P50`
 
-This structural P50 is the anchor that every trajectory challenger must beat.
+This remains the attendance anchor that any trajectory challenger must beat prospectively.
 
 ---
 
-# 3. Trajectory research — current answer
+# 3. Supervised trajectory research — closed
 
-The trajectory program is no longer at the infrastructure-design stage.
-
-## Lane A v1 — failed
-
-Model:
-
-`structural P50 + engineered trajectory features -> Ridge residual correction`
-
-Strict-forward historical research result:
-
-- independent test events: **5**;
-- incumbent event-balanced MAE: **2594.5**;
-- Lane A MAE: **4153.3**;
-- Delta MAE: **+1558.8**;
-- **60.1% worse**;
-- event improvement rate: **20%**.
-
-Decision:
-
-`REJECT_AS_CANDIDATE_RETAIN_AS_BENCHMARK`
-
-Lane A v1 must not be retuned after this result.
-
-## Lane B v1 — active
-
-Model:
-
-`structural P50 + genuine ordered variable-length trajectory -> small GRU -> residual correction`
-
-Frozen protocol:
-
-- one GRU layer;
-- hidden dimension 8;
-- 5 sequence channels;
-- small 8-unit MLP head;
-- AdamW;
-- weighted L1 residual loss;
-- 200 fixed epochs;
-- seeds 17 / 29 / 41;
-- median residual across seeds;
-- no architecture search.
-
-Lane B must beat both:
-
-1. structural incumbent MAE;
-2. frozen Lane A MAE.
-
----
-
-# 4. Frozen development cohort
+Frozen development cohort:
 
 `ml/artifacts/trajectory_development_cohort_v1.json`
 
 - 10 labeled independent events;
-- 19 persisted eligible checkpoint rows;
+- 19 eligible checkpoint rows;
 - 5 strict-forward outer test events;
-- only earlier-kickoff events train later targets;
-- all prefixes from one event stay in the same fold.
+- fold registry SHA256:
+  `fc59737ab1c0a306920b4961de35664178b14648f679071522d1d07515cb3091`.
 
-Fold registry SHA256:
+Results:
 
-`fc59737ab1c0a306920b4961de35664178b14648f679071522d1d07515cb3091`
+| Model | Event-balanced MAE | Delta vs structural | Decision |
+|---|---:|---:|---|
+| Structural | **2594.54** | — | incumbent |
+| Lane A v1 | 4153.34 | +1558.80 | rejected |
+| Lane B v1 | 2595.40 | +0.87 | do not advance |
+| Lane B v2 | 4792.42 | +2197.88 | mechanism not supported |
 
-Random row CV is prohibited.
+The cohort is exposed. Do not reuse it as unseen confirmation or tune new correction mechanics against the same outer events.
 
 ---
 
-# 5. Trajectory data reality
+# 4. Target-free SSP trajectory representation — supported
+
+Precommit:
+
+`ml/TRAJECTORY_SELF_SUPERVISED_PRETRAIN_V1.md`
+
+Result:
+
+`ml/results/trajectory_self_supervised_24h_delta_v1_result.json`
+
+Task:
+
+`genuine trajectory prefix -> normalized inventory movement ~24h later`
+
+No attendance labels. No structural P50.
+
+Frozen result:
+
+- train: 21 events / 3397 usable pairs;
+- validation: 5 later events / 168 usable pairs;
+- zero-change event-balanced MAE: **0.0917223592**;
+- GRU event-balanced MAE: **0.0628961688**;
+- Delta: **-0.0288261905**;
+- improved validation events: **5/5**.
+
+Decision:
+
+`REPRESENTATION_SUPPORTED`
+
+Frozen encoder:
+
+`ml/artifacts/trajectory_self_supervised_encoder_v1.json`
+
+Interpretation:
+
+> **Inventory trajectory dynamics are learnable under this frozen target-free task. This does not establish attendance-forecast improvement.**
+
+---
+
+# 5. Current trajectory attendance candidate
+
+Candidate:
+
+`trajectory-frozen-encoder-ridge-ratio-head-v1`
+
+Components:
+
+1. frozen SSP v1 GRU encoder;
+2. 8-dimensional trajectory embedding;
+3. one fixed Ridge residual-ratio head;
+4. Ridge alpha 10;
+5. correction ratio cap +/-10%;
+6. exact exposed 10-event / 19-row historical fit cohort;
+7. no historical candidate selection;
+8. prospective horizons P-7 / P-3 / P-1.
+
+Frozen head:
+
+`ml/artifacts/trajectory_frozen_encoder_attendance_head_v1.json`
+
+The head was fitted once. Its role is not to claim historical improvement; it is a fixed mapping to be judged on future immutable attendance outcomes.
+
+---
+
+# 6. Active prospective trajectory shadow
+
+Precommit:
+
+`ml/TRAJECTORY_FROZEN_ENCODER_PROSPECTIVE_SHADOW_V1.md`
+
+Prediction:
+
+`structural P50 * (1 + frozen clipped residual ratio)`
+
+with the ratio clipped to `[-0.10,+0.10]`.
+
+Eligibility is fail-closed and PIT-safe. Inputs are reconstructed strictly at exact P-7/P-3/P-1 cutoffs using genuine observations and a structural prior genuinely available by that cutoff.
+
+Persistence:
+
+- `private.daily_trajectory_attempts_v1`;
+- `private.daily_trajectory_predictions_v1`;
+- `private.daily_trajectory_scores_v1`.
+
+Workflow:
+
+`.github/workflows/trajectory-frozen-encoder-shadow-v1.yml`
+
+Schedule:
+
+`20 * * * *`
+
+The exact frozen head artifact was persisted to `main` on 2026-10-29 and the workflow passed end-to-end afterwards.
+
+At 2026-10-29 16:09 UTC, before the first due P-1 cutoff:
+
+- attempts: 0;
+- predictions: 0;
+- scores: 0.
+
+---
+
+# 7. Trajectory data reality
 
 Current genuine pre-kickoff history:
 
@@ -119,79 +179,42 @@ Therefore:
 
 - P-60 is a collection horizon;
 - models use genuine variable-length prefixes;
-- no fake complete 60-day vector;
+- no fabricated complete 60-day vector;
 - no forward-fill/interpolation merely for model convenience;
 - hidden/unknown inventory is never zero.
 
----
-
-# 6. Current trajectory engineering stack
-
-Implemented/live:
-
-- PIT trajectory feature store;
-- exact P-N dataset builder;
-- shared A/B dataset materializer;
-- frozen feature contract v1;
-- frozen strict-forward validation contract v1;
-- frozen cohort manifest;
-- Lane A learner/result;
-- Lane B GRU learner/runner;
-- immutable daily attempt/prediction/score ledgers;
-- post-outcome scoring;
-- MAE-by-horizon backend;
-- service-role development export RPC;
-- GitHub OIDC export gateway;
-- Lane B GitHub Actions experiment workflow.
-
-No production activation is connected to this workflow.
+Public inventory is a demand/inventory proxy, not confirmed sales or attendance.
 
 ---
 
-# 7. P7 prospective
+# 8. Existing prospective lanes
 
-Historical result remains frozen:
+## P7
 
-- anchor MAE 7409.79;
-- challenger MAE 6339.99;
-- point gain 1069.80 / 14.44%;
-- uncertainty limited.
+- historical point gain 14.44%, uncertainty limited;
+- latest canonical prospective state: 53 immutable rows / 6 events / 0 scored;
+- no retuning.
 
-Latest recorded prospective state:
+## P9 v1
 
-- 53 immutable prediction rows;
-- 6 events;
-- 0 scored.
+Fresh state at 2026-10-29 16:09 UTC:
 
-No retuning.
-
----
-
-# 8. P9
-
-## v1
-
-Historical: `NOT_EVALUABLE_PIT_SUPPORT_INSUFFICIENT`.
-
-First genuine event443 T-48 attempt:
-
-- `PIT_SUPPORT_INSUFFICIENT`;
-- 1 attempt / 0 predictions / 0 scored;
+- 2 attempts / 0 predictions / 0 scored;
+- both support-insufficient;
 - correct fail-closed.
 
-## Family Fallback v2
+## P9 Family Fallback v2
 
-Separate frozen evidence only. Never pool with v1 and never retro-predict event443.
-
----
-
-# 9. Form5 / Long72 / P11 / P4a
+- 1 attempt / 1 immutable prediction / 0 scored;
+- separate evidence only;
+- never pool with v1.
 
 ## Form5
 
-First legal prospective T-24 capture:
-
-**event443 — 2026-10-29 17:00 UTC**.
+- prospective collecting;
+- 0/8 completed eligible events;
+- frozen alpha 30 / cap +/-25%;
+- first legal T-24 event443 at 2026-10-29 17:00 UTC.
 
 ## Long72
 
@@ -200,30 +223,24 @@ First legal prospective T-24 capture:
 - 0.71% point gain;
 - frozen / low priority.
 
-## P11
+## P11 / P4a
 
-- 6 events / 6 clubs;
-- T-24/T-72/T-168 = 5/5/0;
-- no attendance-model fit yet.
-
-## P4a
-
-Still below event-count gate. Continue genuine labels only.
+Continue genuine collection. Do not force model fit below frozen gates.
 
 ---
 
-# 10. Product interpretation
+# 9. Product interpretation
 
-Public inventory is a **demand/inventory proxy**, not confirmed paid sales or attendance.
-
-Intended future product view:
+Intended future product view remains:
 
 `observed trajectory | today | predicted remaining trajectory -> final attendance P10/P50/P90`
 
-But a trajectory challenger must first beat the structural incumbent under honest evidence.
+But the trajectory representation is not promoted because it looked good on a target-free task.
+
+It must now prove attendance value through genuinely future predictions created before outcomes.
 
 ---
 
-# 11. Immediate model decision
+# 10. Immediate model decision
 
-> **Keep the structural model as incumbent. Lane A v1 failed and is frozen as a benchmark. Finish the precommitted Lane B v1 GRU experiment without tuning; only a clean win over both incumbent and Lane A can justify freezing a prospective daily-shadow candidate.**
+> **Keep the structural model as incumbent. Freeze the supported SSP encoder and its single Ridge attendance head. Collect P-7/P-3/P-1 immutable prospective shadow evidence without retuning. The next meaningful decision is future attendance Delta MAE, not another historical model search.**
