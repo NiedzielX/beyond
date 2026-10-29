@@ -1,0 +1,31 @@
+name: P9 Prospective Heartbeat Bridge
+
+on:
+  workflow_run:
+    workflows:
+      - "Structural Prior Materializer"
+    types:
+      - completed
+
+permissions:
+  actions: write
+  contents: read
+
+concurrency:
+  group: p9-prospective-heartbeat-bridge
+  cancel-in-progress: false
+
+jobs:
+  dispatch-p9:
+    if: github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Dispatch frozen P9 prospective workflow
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          gh workflow run p9-booking-curve-prospective-v1.yml \
+            --repo "${{ github.repository }}" \
+            --ref main
