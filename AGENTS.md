@@ -1,6 +1,6 @@
 # Beyond Agent Instructions
 
-Last updated: **2026-10-28**
+Last updated: **2026-10-29**
 
 ## Read first
 
@@ -8,11 +8,10 @@ Last updated: **2026-10-28**
 2. `ml/EXECUTION_PLAN_CURRENT.md`;
 3. `ml/NEXT_SESSION_HANDOFF.md`;
 4. `ml/MAE_RESEARCH_ROADMAP_V5.md`;
-5. `ml/TRAJECTORY_FEATURE_CONTRACT_V1.md`;
-6. `ml/TRAJECTORY_VALIDATION_FOLD_CONTRACT_V1.md`;
-7. `ml/TRAJECTORY_LANE_A_RESULT_V1.md`;
-8. `ml/TRAJECTORY_LANE_B_PRECOMMIT_V1.md`;
-9. `ml/PROGRESS_TRACKING.md`.
+5. `ml/TRAJECTORY_FROZEN_ENCODER_PROSPECTIVE_SHADOW_V1.md`;
+6. `ml/TRAJECTORY_FROZEN_ENCODER_ATTENDANCE_HEAD_V1.md`;
+7. `ml/TRAJECTORY_SELF_SUPERVISED_PRETRAIN_V1.md`;
+8. `ml/PROGRESS_TRACKING.md`.
 
 Query live machine state before acting on prospective windows. Read the exact precommit before touching a frozen experiment.
 
@@ -34,161 +33,163 @@ Production remains:
 
 ### Protect prospective evidence
 
-Do not mutate:
+Do not mutate frozen evidence contracts for:
 
 - P7 prospective;
 - P9 v1;
 - P9 Family Fallback v2;
 - Form5 prospective;
 - Long72;
-- P11/P4a evidence rules.
+- P11/P4a;
+- frozen encoder attendance shadow v1.
 
-### Active R&D experiment
+An imminent genuine cutoff takes priority over research work.
 
-Lane A v1 is closed and rejected as a candidate.
+### Closed supervised trajectory research
 
-Frozen Lane A result:
+Frozen results on the exposed 10-event cohort:
 
-- incumbent MAE 2594.5;
-- Lane A MAE 4153.3;
-- Delta +1558.8;
-- 60.1% worse;
-- 5 strict-forward independent test events.
+- Lane A v1: 4153.34 vs 2594.54 structural MAE -> rejected;
+- Lane B v1: 2595.40 -> do not advance;
+- Lane B v2: 4792.42 -> mechanism not supported.
 
-Do **not** retune Lane A v1.
-
-Active experiment:
-
-`trajectory-lane-b-small-gru-residual-v1`
+Do not retune those experiments on the same outer events.
 
 ---
 
-## Lane B fixed protocol
+## SSP v1 — frozen representation
 
-- one-layer GRU;
-- input dim 5;
-- hidden dim 8;
-- MLP head 8;
-- dropout .20;
-- AdamW lr .001, weight decay .01;
-- event-balanced weighted L1 residual loss;
-- 200 fixed epochs;
-- gradient clipping 1.0;
-- seeds 17 / 29 / 41;
-- median residual across all seeds;
-- no architecture search;
-- no Transformer;
-- no self-supervised pretraining in v1.
+Precommit:
 
-Any change after outer results requires a new version/precommit.
+`trajectory-self-supervised-24h-delta-v1`
 
----
+Target-free validation result:
 
-## Frozen evidence identities
+- zero-change event-balanced MAE 0.0917223592;
+- GRU event-balanced MAE 0.0628961688;
+- Delta -0.0288261905;
+- 5/5 validation events improved;
+- attendance labels used false;
+- structural prior used false.
 
-Cohort:
+Decision:
 
-`ml/artifacts/trajectory_development_cohort_v1.json`
+`REPRESENTATION_SUPPORTED`
 
-- 10 labeled events;
-- 19 persisted checkpoint rows;
-- 5 strict-forward outer test events;
-- fold SHA256:
-  `fc59737ab1c0a306920b4961de35664178b14648f679071522d1d07515cb3091`.
+Frozen encoder:
 
-Lane B runner must reject any export that does not exactly match this cohort.
+`ml/artifacts/trajectory_self_supervised_encoder_v1.json`
 
-Do not add newer events/cutoffs after seeing the result.
+Do not call this attendance validation. Do not retune SSP v1 against the same five validation events.
 
 ---
 
-## Validation rules
+## Active attendance candidate
 
-Primary validation is strict expanding temporal event folds:
+Candidate ID:
 
-- only earlier-kickoff events train later events;
-- same-kickoff events held out together;
-- min 5 previous train events;
-- min 4 previous train clubs;
-- all prefixes from one event stay in one fold;
-- no random daily-row/snapshot CV.
+`trajectory-frozen-encoder-ridge-ratio-head-v1`
 
-Event is the independent unit.
+Frozen head:
+
+`ml/artifacts/trajectory_frozen_encoder_attendance_head_v1.json`
+
+Protocol:
+
+- frozen SSP v1 encoder;
+- 8-d embedding;
+- Ridge alpha 10;
+- residual-ratio target;
+- correction cap +/-10%;
+- exact exposed 10-event / 19-row fit cohort;
+- no historical candidate selection;
+- prospective horizons P-7 / P-3 / P-1;
+- production off.
+
+The head was fitted once. Do not refit it merely to refresh inference.
 
 ---
 
-## Data/export path
+## Prospective frozen-encoder shadow
 
-Frozen export RPC:
+Precommit:
 
-`public.export_trajectory_development_rows_v1(bigint[])`
+`ml/TRAJECTORY_FROZEN_ENCODER_PROSPECTIVE_SHADOW_V1.md`
 
-OIDC Edge Function:
+Target RPC:
 
-`trajectory_research_export_v1`
+`public.get_trajectory_frozen_encoder_shadow_due_v1()`
 
 Workflow:
 
-`.github/workflows/trajectory-lane-b-v1.yml`
+`.github/workflows/trajectory-frozen-encoder-shadow-v1.yml`
 
-OIDC restrictions:
+Schedule:
 
-- repository `NiedzielX/beyond`;
-- ref `refs/heads/main`;
-- audience `beyond-trajectory-research`.
+`20 * * * *`
 
-Do not add a Supabase service-role key to GitHub Secrets for this workflow.
+Persistence:
 
----
+- `private.daily_trajectory_attempts_v1`;
+- `private.daily_trajectory_predictions_v1`;
+- `private.daily_trajectory_scores_v1`.
 
-## Sequence rules
+The workflow passed end-to-end on 2026-10-29 after the exact frozen head artifact was persisted to `main`.
 
-Lane B uses genuine ordered variable-length inventory trajectories:
-
-- exact timestamp dedupe;
-- max one genuine observation per integer hour-to-kickoff bucket;
-- no interpolation;
-- no forward-fill;
-- explicit sequence lengths/masks;
-- padded zero is not genuine zero inventory.
-
-Public inventory is a demand proxy, not confirmed sales/attendance.
-
-Unknown/hidden inventory is never zero.
+At the first fresh snapshot before a due cutoff, shadow evidence was 0 attempts / 0 predictions / 0 scores. Do not backfill later if a genuine window is missed.
 
 ---
 
-## Decision rule after Lane B result
+## Validation / evidence rules
 
-### If Lane B beats incumbent and Lane A
+- event is the independent attendance unit;
+- all prefixes from one event stay together;
+- no random daily-row/snapshot CV;
+- no future target trajectory;
+- no target attendance during inference;
+- genuine observations only;
+- missing/hidden inventory is never zero;
+- structural prior must genuinely exist by the target cutoff;
+- persist prospective forecasts before outcomes;
+- score only after genuine confirmed outcomes;
+- prospective attendance evidence outranks historical research.
 
-Review downside/seed spread, then freeze a **new prospective candidate** before future outcomes. Do not activate production.
+---
 
-### If Lane B beats Lane A but not incumbent
+## P9 separation
 
-Do not promote. Ordered representation may be interesting but not useful enough.
+P9 v1 and Family Fallback v2 are separate frozen evidence contracts.
 
-### If Lane B fails both
+Never:
 
-Do not run a broad GRU/LSTM/Transformer sweep on the same outer cohort. Diagnose first. Any material change becomes v2.
+- pool their rows;
+- lower v1 support because v2 covers more cases;
+- retro-predict a missed v1 event with v2;
+- tune from early prospective scores and keep the same version.
 
-### If later prospective evidence disagrees with historical research
+---
 
-Prospective evidence wins.
+## Next decision rule
+
+Do not start another broad model tournament now.
+
+The supported SSP encoder has answered the representation question. The current question is:
+
+> **Does the frozen encoder + frozen attendance head lower future event-balanced attendance MAE relative to structural P50?**
+
+Answer only from genuinely future immutable P-7/P-3/P-1 predictions and outcomes.
+
+If the candidate is materially changed after outcomes are seen, create a new precommit/version.
 
 ---
 
 ## Hard rules
 
-- protect imminent P9/Form5 windows first;
-- no future target trajectory;
-- no target attendance during inference;
+- protect imminent P9/Form5/frozen-encoder windows first;
 - no fabricated history;
-- no event-prefix crossing folds;
-- no random row CV;
 - no support-gate relaxation for coverage;
 - no post-result v1 tuning;
-- persist prospective forecasts before outcomes;
-- no automatic production activation.
+- no automatic production activation;
+- keep `live_adjustment = 0`.
 
 The old ChatGPT Beyond readiness automations remain disabled. Do not enable them implicitly.
