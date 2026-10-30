@@ -24,6 +24,7 @@ on:
       - "supabase/sql/structural_prior_t3_runtime_v1.sql"
       - "supabase/sql/structural_prior_t1_runtime_v1.sql"
       - "supabase/sql/structural_prior_current_capacities_2026_v1.sql"
+      - "supabase/sql/*_verified_capacity_v1.sql"
       - "supabase/sql/structural_prior_training_export_v1.sql"
       - ".github/workflows/structural-prior-materializer.yml"
   pull_request:
@@ -38,6 +39,7 @@ on:
       - "supabase/sql/structural_prior_t3_runtime_v1.sql"
       - "supabase/sql/structural_prior_t1_runtime_v1.sql"
       - "supabase/sql/structural_prior_current_capacities_2026_v1.sql"
+      - "supabase/sql/*_verified_capacity_v1.sql"
       - "supabase/sql/structural_prior_training_export_v1.sql"
       - ".github/workflows/structural-prior-materializer.yml"
 
