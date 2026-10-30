@@ -1,6 +1,6 @@
 # Beyond Ticketing — ML Progress Tracking
 
-Last updated: **2026-10-29**
+Last updated: **2026-10-30**
 
 Status: **CANONICAL TRACKING SNAPSHOT**
 
@@ -21,9 +21,9 @@ Production: `live_adjustment = 0`
 | Item | Status | Current decision |
 |---|---|---|
 | P7 prospective | 🟢 53 rows / 6 events / 0 scored | collect/score only |
-| P9 prospective v1 | 🟢 2 attempts / 0 predictions / 0 scored | correct fail-closed; protect windows |
-| P9 Family Fallback v2 | 🟢 1 attempt / 1 prediction / 0 scored | separate evidence only |
-| Form5 prospective | 🟢 COLLECTING | 0/8 completed eligible events; next T-24 event443 |
+| P9 prospective v1 | 🟢 3 attempts / 0 predictions / 0 scored | correct fail-closed; protect windows |
+| P9 Family Fallback v2 | 🟢 2 attempts / 1 prediction / 0 scored | separate evidence only |
+| Form5 prospective | 🟢 COLLECTING | 0 completed eligible events until genuine outcomes arrive |
 | Long72 | 🟡 FROZEN | 5 scored; 0.71% point gain |
 | P11 odds | 🟡 COLLECTING | continue genuine observations |
 | P4a | 🟡 COLLECTING | gate closed |
@@ -36,7 +36,7 @@ Production: `live_adjustment = 0`
 | SSP encoder | ✅ FROZEN | immutable v1 artifact |
 | Frozen attendance head v1 | ✅ FIT ONCE / FROZEN | Ridge alpha 10, cap +/-10%, no historical selection |
 | Frozen encoder prospective shadow | 🟢 ACTIVE / COLLECTING | P-7/P-3/P-1; production off |
-| Shadow live evidence | ⚪ 0 attempts / 0 predictions / 0 scores at 2026-10-29 16:09 UTC | first due P-1 at event443 |
+| Shadow live evidence | 🟢 1 attempt / 1 prediction / 0 scores | first genuine prospective P-1 protected for event446 |
 | Business meaningful Delta MAE | 🟡 PENDING | derive independently |
 
 ---
@@ -157,22 +157,42 @@ Evidence label before adequate sample:
 
 `true_post_freeze_prospective_small_n`
 
+First genuine prospective attendance prediction:
+
+- event446 Wisła Płock–Piast Gliwice;
+- horizon P-1;
+- cutoff `2026-10-30 11:15 UTC`;
+- attempt `PREDICTION_READY` at `11:21:26 UTC`;
+- source snapshot `11:05:02 UTC`;
+- incumbent P50 `6084.5618737955`;
+- challenger P50 `6693.01806117505`;
+- residual `+608.45618737955`, equal to the frozen +10% cap;
+- `target_values_used=false`;
+- `production_change=false`;
+- score pending genuine confirmed outcome.
+
+The protected run summary was `due_target_count=1`, `attempt_count=1`, `prediction_count=1`, `inserted_scores=0`.
+
 Do not tune the candidate after early prospective outcomes and keep the same version.
 
 ---
 
 # 7. Current live window snapshot
 
-At **2026-10-29 16:09 UTC**:
+Fresh live state on **2026-10-30 after event446 P-1 capture**:
 
-- event6 Lech–Wisła Kraków P9 T-48 due 16:30 UTC — READY;
-- event443 Cracovia–Motor P9/Form5 T-24 due 17:00 UTC — READY;
-- event443 frozen-encoder P-1 due 17:00 UTC — first shadow opportunity;
-- event444 GKS Katowice–Widzew P9 T-48 due 19:15 UTC — READY.
+- P9 v1: 3 attempts / 0 predictions / 0 scored;
+- P9 Family Fallback v2: 2 attempts / 1 prediction / 0 scored;
+- Form5 prospective dataset: 0 completed eligible rows before genuine attendance outcomes;
+- Frozen Encoder Shadow: 1 attempt / 1 immutable prediction / 0 scores;
+- event446 P-1 is protected;
+- no additional P-7/P-3/P-1 target was due in the next 48h at the checkpoint query.
 
 P9 cadence: `11,26,41,56 * * * *` plus redundant heartbeat bridge.
 
 Frozen-encoder shadow cadence: `20 * * * *`.
+
+Operationally, the protected event446 run was re-triggered after the legal cutoff because the scheduled run had not started exactly at due time. This remained valid because the database contract restricts source observations to `captured_at <= target_as_of_at` and rejects writes outside the cutoff +90 minute immutable window.
 
 ---
 
@@ -192,10 +212,12 @@ Hidden/unknown inventory is never zero.
 
 1. protect imminent P9/Form5/frozen-encoder cutoffs;
 2. verify immutable attempt/prediction rows after due windows;
-3. score only after genuine confirmed outcomes;
-4. freeze encoder/head parameters while evidence accumulates;
-5. report attendance Delta MAE by P-7/P-3/P-1 and event-balanced overall;
-6. do not reactively retune against early future scores;
-7. continue P11/P4a and trajectory collection;
-8. derive business minimum meaningful Delta MAE independently;
-9. keep production review-gated and OFF.
+3. score event446 only after a genuine confirmed attendance outcome;
+4. calculate incumbent AE, challenger AE and Delta AE without changing the candidate;
+5. freeze encoder/head parameters while evidence accumulates;
+6. accumulate a cohort before interpreting event-balanced Delta MAE;
+7. report attendance Delta MAE by P-7/P-3/P-1 and event-balanced overall;
+8. do not reactively retune against the first 1–2 future scores;
+9. continue P11/P4a and trajectory collection;
+10. derive business minimum meaningful Delta MAE independently;
+11. keep production review-gated and OFF.
