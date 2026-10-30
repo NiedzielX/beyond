@@ -94,6 +94,25 @@ async function latestSnapshot(ticketEventId: number) {
   return rows?.[0] || null;
 }
 
+async function persistObservation(cfg: any, capturedAt: string, geometrySeats: number, vaoKeyCount: number, responseUniqueIds: number, selectableSeats: number, rightsTrue: number, occCounts: Record<string, number>) {
+  return db("rpc/persist_roboticket_vao_observation_v1", {
+    method: "POST",
+    body: JSON.stringify({
+      p_ticket_event_id: cfg.ticketEventId,
+      p_club_slug: cfg.club,
+      p_external_event_id: cfg.eventId,
+      p_captured_at: capturedAt,
+      p_geometry_seats: geometrySeats,
+      p_vao_key_count: vaoKeyCount,
+      p_response_unique_ids: responseUniqueIds,
+      p_extra_response_ids: responseUniqueIds - geometrySeats,
+      p_selectable_seats: selectableSeats,
+      p_rights_true: rightsTrue,
+      p_occ_counts: occCounts,
+    }),
+  });
+}
+
 async function collectEvent(cfg: any) {
   if (new Date() >= new Date(cfg.kickoff)) {
     return { ok: true, skipped: true, reason: "kickoff_reached", ticketEventId: cfg.ticketEventId, eventId: cfg.eventId };
@@ -117,7 +136,7 @@ async function collectEvent(cfg: any) {
   const setCookies = page.headers.getSetCookie ? page.headers.getSetCookie() : [page.headers.get("set-cookie")].filter(Boolean) as string[];
   const cookie = setCookies.map((v: string) => v.split(";")[0]).join("; ");
 
-  // This collector is a fallback only. If the standard sector contract works,
+  // VAO is a fallback only. If the normal sector contract becomes available,
   // the existing Roboticket collector remains authoritative.
   const sectorInfo = await roboticketJson(cfg.base, pageUrl, cookie, `/Stadium/GetWGLSectorsInfo?eventId=${cfg.eventId}`);
   if (Array.isArray(sectorInfo?.sectors) && sectorInfo.sectors.length > 0) {
@@ -177,62 +196,37 @@ async function collectEvent(cfg: any) {
     const rights = row.anyRight && row.hasSgRight && row.hasResRight;
     if (rights) rightsTrue += 1;
     occCounts[String(row.occ)] = (occCounts[String(row.occ)] || 0) + 1;
-    // Roboticket renderer contract: At.Empty=0, At.My=1, At.Other=2, At.NotAvailable=3.
-    // A seat is selectable only when all rights are true and occupancy is Empty/My.
     if (rights && (row.occ === 0 || row.occ === 1)) selectableSeats += 1;
   }
 
-  if (selectableSeats <= 0) {
-    return {
-      ok: true,
-      skipped: true,
-      reason: "no_public_selectable_seats",
-      ticketEventId: cfg.ticketEventId,
-      eventId: cfg.eventId,
-      geometrySeats: seats.length,
-      vaoKeyCount: vaoKeys.size,
-      rightsTrue,
-      occCounts,
-    };
-  }
-
-  // Re-check immediately before write to reduce duplicate risk if two invocations overlap.
-  const beforeWrite = await latestSnapshot(cfg.ticketEventId);
-  if (beforeWrite) {
-    const ageMs = Date.now() - new Date(beforeWrite.captured_at).getTime();
-    if (ageMs >= 0 && ageMs < RECENT_SNAPSHOT_MS) {
-      return { ok: true, skipped: true, reason: "recent_snapshot_before_write", ticketEventId: cfg.ticketEventId, eventId: cfg.eventId };
-    }
-  }
-
   const capturedAt = new Date().toISOString();
-  const inserted = await db("snapshots", {
-    method: "POST",
-    body: JSON.stringify([{
-      event_id: /^\d+$/.test(cfg.eventId) ? Number(cfg.eventId) : null,
-      source: "roboticket_vao_selectable_v1",
-      captured_at: capturedAt,
-      ticket_event_id: cfg.ticketEventId,
-      event_match_date_at_capture: cfg.matchDate,
-      event_kickoff_at_capture: cfg.kickoff,
-      available_total: selectableSeats,
-      sector_count: null,
-    }]),
-  });
+  const persisted = await persistObservation(
+    cfg,
+    capturedAt,
+    seats.length,
+    vaoKeys.size,
+    byId.size,
+    selectableSeats,
+    rightsTrue,
+    occCounts,
+  );
 
   return {
     ok: true,
-    skipped: false,
+    skipped: selectableSeats <= 0,
+    reason: selectableSeats <= 0 ? "no_public_selectable_seats" : undefined,
     mode: "vao_selectable_v1",
     ticketEventId: cfg.ticketEventId,
     eventId: cfg.eventId,
-    snapshotId: inserted?.[0]?.id ?? null,
     capturedAt,
-    availableTotal: selectableSeats,
+    availableTotal: selectableSeats > 0 ? selectableSeats : undefined,
     geometrySeats: seats.length,
     vaoKeyCount: vaoKeys.size,
+    responseUniqueIds: byId.size,
+    extraResponseIds: byId.size - seats.length,
     rightsTrue,
     occCounts,
+    persistence: persisted,
   };
 }
 
@@ -247,8 +241,9 @@ Deno.serve(async () => {
         results.push({ ok: false, ticketEventId: cfg.ticketEventId, eventId: cfg.eventId, error: String(error) });
       }
     }
+    const ok = results.every((r: any) => r.ok);
     return new Response(JSON.stringify({
-      ok: results.every((r: any) => r.ok),
+      ok,
       version: "roboticket-vao-collect-v1",
       targetClub: TARGET_CLUB,
       eventCount: events.length,
@@ -256,7 +251,7 @@ Deno.serve(async () => {
       target_values_used: false,
       production_change: false,
     }), {
-      status: results.every((r: any) => r.ok) ? 200 : 207,
+      status: ok ? 200 : 207,
       headers: { "content-type": "application/json" },
     });
   } catch (error) {
