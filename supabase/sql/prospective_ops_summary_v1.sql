@@ -1,7 +1,7 @@
 -- Beyond Ticketing — Prospective Ops Summary v1
 --
 -- Read-only machine-state summary for protected prospective lanes.
--- Source-of-truth is live persistence + existing preflight RPCs, not markdown.
+-- Source-of-truth is live persistence + existing preflight/evaluation RPCs, not markdown.
 -- No predictions, scores, backfills or model changes are created here.
 
 create or replace function public.prospective_ops_summary_v1(
@@ -18,10 +18,12 @@ declare
   v_p9 jsonb;
   v_trajectory jsonb;
   v_form5 jsonb;
+  v_evaluation jsonb;
 begin
   v_p9 := public.p9_prospective_preflight_v1(v_days);
   v_trajectory := public.trajectory_frozen_encoder_preflight_v1(v_days);
   v_form5 := public.form5_prospective_summary_v1();
+  v_evaluation := public.prospective_attendance_eval_v1();
 
   return jsonb_build_object(
     'version','prospective-ops-summary-v1',
@@ -48,7 +50,8 @@ begin
     ),
     'p9_preflight',v_p9,
     'trajectory_preflight',v_trajectory,
-    'form5',v_form5
+    'form5',v_form5,
+    'attendance_evaluation',v_evaluation
   );
 end;
 $function$;
