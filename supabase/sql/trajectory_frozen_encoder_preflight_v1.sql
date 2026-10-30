@@ -11,6 +11,11 @@
 -- - >=24h observed prefix span;
 -- - first genuine available_total > 0;
 -- - PIT-valid structural prior available by the exact cutoff.
+--
+-- Operational activation guard:
+-- - checkpoints before 2026-10-29 16:11:35 UTC predate the fully persisted/current
+--   frozen shadow phase and are reported as PRE_ACTIVATION_NOT_EXPECTED rather than
+--   false operational misses.
 
 create or replace function public.trajectory_frozen_encoder_preflight_v1(
   p_horizon_days integer default 10
@@ -24,6 +29,7 @@ as $function$
 declare
   v_days integer := greatest(1, least(coalesce(p_horizon_days,10),31));
   v_model_version text := 'trajectory-frozen-encoder-ridge-ratio-head-v1';
+  v_operational_activation_at timestamptz := '2026-10-29 16:11:35+00'::timestamptz;
 begin
   return (
     with horizons(days_to_event) as (
@@ -138,6 +144,7 @@ begin
           when e.prediction_id is not null then 'CAPTURED'
           when e.attempt_status='PREDICTION_READY' then 'CRITICAL_PREDICTION_PERSISTENCE_GAP'
           when e.attempt_status is not null then 'CAPTURED_' || e.attempt_status
+          when e.cutoff_at < v_operational_activation_at then 'PRE_ACTIVATION_NOT_EXPECTED'
           when now() > e.cutoff_at + interval '90 minutes' then 'MISSED_WINDOW'
           when now() >= e.cutoff_at and e.structural_prior_id is null then 'WINDOW_OPEN_NO_INCUMBENT'
           when now() >= e.cutoff_at and (
@@ -161,6 +168,7 @@ begin
     select jsonb_build_object(
       'version','trajectory-frozen-encoder-preflight-v1',
       'model_version',v_model_version,
+      'operational_activation_at',v_operational_activation_at,
       'checked_at',now(),
       'horizon_days',v_days,
       'target_values_used',false,
@@ -168,6 +176,7 @@ begin
       'ready_count',coalesce((select count(*) from classified where status='READY'),0),
       'open_count',coalesce((select count(*) from classified where status like 'WINDOW_OPEN%'),0),
       'captured_count',coalesce((select count(*) from classified where status='CAPTURED' or status like 'CAPTURED_%'),0),
+      'pre_activation_count',coalesce((select count(*) from classified where status='PRE_ACTIVATION_NOT_EXPECTED'),0),
       'watch_count',coalesce((select count(*) from classified where status like 'WATCH_%'),0),
       'critical_count',coalesce((select count(*) from classified where status like 'CRITICAL_%' or status='MISSED_WINDOW'),0),
       'checkpoints',coalesce((
