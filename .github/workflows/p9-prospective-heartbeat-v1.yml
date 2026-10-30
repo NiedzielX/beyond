@@ -2,6 +2,11 @@ name: P9 Prospective Heartbeat v1
 
 on:
   workflow_dispatch:
+  # Independent fallback cadence. This is intentionally separate from both the
+  # P9 workflow's own cron and the Structural Prior workflow_run bridge so that
+  # one delayed/dropped scheduler path does not consume an immutable window.
+  schedule:
+    - cron: "16,46 * * * *"
   workflow_run:
     # GitHub cron runs can be delayed or dropped. Reuse the proven 4x/hour
     # Structural Prior heartbeat as a second trigger for the frozen P9 workflow.
@@ -20,7 +25,7 @@ concurrency:
 
 jobs:
   dispatch-p9:
-    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
+    if: github.event_name == 'workflow_dispatch' || github.event_name == 'schedule' || github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
