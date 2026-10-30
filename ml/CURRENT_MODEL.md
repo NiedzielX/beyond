@@ -1,6 +1,6 @@
 # Beyond Ticketing — Current Model & Product State
 
-Last updated: **2026-10-29**
+Last updated: **2026-10-30**
 
 Status: **STRUCTURAL INCUMBENT + FROZEN PROSPECTIVE LANES + FROZEN-ENCODER ATTENDANCE SHADOW**
 
@@ -158,11 +158,27 @@ Schedule:
 
 The exact frozen head artifact was persisted to `main` on 2026-10-29 and the workflow passed end-to-end afterwards.
 
-At 2026-10-29 16:09 UTC, before the first due P-1 cutoff:
+First genuine prospective attendance evidence was created for **event446 Wisła Płock–Piast Gliwice at P-1** on 2026-10-30:
 
-- attempts: 0;
-- predictions: 0;
+- target cutoff `11:15 UTC`;
+- immutable attempt at `11:21:26 UTC`;
+- PIT source snapshot `11:05:02 UTC`;
+- status `PREDICTION_READY`;
+- incumbent structural P50 `6084.5618737955`;
+- challenger P50 `6693.01806117505`;
+- trajectory residual `+608.45618737955`;
+- frozen correction equals the +10% cap;
+- target values used false;
+- production change false;
+- score pending genuine confirmed attendance.
+
+Current shadow state:
+
+- attempts: 1;
+- predictions: 1;
 - scores: 0.
+
+The protected run completed successfully with `due_target_count=1`, `attempt_count=1`, `prediction_count=1`, `inserted_scores=0`.
 
 ---
 
@@ -197,15 +213,17 @@ Public inventory is a demand/inventory proxy, not confirmed sales or attendance.
 
 ## P9 v1
 
-Fresh state at 2026-10-29 16:09 UTC:
+Fresh state on 2026-10-30:
 
-- 2 attempts / 0 predictions / 0 scored;
-- both support-insufficient;
+- 3 attempts / 0 predictions / 0 scored;
+- all support-insufficient;
 - correct fail-closed.
 
 ## P9 Family Fallback v2
 
-- 1 attempt / 1 immutable prediction / 0 scored;
+- 2 attempts / 1 immutable prediction / 0 scored;
+- event446 prediction exists;
+- event444 fallback support insufficient;
 - separate evidence only;
 - never pool with v1.
 
@@ -214,7 +232,7 @@ Fresh state at 2026-10-29 16:09 UTC:
 - prospective collecting;
 - 0/8 completed eligible events;
 - frozen alpha 30 / cap +/-25%;
-- first legal T-24 event443 at 2026-10-29 17:00 UTC.
+- completed-event rows remain zero until genuine attendance outcomes are available.
 
 ## Long72
 
@@ -239,8 +257,10 @@ But the trajectory representation is not promoted because it looked good on a ta
 
 It must now prove attendance value through genuinely future predictions created before outcomes.
 
+The first such frozen-encoder attendance prediction now exists, but one event is evidence collection, not a model decision.
+
 ---
 
 # 10. Immediate model decision
 
-> **Keep the structural model as incumbent. Freeze the supported SSP encoder and its single Ridge attendance head. Collect P-7/P-3/P-1 immutable prospective shadow evidence without retuning. The next meaningful decision is future attendance Delta MAE, not another historical model search.**
+> **Keep the structural model as incumbent. Freeze the supported SSP encoder and its single Ridge attendance head. Collect P-7/P-3/P-1 immutable prospective shadow evidence without retuning. Score event446 only after genuine attendance confirmation, then accumulate a cohort before interpreting Delta MAE. The next meaningful decision is future attendance Delta MAE, not another historical model search.**
