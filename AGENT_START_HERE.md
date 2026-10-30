@@ -50,6 +50,14 @@ Use it to understand:
 
 If a research idea conflicts with a frozen evidence contract, create a **new version / new research lane**. Never mutate the frozen lane.
 
+### Important interpretation rule
+
+If `ml/EXECUTION_PLAN_CURRENT.md` says that no new model search is justified, interpret that statement **only as a prohibition on post-hoc retuning or reopening the frozen/exposed trajectory candidate on the same evidence**.
+
+It does **not** mean that MAE R&D stops.
+
+The MAE programme explicitly continues in parallel through separately versioned hypotheses that add genuinely new PIT-safe information or a materially new representation. `ml/MAE_RESEARCH_ROADMAP_V5.md` and this file define that research direction.
+
 ### 3. `ml/PROGRESS_TRACKING.md`
 
 Use this to understand what has already been tried and what must not be repeated blindly.
