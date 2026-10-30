@@ -154,7 +154,9 @@ Workflow:
 
 Schedule:
 
-`20 * * * *`
+`20,50 * * * *`
+
+The cadence was hardened operationally on 2026-10-30 because each immutable checkpoint stays writable for only +90 minutes. This does not alter the candidate, its features, its cutoffs or its prediction logic.
 
 The exact frozen head artifact was persisted to `main` on 2026-10-29 and the workflow passed end-to-end afterwards.
 
@@ -178,7 +180,7 @@ Current shadow state:
 - predictions: 1;
 - scores: 0.
 
-The protected run completed successfully with `due_target_count=1`, `attempt_count=1`, `prediction_count=1`, `inserted_scores=0`.
+Event443 Cracovia–Motor P-1 has no immutable attempt and its legal +90 minute window is closed. It remains missing and must not be backfilled.
 
 ---
 
@@ -213,25 +215,37 @@ Public inventory is a demand/inventory proxy, not confirmed sales or attendance.
 
 ## P9 v1
 
-Fresh state on 2026-10-30:
+Fresh state on 2026-10-30 around 12:22 UTC:
 
-- 3 attempts / 0 predictions / 0 scored;
-- all support-insufficient;
-- correct fail-closed.
+- **4 attempts / 0 predictions / 0 scored**;
+- every captured attempt is `PIT_SUPPORT_INSUFFICIENT`;
+- correct fail-closed;
+- event443 T-24 and event6 T-48 are missed windows and must not be backfilled.
 
 ## P9 Family Fallback v2
 
-- 2 attempts / 1 immutable prediction / 0 scored;
-- event446 prediction exists;
-- event444 fallback support insufficient;
+- **3 attempts / 2 immutable predictions / 0 scored**;
+- event446 T-48 prediction: structural `6084.5618737955` -> challenger `6911.09714798977`;
+- event446 T-24 prediction: structural `6084.5618737955` -> challenger `8252.87035184191`;
+- event444 T-48 fallback support insufficient;
 - separate evidence only;
 - never pool with v1.
+
+Operational capture protection now includes:
+
+- primary frozen P9 cadence `11,26,41,56 * * * *`;
+- Structural Prior workflow-run bridge;
+- independent heartbeat `16,46 * * * *`.
+
+These are scheduler safeguards only. The P9 learner and frozen fallback policy are unchanged.
 
 ## Form5
 
 - prospective collecting;
 - 0/8 completed eligible events;
 - frozen alpha 30 / cap +/-25%;
+- gate closed;
+- current future stream: 14 events / 13 clubs / 9 distinct Form5 values;
 - completed-event rows remain zero until genuine attendance outcomes are available.
 
 ## Long72
@@ -247,7 +261,27 @@ Continue genuine collection. Do not force model fit below frozen gates.
 
 ---
 
-# 9. Product interpretation
+# 9. Immediate protected windows
+
+At the latest machine check on 2026-10-30:
+
+- event6 Lech Poznań–Wisła Kraków P9 T-24 and Frozen Encoder P-1: `16:30 UTC`;
+- event444 GKS Katowice–Widzew P9 T-24 and Frozen Encoder P-1: `19:15 UTC`;
+- event445 KGHM Zagłębie Lubin–Korona Kielce P9 T-48: `2026-10-31 17:00 UTC`;
+- event447 Raków Częstochowa–Pogoń Szczecin P9 T-48: `2026-10-31 19:30 UTC`.
+
+Both event6 and event444 currently have genuine pre-cutoff snapshots and PIT-valid structural priors for their P-1 trajectory checkpoints.
+
+Preflight watch items:
+
+- event448 Wisła Kraków–Cracovia: `WATCH_NO_SNAPSHOT`;
+- event7372 Widzew Łódź–Pogoń Szczecin: `WATCH_NO_INCUMBENT`.
+
+Never manufacture missing readiness inputs.
+
+---
+
+# 10. Product interpretation
 
 Intended future product view remains:
 
@@ -261,6 +295,6 @@ The first such frozen-encoder attendance prediction now exists, but one event is
 
 ---
 
-# 10. Immediate model decision
+# 11. Immediate model decision
 
-> **Keep the structural model as incumbent. Freeze the supported SSP encoder and its single Ridge attendance head. Collect P-7/P-3/P-1 immutable prospective shadow evidence without retuning. Score event446 only after genuine attendance confirmation, then accumulate a cohort before interpreting Delta MAE. The next meaningful decision is future attendance Delta MAE, not another historical model search.**
+> **Keep the structural model as incumbent. Freeze the supported SSP encoder and its single Ridge attendance head. Collect P-7/P-3/P-1 immutable prospective shadow evidence without retuning. Protect the P9/Form5 prospective streams, score only after genuine outcomes, and accumulate a cohort before interpreting Delta MAE. The next meaningful decision is future attendance Delta MAE, not another historical model search.**
