@@ -2,6 +2,12 @@ name: P9 Prospective Heartbeat v1
 
 on:
   workflow_dispatch:
+  # Self-test the dispatch path whenever this heartbeat definition changes.
+  # This keeps scheduler hardening verifiable without touching model/config files.
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/p9-prospective-heartbeat-v1.yml"
   # Independent fallback cadence. This is intentionally separate from both the
   # P9 workflow's own cron and the Structural Prior workflow_run bridge so that
   # one delayed/dropped scheduler path does not consume an immutable window.
@@ -25,7 +31,7 @@ concurrency:
 
 jobs:
   dispatch-p9:
-    if: github.event_name == 'workflow_dispatch' || github.event_name == 'schedule' || github.event.workflow_run.conclusion == 'success'
+    if: github.event_name == 'workflow_dispatch' || github.event_name == 'push' || github.event_name == 'schedule' || github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
