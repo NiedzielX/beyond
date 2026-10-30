@@ -8,18 +8,11 @@ on:
     branches: [main]
     paths:
       - ".github/workflows/p9-prospective-heartbeat-v1.yml"
-  # Independent fallback cadence. This is intentionally separate from both the
-  # P9 workflow's own cron and the Structural Prior workflow_run bridge so that
-  # one delayed/dropped scheduler path does not consume an immutable window.
+  # Independent fallback cadence. Structural Prior workflow_run dispatch is owned
+  # by p9-prospective-heartbeat-bridge.yml so one successful prior run produces
+  # one bridge dispatch rather than duplicate P9 workflow runs.
   schedule:
     - cron: "16,46 * * * *"
-  workflow_run:
-    # GitHub cron runs can be delayed or dropped. Reuse the proven 4x/hour
-    # Structural Prior heartbeat as a second trigger for the frozen P9 workflow.
-    workflows:
-      - "Structural Prior Materializer"
-    types:
-      - completed
 
 permissions:
   actions: write
@@ -31,7 +24,7 @@ concurrency:
 
 jobs:
   dispatch-p9:
-    if: github.event_name == 'workflow_dispatch' || github.event_name == 'push' || github.event_name == 'schedule' || github.event.workflow_run.conclusion == 'success'
+    if: github.event_name == 'workflow_dispatch' || github.event_name == 'push' || github.event_name == 'schedule'
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
@@ -49,4 +42,4 @@ jobs:
             -H "X-GitHub-Api-Version: 2022-11-28" \
             "https://api.github.com/repos/${REPO}/actions/workflows/p9-booking-curve-prospective-v1.yml/dispatches" \
             -d '{"ref":"main"}'
-          echo "Frozen P9 prospective workflow dispatched from redundant heartbeat."
+          echo "Frozen P9 prospective workflow dispatched from independent heartbeat."
