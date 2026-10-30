@@ -132,24 +132,38 @@ Trajectory v1 eligibility at exact cutoff:
 
 # 4. Current machine state
 
-Canonical read-only machine-state RPC:
+Canonical one-call decision-state RPC:
+
+`public.prospective_decision_summary_v1(integer)`
+
+It composes:
+
+- operational state / preflights;
+- frozen prospective attendance evaluation;
+- trajectory business-meaningful gain evaluation;
+- P9 v2 business-meaningful gain evaluation.
+
+Lower-level operational RPC:
 
 `public.prospective_ops_summary_v1(integer)`
 
-Security:
+Security for decision summary:
 
 - anon execute: false;
 - authenticated execute: false;
 - service_role execute: true.
 
-Latest verified state on 2026-10-30 before 13:00 UTC:
+Latest verified state on 2026-10-30 around 13:00 UTC:
 
 - P9 v1: **4 attempts / 0 predictions / 0 scores**;
 - P9 v2: **3 attempts / 2 predictions / 0 scores**;
 - Frozen Encoder: **1 attempt / 1 prediction / 0 scores**;
 - Form5: **0/8 completed eligible events**, `PROSPECTIVE_COLLECTING`;
+- trajectory business labels: P-7/P-3/P-1 = `INSUFFICIENT_PROSPECTIVE_EVIDENCE`;
+- P9 v2 business labels: T-48/T-24 = `INSUFFICIENT_PROSPECTIVE_EVIDENCE`;
 - production change false;
-- `live_adjustment=0`.
+- `live_adjustment=0`;
+- production activation allowed false.
 
 P9 v2 event446:
 
@@ -248,7 +262,11 @@ This is source-side hidden inventory, not a scheduler outage. Do not convert hid
 
 ## Widzew / Stellis
 
-The source currently exposes literal zero available places. Structural prior is now materialized and PIT-valid for future checkpoints; remaining trajectory readiness is inventory-related, not prior-related.
+The source currently exposes literal zero available places.
+
+Verified 2026/27 stadium capacity `18,018` is now in the Structural Prior registry and a genuine PIT-valid prior for event7372 was materialized on 2026-10-30 before its future P-7 cutoff.
+
+Remaining trajectory readiness is inventory-related, not prior-related.
 
 Do not reinterpret source zero as unknown merely to make the model eligible.
 
@@ -276,7 +294,8 @@ The fallback mirrors the current Roboticket renderer contract:
 - require 100% match of stadium geometry seat IDs;
 - discard extra technical IDs;
 - Roboticket occupancy enum: Empty=0, My=1, Other=2, NotAvailable=3;
-- selectable seat = `anyRight && hasSgRight && hasResRight && occ in {0,1}`;
+- frontend sets `seat.ava = anyRight && hasSgRight && hasResRight`;
+- selectable seat = all rights true AND `occ in {0,1}`;
 - never write a snapshot when selectable count is 0;
 - write only a positive, fully covered, source-observed count with source `roboticket_vao_selectable_v1`.
 
@@ -284,15 +303,17 @@ Validated current Wisła state:
 
 - geometry seats: 33,499;
 - geometry coverage from VAO: 100%;
-- extra technical IDs discarded: 158;
-- public selectable seats: 0;
+- public empty (`occ=0`) seats observed: 6,890;
+- public selectable seats under Roboticket rights contract: 0;
 - therefore no snapshot was written.
 
 Zero selectable seats is **not** represented as `available_total=0`; collection remains fail-closed until the source exposes genuinely selectable public inventory.
 
 ---
 
-# 8. Frozen prospective evaluation protocol
+# 8. Frozen prospective evaluation and business decision contract
+
+## Evidence protocol
 
 Precommit:
 
@@ -302,7 +323,7 @@ Live evaluator:
 
 `public.prospective_attendance_eval_v1()`
 
-Both were created before the first scored Frozen Encoder / P9-v2 outcome.
+Created before the first scored Frozen Encoder / P9-v2 outcome.
 
 Primary evaluation:
 
@@ -332,13 +353,44 @@ Before both are met: `PROSPECTIVE_COLLECTING`.
 
 After both are met: `EVIDENCE_REVIEW_READY`.
 
-This is a review gate only, **not** an automatic promotion criterion. The business minimum meaningful attendance effect is deliberately still `null` and must be defined independently of observed challenger results.
+This is a review gate only, **not** an automatic promotion criterion.
 
-Current evaluator state:
+## Business-meaningful effect
 
-- trajectory: 1 prediction / 0 scores / `PROSPECTIVE_COLLECTING`;
-- P9 v2: 2 predictions / 0 scores / `PROSPECTIVE_COLLECTING`;
-- all MAE values null, as expected before outcomes.
+Independent precommit:
+
+`ml/BUSINESS_MEANINGFUL_FORECAST_GAIN_V1.md`
+
+Frozen v1 threshold:
+
+> **business gain >= 550 seats of event-balanced MAE improvement**
+
+Equivalent:
+
+`Delta MAE <= -550 seats`
+
+The threshold was frozen before any trajectory/P9-v2 attendance score and is derived from the project's own commercial 7% fill-rate action scale using the current 70/30 reference mix. It is a forecast-accuracy resolution threshold, not a causal claim that 550 fewer MAE seats produce 550 additional ticket sales.
+
+Risk guards at the evaluated horizon/cutoff:
+
+- event improvement rate > 50%;
+- median Delta AE < 0;
+- challenger P90 AE not worse;
+- absolute signed bias not worse;
+- no retrospective/backfilled evidence;
+- equal event weighting.
+
+Trajectory evaluator:
+
+`public.trajectory_business_meaningful_gain_v1()`
+
+P9 v2 evaluator:
+
+`public.p9_v2_business_meaningful_gain_v1()`
+
+Current labels are `INSUFFICIENT_PROSPECTIVE_EVIDENCE` at every trajectory horizon and P9-v2 cutoff because there are no scored target outcomes yet.
+
+Production activation remains false regardless of evaluator output until a separate explicit review.
 
 ---
 
@@ -360,7 +412,7 @@ The prospective dataset stays empty before genuine outcomes by design.
 
 # 10. Immediate execution order
 
-1. Query `public.prospective_ops_summary_v1(10)` before acting.
+1. Query `public.prospective_decision_summary_v1(10)` before acting.
 2. Protect imminent legal cutoffs first.
 3. Verify immutable attempts/predictions after each due window.
 4. Never backfill a missed prospective row.
@@ -368,9 +420,9 @@ The prospective dataset stays empty before genuine outcomes by design.
 6. Keep SSP encoder, trajectory head alpha/cap and P9 fallback policy unchanged while evidence accumulates.
 7. Fix collection only when genuine source semantics are preserved.
 8. Score only after genuine confirmed attendance outcomes.
-9. Use `public.prospective_attendance_eval_v1()` for the precommitted evaluation, not ad-hoc calculations.
+9. Use the precommitted evidence and business evaluators, not ad-hoc calculations.
 10. Do not interpret the first 1–2 scored events as a model decision.
-11. Define a business minimum meaningful attendance effect independently of observed candidate results before any promotion review.
+11. Do not lower the 550-seat threshold after seeing early outcomes; any future replacement requires a stronger business-derived v2 precommit.
 12. Production remains separately review-gated and OFF.
 
 ---
@@ -381,6 +433,6 @@ No new model search is justified now.
 
 The current question is:
 
-> **Does the frozen trajectory representation improve genuinely prospective attendance MAE over the structural incumbent?**
+> **Does a frozen attendance challenger improve genuinely prospective event-balanced MAE over its incumbent by enough to be both statistically/research-positive and commercially meaningful under the precommitted 550-seat decision scale?**
 
 Only future immutable outcomes can answer it.
