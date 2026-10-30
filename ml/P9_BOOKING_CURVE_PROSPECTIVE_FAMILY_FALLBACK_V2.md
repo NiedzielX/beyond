@@ -105,3 +105,7 @@ Do not combine v1 and v2 into production P50 without a later explicit reviewed p
 - no further family-order tuning after outcomes;
 - `live_adjustment=0`;
 - `production_change=false`.
+
+## Operational capture note — 2026-10-30
+
+A documentation-only push was used while event446 T-24 was still inside its immutable +90 minute window because the scheduled capture had not yet registered an attempt. This push intentionally triggers the existing frozen prospective workflow through its `push` path filter. No learner code, model artifact, hyperparameter, threshold, family order, prediction logic, production flag, or historical row was changed. The resulting prospective attempt remains subject to the same PIT, immutability, fail-closed, and `production_change=false` guards as any scheduled run.
