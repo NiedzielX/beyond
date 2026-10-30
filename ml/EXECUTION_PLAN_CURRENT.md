@@ -1,6 +1,6 @@
 # Beyond Ticketing — Current MAE Execution Plan
 
-Last updated: **2026-10-29**
+Last updated: **2026-10-30**
 
 Status: **CURRENT SOURCE OF TRUTH**
 
@@ -20,9 +20,9 @@ Keep P7, P9, Form5, Long72 and the frozen trajectory shadow honest. An imminent 
 
 ## Track 2 — improve attendance MAE with trajectory information
 
-The first supervised trajectory cohort is exhausted for model selection. Lane A v1, Lane B v1 and Lane B v2 are closed.
+The supervised trajectory cohort is exhausted for model selection. Lane A v1, Lane B v1 and Lane B v2 are closed.
 
-Target-free self-supervised trajectory pretraining v1 is also complete and produced a **supported representation**:
+Target-free self-supervised trajectory pretraining v1 is complete and produced a **supported representation**:
 
 | Target-free SSP v1 metric | Result |
 |---|---:|
@@ -35,11 +35,11 @@ Decision: `REPRESENTATION_SUPPORTED`.
 
 This is evidence that the encoder learned reusable inventory-trajectory dynamics. It is **not attendance-forecast evidence**.
 
-The encoder is frozen. A single conservative attendance head has been fitted once on the already-exposed historical cohort without historical model selection:
+The encoder is frozen. A single conservative attendance head was fitted once on the already-exposed historical cohort without historical model selection:
 
 `trajectory-frozen-encoder-ridge-ratio-head-v1`
 
-The current active attendance experiment is therefore:
+Current active attendance experiment:
 
 > **Frozen encoder + frozen Ridge residual-ratio head -> immutable P-7 / P-3 / P-1 prospective shadow -> future event-balanced attendance Delta MAE.**
 
@@ -55,9 +55,7 @@ Primary attendance metric:
 
 `Delta MAE = challenger event-balanced MAE - incumbent event-balanced MAE`
 
-Desired:
-
-`Delta MAE < 0`
+Desired: `Delta MAE < 0`.
 
 ---
 
@@ -75,6 +73,8 @@ Desired:
 10. Genuine prospective attendance evidence outranks historical research.
 11. Any material candidate change after prospective outcomes requires a new precommit/version.
 12. No research workflow activates production automatically.
+13. A missed prospective window stays missing; never backfill it with later information.
+14. Operational scheduler hardening may add redundant execution paths only if model/data/evidence semantics remain unchanged.
 
 ---
 
@@ -97,25 +97,15 @@ Do not perform post-hoc shrinkage, cap, learning-rate, epoch, loss or architectu
 
 # 4. SSP v1 — CLOSED / REPRESENTATION SUPPORTED
 
-Precommit:
+Precommit: `ml/TRAJECTORY_SELF_SUPERVISED_PRETRAIN_V1.md`
 
-`ml/TRAJECTORY_SELF_SUPERVISED_PRETRAIN_V1.md`
+Result: `ml/results/trajectory_self_supervised_24h_delta_v1_result.json`
 
-Result:
+Frozen encoder: `ml/artifacts/trajectory_self_supervised_encoder_v1.json`
 
-`ml/results/trajectory_self_supervised_24h_delta_v1_result.json`
+Frozen data cutoff: `2026-10-28T22:09:43.958409Z`
 
-Frozen encoder:
-
-`ml/artifacts/trajectory_self_supervised_encoder_v1.json`
-
-Frozen data cutoff:
-
-`2026-10-28T22:09:43.958409Z`
-
-Evidence class:
-
-`target_free_temporal_validation`
+Evidence class: `target_free_temporal_validation`
 
 Sample:
 
@@ -133,27 +123,23 @@ Result:
 - attendance labels used: **false**;
 - structural P50 used: **false**.
 
-The encoder is now immutable for candidate v1. SSP v1 must not be retuned against the same validation events.
+The encoder is immutable for candidate v1. SSP v1 must not be retuned against the same validation events.
 
 ---
 
 # 5. Active trajectory attendance candidate — prospective shadow v1
 
-Precommit:
+Precommit: `ml/TRAJECTORY_FROZEN_ENCODER_PROSPECTIVE_SHADOW_V1.md`
 
-`ml/TRAJECTORY_FROZEN_ENCODER_PROSPECTIVE_SHADOW_V1.md`
-
-Candidate:
-
-`trajectory-frozen-encoder-ridge-ratio-head-v1`
+Candidate: `trajectory-frozen-encoder-ridge-ratio-head-v1`
 
 Components:
 
 - frozen SSP v1 GRU encoder;
 - 8-dimensional embedding;
 - one fixed Ridge residual-ratio head;
-- Ridge alpha: **10**;
-- correction cap: **+/-10%**;
+- Ridge alpha **10**;
+- correction cap **+/-10%**;
 - fit cohort: exact exposed 10-event / 19-row historical cohort;
 - historical candidate selection performed: **false**;
 - horizons: **P-7 / P-3 / P-1**.
@@ -162,24 +148,29 @@ Frozen head artifact:
 
 `ml/artifacts/trajectory_frozen_encoder_attendance_head_v1.json`
 
-The original successful fit workflow generated the head as an Actions artifact. On 2026-10-29 the exact frozen artifact was persisted to `main` so the prospective shadow runner can execute without refitting.
+The exact frozen head is persisted to `main`. Do not refit it.
 
-Operational verification after persistence:
+Current prospective state at the 2026-10-30 machine check:
 
-- checkout: success;
-- pinned inference runtime: success;
-- compile: success;
-- main-only OIDC: success;
-- immutable shadow check: **success**;
+- attempts: **1**;
+- immutable predictions: **1**;
+- scores: **0**;
 - production change: **false**.
 
-As of **2026-10-29 16:09 UTC**, before the first due P-1 cutoff:
+First genuine prediction — event446 Wisła Płock–Piast, P-1:
 
-- shadow attempts: **0**;
-- shadow predictions: **0**;
-- shadow scores: **0**.
+- cutoff: `2026-10-30 11:15:00 UTC`;
+- attempt: `2026-10-30 11:21:26 UTC`;
+- status: `PREDICTION_READY`;
+- structural P50: `6084.5618737955`;
+- challenger P50: `6693.01806117505`;
+- residual: `+608.45618737955`;
+- +10% cap hit;
+- target values used: false;
+- production change: false;
+- score pending genuine confirmed attendance.
 
-This is expected. Do not create retrospective rows.
+Do not interpret a single prospective prediction as model proof.
 
 ---
 
@@ -192,9 +183,11 @@ Exact cutoff:
 Eligibility requires:
 
 - future event and no known attendance outcome;
-- execution inside the immutable cutoff window;
+- execution inside the exact cutoff through +90 minute immutable window;
 - genuine observations only;
-- >=4 eligible hourly-bucket observations;
+- context limited to the 168h before the cutoff;
+- hourly-bucket deduplication;
+- >=4 eligible observations;
 - >=24h observed prefix span;
 - positive first genuine inventory observation;
 - PIT-valid structural prior genuinely available by the cutoff;
@@ -206,7 +199,7 @@ Prediction:
 
 with ratio clipped to `[-0.10,+0.10]`.
 
-Persist to the existing immutable trajectory backend:
+Persistence:
 
 - `private.daily_trajectory_attempts_v1`;
 - `private.daily_trajectory_predictions_v1`;
@@ -214,26 +207,36 @@ Persist to the existing immutable trajectory backend:
 
 Never insert synthetic or retrospective prospective evidence.
 
+Operational activation boundary used by preflight:
+
+`2026-10-29 16:11:35 UTC`
+
+Earlier checkpoints are reported as `PRE_ACTIVATION_NOT_EXPECTED`, not false misses.
+
 ---
 
-# 7. Live prospective evidence snapshot — 2026-10-29 16:09 UTC
+# 7. Live prospective evidence snapshot — 2026-10-30 ~12:30 UTC
 
 ## P9 v1
 
-- 2 genuine attempts / 2 events;
-- 0 predictions;
-- 0 scored;
-- both attempts support-insufficient;
+- **4 attempts / 0 predictions / 0 scored**;
+- all captured attempts are `PIT_SUPPORT_INSUFFICIENT`;
 - correct fail-closed;
 - production change false.
 
-Do not lower support or retro-predict.
+Known missed windows:
+
+- event443 Cracovia–Motor T-24;
+- event6 Lech Poznań–Wisła Kraków T-48.
+
+Never backfill them.
 
 ## P9 Family Fallback v2
 
-- 1 genuine attempt;
-- 1 immutable prediction;
-- 0 scored;
+- **3 attempts / 2 immutable predictions / 0 scored**;
+- event446 T-48: structural `6084.5618737955` -> challenger `6911.09714798977`;
+- event446 T-24: structural `6084.5618737955` -> challenger `8252.87035184191`;
+- event444 T-48: `FALLBACK_SUPPORT_INSUFFICIENT`;
 - separate evidence only;
 - production change false.
 
@@ -242,17 +245,24 @@ Never pool v1 and v2 evidence.
 ## Form5
 
 - `PROSPECTIVE_COLLECTING`;
-- 0/8 completed eligible events;
-- 0/5 clubs;
-- 0/2 distinct values;
-- future stream: 13 events / 12 clubs / 9 distinct values;
+- **0/8** completed eligible events;
+- gate closed;
+- future stream: **14 events / 13 clubs / 9 distinct values**;
 - Ridge alpha 30;
 - cap +/-25%;
 - production change false.
 
+The prospective dataset remains empty until genuine outcomes exist by design.
+
+## Frozen Encoder Shadow
+
+- **1 attempt / 1 prediction / 0 scored**;
+- event446 P-1 captured;
+- event443 Cracovia–Motor P-1 at `2026-10-29 17:00 UTC` is a genuine `MISSED_WINDOW` for the current operational version and remains missing.
+
 ## P7
 
-Latest recorded canonical state:
+Latest canonical state:
 
 - 53 immutable rows;
 - 6 events;
@@ -273,71 +283,132 @@ Continue genuine evidence accumulation only. No forced model fit below gates.
 
 ---
 
-# 8. Imminent immutable windows
+# 8. Prospective protection / scheduler state
 
-Fresh machine state at **2026-10-29 16:09 UTC**:
+## P9
 
-- event6 Lech Poznań–Wisła Kraków P9 T-48: **2026-10-29 16:30 UTC** — READY;
-- event443 Cracovia–Motor P9/Form5 T-24: **2026-10-29 17:00 UTC** — READY;
-- event443 Cracovia–Motor frozen-encoder P-1: **2026-10-29 17:00 UTC** — first shadow opportunity;
-- event444 GKS Katowice–Widzew P9 T-48: **2026-10-29 19:15 UTC** — READY;
-- event446 Wisła Płock–Piast P9 T-24: **2026-10-30 11:15 UTC** — READY.
-
-P9 cadence:
+Primary frozen cadence:
 
 `11,26,41,56 * * * *`
 
-plus the redundant Structural Prior Materializer -> P9 heartbeat bridge.
+Redundancy:
 
-Frozen-encoder shadow cadence:
+- successful Structural Prior Materializer -> P9 workflow-run bridge;
+- independent heartbeat: `16,46 * * * *`.
 
-`20 * * * *`
+The independent heartbeat was added after event446 T-24 had no attempt despite the normal scheduler path. The T-24 window was rescued prospectively while still legal; no model semantics changed.
 
-The runner reconstructs inputs strictly at the exact cutoff even if execution happens later inside the immutable window.
+## Frozen trajectory shadow
 
-Unknown inventory is never converted to zero.
+Cadence:
 
----
+`20,50 * * * *`
 
-# 9. Data reality
-
-Current genuine pre-kickoff inventory history:
-
-- 32 events;
-- 14 clubs;
-- median first observation ~P-9.3;
-- earliest ~P-30.3;
-- P-31...P-60 historical coverage currently zero.
-
-Therefore:
-
-> **P-60 is a collection horizon, not a requirement for a fabricated complete 60-day sequence.**
-
-Use genuine variable-length prefixes. No interpolation or forward-fill merely for model convenience.
+This was hardened from one to two checks per hour because the immutable write window is only +90 minutes. Model, artifacts, cutoffs and prediction logic remain unchanged.
 
 ---
 
-# 10. Immediate execution order
+# 9. Trajectory prospective preflight
 
-1. Protect imminent P9 / Form5 / frozen-encoder shadow cutoffs.
-2. Confirm immutable rows after each due window; never backfill a missed window with later information.
-3. Score P7/P9/trajectory shadow only after genuine confirmed outcomes.
-4. Keep the frozen encoder and attendance head unchanged while prospective evidence accumulates.
-5. Report trajectory attendance evidence separately by P-7 / P-3 / P-1 and event-balanced overall.
-6. Do not react to the first one or two prospective outcomes by changing alpha, cap, encoder or features.
-7. Continue genuine trajectory, P11 and P4a collection.
-8. Derive a business minimum meaningful attendance Delta MAE independently of observed candidate results.
-9. Production remains separately review-gated and OFF.
+Live read-only RPC:
+
+`public.trajectory_frozen_encoder_preflight_v1(integer)`
+
+Purpose:
+
+- identify future P-7/P-3/P-1 readiness before windows open;
+- mirror the frozen encoder input gates;
+- distinguish pre-activation checkpoints from genuine misses;
+- surface collection/prior problems without creating predictions.
+
+Security:
+
+- `anon`: no execute;
+- `authenticated`: no execute;
+- `service_role`: execute;
+- target values used: false;
+- production change: false.
+
+Machine snapshot at `2026-10-30 12:30 UTC`:
+
+- READY: **10** checkpoints;
+- CAPTURED: **1**;
+- PRE_ACTIVATION_NOT_EXPECTED: **10**;
+- WATCH: **13**;
+- CRITICAL / genuine missed: **5**.
+
+Current actionable items:
+
+1. event443 Cracovia–Motor P-1 — `MISSED_WINDOW`; preserve as missing.
+2. event5091 Motor Lublin–Wisła Płock P-7 (`2026-10-30 17:00 UTC`) — `CRITICAL_FIRST_INVENTORY_INVALID`; source series contains early zero inventory followed by positive values. Frozen v1 must fail closed rather than redefine the gate.
+3. event448 Wisła Kraków–Cracovia P-7 (`2026-10-30 19:30 UTC`) — `CRITICAL_TOO_FEW_OBSERVATIONS`; currently no snapshots.
+4. event603 Korona Kielce–Radomiak P-7 (`2026-10-31 11:15 UTC`) — `CRITICAL_PREFIX_SPAN_INSUFFICIENT`; latest stored snapshot is still from 2026-10-26, so collection health requires investigation.
+5. event7372 Widzew Łódź–Pogoń P-7 (`2026-10-31 19:15 UTC`) — `CRITICAL_NO_INCUMBENT`; current snapshot stream is also all-zero inventory and therefore not trajectory-ready.
+
+Do not solve these alerts by loosening frozen v1 input gates.
 
 ---
 
-# 11. Next model decision
+# 10. Immediate immutable windows
+
+Today / next protected checkpoints:
+
+- event6 Lech Poznań–Wisła Kraków P9 T-24 + Frozen Encoder P-1: **2026-10-30 16:30 UTC** — trajectory preflight `READY`;
+- event445 KGHM Zagłębie Lubin–Korona P-3: **2026-10-30 17:00 UTC** — trajectory `READY`;
+- event5091 Motor Lublin–Wisła Płock P-7: **2026-10-30 17:00 UTC** — trajectory input invalid under frozen v1;
+- event444 GKS Katowice–Widzew P9 T-24 + Frozen Encoder P-1: **2026-10-30 19:15 UTC** — trajectory preflight `READY`;
+- event447 Raków–Pogoń P-3: **2026-10-30 19:30 UTC** — trajectory `READY`;
+- event448 Wisła Kraków–Cracovia P-7: **2026-10-30 19:30 UTC** — no trajectory observations yet;
+- event445 P9 T-48: **2026-10-31 17:00 UTC**;
+- event447 P9 T-48: **2026-10-31 19:30 UTC**.
+
+The runner reconstructs inputs strictly at the exact cutoff even if execution happens later inside the immutable +90 minute window.
+
+---
+
+# 11. Data reality
+
+Current genuine pre-kickoff inventory history remains sparse and heterogeneous by club/provider.
+
+Rules:
+
+- use genuine variable-length prefixes;
+- no interpolation or forward-fill merely for model convenience;
+- hidden/unknown inventory is never converted into a usable positive observation;
+- public inventory is a demand/inventory proxy, not confirmed sales or attendance;
+- P-60 is a collection horizon, not a requirement for a fabricated complete 60-day sequence.
+
+Current collection cases requiring operational diagnosis include:
+
+- Korona: no new stored snapshot since 2026-10-26;
+- Wisła Kraków event448: mapped event but no snapshots;
+- Widzew event7372: snapshots exist but all currently carry `available_total=0`;
+- Motor event5091: early zero rows followed by positive inventory; frozen v1 treats the first zero as invalid and must fail closed.
+
+---
+
+# 12. Immediate execution order
+
+1. Protect every imminent P9 / Form5 / frozen-encoder cutoff before research work.
+2. Use P9 and trajectory preflight to find readiness failures before windows open.
+3. Fix collection/materialization operations only when doing so preserves genuine source semantics; never fabricate or rewrite prospective evidence to make a candidate eligible.
+4. Confirm immutable attempts/predictions after each due window; never backfill missed windows.
+5. Score P7/P9/trajectory only after genuine confirmed attendance outcomes.
+6. Keep P9 v1, P9 v2, Form5 and Frozen Encoder evidence separate.
+7. Keep the SSP encoder, attendance-head alpha/cap and P9 fallback policy unchanged while evidence accumulates.
+8. Report trajectory attendance evidence separately by P-7 / P-3 / P-1 and event-balanced overall.
+9. Do not react to the first one or two prospective outcomes by changing model parameters or features.
+10. Continue genuine trajectory, P11 and P4a collection.
+11. Derive a business minimum meaningful attendance Delta MAE independently of observed candidate results.
+12. Production remains separately review-gated and OFF.
+
+---
+
+# 13. Next model decision
 
 No new model search is justified now.
 
-The next meaningful question is no longer whether trajectory dynamics can be represented — SSP v1 says they can.
-
-The next question is:
+SSP v1 answered the representation question. The current question is:
 
 > **Does the frozen representation add genuinely prospective attendance accuracy over the structural incumbent?**
 
