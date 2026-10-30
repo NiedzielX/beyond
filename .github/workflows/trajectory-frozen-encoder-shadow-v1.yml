@@ -3,7 +3,10 @@ name: Trajectory Frozen Encoder Shadow v1
 on:
   workflow_dispatch:
   schedule:
-    - cron: "20 * * * *"
+    # Immutable shadow windows stay open for only +90 minutes. Two checks per
+    # hour reduce the chance that a delayed/dropped GitHub cron consumes a
+    # prospective P-7/P-3/P-1 checkpoint. Inference remains frozen/idempotent.
+    - cron: "20,50 * * * *"
   push:
     branches:
       - main
