@@ -106,7 +106,9 @@ Workflow:
 
 Schedule:
 
-`20 * * * *`
+`20,50 * * * *`
+
+The cadence was hardened on 2026-10-30 from one to two checks per hour because the immutable write window is only +90 minutes and scheduled GitHub runs can be delayed or dropped. This is operational redundancy only; the frozen model, head, cutoffs and persistence contract are unchanged.
 
 The workflow is verified end-to-end:
 
@@ -130,47 +132,77 @@ First genuine prospective attendance prediction was created on **2026-10-30** fo
 
 The protected run completed successfully with `due_target_count=1`, `attempt_count=1`, `prediction_count=1`, `inserted_scores=0`.
 
-Operational note: the protected run was re-triggered after the legal cutoff because GitHub scheduled execution had not started exactly at the due time. This did not change the evidence contract: the database selected only observations with `captured_at <= target_as_of_at`, and the write occurred inside the frozen +90 minute window.
+Event443 Cracovia–Motor P-1 at `2026-10-29 17:00 UTC` has no immutable shadow attempt and its +90 minute window is closed. It must remain missing; never create a retrospective row.
 
 ---
 
 # 6. Current protected prospective state
 
-Fresh snapshot after the first frozen-encoder prediction on **2026-10-30**:
+Fresh machine snapshot on **2026-10-30 around 12:22 UTC**:
 
-- P9 v1: 3 attempts / 0 predictions / 0 scored; all fail-closed support-insufficient;
-- P9 v2: 2 attempts / 1 immutable prediction / 0 scored;
-- Form5: collecting, 0 completed eligible events in the prospective dataset until genuine attendance outcomes arrive;
-- Frozen Encoder Shadow: 1 attempt / 1 immutable prediction / 0 scores;
+- P9 v1: **4 attempts / 0 predictions / 0 scored**; every attempt is `PIT_SUPPORT_INSUFFICIENT` and therefore correct fail-closed evidence;
+- P9 v2: **3 attempts / 2 immutable predictions / 0 scored**;
+- Form5: `PROSPECTIVE_COLLECTING`, **0/8** completed eligible events, gate closed;
+- Frozen Encoder Shadow: **1 attempt / 1 immutable prediction / 0 scores**;
 - production change false;
 - `live_adjustment = 0`.
 
 P9 detail:
 
+- event443 T-48: v1 `PIT_SUPPORT_INSUFFICIENT`;
+- event443 T-24: `MISSED_WINDOW` — do not backfill;
 - event446 T-48: v1 `PIT_SUPPORT_INSUFFICIENT`, v2 `FALLBACK_PREDICTION_READY`;
-- event444 T-48: v1 `PIT_SUPPORT_INSUFFICIENT`, v2 `FALLBACK_SUPPORT_INSUFFICIENT`.
+- event444 T-48: v1 `PIT_SUPPORT_INSUFFICIENT`, v2 `FALLBACK_SUPPORT_INSUFFICIENT`;
+- event446 T-24: v1 `PIT_SUPPORT_INSUFFICIENT`, v2 `FALLBACK_PREDICTION_READY` captured at `12:19:45 UTC`, still inside the legal +90 minute window.
 
-Frozen Encoder next state:
+Event446 frozen P9 v2 predictions remain separately auditable:
 
-- event446 P-1 is now protected and immutable;
-- no other P-7/P-3/P-1 target was due in the next 48h at the 2026-10-30 checkpoint query.
+- T-48 challenger: `6911.09714798977` vs structural `6084.5618737955`;
+- T-24 challenger: `8252.87035184191` vs structural `6084.5618737955`.
 
-P9 schedule: `11,26,41,56 * * * *` plus redundant heartbeat bridge.
+Do not compare which challenger is better until genuine attendance exists.
+
+Operational P9 protection:
+
+- frozen P9 workflow: `11,26,41,56 * * * *`;
+- Structural Prior -> P9 workflow-run bridge remains active;
+- independent P9 heartbeat added on 2026-10-30: `16,46 * * * *`;
+- persistence remains immutable/idempotent per event+cutoff.
 
 ---
 
-# 7. Next agent action
+# 7. Immediate future cutoffs
+
+At the latest machine check:
+
+- event6 Lech Poznań–Wisła Kraków P9 T-48 is already `MISSED_WINDOW` — do not backfill;
+- event6 P9 T-24 and Frozen Encoder P-1 cutoff: **2026-10-30 16:30 UTC**;
+- event444 GKS Katowice–Widzew P9 T-24 and Frozen Encoder P-1 cutoff: **2026-10-30 19:15 UTC**;
+- both event6 and event444 currently have genuine pre-cutoff snapshots and PIT-valid structural priors available for their P-1 shadow checkpoints;
+- event445 KGHM Zagłębie Lubin–Korona Kielce P9 T-48: **2026-10-31 17:00 UTC**;
+- event447 Raków Częstochowa–Pogoń Szczecin P9 T-48: **2026-10-31 19:30 UTC**.
+
+Watch items from P9 preflight:
+
+- event448 Wisła Kraków–Cracovia currently `WATCH_NO_SNAPSHOT`;
+- event7372 Widzew Łódź–Pogoń Szczecin currently `WATCH_NO_INCUMBENT`.
+
+These are future readiness issues, not reasons to fabricate inputs.
+
+---
+
+# 8. Next agent action
 
 1. Query current machine state first.
 2. Protect every due cutoff before doing research work.
-3. If a protected cutoff has passed, verify its immutable attempt/prediction rather than assuming the scheduler fired.
-4. Never backfill a missed prospective window with later information.
-5. Score event446 only after a genuine confirmed attendance outcome is available after kickoff.
-6. Compare actual attendance against the frozen structural incumbent and frozen challenger; record AE and Delta AE without tuning.
-7. Accumulate a cohort before interpreting Delta MAE; do not react to the first 1–2 outcomes.
-8. Do not change SSP encoder or attendance-head parameters under candidate v1.
-9. Do not interpret SSP validation as attendance accuracy.
-10. Do not pool P9 v1/v2 evidence.
+3. Verify event6 T-24/P-1 and event444 T-24/P-1 immediately after their legal windows begin; do not assume the scheduler fired.
+4. Never backfill event443 P9 T-24, event443 trajectory P-1, event6 P9 T-48 or any other missed prospective window with later information.
+5. Score only after genuine confirmed attendance outcomes.
+6. Compare actual attendance against each frozen incumbent/challenger pair; record AE and Delta AE without tuning.
+7. Keep P9 v1, P9 v2, Form5 and Frozen Encoder evidence separate.
+8. Accumulate a cohort before interpreting Delta MAE; do not react to the first 1–2 outcomes.
+9. Do not change SSP encoder, attendance-head alpha/cap or P9 fallback policy under the current candidate versions.
+10. Do not interpret SSP validation as attendance accuracy.
 11. Keep `live_adjustment = 0` and production OFF.
 
 The next meaningful model decision comes from **future prospective attendance Delta MAE**, not another historical tuning pass.
