@@ -12,6 +12,16 @@ Canonical execution plan: `ml/EXECUTION_PLAN_CURRENT.md`
 
 Start from live DB, not markdown:
 
+`public.prospective_decision_summary_v1(10)`
+
+This single read-only call composes:
+
+- protected-lane operational state;
+- prospective attendance evaluation;
+- the precommitted business-meaningful trajectory gain gate.
+
+For lower-level operational detail use:
+
 `public.prospective_ops_summary_v1(10)`
 
 Then protect any imminent immutable cutoff before doing R&D.
@@ -21,7 +31,8 @@ Never backfill a missed prospective window.
 Production remains OFF:
 
 - `live_adjustment=0`;
-- `production_change=false`.
+- `production_change=false`;
+- `production_activation_allowed=false`.
 
 ---
 
@@ -149,7 +160,9 @@ Treat as hidden inventory, not zero and not an outage.
 
 Source currently exposes literal zero availability. Do not reinterpret it.
 
-Structural prior for event7372 was successfully materialized on 2026-10-30 before its future P-7 cutoff. Remaining readiness problem is inventory/prefix semantics, not missing prior.
+Verified Widzew stadium capacity `18,018` was added from the official City of Łódź source and a genuine Structural Prior for event7372 was successfully materialized before its future P-7 cutoff.
+
+Remaining readiness problem is inventory/prefix semantics, not missing prior.
 
 ## Wisła Kraków / Roboticket
 
@@ -172,9 +185,10 @@ Validated contract:
 - 158 extra technical IDs discarded;
 - `spatialHashShift` read from page;
 - Roboticket enum: Empty=0, My=1, Other=2, NotAvailable=3;
+- frontend contract sets `seat.ava = anyRight && hasSgRight && hasResRight`;
 - selectable = all three rights true AND occ in {0,1}.
 
-At manual validation current public selectable count was 0, so **no snapshot was inserted**.
+Latest validation found 6,890 `occ=Empty` seats but **0 public-selectable seats** under Roboticket's own rights contract, so no snapshot was inserted.
 
 The collector never writes `available_total=0`. It starts writing only after a positive, fully covered public selectable count exists.
 
@@ -192,7 +206,11 @@ Unified protected-lane state:
 
 `public.prospective_ops_summary_v1(integer)`
 
-Both are service_role-only.
+Unified operational + evidence + business decision state:
+
+`public.prospective_decision_summary_v1(integer)`
+
+All are service_role-only.
 
 Trajectory operational activation boundary:
 
@@ -206,13 +224,15 @@ Current key trajectory alerts:
 - event5091 P-7 first inventory invalid because historical pre-sale zero remains;
 - event448 P-7 no legal observations;
 - event603 P-7 insufficient historical prefix because source now hides availability;
-- event7372 P-7 has prior, but its inventory prefix is still unsuitable.
+- event7372 P-7 has a genuine prior, but its inventory prefix is still unsuitable.
 
 Do not loosen the frozen v1 eligibility gate to make these rows pass.
 
 ---
 
-# 8. Evaluation is now precommitted
+# 8. Evaluation and business threshold are precommitted
+
+## Evidence protocol
 
 Protocol:
 
@@ -250,29 +270,67 @@ After gate: `EVIDENCE_REVIEW_READY`.
 
 This gate is not automatic production promotion.
 
-Business minimum meaningful attendance effect is intentionally still undefined/null and must be chosen independently of observed challenger results.
+## Business-meaningful forecast gain
 
-Current evaluator output:
+Independent precommit:
 
-- trajectory: 1 prediction / 0 scores / collecting;
-- P9 v2: 2 predictions / 0 scores / collecting;
-- MAE values null.
+`ml/BUSINESS_MEANINGFUL_FORECAST_GAIN_V1.md`
+
+Trajectory business evaluator:
+
+`public.trajectory_business_meaningful_gain_v1()`
+
+Frozen absolute threshold:
+
+> **at least 550 seats of prospective event-balanced MAE improvement**
+
+Equivalent:
+
+`Delta MAE <= -550 seats`
+
+The threshold was defined before any frozen-trajectory attendance score and was derived from the project's commercial 7% fill-rate action scale using the current 70/30 top-end / medium-club reference mix. It is an accuracy-resolution threshold, not a claim that 550 fewer forecast-error seats cause 550 incremental sales.
+
+Additional risk guards:
+
+- event improvement rate > 50%;
+- median event Delta AE < 0;
+- challenger P90 AE not worse;
+- absolute signed bias not worse;
+- no retrospective/backfilled rows;
+- equal event weighting.
+
+Current business labels at P-7/P-3/P-1:
+
+`INSUFFICIENT_PROSPECTIVE_EVIDENCE`
+
+because no trajectory attendance outcomes have been scored yet.
+
+Unified decision RPC:
+
+`public.prospective_decision_summary_v1(10)`
+
+Current state remains:
+
+- trajectory: 1 prediction / 0 scores / `PROSPECTIVE_COLLECTING`;
+- P9 v2: 2 predictions / 0 scores / `PROSPECTIVE_COLLECTING`;
+- business threshold: 550 seats;
+- production activation allowed: false.
 
 ---
 
 # 9. Next actions
 
-1. Query `prospective_ops_summary_v1(10)` fresh.
+1. Query `prospective_decision_summary_v1(10)` fresh.
 2. Protect due windows first.
 3. Verify event6 T-24/P-1 after 16:30 UTC.
 4. Verify event445 P-3 and expected Motor P-7 fail-closed after 17:00 UTC.
 5. Verify event444 T-24/P-1 after 19:15 UTC.
 6. Verify event447 P-3 and event448 P-7 fail-closed after 19:30 UTC.
-7. Confirm the natural Wisła VAO cron continues fail-closed until genuinely selectable seats appear.
+7. Confirm the Wisła VAO cron remains fail-closed until genuinely selectable seats appear.
 8. Score only after confirmed attendance outcomes.
-9. Use the frozen evaluator, not ad-hoc analysis.
+9. Use the precommitted evaluators, not ad-hoc analysis.
 10. Do not change model parameters after the first 1–2 outcomes.
 11. Keep P9 v1, P9 v2, Form5 and Frozen Encoder evidence separate.
 12. Production remains OFF.
 
-The next meaningful model decision is future **prospective attendance Delta MAE**, not another historical search.
+The next meaningful model decision is future **prospective attendance Delta MAE**, evaluated against both the frozen evidence protocol and the independently precommitted business threshold — not another historical search.
