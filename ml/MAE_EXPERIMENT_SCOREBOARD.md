@@ -39,8 +39,8 @@ Notes:
 
 | Work package | Planned experiment | Status | Entry criterion | Exit criterion |
 |---|---|---|---|---|
-| MAE-01 | incumbent error decomposition v1 | NEXT | reproducible incumbent predictions + outcomes | ranked error segments + failure taxonomy + next hypothesis |
-| MAE-02 | structural baseline benchmark v1 | QUEUED | MAE-01 identifies structural error opportunities | strongest honest PIT-safe structural research anchor selected/frozen |
+| MAE-01 | incumbent error decomposition v1 | HISTORICAL DIAGNOSTIC COMPLETE | reproducible incumbent predictions + outcomes | ranked error segments + failure taxonomy + next hypothesis |
+| MAE-02 | structural baseline benchmark v1 | NEXT: OBJECTIVE AUDIT | MAE-01 identifies structural error opportunities | strongest honest PIT-safe structural research anchor selected/frozen |
 | MAE-03 | context residual benchmark v1 | QUEUED | timestamped PIT-safe context available | incremental context Delta MAE measured vs same-event anchor |
 | MAE-04 | engineered trajectory benchmark v2 | QUEUED | genuine trajectory coverage sufficient | incremental trajectory Delta MAE measured with ablations |
 | MAE-05 | horizon-specific residual v1 | QUEUED | enough events across useful horizons | horizon curve shows whether separate correction is justified |
@@ -143,3 +143,12 @@ This section uses **future public inventory**, not attendance. Never pool its MA
 - Decision: **FROZEN / LOCAL_POST_FREEZE_PROSPECTIVE_COLLECTING**. Private Storage recovery verified; SQL/gateway/scheduled GitHub job prepared, not deployed/enabled.
 - Metrics: equal-event paired path MAE and per-lead +1/+3/+7, with matured/pending coverage separated. Attendance thresholds are unchanged and do not automatically apply here.
 - Next evidence: score the already-issued points against subsequent genuine inventory observations; classify residual error without retuning v1.
+
+## mae01-incumbent-error-decomposition-v1
+
+- Status: historical diagnostic complete; hosted reproduction pending. Protocol/result: `MAE01_INCUMBENT_ERROR_AUDIT_PROTOCOL_V1.md`, `MAE01_INCUMBENT_ERROR_AUDIT_RESULT_V1.md`.
+- Evidence:603events /3,010horizon rows;599common-five-horizon events. All10frozen benchmark MAEs reproduced. Frozen source/artifact hashes verified unchanged.
+- Incumbent historical equal-event MAE1,773.89; bias+14.59; median AE1,129.28; P90 AE4,195.79. No challenger or new Delta MAE. Separate from the exposed10-event trajectory cohort and from future daily-inventory errors.
+- Lech contributes17.41%of total error and remains high-error in both seasons. Four largest-contributing clubs account for43.57%of error on19.73%of events. Constant club offsets are not supported by changing bias.
+- PIT audit: existing feature-store timing and fixed season separation checks pass; archived publication times/capacity knowledge are not independently proven. Outcome-conditioned fill bins are descriptive only.
+- Decision: RETAIN_AS_DIAGNOSTIC; proceed to separately versioned MAE-02 raw-seat-objective audit. No serving-artifact changes, prospective promotion or claim of new independent validation.

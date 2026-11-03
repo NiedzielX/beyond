@@ -12,6 +12,8 @@ on:
       - 'ml/run_daily_inventory_path_gateway_v1.py'
       - 'ml/features/structural_prior_feature_store_v1.py'
       - 'ml/structural_prior_runtime_benchmark_v1.py'
+      - 'ml/mae01_incumbent_error_audit_v1.py'
+      - 'ml/test_mae01_incumbent_error_audit_v1.py'
       - 'ml/recovered/v17/**'
       - 'ml/live_benchmark_v02.py'
       - 'ml/live_benchmark_v03.py'
@@ -28,6 +30,8 @@ on:
       - 'ml/run_daily_inventory_path_gateway_v1.py'
       - 'ml/features/structural_prior_feature_store_v1.py'
       - 'ml/structural_prior_runtime_benchmark_v1.py'
+      - 'ml/mae01_incumbent_error_audit_v1.py'
+      - 'ml/test_mae01_incumbent_error_audit_v1.py'
       - 'ml/recovered/v17/**'
       - 'ml/live_benchmark_v02.py'
       - 'ml/live_benchmark_v03.py'
@@ -56,6 +60,12 @@ jobs:
 
       - name: Verify daily inventory path CLI and local ledger lifecycle
         run: python -m unittest ml.test_run_daily_inventory_path_v1 ml.test_run_daily_inventory_path_cycle_v1 -v
+
+      - name: Verify equal-event error accounting and historical diagnostic guards
+        run: python -m unittest ml.test_mae01_incumbent_error_audit_v1 -v
+
+      - name: Reproduce fixed incumbent season errors without saving models
+        run: python -m ml.mae01_incumbent_error_audit_v1 --output "$RUNNER_TEMP/mae01-incumbent-audit"
 
       - name: Verify recovered v1.7 strict benchmark evidence
         run: python ml/recovered/v17/verify_recovered_bundle.py

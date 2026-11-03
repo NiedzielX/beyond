@@ -38,7 +38,7 @@ If an immutable legal cutoff is currently due or at risk, protect it first.
 
 Otherwise the default next research task is:
 
-> **MAE-01 — incumbent error decomposition.**
+> **MAE-02 — structural objective audit derived from completed MAE-01.**
 
 Do not spend the session maintaining infrastructure when no evidence window is actually at risk.
 
@@ -76,9 +76,11 @@ Every experiment must be event-grouped, PIT-safe and registered in the experimen
 
 ---
 
-# 3. MAE-01 — exact next research deliverable
+# 3. MAE-01 — completed historical diagnostic and next hypothesis
 
-Build a reproducible incumbent-error decomposition.
+Completed2026-11-03:603events /3,010rows, all10frozen horizon/season MAEs reproduced, source/artifact hashes unchanged. See `MAE01_INCUMBENT_ERROR_AUDIT_RESULT_V1.md` and `artifacts/mae01_incumbent_error_audit_v1/`. This is already-exposed historical evidence, not fresh validation. Next: separately versioned raw-seat-objective weighting audit using unchanged absolute-lossT-3/T-1specifications. Hosted reproducibility pending.
+
+Original decomposition requirements, retained for future genuine outcomes:
 
 At minimum calculate event-level error and grouped MAE / signed error by:
 
@@ -254,7 +256,7 @@ Use this order:
 
 1. Query live state.
 2. Protect a genuine immutable cutoff only if one is currently at risk.
-3. Otherwise execute/continue MAE-01.
+3. Otherwise continue MAE-02 after the completed MAE-01 diagnostic.
 4. Use MAE-01 findings to select the next falsifiable hypothesis.
 5. Run the smallest useful PIT-safe/event-grouped experiment.
 6. Update the scoreboard and progress tracker.
@@ -265,3 +267,7 @@ The next research question is not "what model should we try?"
 It is:
 
 > **What currently causes the largest honest forecast error, and what new information can explain it without leaking the future?**
+
+## Latest operational check —2026-11-03T20:16UTC
+
+Fresh decision RPC: frozen encoder8attempts /5predictions /0scores; P9v1 6/0/0; P9v2 5/3/0. Wisła448P-3 recorded MODEL_INPUT_INSUFFICIENT at19:47:17UTC after successful existing workflow run41706363428; open_count=0. Next encoder cutoff: Korona603onNov4 11:15UTC, currently insufficient source observations. Never repair older missed windows.

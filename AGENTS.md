@@ -1,6 +1,6 @@
 # Beyond Agent Instructions
 
-Last updated: **2026-10-30**
+Last updated: **2026-11-03**
 
 ## Read first
 
@@ -14,6 +14,16 @@ Last updated: **2026-10-30**
 Query live machine state before acting on prospective windows. Read the exact precommit before touching a frozen experiment.
 
 Roadmap v6 is canonical.
+
+## Required project memory and SDD workflow
+
+All AI agents must use the shared `.ai/` structure, including agents using Claude. `CLAUDE.md` describes the same obligations; these files must not define competing ML plans.
+
+- `.ai/specs/YYYY-MM-DD-slug.md`: specifications and acceptance criteria before a material implementation or experiment. Link the canonical `ml/` plan/precommit rather than duplicating or weakening it. `.ai/specs/implemented/` contains completed specifications with evidence; `.ai/specs/archive/` contains withdrawn or superseded specifications. Keep blocked or partially deployed work in active `specs/`.
+- `.ai/runs/YYYY-MM-DD-slug.md`: one audit log for each logical autonomous AI run. Record the goal, concrete changes, checks, evidence locations, remaining blockers and next action. Update the log as the run progresses and before handoff. Multiple steps can belong to one run; do not stop for approval after each step.
+- `.ai/lessons.md`: read this index after the canonical ML state files and before implementation. Record reusable findings and link detailed notes in `.ai/lessons/`. After a meaningful bug fix, failed hypothesis or operational discovery, update existing lessons or add a focused note; preserve the evidence and scope of the finding.
+
+Use actual execution dates and lowercase descriptive slugs. Never put credentials, tokens or private raw data in specifications, logs or lessons. Distinguish planned/configured, successfully executed, and proven end-to-end. Update canonical status and `.ai/` records together; never rewrite missed observations or unsuccessful experiments as successful history. Follow the user's authorized scope autonomously; these documentation requirements do not create an additional approval gate.
 
 Protecting frozen experiments does not stop R&D. The restriction on new model search concerns retuning the frozen model on the same exposed evidence. New, separately versioned and precommitted MAE experiments proceed in parallel, without contaminating existing evaluation streams:
 
