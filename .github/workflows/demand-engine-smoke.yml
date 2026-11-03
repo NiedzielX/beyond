@@ -5,6 +5,11 @@ on:
     paths:
       - 'ml/demand_engine/**'
       - 'ml/run_trajectory_lane_b_v1.py'
+      - 'ml/run_daily_inventory_path_v1.py'
+      - 'ml/test_run_daily_inventory_path_v1.py'
+      - 'ml/run_daily_inventory_path_cycle_v1.py'
+      - 'ml/test_run_daily_inventory_path_cycle_v1.py'
+      - 'ml/run_daily_inventory_path_gateway_v1.py'
       - 'ml/features/structural_prior_feature_store_v1.py'
       - 'ml/structural_prior_runtime_benchmark_v1.py'
       - 'ml/recovered/v17/**'
@@ -16,6 +21,11 @@ on:
     paths:
       - 'ml/demand_engine/**'
       - 'ml/run_trajectory_lane_b_v1.py'
+      - 'ml/run_daily_inventory_path_v1.py'
+      - 'ml/test_run_daily_inventory_path_v1.py'
+      - 'ml/run_daily_inventory_path_cycle_v1.py'
+      - 'ml/test_run_daily_inventory_path_cycle_v1.py'
+      - 'ml/run_daily_inventory_path_gateway_v1.py'
       - 'ml/features/structural_prior_feature_store_v1.py'
       - 'ml/structural_prior_runtime_benchmark_v1.py'
       - 'ml/recovered/v17/**'
@@ -43,6 +53,9 @@ jobs:
 
       - name: Run Demand Engine unit tests
         run: python -m unittest discover -s ml/demand_engine -p 'test_*.py' -v
+
+      - name: Verify daily inventory path CLI and local ledger lifecycle
+        run: python -m unittest ml.test_run_daily_inventory_path_v1 ml.test_run_daily_inventory_path_cycle_v1 -v
 
       - name: Verify recovered v1.7 strict benchmark evidence
         run: python ml/recovered/v17/verify_recovered_bundle.py

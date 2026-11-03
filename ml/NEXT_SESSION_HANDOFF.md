@@ -2,15 +2,25 @@
 
 Last updated: **2026-10-30**
 
-Status: **QUERY LIVE MACHINE STATE FIRST — PROSPECTIVE EVIDENCE IS PRIMARY**
+Status: **OPERATIONAL HANDOFF — READ AFTER MAE STRATEGY AND PLANS**
+
+## Added 2026-11-03: daily inventory-path implementation
+
+**Later operational update, 19:46UTC:** six local attempts /21daily future points /0scores. Verified private Storage backup and latest-manifest restore now work. A single bounded model watcher (not a coding agent) runs every15minutes through2026-11-04T17:15Z, dependent on this host/session. Status/PID: `/workspace/ops-runtime/2026-11-03-daily-path/latest-cycle.json` and `watcher.pid`. Do not launch duplicate watchers. See [`DAILY_INVENTORY_PATH_DEPLOYMENT_V1.md`](DAILY_INVENTORY_PATH_DEPLOYMENT_V1.md) for recovery and prepared-but-not-applied SQL/gateway/disabled GitHub workflow. Admin token is absent; npm registry blocked. Missing network destinations and secure token requirement were saved to environment draft, not applied. The old "no watcher" statement below records the earlier17:00handoff and is superseded by this note. Model artifacts/thresholds remain unchanged.
+
+Read [`DAILY_INVENTORY_PATH_IMPLEMENTATION_V1.md`](DAILY_INVENTORY_PATH_IMPLEMENTATION_V1.md) after the canonical strategy/plans for the new research lane. Frozen artifact `ml/artifacts/daily_inventory_path_v1.json` was fit once on16completed events /1,239rows, cutoff2026-11-03T00:00Z, frozen16:37:09UTC. At17:00:13UTC its first two local prospective attempts (events5091/10500) persisted18future-day points in `/workspace/ops-runtime/2026-11-03-daily-path/shadow-v1.sqlite`; retry was idempotent. First targets mature2026-11-04T17:00UTC. No future-target scores yet. Do not refit v1 or backfill old daily issues.
+
+Separate panel checkout `/workspace/BeyondTicketingPanel` reads the generated `/public/research/daily-inventory-path-v1.json`. Real payload validated by parser/geometry. Full React typecheck/build is blocked by missing dependencies/npm403. New lane is not deployed to Supabase and has no daily GitHub scheduler yet; the local ledger depends on workspace persistence. No always-on coding daemon is running. Existing frozen attendance lanes/production flags remain unchanged. Historical counters/windows below are still the dated October snapshot, not current state.
 
 Canonical execution plan: `ml/EXECUTION_PLAN_CURRENT.md`
 
+Read before this operational handoff, in order: `ml/MAE_RESEARCH_ROADMAP_V5.md`, `ml/EXECUTION_PLAN_CURRENT.md`, `ml/PROGRESS_TRACKING.md`, `ml/TRAJECTORY_FORECASTING_PLAN_V1.md`. Only then inspect code, workflows, SQL, Actions and live DB. This handoff describes current operational state and is not the MAE strategy.
+
 ---
 
-# 1. First command / first principle
+# 1. First live operational command, after reading the strategy and plans
 
-Start from live DB, not markdown:
+For current operational facts, query live DB after completing the document read order:
 
 `public.prospective_decision_summary_v1(10)`
 
@@ -72,7 +82,7 @@ First genuine prospective prediction exists for event446 Wisła Płock–Piast P
 
 # 3. Current evidence counters
 
-Latest verified state before 13:00 UTC on 2026-10-30:
+Latest verified state at 15:09 UTC on 2026-10-30, from live `prospective_decision_summary_v1(10)`:
 
 - P9 v1: **4 attempts / 0 predictions / 0 scores**;
 - P9 v2: **3 attempts / 2 predictions / 0 scores**;
@@ -333,4 +343,26 @@ Current state remains:
 11. Keep P9 v1, P9 v2, Form5 and Frozen Encoder evidence separate.
 12. Production remains OFF.
 
-The next meaningful model decision is future **prospective attendance Delta MAE**, evaluated against both the frozen evidence protocol and the independently precommitted business threshold — not another historical search.
+The next decision about the existing frozen attendance candidate uses future **prospective attendance Delta MAE**, evaluated against its frozen evidence protocol and precommitted business threshold. Do not retune that candidate on its exposed evidence.
+
+This does not stop R&D. New, separately versioned/precommitted MAE experiments proceed in parallel through `baseline -> new information -> simple challenger -> event-grouped/PIT-safe MAE -> freeze -> prospective shadow -> genuine outcomes`. Their strategy comes from roadmap v5, not this operational handoff.
+
+---
+
+# 10. Supplementary cloud watchdog — 2026-10-30 only
+
+An additional operational watchdog is running in the current Codex cloud execution session, started at 15:08 UTC:
+
+- helper: `/workspace/ops-runtime/2026-10-30/monitor.py`;
+- status: `/workspace/ops-runtime/2026-10-30/state.json`;
+- audit: `/workspace/ops-runtime/2026-10-30/audit.jsonl`;
+- original model/inference hashes: `/workspace/ops-runtime/2026-10-30/frozen-manifest.json`;
+- live RPC snapshot: `/workspace/ops-runtime/2026-10-30/latest-decision.json`.
+
+It reads the decision RPC every 30 seconds, verifies production OFF and frozen files on main, and dispatches existing heartbeat/trajectory workflows only inside still-missing legal windows. At most three dispatch attempts per lane/cutoff, separated by 20 minutes. It never predicts locally, edits models, repairs source history, or changes eligibility. Six tests verified before-cutoff refusal, exact boundaries, after-window refusal, captured-attempt preservation and fail-closed coverage behavior.
+
+This watchdog depends on the current cloud machine/session staying alive. Do not assume it survives a restart or publication. Read the local status and live DB first; do not launch a duplicate process. It is scoped to 2026-10-30 and stops at 21:02 UTC / 22:02 Europe/Warsaw. Existing GitHub schedules remain the primary independent mechanisms.
+
+At 15:09 UTC the watcher was alive, no window was open, and no due-window prediction had been requested. A manual heartbeat smoke run was dispatched without modifying workflow definitions; heartbeat `41078080759` succeeded and downstream P9 `41078098602` succeeded at 15:10 UTC. A subsequent live DB snapshot at 15:11 UTC showed unchanged counters, consistent with no legal target during this control run. Run metadata and state evidence are saved in `smoke-evidence.json` in the watchdog directory.
+
+Full heartbeat → P9 → successful execution → expected DB record remains **PENDING_FULL_CHAIN_VERIFICATION** until the genuine cutoff chain is correlated. A no-target run must not close that task. Downloading this new run's raw logs encountered proxy denial at `results-receiver.actions.githubusercontent.com`; the required hostname was added to the environment configuration draft, preserving existing domains. Runtime access to that log host still needs validation after settings are applied. Metadata from api.github.com and the live DB read both work.

@@ -1,21 +1,25 @@
 # Beyond Agent Instructions
 
-Last updated: **2026-10-29**
+Last updated: **2026-10-30**
 
 ## Read first
 
-1. `AI_BOOTSTRAP.md`;
+1. `ml/MAE_RESEARCH_ROADMAP_V5.md`;
 2. `ml/EXECUTION_PLAN_CURRENT.md`;
-3. `ml/NEXT_SESSION_HANDOFF.md`;
-4. `ml/MAE_RESEARCH_ROADMAP_V5.md`;
-5. `ml/TRAJECTORY_FROZEN_ENCODER_PROSPECTIVE_SHADOW_V1.md`;
-6. `ml/TRAJECTORY_FROZEN_ENCODER_ATTENDANCE_HEAD_V1.md`;
-7. `ml/TRAJECTORY_SELF_SUPERVISED_PRETRAIN_V1.md`;
-8. `ml/PROGRESS_TRACKING.md`.
+3. `ml/PROGRESS_TRACKING.md`;
+4. `ml/TRAJECTORY_FORECASTING_PLAN_V1.md`;
+5. `ml/NEXT_SESSION_HANDOFF.md` — current operational state only, not MAE strategy;
+6. only then inspect code, workflows, SQL, GitHub Actions and live DB.
 
 Query live machine state before acting on prospective windows. Read the exact precommit before touching a frozen experiment.
 
 Roadmap v5 is canonical.
+
+Protecting frozen experiments does not stop R&D. The restriction on new model search concerns retuning the frozen model on the same exposed evidence. New, separately versioned and precommitted MAE experiments proceed in parallel, without contaminating existing evaluation streams:
+
+`baseline -> new information -> simple challenger -> event-grouped/PIT-safe MAE -> freeze -> prospective shadow -> genuine outcomes`
+
+A new version name alone does not make previously exposed test events independent again.
 
 ---
 
@@ -126,7 +130,7 @@ Workflow:
 
 Schedule:
 
-`20 * * * *`
+`20,50 * * * *`
 
 Persistence:
 
@@ -171,9 +175,9 @@ Never:
 
 ## Next decision rule
 
-Do not start another broad model tournament now.
+Do not restart a broad model tournament to repair frozen results on the same exposed cohort. This is not a global research pause: new-information experiments with their own versions, precommits and valid evaluation designs may proceed now under roadmap v5.
 
-The supported SSP encoder has answered the representation question. The current question is:
+The supported SSP encoder has answered its frozen representation question. For the existing frozen attendance candidate, the current question is:
 
 > **Does the frozen encoder + frozen attendance head lower future event-balanced attendance MAE relative to structural P50?**
 

@@ -1,8 +1,8 @@
 # Beyond Ticketing — Daily Trajectory Forecasting Plan v1
 
-Last updated: **2026-10-28**
+Last updated: **2026-10-30**
 
-Status: **ACCEPTED / INFRASTRUCTURE DONE / LANE B ACTIVE / RESEARCH-ONLY**
+Status: **ACCEPTED DESIGN / INFRASTRUCTURE DONE / ORIGINAL LANES CLOSED / PARALLEL VERSIONED R&D**
 
 Canonical strategy: `ml/MAE_RESEARCH_ROADMAP_V5.md`
 
@@ -11,6 +11,10 @@ Operational source of truth: `ml/EXECUTION_PLAN_CURRENT.md`
 Production remains:
 
 `live_adjustment = 0`
+
+Interpretation update: this document retains the original 2026-10-28 Lane A/B design and frozen architecture/fold details. The execution plan and progress tracker resolve their current status: original supervised Lane A/B results are closed. Historical instructions to finish Lane B v1 are not current execution requests. Frozen lanes remain protected while new, separately versioned and precommitted MAE experiments run in parallel under roadmap v5.
+
+Research loop: `baseline -> new information -> simple challenger -> event-grouped/PIT-safe MAE -> freeze -> prospective shadow -> genuine outcomes`.
 
 ---
 
@@ -32,7 +36,7 @@ The model should understand not only the current inventory/demand proxy level, b
 
 ## 2. Data reality
 
-The current genuine inventory history is short:
+The historical coverage snapshot from the original 2026-10-28 design was short:
 
 - 32 Ekstraklasa events with any pre-kickoff inventory observation;
 - 14 clubs;
@@ -88,9 +92,9 @@ This result says that the frozen handcrafted summary/Ridge formulation did not e
 
 ---
 
-## 4. Active question
+## 4. Original Lane B v1 question — historical
 
-The active experiment is Lane B v1:
+The original Lane B v1 experiment asked:
 
 > **Can the model learn something from the ordered genuine sequence that was lost by the engineered velocity/acceleration summaries?**
 
@@ -360,9 +364,11 @@ The runner fails closed on identity mismatch.
 
 ---
 
-## 15. Active next step
+## 15. Original next-step decision tree — historical
 
-**Finish the frozen Lane B v1 strict-forward run.**
+The original instruction was to finish the frozen Lane B v1 strict-forward run. That work is closed; consult `EXECUTION_PLAN_CURRENT.md` and `PROGRESS_TRACKING.md` for its result and later versions. Do not rerun or tune v1 because this historical design describes it.
+
+The branches below record the original decision tree. Current new research must instead precommit its own baseline, new information/mechanism, candidate version and event-grouped/PIT-safe evaluation. It proceeds in parallel and preserves all existing frozen contracts.
 
 Then:
 

@@ -12,14 +12,19 @@ Canonical strategy: `ml/MAE_RESEARCH_ROADMAP_V5.md`
 
 # 0. Current objective
 
-Two priorities run in parallel:
+Three priorities run in parallel:
 
 1. **protect genuine prospective evidence** — every imminent immutable P9 / Form5 / trajectory cutoff takes priority over new R&D;
 2. **evaluate the frozen trajectory representation on future attendance outcomes** without retuning after seeing early results.
+3. **continue separately versioned MAE R&D** under roadmap v5: establish a baseline, introduce genuinely new information, precommit a simple challenger and evaluate event-grouped/PIT-safe MAE before freezing it for its own prospective shadow stream.
 
 The structural model remains the attendance incumbent.
 
 No new supervised trajectory tournament is justified on the exposed historical cohort.
+
+This is a restriction on post-result retuning of frozen models against that same exposed evidence, not a stop on R&D. New, separately versioned/precommitted experiments proceed in parallel with protected prospective collection. A version rename alone does not create new information or an untouched test set.
+
+Canonical read order: roadmap v5 -> this execution plan -> progress tracking -> trajectory plan -> operational handoff -> code/workflows/SQL/Actions/live DB. The handoff supplies operational state, not the MAE strategy.
 
 ---
 
@@ -429,10 +434,29 @@ The prospective dataset stays empty before genuine outcomes by design.
 
 # 11. Next model decision
 
-No new model search is justified now.
+For the existing frozen candidate, no new model search on its exposed cohort is justified. Do not reinterpret this as a global R&D pause.
 
 The current question is:
 
 > **Does a frozen attendance challenger improve genuinely prospective event-balanced MAE over its incumbent by enough to be both statistically/research-positive and commercially meaningful under the precommitted 550-seat decision scale?**
 
 Only future immutable outcomes can answer it.
+
+In parallel, new MAE experiments follow:
+
+`baseline -> new information -> simple challenger -> event-grouped/PIT-safe MAE -> freeze -> prospective shadow -> genuine outcomes`
+
+Each new experiment needs its own hypothesis, version/precommit, source/data boundary and evaluation plan; it must preserve the closed results and avoid reusing their exposed outer events as untouched validation. Starting that work does not wait for the current candidate's 8-event/5-club review gate. Existing v1 artifacts, eligibility, risk guards and the 550-seat precommit are unchanged; production remains OFF.
+
+## Research / MVP delivery supplement — 2026-11-03
+
+See [`AI_LITERATURE_REVIEW_AND_MVP_PLAN_2026-11-03.md`](AI_LITERATURE_REVIEW_AND_MVP_PLAN_2026-11-03.md) for the reviewed source material, limitations and delivery checklist. This addition does not refresh the operational counters or expired October cutoffs above; query live state before taking operational action.
+
+Next delivery tasks, alongside protected prospective capture:
+
+1. Refresh genuine outcomes and the existing evaluator's matched event/horizon scorecard without retuning frozen models.
+2. Deliver the daily future-path capability specified in [`DAILY_DEMAND_PATH_MVP_CONTRACT_V1.md`](DAILY_DEMAND_PATH_MVP_CONTRACT_V1.md): genuine prefix → future daily values, daily inference, immutable issue-time/target-day rows, later daily scoring and a panel backed by actual path outputs. The current terminal-attendance ledger alone cannot supply that view. Existing frozen attendance lanes continue unchanged.
+3. MVP uses currently available public sources; the user confirmed on 2026-11-03 that partner transactions, refunds, season-ticket and verified block/release records will not be available for MVP. Audit future public-data capture, freshness, source semantics and event mapping, and collect genuine trajectories/outcomes for new independent events. Partner access is not an MVP or R&D gate. Do not relabel inventory changes as confirmed sales or existing release/velocity/capacity features as new information.
+4. As a secondary research adjunct after protecting evidence and advancing the daily-path deliverable, audit whether the capacity-normalized Structural Prior L1 training objective has already been tested with capacity weights. If genuinely untested, write a separate one-horizon objective-alignment precommit with untouched future evaluation before running it. This is a proposed mechanism ablation, not new trajectory information, not a v1 repair and not a change to the incumbent.
+
+Demonstrable MVP and proven prospective accuracy are separate deliverables. Existing production flags, frozen artifacts, business threshold, no-backfill rules and research ordering remain unchanged.
