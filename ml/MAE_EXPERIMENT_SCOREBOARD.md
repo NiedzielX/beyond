@@ -124,3 +124,22 @@ For that active comparison the business-resolution scale remains:
 `Delta MAE <= -550 seats`
 
 Do not tune Roadmap v6 experiments toward this exact number and do not rewrite the frozen candidate based on early outcomes.
+
+---
+
+# 7. Separate public-inventory daily-path experiment
+
+This section uses **future public inventory**, not attendance. Never pool its MAE with the attendance headline table. Latest user product instruction requires the remaining daily path; partner transactions are unavailable for MVP.
+
+## daily-inventory-direct-median-v1
+
+- Hypothesis: a small lead-conditioned predictor using the complete genuine observed prefix improves future-day inventory MAE over persistence.
+- Precommit: `DAILY_INVENTORY_PATH_PRECOMMIT_V1.md`; fit once on16completed events /1,239rows, cutoff2026-11-03T00:00Z.
+- Frozen artifact: `artifacts/daily_inventory_path_v1.json`, SHA1137e257494583374f768622feca343f2dd7d634ef2446198703f8c27fbd9525.
+- Diagnostic70/30 temporal split: **INSUFFICIENT_EVIDENCE**, only4training events with labels known by the first test issue; minimum5retained. No validation MAE improvement claimed.
+- Recorded local prospective state at20:01UTC:7attempts /4events with predictions /57future daily points /0scores. These are not57independent events. First targets mature2026-11-04T17:00Z.
+- Baseline MAE, challenger MAE, Delta, improvement rate, median/tail/bias: **pending genuine future observations**, not zero.
+- PIT status: dedicated leakage/window/hash/idempotency tests pass; source active/visible flags are missing from public snapshot exports and measurement changes fail closed. No independent external PIT audit claimed.
+- Decision: **FROZEN / LOCAL_POST_FREEZE_PROSPECTIVE_COLLECTING**. Private Storage recovery verified; SQL/gateway/scheduled GitHub job prepared, not deployed/enabled.
+- Metrics: equal-event paired path MAE and per-lead +1/+3/+7, with matured/pending coverage separated. Attendance thresholds are unchanged and do not automatically apply here.
+- Next evidence: score the already-issued points against subsequent genuine inventory observations; classify residual error without retuning v1.
