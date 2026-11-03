@@ -16,8 +16,8 @@ Updated **2026-11-03**. Existing attendance lanes remain frozen; production_chan
 | `supabase/sql/daily_inventory_path_shadow_v1.sql` | Migration prepared. Not applied or tested against PostgreSQL. New private model registry, attempts, future-day points, immutable scores; controlled capture/score/feed RPCs, service_role only. It reads public source rows but does not mutate existing attendance evidence. |
 | `supabase/functions/daily_inventory_path_gateway_v1/index.ts` | Source prepared; Node TypeScript syntax check passed, not a Deno typecheck or deployed request. Requires explicit GitHub OIDC validation for this repository, main ref, exact workflow_ref and audience. |
 | `ml/run_daily_inventory_path_gateway_v1.py` | OIDC-only scheduled runner. No service-role secret in GitHub. New legal attempts are validated by the pinned Python model/ledger before publication; SQL independently checks source identity and cutoff. Unacknowledged writes are retried only inside their original legal window. |
-| `.github/workflows/daily-inventory-path-shadow-v1.yml` | YAML parsed. Job is gated by repository variable `DAILY_INVENTORY_PATH_ENABLED == 'true'`; not enabled, pushed or executed in this work. A checked-in file is not scheduled execution. |
-| Panel | Parser/geometry tests pass, actual exported payload validated. Full React lint/build blocked by missing dependencies and npm registry HTTP403; no deployed browser validation claimed. |
+| `.github/workflows/daily-inventory-path-shadow-v1.yml` | YAML parsed. Job is gated by repository variable `DAILY_INVENTORY_PATH_ENABLED == 'true'`; published to a draft PR branch, not merged to main, enabled or executed. A checked-in file is not scheduled execution. |
+| Panel | Parser/geometry tests pass, actual exported payload validated. Full React typecheck and production build passed in GitHub Actions (run41709931291); local dependency installation remains blocked by npm registry HTTP403. Vercel preview deployed; no browser interaction/E2E validation claimed. |
 
 The migration deliberately does not reimplement model coefficients in SQL. The trusted, pinned Python inference path rechecks outputs before the exact workflow's OIDC identity publishes them. DB enforces event/source lineage, frozen model identity, daily coordinates, +90minute windows, complete leads, unique immutable retries and genuine later targets. Validate all of these on an isolated PostgreSQL/Supabase test target before enabling the new workflow. Do not assume a syntax-only source check validates SQL security or Deno runtime semantics.
 
@@ -29,7 +29,7 @@ The tool returned `status=saved`, `requires_publish=true`. Draft persistence doe
 
 After the settings become effective:
 
-1. Install panel dependencies without changing declarations/lockfiles; run its real typecheck/build and correct actual failures.
+1. Restore local panel dependency access for interactive development. Hosted GitHub Actions already passed real typecheck/build after a parser literal-type fix; preserve those checks.
 2. Validate/apply the new SQL migration with project migration privileges, preserving the transaction and no old-table mutation boundary. Check that anon/authenticated have no execute or direct private-table access.
 3. Deploy only the new `daily_inventory_path_gateway_v1`. Disable the platform's legacy JWT verification for this function so its own scoped GitHub OIDC verification can run; do not disable the code's issuer/audience/repository/ref/workflow checks.
 4. Keep the repository enable variable unset until deployment and authorization denial tests pass. Review the concrete changes before merging/publishing; no production attendance activation is part of this work.
@@ -53,3 +53,9 @@ Restore rejects bad hashes, unexpected schema and overwriting existing ledgers. 
 `ledger_metrics` and cycle summaries calculate paired event-balanced MAE/bias and per-lead results from immutable scores. Pending targets remain separate from matured-but-unscored targets. Empty scores produce null MAE, never zero. There is no new promotion gate implied by a descriptive readout.
 
 The panel can overlay later genuine target observations on the unchanged issued path and report the selected vintage's error. Those later observations are not appended to that vintage's input prefix. Whole-model event-balanced MAE and one-event/vintage errors remain different views; attendance MAE and its550-seat threshold stay separate from inventory-path errors.
+
+## Source checkpoints and latest evidence
+
+Backend draft PR: https://github.com/NiedzielX/beyond/pull/205. Panel draft PR: https://github.com/NiedzielX/BeyondTicketingPanel/pull/8. No merge or production activation was performed. Backend Demand Engine Smoke passed in Actions run41709480252; panel TypeScript and production build passed in run41709931291.
+
+At2026-11-03T20:01:46Z the watcher added Jagiellonia's daily issue: the local stream contains7attempts,4events with predictions,57future-day points,0scores. The verified training manifest contains lead times through28days; longer outputs are explicitly marked as extrapolation, without changing weights or predictions. The served JSON includes model-bound support metadata and genuine-score overlays when outcomes mature.

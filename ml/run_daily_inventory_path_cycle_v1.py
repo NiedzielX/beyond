@@ -106,7 +106,14 @@ def main(argv=None):
         started = time.monotonic()
         try:
             result = run_cycle(args.runtime, args.artifact, args.panel_feed)
-            print(json.dumps(result), flush=True)
+            attempts = result.get("shadow", {}).get("attempts", [])
+            print(json.dumps({"status": result["status"], "finished_at": result["finished_at"],
+                "new_attempts": sum(a.get("inserted") is True for a in attempts),
+                "new_future_points": sum(a.get("point_count", 0) for a in attempts if a.get("inserted") is True),
+                "scored_count": result.get("scores", {}).get("scored_count", 0),
+                "pending_count": result.get("evaluation", {}).get("pending_prediction_count"),
+                "backup_verified": result.get("backup", {}).get("read_back_verified", False),
+                "production_change": False}), flush=True)
             failures = 0
         except (ValueError, OSError) as exc:
             failures += 1

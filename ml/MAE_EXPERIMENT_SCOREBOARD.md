@@ -137,7 +137,7 @@ This section uses **future public inventory**, not attendance. Never pool its MA
 - Precommit: `DAILY_INVENTORY_PATH_PRECOMMIT_V1.md`; fit once on16completed events /1,239rows, cutoff2026-11-03T00:00Z.
 - Frozen artifact: `artifacts/daily_inventory_path_v1.json`, SHA1137e257494583374f768622feca343f2dd7d634ef2446198703f8c27fbd9525.
 - Diagnostic70/30 temporal split: **INSUFFICIENT_EVIDENCE**, only4training events with labels known by the first test issue; minimum5retained. No validation MAE improvement claimed.
-- Recorded local prospective state at19:46UTC:6attempts /3events with predictions /21future daily points /0scores. These are not21independent events. First targets mature2026-11-04T17:00Z.
+- Recorded local prospective state at20:01UTC:7attempts /4events with predictions /57future daily points /0scores. These are not57independent events. First targets mature2026-11-04T17:00Z.
 - Baseline MAE, challenger MAE, Delta, improvement rate, median/tail/bias: **pending genuine future observations**, not zero.
 - PIT status: dedicated leakage/window/hash/idempotency tests pass; source active/visible flags are missing from public snapshot exports and measurement changes fail closed. No independent external PIT audit claimed.
 - Decision: **FROZEN / LOCAL_POST_FREEZE_PROSPECTIVE_COLLECTING**. Private Storage recovery verified; SQL/gateway/scheduled GitHub job prepared, not deployed/enabled.

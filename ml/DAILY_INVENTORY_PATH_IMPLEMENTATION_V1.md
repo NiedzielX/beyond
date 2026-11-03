@@ -58,7 +58,9 @@ Current runtime files are under `/workspace/ops-runtime/2026-11-03-daily-path/`:
 - Python Demand Engine discovery: **174 tests passed**; CLI/lifecycle tests: **25 passed**.
 - Panel feed/geometry native Node tests: **17 passed**, including actual timestamp spacing, gaps, zero handling, input/target leakage, cross-event contamination and complete future leads.
 - Both repositories pass `git diff --check`.
-- Full panel `lint` / `build` remain blocked: no installed `tsc` / `vite`; dependency install returned HTTP403 from npm registry. No deployed browser/UI validation is claimed.
-- Existing smoke CI now includes the new CLI/lifecycle tests; this is configuration, not evidence of an executed GitHub run.
+- Local panel `lint` / `build` remain unavailable because npm registry access is blocked. Subsequently, actual GitHub Actions run41709931291 passed TypeScript check and production build on panel PR8. No browser interaction validation is claimed.
+- Existing smoke CI includes the new CLI/lifecycle tests and actually passed in Actions run41709480252 on backend PR205.
 
 Next: apply the saved environment requirements, validate/deploy the prepared research SQL/gateway and verify the gated GitHub workflow before enabling it. Panel dependency access and full typecheck/build remain blocked. At/after **2026-11-04 17:00 UTC**, fetch fresh public snapshots and score the first genuine targets without changing the model. Preserve all older daily vintages. A bounded local/cloud model watcher is active, but no always-on coding daemon or new production scheduler was started. Private Storage recovery is verified; new SQL tables are not deployed.
+
+Latest20:01UTC capture:7local attempts /57future points /4predicted events /0scores. Backend and panel draft PRs preserve the work. See deployment guide for verified hosted CI, private recovery and the still-undeployed SQL/OIDC scheduled runtime.
