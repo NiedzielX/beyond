@@ -16,6 +16,8 @@ on:
       - 'ml/test_mae01_incumbent_error_audit_v1.py'
       - 'ml/mae02_seat_weighted_median_v1.py'
       - 'ml/test_mae02_seat_weighted_median_v1.py'
+      - 'ml/mae03_context_evidence_audit_v1.py'
+      - 'ml/test_mae03_context_evidence_audit_v1.py'
       - 'ml/recovered/v17/**'
       - 'ml/live_benchmark_v02.py'
       - 'ml/live_benchmark_v03.py'
@@ -36,6 +38,8 @@ on:
       - 'ml/test_mae01_incumbent_error_audit_v1.py'
       - 'ml/mae02_seat_weighted_median_v1.py'
       - 'ml/test_mae02_seat_weighted_median_v1.py'
+      - 'ml/mae03_context_evidence_audit_v1.py'
+      - 'ml/test_mae03_context_evidence_audit_v1.py'
       - 'ml/recovered/v17/**'
       - 'ml/live_benchmark_v02.py'
       - 'ml/live_benchmark_v03.py'
@@ -76,6 +80,9 @@ jobs:
 
       - name: Reproduce the fixed seat-weighted development diagnostic
         run: python -m ml.mae02_seat_weighted_median_v1 --output "$RUNNER_TEMP/mae02-seat-weighted"
+
+      - name: Verify context evidence timing, source isolation and grouped variance
+        run: python -m unittest ml.test_mae03_context_evidence_audit_v1 -v
 
       - name: Verify recovered v1.7 strict benchmark evidence
         run: python ml/recovered/v17/verify_recovered_bundle.py

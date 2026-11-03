@@ -10,7 +10,7 @@ User authorization: continue cloud work across routine steps until the session l
 - Reconciled remote v6 documentation, preserving eight newer main commits and the latest product requirement for daily trajectories.
 - Existing frozen attendance workflow run41706363428 succeeded; fresh DB read at20:16UTC confirmed Wisła448 P-3 failed-input attempt at19:47:17UTC. No prediction was fabricated; open due checkpoints=0.
 - MAE-01 fixed-split historical replay reproduced all10 frozen benchmark MAEs,603events /3,010horizon rows;10dedicated accounting/validation tests pass. Draft PR206 and hosted Demand Engine run41711896063 also passed the full reproduction. Four clubs contribute43.57%of error on19.73%of events; Lech alone contributes17.41%.
-- MAE-02 weighting-only experiment rejected: developmentDelta+155.01atT-3,+104.75atT-1; no weighted old-holdout fitting or post-result weight variants. Nine tests pass. Source/archived manifest hashes verified, no serving changes. Hosted verification pending.
+- MAE-02 weighting-only experiment rejected: developmentDelta+155.01atT-3,+104.75atT-1; no weighted old-holdout fitting or post-result weight variants. Nine tests pass. Source/archived manifest hashes verified, no serving changes. Hosted Demand Engine runs41713531692and41713686702passed the full diagnostic. Draft PR207:https://github.com/NiedzielX/beyond/pull/207.
 - Existing frozen Pre-Live v3 historical anchor and C2 sequence/stakes rejection were reconciled into the current record; do not restart old context tournaments under new work-package names.
 - Target-free live context check20:27UTC:12PIT odds events /10clubs /2,721quotes; latest capture19:51UTC, healthy. P4a has5labeled events vs unchanged9-event gate. The combined `ml_research_readiness_v1` RPC returnsHTTP500; separate read-only endpoints still work.
 
@@ -23,3 +23,11 @@ New remote SQL and Edge function deployment still need project migration/admin c
 ## Next
 
 Publish MAE-02 rejection and verify hosted reproduction. Audit genuinely new timestamped context and paired outcomes without fitting below support gates; preserve the older frozen research anchor and closed C2 results. Keep the daily-path watcher collecting independently. Update this log and canonical handoff with concrete outcomes.
+
+## Continued evidence audit and runtime recovery
+
+MAE-03 read-only snapshot audit complete:121snapshots /70prospective-window-valid /51retrospective;62prospective baselines,11distinct paired events. All37isolated numeric groups fail event/variance/grouped-variance screening.15tests pass. No attendance values requested and no model fit. Aggregate report only committed; raw data remain private runtime files.
+
+After the environment restart, the old watcher completed its20:38cycle but its PID later exited. Confirmed no matching worker and acquired the cycle lock, then restarted one worker in the current environment (exec session29890). Its20:39:51cycle passed, private backup verified,57pending points. No forecast was backfilled and no due issue was missed during this short recovery. Host-dependence remains explicit.
+
+Next:publish the context audit, then validate the prepared SQL migration against a disposable PostgreSQL service in GitHub Actions. This does not require production admin access or deploy the Edge gateway.

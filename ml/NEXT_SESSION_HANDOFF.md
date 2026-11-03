@@ -38,7 +38,7 @@ If an immutable legal cutoff is currently due or at risk, protect it first.
 
 Otherwise the default next research task is:
 
-> **MAE-03 — audit new timestamped context and paired outcome coverage.**
+> **MAE-03 audit is complete and DATA_BOUND; validate prepared daily-path SQL in an isolated DB while genuine collection continues.**
 
 Do not spend the session maintaining infrastructure when no evidence window is actually at risk.
 
@@ -256,7 +256,7 @@ Use this order:
 
 1. Query live state.
 2. Protect a genuine immutable cutoff only if one is currently at risk.
-3. Otherwise audit MAE-03 new-context coverage after the completed MAE-01 and rejected MAE-02 weighting diagnostic.
+3. MAE-03 audit found no currently testable numeric context group. Continue genuine collection and isolated SQL validation; do not force a context fit or repeat closed mechanisms.
 4. Use MAE-01 findings to select the next falsifiable hypothesis.
 5. Run the smallest useful PIT-safe/event-grouped experiment.
 6. Update the scoreboard and progress tracker.
@@ -275,3 +275,9 @@ Fresh decision RPC: frozen encoder8attempts /5predictions /0scores; P9v1 6/0/0; 
 ## Context readiness —2026-11-03T20:27UTC
 
 Odds:12PIT events /10clubs /2,721quote rows, latest capture19:51UTC and healthy. P4a:5labeled events vs frozen9-event start gate; no model fit permitted. Combined `ml_research_readiness_v1` returnedHTTP500; individual readiness endpoints succeeded. Source/code investigation may proceed, but do not claim the combined endpoint healthy or relax any support gate.
+
+## Latest context audit and watcher recovery
+
+`MAE03_CONTEXT_EVIDENCE_AUDIT_RESULT_V1.md`:121snapshots,70prospective-window-valid;11distinct paired events but no group with adequate event/club/fold variance. No new model fit. Raw context data remain outside Git.
+
+After environment restart the old watcher PID exited after a successful20:38cycle. One replacement was started under lock and passed at20:39:51UTC with57pending points and verified private backup. Read the current `watcher.pid` rather than a historical exec-session ID. SQL/gateway deployment remains blocked on admin binding; isolated CI database testing can proceed independently.

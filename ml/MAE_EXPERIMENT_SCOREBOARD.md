@@ -41,7 +41,7 @@ Notes:
 |---|---|---|---|---|
 | MAE-01 | incumbent error decomposition v1 | HISTORICAL DIAGNOSTIC COMPLETE | reproducible incumbent predictions + outcomes | ranked error segments + failure taxonomy + next hypothesis |
 | MAE-02 | structural baseline benchmark v1 | WEIGHTING REJECTED; ANCHOR RECONCILED | MAE-01 identifies structural error opportunities | strongest honest PIT-safe structural research anchor selected/frozen |
-| MAE-03 | context residual benchmark v1 | QUEUED | timestamped PIT-safe context available | incremental context Delta MAE measured vs same-event anchor |
+| MAE-03 | context residual benchmark v1 | AUDITED / DATA_BOUND | timestamped PIT-safe context available | incremental context Delta MAE measured vs same-event anchor |
 | MAE-04 | engineered trajectory benchmark v2 | QUEUED | genuine trajectory coverage sufficient | incremental trajectory Delta MAE measured with ablations |
 | MAE-05 | horizon-specific residual v1 | QUEUED | enough events across useful horizons | horizon curve shows whether separate correction is justified |
 | MAE-06 | club/regime heterogeneity v1 | QUEUED | MAE-01/02 show systematic heterogeneous error | global vs club/regime-aware comparison completed |
@@ -162,3 +162,10 @@ This section uses **future public inventory**, not attendance. Never pool its MA
 - Decision:REJECT_FOR_PROSPECTIVE. No new variant or Lech-only rescue. All4fixed simple PIT summaries underperform incumbent on this development sample.
 - Existing research anchor:retain frozen Pre-Live v3 contract; its recorded historical seal and source/evidence hashes are verified, not newly executed prospective validation. Existing C2sequence/stakes extension remains rejected; do not rerun its grid.
 - Next:target-free audit of new genuine fixture/market/price context and labeled coverage. P4a frozen support gate remains9events; current5does not permit fitting.
+
+## mae03-context-evidence-audit-v1
+
+- Status:DATA_BOUND; no model fit or target attendance values opened. Result:`MAE03_CONTEXT_EVIDENCE_AUDIT_RESULT_V1.md`.
+- Existing stored snapshots121;70prospective-window-valid,51retrospective excluded.62baseline-timed rows;11distinct paired events across checkpoints.37isolated feature/source/baseline/checkpoint groups;35insufficient event support,1constant,1insufficient grouped variance.
+- NGrams media attentionT-24h:10events /10clubs /1distinct value(0). NGrams accelerationT-24h:4events /4clubs /3values. T-6hmedia has only1nonzero event and cannot supply every held-out event/club training fold; no checkpoint rescue.
+- Decision:NO_NEW_CONTEXT_FIT. Existing Hype gates reconfirmed; no new MAE or model promotion claim. Existing P4a9-event gate unchanged(current5). Continue genuine collection and separate daily-path SQL validation.

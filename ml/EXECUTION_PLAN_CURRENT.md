@@ -455,6 +455,8 @@ This creates a new research baseline version; it does not rewrite the frozen pro
 
 ## MAE-03 — Context residual model
 
+2026-11-03 audit complete:121stored snapshots,70prospective-window-valid,11distinct events with outcome presence; all37numeric source/baseline/checkpoint groups fail support or grouped-variance screening. No attendance values requested, no model fit. Result:`MAE03_CONTEXT_EVIDENCE_AUDIT_RESULT_V1.md`. Existing Hype gates and P4a9-event gate remain unchanged. Continue forward collection; use independent time to validate prepared daily-path SQL in a disposable database.
+
 Predict `actual - structural forecast` using separately tested PIT-safe context families such as standings/form, opponent strength, future-fixture context and odds. Do not add squad/absence features without a trustworthy timestamped source.
 
 ## MAE-04 — Engineered trajectory benchmark
@@ -518,7 +520,7 @@ Do not use narrative memory as the experiment registry.
 6. Keep frozen SSP encoder, frozen trajectory head and frozen P9 policies unchanged while their prospective evidence accumulates.
 7. Fix collection only when genuine source semantics are preserved.
 8. Score frozen prospective rows only after genuine confirmed attendance outcomes.
-9. Outside imminent evidence protection, continue **MAE-03 new-context coverage audit** after MAE-01 and the rejected MAE-02 weighting audit; follow the v6 MAE programme.
+9. Outside imminent evidence protection, retain MAE-03 as DATA_BOUND after its completed audit; continue genuine collection and isolated daily-path SQL validation; follow the v6 MAE programme.
 10. Do not reactively retune frozen candidates against the first future scores.
 11. Do not lower or optimize toward the 550-seat business scale after seeing outcomes.
 12. Production remains separately review-gated and OFF.
