@@ -40,7 +40,7 @@ Notes:
 | Work package | Planned experiment | Status | Entry criterion | Exit criterion |
 |---|---|---|---|---|
 | MAE-01 | incumbent error decomposition v1 | HISTORICAL DIAGNOSTIC COMPLETE | reproducible incumbent predictions + outcomes | ranked error segments + failure taxonomy + next hypothesis |
-| MAE-02 | structural baseline benchmark v1 | NEXT: OBJECTIVE AUDIT | MAE-01 identifies structural error opportunities | strongest honest PIT-safe structural research anchor selected/frozen |
+| MAE-02 | structural baseline benchmark v1 | WEIGHTING REJECTED; ANCHOR RECONCILED | MAE-01 identifies structural error opportunities | strongest honest PIT-safe structural research anchor selected/frozen |
 | MAE-03 | context residual benchmark v1 | QUEUED | timestamped PIT-safe context available | incremental context Delta MAE measured vs same-event anchor |
 | MAE-04 | engineered trajectory benchmark v2 | QUEUED | genuine trajectory coverage sufficient | incremental trajectory Delta MAE measured with ablations |
 | MAE-05 | horizon-specific residual v1 | QUEUED | enough events across useful horizons | horizon curve shows whether separate correction is justified |
@@ -146,9 +146,19 @@ This section uses **future public inventory**, not attendance. Never pool its MA
 
 ## mae01-incumbent-error-decomposition-v1
 
-- Status: historical diagnostic complete; hosted reproduction pending. Protocol/result: `MAE01_INCUMBENT_ERROR_AUDIT_PROTOCOL_V1.md`, `MAE01_INCUMBENT_ERROR_AUDIT_RESULT_V1.md`.
+- Status: historical diagnostic complete; hosted reproduction passed in run41711896063. Protocol/result: `MAE01_INCUMBENT_ERROR_AUDIT_PROTOCOL_V1.md`, `MAE01_INCUMBENT_ERROR_AUDIT_RESULT_V1.md`.
 - Evidence:603events /3,010horizon rows;599common-five-horizon events. All10frozen benchmark MAEs reproduced. Frozen source/artifact hashes verified unchanged.
 - Incumbent historical equal-event MAE1,773.89; bias+14.59; median AE1,129.28; P90 AE4,195.79. No challenger or new Delta MAE. Separate from the exposed10-event trajectory cohort and from future daily-inventory errors.
 - Lech contributes17.41%of total error and remains high-error in both seasons. Four largest-contributing clubs account for43.57%of error on19.73%of events. Constant club offsets are not supported by changing bias.
 - PIT audit: existing feature-store timing and fixed season separation checks pass; archived publication times/capacity knowledge are not independently proven. Outcome-conditioned fill bins are descriptive only.
 - Decision: RETAIN_AS_DIAGNOSTIC; proceed to separately versioned MAE-02 raw-seat-objective audit. No serving-artifact changes, prospective promotion or claim of new independent validation.
+
+## structural-seat-weighted-median-v1
+
+- Work package:MAE-02. Status:REJECTED; weighted old-holdout fitting not performed. Precommit/result:`MAE02_SEAT_WEIGHTED_MEDIAN_PRECOMMIT_V1.md`,`MAE02_SEAT_WEIGHTED_MEDIAN_RESULT_V1.md`.
+- Previously exposed2023/24development, trained2021/22–2022/23;297events /18clubs /594pairedT-3/T-1rows;100%paired coverage within existing eligibility. Same features, estimator parameters and decode; normalized capacity weighting only.
+- Equal-event MAE:incumbent2,329.81;challenger2,459.68;Delta+129.88. Improvement42.76%;medianDeltaAE+12.95;P90 5,305.57→5,551.76;worst degradation+4,974.83;bias−183.43→+265.61. Per-horizonDelta:T-3+155.01,T-1+104.75.
+- PIT checks:fixed train/test separation, exact incumbent development reproduction, unchanged incumbent predictions and frozen hashes pass. Archived publication-time limits remain; this is not fresh validation.
+- Decision:REJECT_FOR_PROSPECTIVE. No new variant or Lech-only rescue. All4fixed simple PIT summaries underperform incumbent on this development sample.
+- Existing research anchor:retain frozen Pre-Live v3 contract; its recorded historical seal and source/evidence hashes are verified, not newly executed prospective validation. Existing C2sequence/stakes extension remains rejected; do not rerun its grid.
+- Next:target-free audit of new genuine fixture/market/price context and labeled coverage. P4a frozen support gate remains9events; current5does not permit fitting.

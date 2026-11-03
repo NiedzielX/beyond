@@ -38,7 +38,7 @@ If an immutable legal cutoff is currently due or at risk, protect it first.
 
 Otherwise the default next research task is:
 
-> **MAE-02 — structural objective audit derived from completed MAE-01.**
+> **MAE-03 — audit new timestamped context and paired outcome coverage.**
 
 Do not spend the session maintaining infrastructure when no evidence window is actually at risk.
 
@@ -78,7 +78,7 @@ Every experiment must be event-grouped, PIT-safe and registered in the experimen
 
 # 3. MAE-01 — completed historical diagnostic and next hypothesis
 
-Completed2026-11-03:603events /3,010rows, all10frozen horizon/season MAEs reproduced, source/artifact hashes unchanged. See `MAE01_INCUMBENT_ERROR_AUDIT_RESULT_V1.md` and `artifacts/mae01_incumbent_error_audit_v1/`. This is already-exposed historical evidence, not fresh validation. Next: separately versioned raw-seat-objective weighting audit using unchanged absolute-lossT-3/T-1specifications. Hosted reproducibility pending.
+Completed2026-11-03:603events /3,010rows, all10frozen horizon/season MAEs reproduced, source/artifact hashes unchanged. See `MAE01_INCUMBENT_ERROR_AUDIT_RESULT_V1.md` and `artifacts/mae01_incumbent_error_audit_v1/`. This is already-exposed historical evidence, not fresh validation. MAE-02 weighting audit subsequently rejected that mechanism:developmentDelta+155.01/+104.75. No old-holdout weighted fitting or variant search followed. See `MAE02_SEAT_WEIGHTED_MEDIAN_RESULT_V1.md`. Preserve the archived Pre-Live v3 research anchor and prior C2 rejection; proceed to new-context coverage. Hosted reproducibility passed in run41711896063.
 
 Original decomposition requirements, retained for future genuine outcomes:
 
@@ -256,7 +256,7 @@ Use this order:
 
 1. Query live state.
 2. Protect a genuine immutable cutoff only if one is currently at risk.
-3. Otherwise continue MAE-02 after the completed MAE-01 diagnostic.
+3. Otherwise audit MAE-03 new-context coverage after the completed MAE-01 and rejected MAE-02 weighting diagnostic.
 4. Use MAE-01 findings to select the next falsifiable hypothesis.
 5. Run the smallest useful PIT-safe/event-grouped experiment.
 6. Update the scoreboard and progress tracker.
@@ -271,3 +271,7 @@ It is:
 ## Latest operational check —2026-11-03T20:16UTC
 
 Fresh decision RPC: frozen encoder8attempts /5predictions /0scores; P9v1 6/0/0; P9v2 5/3/0. Wisła448P-3 recorded MODEL_INPUT_INSUFFICIENT at19:47:17UTC after successful existing workflow run41706363428; open_count=0. Next encoder cutoff: Korona603onNov4 11:15UTC, currently insufficient source observations. Never repair older missed windows.
+
+## Context readiness —2026-11-03T20:27UTC
+
+Odds:12PIT events /10clubs /2,721quote rows, latest capture19:51UTC and healthy. P4a:5labeled events vs frozen9-event start gate; no model fit permitted. Combined `ml_research_readiness_v1` returnedHTTP500; individual readiness endpoints succeeded. Source/code investigation may proceed, but do not claim the combined endpoint healthy or relax any support gate.

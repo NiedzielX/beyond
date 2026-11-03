@@ -1,6 +1,6 @@
 # Incumbent error decomposition
 
-Status: historical analysis reproduced; source/hosted validation being finalized.
+Status: complete. Hosted Demand Engine run41711896063 passed all tests and all ten fixed-split MAE reproductions. Draft PR206: https://github.com/NiedzielX/beyond/pull/206.
 
 Authority: Roadmap v6 MAE-01. Exact protocol: `ml/MAE01_INCUMBENT_ERROR_AUDIT_PROTOCOL_V1.md`.
 
