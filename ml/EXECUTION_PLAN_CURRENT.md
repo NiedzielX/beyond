@@ -1,12 +1,26 @@
 # Beyond Ticketing — Current MAE Execution Plan
 
-Last updated: **2026-10-30**
+Last updated: **2026-11-03**
 
-Status: **CURRENT SOURCE OF TRUTH**
+Status: **CURRENT SOURCE OF TRUTH FOR EXECUTION CONTRACTS**
 
 Production: `live_adjustment = 0`
 
-Canonical strategy: `ml/MAE_RESEARCH_ROADMAP_V5.md`
+Canonical strategy: `ml/MAE_RESEARCH_ROADMAP_V6.md`
+
+Important: operational counters and cutoff lists below are dated snapshots. Query live machine state before acting.
+
+---
+
+## User-requested daily-path MVP — 2026-11-03 update
+
+The latest user instruction requires **genuine observed prefix → predictions for every remaining day**, updated daily. Terminal attendance alone is insufficient for this product deliverable. The parallel error-driven attendance research programme below remains canonical; the new inventory-path lane has its own observable target, baseline and metrics and does not replace attendance evidence or its 550-seat contract. Partner transactions are unavailable for MVP and are not a prerequisite.
+
+Implementation: [`DAILY_INVENTORY_PATH_IMPLEMENTATION_V1.md`](DAILY_INVENTORY_PATH_IMPLEMENTATION_V1.md). Deployment/recovery: [`DAILY_INVENTORY_PATH_DEPLOYMENT_V1.md`](DAILY_INVENTORY_PATH_DEPLOYMENT_V1.md). Formal lane precommit: [`DAILY_INVENTORY_PATH_PRECOMMIT_V1.md`](DAILY_INVENTORY_PATH_PRECOMMIT_V1.md).
+
+Recorded at19:46UTC:6local immutable attempts /21future-day points /0scores, plus verified private Supabase Storage backup and full restore. A bounded host-dependent watcher runs through2026-11-04T17:15Z; its status is `/workspace/ops-runtime/2026-11-03-daily-path/latest-cycle.json`. Inspect it and `watcher.pid` before starting another process. First targets mature2026-11-04T17:00Z. Local/cloud inference is verified; new SQL/gateway/GitHub schedule remain prepared but not deployed/enabled. Panel parser/geometry are verified, full React build is blocked by npm access. Missing network/management-token requirements are saved as an environment draft, not applied. No private transaction access, production activation or old-model retuning is required.
+
+The attendance history read on2026-11-03 ended at2026-10-25. The six tracked fixtures onOctober30–November2 had no confirmed outcomes in `ticket_event_outcomes`; zero attendance scores are therefore not evidence of zero error. Keep this source-ingestion blocker separate from daily inventory-target scoring.
 
 ---
 
@@ -14,17 +28,21 @@ Canonical strategy: `ml/MAE_RESEARCH_ROADMAP_V5.md`
 
 Three priorities run in parallel:
 
-1. **protect genuine prospective evidence** — every imminent immutable P9 / Form5 / trajectory cutoff takes priority over new R&D;
-2. **evaluate the frozen trajectory representation on future attendance outcomes** without retuning after seeing early results.
-3. **continue separately versioned MAE R&D** under roadmap v5: establish a baseline, introduce genuinely new information, precommit a simple challenger and evaluate event-grouped/PIT-safe MAE before freezing it for its own prospective shadow stream.
+1. **protect genuine prospective evidence** — an imminent immutable P9 / Form5 / trajectory cutoff takes priority when it is actually at risk;
+2. **evaluate frozen prospective candidates honestly** without retuning them after seeing outcomes;
+3. **actively reduce future MAE in separately versioned research lanes** using the error-driven programme in `ml/MAE_RESEARCH_ROADMAP_V6.md`.
 
-The structural model remains the attendance incumbent.
+The structural model remains the incumbent for the currently frozen prospective evidence stream.
 
-No new supervised trajectory tournament is justified on the exposed historical cohort.
+The exposed 10-event supervised trajectory cohort must not be reused for post-hoc repair of the existing frozen trajectory candidate.
 
-This is a restriction on post-result retuning of frozen models against that same exposed evidence, not a stop on R&D. New, separately versioned/precommitted experiments proceed in parallel with protected prospective collection. A version rename alone does not create new information or an untouched test set.
+That restriction does **not** stop new MAE R&D. New research is allowed when it is separately versioned and tests genuinely new PIT-safe information, a new structural benchmark, a horizon-specific mechanism, an error-segment hypothesis, or another materially distinct research question.
 
-Canonical read order: roadmap v5 -> this execution plan -> progress tracking -> trajectory plan -> operational handoff -> code/workflows/SQL/Actions/live DB. The handoff supplies operational state, not the MAE strategy.
+Default R&D order outside imminent evidence windows:
+
+`MAE-01 error decomposition -> MAE-02 structural benchmark -> MAE-03 context residuals -> MAE-04 trajectory benchmark -> MAE-05 horizon-specific correction -> MAE-06 club/regime heterogeneity -> MAE-07 ablations -> MAE-08 ensemble`
+
+Sequence modelling follows only where simpler evidence justifies the added complexity.
 
 ---
 
@@ -36,12 +54,12 @@ Frozen supervised trajectory results on the exposed 10-event cohort:
 
 | Model | Event-balanced MAE | Delta vs incumbent | Decision |
 |---|---:|---:|---|
-| Structural incumbent | **2594.54** | — | incumbent |
+| Structural incumbent | **2594.54** | — | incumbent for frozen evidence stream |
 | Lane A v1 — Ridge | 4153.34 | +1558.80 | rejected |
 | Lane B v1 — GRU / raw seat residual | 2595.40 | +0.87 | do not advance |
 | Lane B v2 — GRU / residual ratio | 4792.42 | +2197.88 | mechanism not supported |
 
-The cohort is exposed. Do not tune shrinkage, cap, loss, learning rate, epochs, architecture or a new correction rule against those same outer events.
+The cohort is exposed. Do not tune shrinkage, cap, loss, learning rate, epochs, architecture or a new correction rule against those same outer events and then claim the result as fresh evidence.
 
 ## Target-free SSP v1
 
@@ -92,7 +110,7 @@ Contract:
 
 The head was fitted once and must not be refitted under candidate v1.
 
-First genuine prospective attendance prediction:
+First recorded genuine prospective attendance prediction:
 
 **event446 Wisła Płock–Piast, P-1**
 
@@ -103,7 +121,7 @@ First genuine prospective attendance prediction:
 - correction `+608.45618737955` (+10% cap hit);
 - target values used false;
 - production change false;
-- score pending genuine attendance outcome.
+- score was pending genuine attendance outcome at the recorded snapshot.
 
 Event443 Cracovia–Motor P-1 was missed after current shadow activation and must remain missing forever under this evidence stream.
 
@@ -121,6 +139,7 @@ Event443 Cracovia–Motor P-1 was missed after current shadow activation and mus
 8. SSP validation is never presented as attendance evidence.
 9. Operational scheduler/data-collection hardening may change execution reliability only; it must not change frozen prediction semantics.
 10. No research workflow changes production automatically.
+11. Historical/grouped R&D and prospective evidence must remain explicitly separated.
 
 Trajectory v1 eligibility at exact cutoff:
 
@@ -158,7 +177,9 @@ Security for decision summary:
 - authenticated execute: false;
 - service_role execute: true.
 
-Latest verified state on 2026-10-30 around 13:00 UTC:
+Latest machine-state values recorded in this document are from **2026-10-30** and must not be assumed current on a later session.
+
+Recorded snapshot around 13:00 UTC on 2026-10-30:
 
 - P9 v1: **4 attempts / 0 predictions / 0 scores**;
 - P9 v2: **3 attempts / 2 predictions / 0 scores**;
@@ -170,12 +191,12 @@ Latest verified state on 2026-10-30 around 13:00 UTC:
 - `live_adjustment=0`;
 - production activation allowed false.
 
-P9 v2 event446:
+P9 v2 event446 recorded predictions:
 
 - T-48: structural `6084.5618737955` -> challenger `6911.09714798977`;
 - T-24: structural `6084.5618737955` -> challenger `8252.87035184191`.
 
-Do not compare those predictions against each other or against trajectory until genuine attendance exists.
+Do not compare those predictions against each other or against trajectory until genuine attendance exists and the precommitted evaluator is used.
 
 Known missed windows that must never be backfilled:
 
@@ -200,9 +221,11 @@ Redundancy:
 
 The duplicate Structural Prior `workflow_run` path was removed from the independent heartbeat. The bridge owns that path; the independent heartbeat owns its separate cron.
 
+The operational redundancy is not considered proven solely because YAML exists. When relevant, verify the chain through actual workflow execution and DB persistence.
+
 ## Frozen trajectory shadow
 
-Cadence:
+Recorded cadence:
 
 `20,50 * * * *`
 
@@ -210,7 +233,7 @@ The second check per hour is operational redundancy only. Frozen artifacts, feat
 
 ---
 
-# 6. Preflight and immediate windows
+# 6. Recorded preflight / cutoff snapshot
 
 Trajectory preflight:
 
@@ -222,18 +245,18 @@ Operational activation boundary:
 
 Earlier checkpoints are `PRE_ACTIVATION_NOT_EXPECTED`, not operational misses.
 
-Current protected checkpoints:
+The following protected checkpoints were recorded for 2026-10-30/31 and are historical by 2026-11-03:
 
-- event6 Lech Poznań–Wisła Kraków: P9 T-24 + trajectory P-1 at **2026-10-30 16:30 UTC** — READY;
-- event445 Zagłębie Lubin–Korona: trajectory P-3 at **17:00 UTC** — READY;
-- event5091 Motor Lublin–Wisła Płock: trajectory P-7 at **17:00 UTC** — expected fail-closed because first inventory in frozen window is 0;
-- event444 GKS Katowice–Widzew: P9 T-24 + trajectory P-1 at **19:15 UTC** — READY;
-- event447 Raków–Pogoń: trajectory P-3 at **19:30 UTC** — READY;
-- event448 Wisła Kraków–Cracovia: trajectory P-7 at **19:30 UTC** — no legal 24h prefix; expected fail-closed;
-- event445 P9 T-48: **2026-10-31 17:00 UTC**;
-- event447 P9 T-48: **2026-10-31 19:30 UTC**.
+- event6 Lech Poznań–Wisła Kraków: P9 T-24 + trajectory P-1 at `2026-10-30 16:30 UTC`;
+- event445 Zagłębie Lubin–Korona: trajectory P-3 at `2026-10-30 17:00 UTC`;
+- event5091 Motor Lublin–Wisła Płock: trajectory P-7 at `2026-10-30 17:00 UTC`;
+- event444 GKS Katowice–Widzew: P9 T-24 + trajectory P-1 at `2026-10-30 19:15 UTC`;
+- event447 Raków–Pogoń: trajectory P-3 at `2026-10-30 19:30 UTC`;
+- event448 Wisła Kraków–Cracovia: trajectory P-7 at `2026-10-30 19:30 UTC`;
+- event445 P9 T-48 at `2026-10-31 17:00 UTC`;
+- event447 P9 T-48 at `2026-10-31 19:30 UTC`.
 
-At or shortly after each cutoff, verify persistence in live DB. If a legal window is open and scheduler has not written an attempt, protect the window before any research work.
+Do not use this dated list as today's action list. Query the live RPC before acting.
 
 ---
 
@@ -257,21 +280,21 @@ Promotion contract v2.2:
 - legacy parsers without this field retain existing behavior;
 - historical snapshots are untouched.
 
-The six historical pre-sale zeros stay in event5091. Therefore its current P-7/P-3 windows remain legitimately affected; no history rewrite is allowed. Its later P-1 window may naturally become legal when those zeros fall outside the 168h prefix.
+The historical pre-sale zeros stay historical. No history rewrite is allowed.
 
 ## Korona Kielce / Stellis
 
-Collector is alive. The current source explicitly hides availability with `showAvailableTicketsCount=false`.
+Collector is alive. The source explicitly hides availability with `showAvailableTicketsCount=false` in the recorded diagnostic state.
 
 This is source-side hidden inventory, not a scheduler outage. Do not convert hidden to zero or fabricate continuity.
 
 ## Widzew / Stellis
 
-The source currently exposes literal zero available places.
+The recorded source state exposed literal zero available places.
 
-Verified 2026/27 stadium capacity `18,018` is now in the Structural Prior registry and a genuine PIT-valid prior for event7372 was materialized on 2026-10-30 before its future P-7 cutoff.
+Verified 2026/27 stadium capacity `18,018` is in the Structural Prior registry and a genuine PIT-valid prior for event7372 was materialized before its future P-7 cutoff.
 
-Remaining trajectory readiness is inventory-related, not prior-related.
+The prior blocker is therefore resolved. Any remaining readiness issue is inventory-related, not prior-related.
 
 Do not reinterpret source zero as unknown merely to make the model eligible.
 
@@ -291,7 +314,7 @@ Source-controlled schedule:
 
 `supabase/sql/roboticket_wisla_vao_schedule_v1.sql`
 
-The fallback mirrors the current Roboticket renderer contract:
+The fallback mirrors the Roboticket renderer contract:
 
 - parse `spatialHashShift` from the page;
 - build VAO keys from geometry;
@@ -304,13 +327,14 @@ The fallback mirrors the current Roboticket renderer contract:
 - never write a snapshot when selectable count is 0;
 - write only a positive, fully covered, source-observed count with source `roboticket_vao_selectable_v1`.
 
-Validated current Wisła state:
+Latest authoritative diagnostic note records:
 
-- geometry seats: 33,499;
 - geometry coverage from VAO: 100%;
-- public empty (`occ=0`) seats observed: 6,890;
+- public empty (`occ=0`) seats observed: **6,870**;
 - public selectable seats under Roboticket rights contract: 0;
 - therefore no snapshot was written.
+
+Do not promote `occ=0` seats as available unless the rights semantics are genuinely satisfied.
 
 Zero selectable seats is **not** represented as `available_total=0`; collection remains fail-closed until the source exposes genuinely selectable public inventory.
 
@@ -374,7 +398,7 @@ Equivalent:
 
 `Delta MAE <= -550 seats`
 
-The threshold was frozen before any trajectory/P9-v2 attendance score and is derived from the project's own commercial 7% fill-rate action scale using the current 70/30 reference mix. It is a forecast-accuracy resolution threshold, not a causal claim that 550 fewer MAE seats produce 550 additional ticket sales.
+The threshold is an accuracy-resolution threshold, not a causal claim that 550 fewer MAE seats produce 550 additional ticket sales.
 
 Risk guards at the evaluated horizon/cutoff:
 
@@ -393,8 +417,6 @@ P9 v2 evaluator:
 
 `public.p9_v2_business_meaningful_gain_v1()`
 
-Current labels are `INSUFFICIENT_PROSPECTIVE_EVIDENCE` at every trajectory horizon and P9-v2 cutoff because there are no scored target outcomes yet.
-
 Production activation remains false regardless of evaluator output until a separate explicit review.
 
 ---
@@ -407,56 +429,112 @@ Frozen protocol remains unchanged:
 - cap +/-25%;
 - primary LOCO;
 - gate 8 completed events / 5 clubs / 2 distinct Form5 values;
-- current completed events 0;
-- future stream 14 events / 13 clubs / 9 values;
 - production off.
 
-The prospective dataset stays empty before genuine outcomes by design.
+Prospective data must remain genuinely prospective; no retrospective repair.
 
 ---
 
-# 10. Immediate execution order
+# 10. MAE R&D execution programme
 
-1. Query `public.prospective_decision_summary_v1(10)` before acting.
-2. Protect imminent legal cutoffs first.
-3. Verify immutable attempts/predictions after each due window.
+When no immutable evidence window is currently at risk, execute the following programme.
+
+## MAE-01 — Error decomposition
+
+Build a reproducible incumbent-error view by club, horizon, attendance/fill regime, weekday/weekend, opponent/context and signed error. Rank the worst absolute-error events and identify which categories contribute most to MAE.
+
+## MAE-02 — Structural baseline benchmark
+
+Audit whether a stronger PIT-safe structural baseline can be built from historical attendance, club/opponent context, verified capacity/utilization, recent attendance form, calendar/competition context and reproducible season state.
+
+This creates a new research baseline version; it does not rewrite the frozen prospective incumbent.
+
+## MAE-03 — Context residual model
+
+Predict `actual - structural forecast` using separately tested PIT-safe context families such as standings/form, opponent strength, future-fixture context and odds. Do not add squad/absence features without a trustworthy timestamped source.
+
+## MAE-04 — Engineered trajectory benchmark
+
+Test inventory/demand level, 1d/3d/7d deltas, velocity, acceleration, slopes, plateau/surge, density/staleness and similarity to prior PIT-safe curves as residual signal.
+
+## MAE-05 — Horizon-specific correction
+
+Test whether early and late horizons require different residual behaviour rather than one global correction mechanism.
+
+## MAE-06 — Demand-regime and club heterogeneity
+
+Test low/normal/near-sellout behaviour and club-specific bias using restrained, partially pooled approaches where sample size is limited.
+
+## MAE-07 — Controlled ablations
+
+Compare structural-only, structural+context, structural+trajectory and combined variants on the same eligible events to identify the source of gain.
+
+## MAE-08 — Ensemble / calibrated blend
+
+Blend only independently useful signals with complementary error profiles. A blend must beat the strongest simpler challenger under identical event-grouped evaluation.
+
+## Sequence modelling
+
+Use small GRU/LSTM/TCN/attention models only when simpler trajectory evidence shows a justified representation gap. Sequence complexity is not automatically the next step.
+
+---
+
+# 11. Mandatory research scoreboard
+
+Every serious MAE experiment must record:
+
+- experiment/version ID;
+- hypothesis;
+- incumbent/version;
+- independent eligible events;
+- distinct clubs;
+- coverage;
+- incumbent event-balanced MAE;
+- challenger event-balanced MAE;
+- Delta MAE;
+- event improvement rate;
+- median event Delta AE;
+- P90 AE / worst-event degradation;
+- signed bias;
+- per-horizon MAE where relevant;
+- PIT audit status;
+- decision.
+
+Do not use narrative memory as the experiment registry.
+
+---
+
+# 12. Immediate execution order
+
+1. Query `public.prospective_decision_summary_v1(10)` fresh before acting on operational state.
+2. Protect an imminent legal immutable cutoff if one is currently at risk.
+3. Verify due attempts/predictions in live DB; do not assume a scheduled workflow fired.
 4. Never backfill a missed prospective row.
-5. Keep P9 v1, P9 v2, Form5 and Frozen Encoder evidence separate.
-6. Keep SSP encoder, trajectory head alpha/cap and P9 fallback policy unchanged while evidence accumulates.
+5. Keep P9 v1, P9 v2, Form5 and Frozen Encoder evidence streams separate.
+6. Keep frozen SSP encoder, frozen trajectory head and frozen P9 policies unchanged while their prospective evidence accumulates.
 7. Fix collection only when genuine source semantics are preserved.
-8. Score only after genuine confirmed attendance outcomes.
-9. Use the precommitted evidence and business evaluators, not ad-hoc calculations.
-10. Do not interpret the first 1–2 scored events as a model decision.
-11. Do not lower the 550-seat threshold after seeing early outcomes; any future replacement requires a stronger business-derived v2 precommit.
+8. Score frozen prospective rows only after genuine confirmed attendance outcomes.
+9. Outside imminent evidence protection, begin/continue **MAE-01 error decomposition** and then follow the v6 MAE programme.
+10. Do not reactively retune frozen candidates against the first future scores.
+11. Do not lower or optimize toward the 550-seat business scale after seeing outcomes.
 12. Production remains separately review-gated and OFF.
 
 ---
 
-# 11. Next model decision
+# 13. Two different next decisions
 
-For the existing frozen candidate, no new model search on its exposed cohort is justified. Do not reinterpret this as a global R&D pause.
+## Frozen prospective decision
 
-The current question is:
+Question:
 
-> **Does a frozen attendance challenger improve genuinely prospective event-balanced MAE over its incumbent by enough to be both statistically/research-positive and commercially meaningful under the precommitted 550-seat decision scale?**
+> **Does the already-frozen attendance challenger improve genuinely prospective event-balanced MAE over its incumbent by enough to satisfy the precommitted evidence and business guards?**
 
-Only future immutable outcomes can answer it.
+Only future immutable outcomes can answer this.
 
-In parallel, new MAE experiments follow:
+## MAE research decision
 
-`baseline -> new information -> simple challenger -> event-grouped/PIT-safe MAE -> freeze -> prospective shadow -> genuine outcomes`
+Question:
 
-Each new experiment needs its own hypothesis, version/precommit, source/data boundary and evaluation plan; it must preserve the closed results and avoid reusing their exposed outer events as untouched validation. Starting that work does not wait for the current candidate's 8-event/5-club review gate. Existing v1 artifacts, eligibility, risk guards and the 550-seat precommit are unchanged; production remains OFF.
+> **Which current error segment contributes most to MAE, and what is the smallest new PIT-safe hypothesis that can reduce that error on the same independent events?**
 
-## Research / MVP delivery supplement — 2026-11-03
-
-See [`AI_LITERATURE_REVIEW_AND_MVP_PLAN_2026-11-03.md`](AI_LITERATURE_REVIEW_AND_MVP_PLAN_2026-11-03.md) for the reviewed source material, limitations and delivery checklist. This addition does not refresh the operational counters or expired October cutoffs above; query live state before taking operational action.
-
-Next delivery tasks, alongside protected prospective capture:
-
-1. Refresh genuine outcomes and the existing evaluator's matched event/horizon scorecard without retuning frozen models.
-2. Deliver the daily future-path capability specified in [`DAILY_DEMAND_PATH_MVP_CONTRACT_V1.md`](DAILY_DEMAND_PATH_MVP_CONTRACT_V1.md): genuine prefix → future daily values, daily inference, immutable issue-time/target-day rows, later daily scoring and a panel backed by actual path outputs. The current terminal-attendance ledger alone cannot supply that view. Existing frozen attendance lanes continue unchanged.
-3. MVP uses currently available public sources; the user confirmed on 2026-11-03 that partner transactions, refunds, season-ticket and verified block/release records will not be available for MVP. Audit future public-data capture, freshness, source semantics and event mapping, and collect genuine trajectories/outcomes for new independent events. Partner access is not an MVP or R&D gate. Do not relabel inventory changes as confirmed sales or existing release/velocity/capacity features as new information.
-4. As a secondary research adjunct after protecting evidence and advancing the daily-path deliverable, audit whether the capacity-normalized Structural Prior L1 training objective has already been tested with capacity weights. If genuinely untested, write a separate one-horizon objective-alignment precommit with untouched future evaluation before running it. This is a proposed mechanism ablation, not new trajectory information, not a v1 repair and not a change to the incumbent.
-
-Demonstrable MVP and proven prospective accuracy are separate deliverables. Existing production flags, frozen artifacts, business threshold, no-backfill rules and research ordering remain unchanged.
+This work starts/continues now in separately versioned research lanes. It does not wait for the frozen prospective candidate to finish collecting.

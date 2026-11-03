@@ -6,14 +6,14 @@ Beyond Ticketing engineering and ML research workspace.
 
 Read in this order:
 
-1. [`ml/MAE_RESEARCH_ROADMAP_V5.md`](ml/MAE_RESEARCH_ROADMAP_V5.md) — primary MAE strategy
+1. [`ml/MAE_RESEARCH_ROADMAP_V6.md`](ml/MAE_RESEARCH_ROADMAP_V6.md) — primary MAE strategy
 2. [`ml/EXECUTION_PLAN_CURRENT.md`](ml/EXECUTION_PLAN_CURRENT.md)
 3. [`ml/PROGRESS_TRACKING.md`](ml/PROGRESS_TRACKING.md)
 4. [`ml/TRAJECTORY_FORECASTING_PLAN_V1.md`](ml/TRAJECTORY_FORECASTING_PLAN_V1.md)
 5. [`ml/NEXT_SESSION_HANDOFF.md`](ml/NEXT_SESSION_HANDOFF.md) — operational state only
 6. Only then inspect code, workflows, SQL, GitHub Actions and live DB.
 
-Roadmap v5 is canonical. Read the exact precommit before touching a frozen experiment.
+Roadmap v6 is canonical. Read the exact precommit before touching a frozen experiment.
 
 Frozen validation and new R&D run in parallel. "No new model search justified" prohibits retuning frozen models against the same exposed evidence; it is not a stop on separately versioned, precommitted research.
 

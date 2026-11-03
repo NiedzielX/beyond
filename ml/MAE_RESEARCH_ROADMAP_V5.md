@@ -2,7 +2,7 @@
 
 Last updated: **2026-10-30**
 
-Status: **CANONICAL MAE RESEARCH STRATEGY**
+Status: **HISTORICAL STRATEGY — SUPERSEDED BY MAE_RESEARCH_ROADMAP_V6.md**
 
 Supersedes the strategic direction in `ml/MAE_RESEARCH_ROADMAP_V4.md`.
 

@@ -4,7 +4,7 @@ Last updated: **2026-10-30**
 
 Status: **ACCEPTED DESIGN / INFRASTRUCTURE DONE / ORIGINAL LANES CLOSED / PARALLEL VERSIONED R&D**
 
-Canonical strategy: `ml/MAE_RESEARCH_ROADMAP_V5.md`
+Canonical strategy: `ml/MAE_RESEARCH_ROADMAP_V6.md`
 
 Operational source of truth: `ml/EXECUTION_PLAN_CURRENT.md`
 
@@ -12,7 +12,7 @@ Production remains:
 
 `live_adjustment = 0`
 
-Interpretation update: this document retains the original 2026-10-28 Lane A/B design and frozen architecture/fold details. The execution plan and progress tracker resolve their current status: original supervised Lane A/B results are closed. Historical instructions to finish Lane B v1 are not current execution requests. Frozen lanes remain protected while new, separately versioned and precommitted MAE experiments run in parallel under roadmap v5.
+Interpretation update: this document retains the original 2026-10-28 Lane A/B design and frozen architecture/fold details. The execution plan and progress tracker resolve their current status: original supervised Lane A/B results are closed. Historical instructions to finish Lane B v1 are not current execution requests. Frozen lanes remain protected while new, separately versioned and precommitted MAE experiments run in parallel under roadmap v6.
 
 Research loop: `baseline -> new information -> simple challenger -> event-grouped/PIT-safe MAE -> freeze -> prospective shadow -> genuine outcomes`.
 

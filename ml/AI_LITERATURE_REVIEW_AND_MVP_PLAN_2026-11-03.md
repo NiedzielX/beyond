@@ -2,7 +2,7 @@
 
 Data: **2026-11-03**.
 
-Status: **RESEARCH / MVP DELIVERY SUPPLEMENT** do [roadmap v5](MAE_RESEARCH_ROADMAP_V5.md) i [planu wykonawczego](EXECUTION_PLAN_CURRENT.md). Nie zastępuje ich, nie jest precommitem nowego modelu i nie zmienia zamrożonych eksperymentów.
+Status: **RESEARCH / MVP DELIVERY SUPPLEMENT** do [roadmap v6](MAE_RESEARCH_ROADMAP_V6.md) i [planu wykonawczego](EXECUTION_PLAN_CURRENT.md). Nie zastępuje ich, nie jest precommitem nowego modelu i nie zmienia zamrożonych eksperymentów.
 
 **Korekta priorytetu produktu, 2026-11-03:** użytkownik wymaga prognozy kolejnych dni z całego dostępnego prefiksu i codziennego przeliczania przyszłej ścieżki. Sama historia prognoz końcowej frekwencji nie spełnia tego celu. Obowiązuje uzupełniający [kontrakt daily path](DAILY_DEMAND_PATH_MVP_CONTRACT_V1.md). Poniższy pierwotny szacunek 7–10 dni dotyczył widoku endpoint/scorecard; nie jest zweryfikowaną estymacją brakującego modelu ścieżki, nowego ledgeru i scorera.
 
@@ -108,7 +108,7 @@ Cały plan zakłada brak partnerskiego feedu sprzedażowego. Gdy nowy path chall
 
 ## 6. Najtańsza konkretna hipoteza ML: zgodność celu z MAE w osobach
 
-To **proponowany ograniczony audit/ablation celu**, nie nowa informacja trajectory, nie precommit i nie zgoda na modyfikację frozen runtime. Priorytet trajectory z roadmap v5 pozostaje bez zmian.
+To **proponowany ograniczony audit/ablation celu**, nie nowa informacja trajectory, nie precommit i nie zgoda na modyfikację frozen runtime. Priorytet trajectory z roadmap v6 pozostaje bez zmian.
 
 W [structural_prior_runtime.py](demand_engine/structural_prior_runtime.py) trening używa:
 

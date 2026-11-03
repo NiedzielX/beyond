@@ -1,14 +1,28 @@
 # Beyond Ticketing — ML Progress Tracking
 
-Last updated: **2026-10-30**
+Last updated: **2026-11-03**
 
 Status: **CANONICAL TRACKING SNAPSHOT**
+
+Canonical MAE strategy: `ml/MAE_RESEARCH_ROADMAP_V6.md`
 
 Canonical execution plan: `ml/EXECUTION_PLAN_CURRENT.md`
 
 Production: `live_adjustment = 0`
 
-Read order: roadmap v5 -> execution plan -> this tracker -> trajectory plan -> operational handoff -> code/workflows/SQL/Actions/live DB. Closed results constrain repeated use of exposed evidence, not the existence of new R&D. Separately versioned/precommitted experiments with new information and valid evaluation proceed in parallel with frozen prospective collection.
+Important: operational counters below are dated snapshots unless explicitly refreshed from live DB.
+
+---
+
+## User-requested daily-path MVP — 2026-11-03 update
+
+The latest user instruction requires **genuine observed prefix → predictions for every remaining day**, updated daily. Terminal attendance alone is insufficient for this product deliverable. The parallel error-driven attendance research programme below remains canonical; the new inventory-path lane has its own observable target, baseline and metrics and does not replace attendance evidence or its 550-seat contract. Partner transactions are unavailable for MVP and are not a prerequisite.
+
+Implementation: [`DAILY_INVENTORY_PATH_IMPLEMENTATION_V1.md`](DAILY_INVENTORY_PATH_IMPLEMENTATION_V1.md). Deployment/recovery: [`DAILY_INVENTORY_PATH_DEPLOYMENT_V1.md`](DAILY_INVENTORY_PATH_DEPLOYMENT_V1.md). Formal lane precommit: [`DAILY_INVENTORY_PATH_PRECOMMIT_V1.md`](DAILY_INVENTORY_PATH_PRECOMMIT_V1.md).
+
+Recorded at19:46UTC:6local immutable attempts /21future-day points /0scores, plus verified private Supabase Storage backup and full restore. A bounded host-dependent watcher runs through2026-11-04T17:15Z; its status is `/workspace/ops-runtime/2026-11-03-daily-path/latest-cycle.json`. Inspect it and `watcher.pid` before starting another process. First targets mature2026-11-04T17:00Z. Local/cloud inference is verified; new SQL/gateway/GitHub schedule remain prepared but not deployed/enabled. Panel parser/geometry are verified, full React build is blocked by npm access. Missing network/management-token requirements are saved as an environment draft, not applied. No private transaction access, production activation or old-model retuning is required.
+
+The attendance history read on2026-11-03 ended at2026-10-25. The six tracked fixtures onOctober30–November2 had no confirmed outcomes in `ticket_event_outcomes`; zero attendance scores are therefore not evidence of zero error. Keep this source-ingestion blocker separate from daily inventory-target scoring.
 
 ---
 
@@ -18,35 +32,53 @@ Read order: roadmap v5 -> execution plan -> this tracker -> trajectory plan -> o
 
 ---
 
-# 2. Current status
+# 2. MAE research programme status
 
-| Item | Status | Current decision |
+| Work package | Status | Current decision |
 |---|---|---|
-| P7 prospective | 🟢 53 rows / 6 events / 0 scored | collect/score only |
-| P9 prospective v1 | 🟢 4 attempts / 0 predictions / 0 scored | correct fail-closed; protect windows |
-| P9 Family Fallback v2 | 🟢 3 attempts / 2 predictions / 0 scored | separate evidence only |
-| Form5 prospective | 🟢 COLLECTING | 0 completed eligible events until genuine outcomes arrive |
-| Long72 | 🟡 FROZEN | 5 scored; 0.71% point gain |
-| P11 odds | 🟡 COLLECTING | continue genuine observations |
-| P4a | 🟡 COLLECTING | gate closed |
-| Daily trajectory infrastructure | ✅ DONE | PIT dataset + immutable evidence backend |
-| Daily future-path model / issue-time + target-day ledger / chart | 🟡 CORE + PRIVATE BACKUP + BOUNDED WATCHER — 2026-11-03 19:46UTC | Frozen model;6local attempts /21future-day points /0scores. Supabase Storage backup/restore and panel-feed parser verified. SQL/gateway/GitHub job prepared but not deployed/enabled; full panel build blocked. See `DAILY_INVENTORY_PATH_DEPLOYMENT_V1.md`. |
-| Lane A v1 | ❌ REJECTED | MAE 4153.34 vs 2594.54 incumbent |
-| Lane B v1 | ❌ DO NOT ADVANCE | MAE 2595.40; near-zero corrections |
-| Lane B v2 | ❌ MECHANISM NOT SUPPORTED | MAE 4792.42; harmful over-corrections |
-| Supervised tuning on exposed cohort | 🛑 STOPPED | no post-hoc repair |
-| SSP trajectory v1 | ✅ REPRESENTATION_SUPPORTED | 0.091722 -> 0.062896 target-free MAE; 5/5 events improved |
-| SSP encoder | ✅ FROZEN | immutable v1 artifact |
-| Frozen attendance head v1 | ✅ FIT ONCE / FROZEN | Ridge alpha 10, cap +/-10%, no historical selection |
-| Frozen encoder prospective shadow | 🟢 ACTIVE / COLLECTING | P-7/P-3/P-1; production off |
-| Shadow live evidence | 🟢 1 attempt / 1 prediction / 0 scores | first genuine prospective P-1 protected for event446 |
-| Business meaningful Delta MAE | 🟡 PRECOMMITTED / EVIDENCE PENDING | frozen improvement threshold 550 seats; no scored outcomes yet |
+| MAE-01 — Incumbent error decomposition | 🟢 NEXT / ACTIVE PRIORITY | build reproducible error map before choosing another feature/model |
+| MAE-02 — Structural baseline benchmark | ⚪ QUEUED | verify research anchor after MAE-01 identifies dominant error segments |
+| MAE-03 — Context residual model | ⚪ QUEUED | form/standings/opponent/fixture/odds; squad only with trustworthy PIT-safe source |
+| MAE-04 — Engineered trajectory benchmark | ⚪ QUEUED | velocity/acceleration/deltas/plateau/surge/density/similarity |
+| MAE-05 — Horizon-specific correction | ⚪ QUEUED | test whether early vs late horizons need distinct residual logic |
+| MAE-06 — Demand-regime / club heterogeneity | ⚪ QUEUED | investigate low/normal/near-sellout and club bias without brittle per-club models |
+| MAE-07 — Controlled ablations | ⚪ QUEUED | structural vs context vs trajectory vs combined on same events |
+| MAE-08 — Ensemble / calibrated blend | ⚪ QUEUED | only after independently useful signals show complementary error |
+| Sequence-model expansion | ⏸ CONDITIONAL | proceed only if simpler trajectory evidence justifies representation complexity |
 
-P9 / Form5 / Frozen Encoder counters were verified by live `prospective_decision_summary_v1(10)` on 2026-10-30 at 15:09 UTC. Other lane counters above retain their earlier documented snapshot and were not re-queried in that operational check. The 550-seat threshold is the independent precommit in `BUSINESS_MEANINGFUL_FORECAST_GAIN_V1.md`, not a measured gain.
+Research method:
+
+`measure error -> classify residual failure -> state hypothesis -> add one information family/mechanism -> event-grouped PIT-safe test -> update scoreboard -> freeze/reject -> repeat`
 
 ---
 
-# 3. Closed supervised trajectory evidence
+# 3. Existing frozen / collecting evidence
+
+Latest detailed machine-state values in the prior snapshot were from **2026-10-30**. Query live DB before using them as current counts.
+
+| Item | Recorded status | Current decision |
+|---|---|---|
+| P7 prospective | 🟢 COLLECTING | collect/score only |
+| P9 prospective v1 | 🟢 COLLECTING | correct fail-closed; protect genuine windows |
+| P9 Family Fallback v2 | 🟢 COLLECTING | separate evidence only |
+| Form5 prospective | 🟢 COLLECTING | genuine outcomes only |
+| Long72 | 🟡 FROZEN | keep frozen evidence separate |
+| P11 odds | 🟡 COLLECTING | useful future context family when PIT-safe coverage supports testing |
+| P4a | 🟡 COLLECTING | gate remains evidence-driven |
+| Daily trajectory infrastructure | ✅ DONE | PIT dataset + immutable evidence backend |
+| Lane A v1 | ❌ REJECTED | MAE 4153.34 vs 2594.54 incumbent |
+| Lane B v1 | ❌ DO NOT ADVANCE | MAE 2595.40; near-zero correction |
+| Lane B v2 | ❌ MECHANISM NOT SUPPORTED | MAE 4792.42; harmful over-correction |
+| Supervised tuning on exposed cohort | 🛑 STOPPED | no post-hoc repair |
+| SSP trajectory v1 | ✅ REPRESENTATION_SUPPORTED | target-free representation result only |
+| SSP encoder | ✅ FROZEN | immutable v1 artifact |
+| Frozen attendance head v1 | ✅ FIT ONCE / FROZEN | Ridge alpha 10, cap +/-10% |
+| Frozen encoder prospective shadow | 🟢 COLLECTING | P-7/P-3/P-1; production off |
+| Business meaningful Delta MAE threshold | ✅ FROZEN FOR ACTIVE COMPARISON | `Delta MAE <= -550 seats` plus risk guards |
+
+---
+
+# 4. Closed supervised trajectory evidence
 
 ## Lane A v1
 
@@ -73,9 +105,11 @@ Conclusion:
 
 > **Do not keep tuning supervised correction mechanics on the same exposed 10-event cohort.**
 
+This conclusion does not prohibit new separately versioned research questions under Roadmap v6.
+
 ---
 
-# 4. SSP v1 result
+# 5. SSP v1 result
 
 Precommit:
 
@@ -113,7 +147,7 @@ Do not interpret this as attendance accuracy evidence.
 
 ---
 
-# 5. Frozen encoder attendance head v1
+# 6. Frozen encoder attendance head v1
 
 Candidate ID:
 
@@ -134,82 +168,11 @@ Protocol:
 - no historical MAE-based tuning;
 - P-7 / P-3 / P-1 prospective only.
 
-The successful fit artifact was persisted exactly to `main` on 2026-10-29. The prospective shadow workflow then passed end-to-end.
+The candidate remains frozen. New Roadmap v6 experiments must use new versions/lanes rather than modifying this artifact.
 
 ---
 
-# 6. Prospective frozen-encoder shadow
-
-Precommit:
-
-`ml/TRAJECTORY_FROZEN_ENCODER_PROSPECTIVE_SHADOW_V1.md`
-
-Workflow:
-
-`.github/workflows/trajectory-frozen-encoder-shadow-v1.yml`
-
-Schedule:
-
-`20,50 * * * *`
-
-Persistence:
-
-- `private.daily_trajectory_attempts_v1`;
-- `private.daily_trajectory_predictions_v1`;
-- `private.daily_trajectory_scores_v1`.
-
-Evidence label before adequate sample:
-
-`true_post_freeze_prospective_small_n`
-
-First genuine prospective attendance prediction:
-
-- event446 Wisła Płock–Piast Gliwice;
-- horizon P-1;
-- cutoff `2026-10-30 11:15 UTC`;
-- attempt `PREDICTION_READY` at `11:21:26 UTC`;
-- source snapshot `11:05:02 UTC`;
-- incumbent P50 `6084.5618737955`;
-- challenger P50 `6693.01806117505`;
-- residual `+608.45618737955`, equal to the frozen +10% cap;
-- `target_values_used=false`;
-- `production_change=false`;
-- score pending genuine confirmed outcome.
-
-The protected run summary was `due_target_count=1`, `attempt_count=1`, `prediction_count=1`, `inserted_scores=0`.
-
-Do not tune the candidate after early prospective outcomes and keep the same version.
-
----
-
-# 7. Current live window snapshot
-
-Fresh live state on **2026-10-30 at 15:09 UTC**, read from `prospective_decision_summary_v1(10)`:
-
-- P9 v1: 4 attempts / 0 predictions / 0 scored;
-- P9 Family Fallback v2: 3 attempts / 2 predictions / 0 scored;
-- Form5 prospective dataset: 0 completed eligible rows before genuine attendance outcomes;
-- Frozen Encoder Shadow: 1 attempt / 1 immutable prediction / 0 scores;
-- event446 P-1 is protected;
-- no immutable trajectory window is open yet at this check;
-- next READY checkpoints: event6 P-1 at 16:30 UTC, event445 P-3 at 17:00 UTC, event444 P-1 at 19:15 UTC, event447 P-3 at 19:30 UTC;
-- event5091 P-7 at 17:00 UTC remains first-inventory-invalid; event448 P-7 at 19:30 UTC lacks legal observations. Preserve fail-closed behavior;
-- historical misses remain event443 P9 T-24, event443 trajectory P-1, event6 P9 T-48;
-- all prospective attendance MAE metrics remain null; no outcome-based model decision is available.
-
-P9 cadence: `11,26,41,56 * * * *` plus redundant heartbeat bridge.
-
-Frozen-encoder shadow cadence: `20,50 * * * *`.
-
-An additional watchdog was started in the current Codex cloud machine on 2026-10-30 at 15:08 UTC. Files, frozen-source hashes, tests and audit state are under `/workspace/ops-runtime/2026-10-30/`. It checks live DB every 30 seconds and may dispatch only the existing workflows inside remaining legal 2026-10-30 windows. It is contingent on this cloud machine staying alive and does not replace GitHub schedules. Stop boundary: 21:02 UTC. Six operational-window safety tests passed. No model parameters or DB eligibility contracts were changed.
-
-Heartbeat end-to-end remains **PENDING_FULL_CHAIN_VERIFICATION**. A successful dispatch or a no-target workflow run is not proof of a new expected DB record. Correlate the heartbeat run, P9 run, successful result and live DB evidence after a genuine cutoff.
-
-Operationally, the protected event446 run was re-triggered after the legal cutoff because the scheduled run had not started exactly at due time. This remained valid because the database contract restricts source observations to `captured_at <= target_as_of_at` and rejects writes outside the cutoff +90 minute immutable window.
-
----
-
-# 8. Data semantics
+# 7. Current data/source semantics to preserve
 
 Public inventory is a demand/inventory proxy, not confirmed sales or attendance.
 
@@ -219,20 +182,53 @@ Never forward-fill or interpolate merely to create model input.
 
 Hidden/unknown inventory is never zero.
 
+Known source findings remain fail-closed:
+
+- Motor historical inactive-stage zeroes remain historical and are not rewritten;
+- Korona hidden availability remains unknown, not zero;
+- Widzew structural prior is resolved; source inventory semantics remain separate;
+- Wisła Kraków VAO diagnostic observed **6,870 `occ=0` seats but 0 public-selectable seats under rights semantics**; do not promote those seats without confirmed rights.
+
+---
+
+# 8. Mandatory MAE experiment scoreboard
+
+Every serious Roadmap v6 experiment must register:
+
+| Field | Required |
+|---|---|
+| Experiment/version ID | yes |
+| Hypothesis | yes |
+| Incumbent/version | yes |
+| Independent events | yes |
+| Distinct clubs | yes |
+| Coverage | yes |
+| Incumbent event-balanced MAE | yes |
+| Challenger event-balanced MAE | yes |
+| Delta MAE | yes |
+| Event improvement rate | yes |
+| Median event Delta AE | yes |
+| P90 AE / worst-event degradation | yes |
+| Signed bias | yes |
+| Per-horizon MAE when relevant | yes |
+| PIT audit status | yes |
+| Decision | yes |
+
+Human-readable registry:
+
+`ml/MAE_EXPERIMENT_SCOREBOARD.md`
+
 ---
 
 # 9. Immediate order
 
-The list below is the operational order for existing evidence lanes. It does not suspend parallel MAE research. New R&D follows `baseline -> new information -> simple challenger -> event-grouped/PIT-safe MAE -> freeze -> prospective shadow -> genuine outcomes` and does not reopen the rejected/frozen experiments above.
-
-1. protect imminent P9/Form5/frozen-encoder cutoffs;
-2. verify immutable attempt/prediction rows after due windows;
-3. score event446 only after a genuine confirmed attendance outcome;
-4. calculate incumbent AE, challenger AE and Delta AE without changing the candidate;
-5. freeze encoder/head parameters while evidence accumulates;
-6. accumulate a cohort before interpreting event-balanced Delta MAE;
-7. report attendance Delta MAE by P-7/P-3/P-1 and event-balanced overall;
-8. do not reactively retune against the first 1–2 future scores;
-9. continue P11/P4a and trajectory collection;
-10. evaluate against the already-precommitted 550-seat business gain threshold and its risk guards; do not lower it after outcomes;
-11. keep production review-gated and OFF.
+1. Read `ml/MAE_RESEARCH_ROADMAP_V6.md`.
+2. Query `public.prospective_decision_summary_v1(10)` for fresh live state.
+3. Protect an immutable legal cutoff only if one is currently at risk.
+4. Never backfill a missed prospective row.
+5. Keep frozen prospective candidates unchanged while evidence accumulates.
+6. Execute **MAE-01 incumbent error decomposition**.
+7. Use the decomposition to choose the next falsifiable PIT-safe hypothesis instead of guessing a feature.
+8. Follow MAE-02 through MAE-08 in evidence-driven order, skipping/reordering only when the preceding evidence clearly justifies it.
+9. Update `ml/MAE_EXPERIMENT_SCOREBOARD.md` after every serious challenger.
+10. Keep production review-gated and OFF.

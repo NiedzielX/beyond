@@ -8,7 +8,7 @@ Status: **CANONICAL AI ENTRYPOINT**
 
 Read in this order:
 
-1. `ml/MAE_RESEARCH_ROADMAP_V5.md` — primary MAE strategy;
+1. `ml/MAE_RESEARCH_ROADMAP_V6.md` — primary MAE strategy;
 2. `ml/EXECUTION_PLAN_CURRENT.md` — current experiments, frozen lanes, cutoffs and constraints;
 3. `ml/PROGRESS_TRACKING.md` — completed/rejected evidence and what not to repeat;
 4. `ml/TRAJECTORY_FORECASTING_PLAN_V1.md` — trajectory design, with historical experiment status resolved by the execution plan/tracker;
@@ -17,7 +17,7 @@ Read in this order:
 
 Query live machine state before acting on scheduled prospective windows. Read the exact precommit before touching a frozen experiment.
 
-Roadmap v5 is canonical.
+Roadmap v6 is canonical.
 
 The operational RPC is the first live-state read after these documents, not a replacement for reading the strategy. For a specific experiment, read its exact precommit before changing or executing it.
 

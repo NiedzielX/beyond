@@ -6,7 +6,7 @@ Status: **DESIGN / CORE IMPLEMENTED LOCALLY / DEPLOYMENT PENDING**. This design 
 
 Implementation update, 2026-11-03: the separate [v1 implementation](DAILY_INVENTORY_PATH_IMPLEMENTATION_V1.md) now provides the dataset, frozen direct model, local immutable ledger/scorer, CLI and panel rendering support. The first two legal local issues produced 18 future-day points. The implementation-gap table below records the earlier audit; Supabase deployment, a new daily scheduler, full panel build and future-target scoring remain unverified/incomplete. Formal model precommit: [DAILY_INVENTORY_PATH_PRECOMMIT_V1.md](DAILY_INVENTORY_PATH_PRECOMMIT_V1.md).
 
-User clarification: the product must consume the observed event trajectory day by day and predict its remaining daily behaviour. Daily revisions of one final-attendance number do not fulfil this requirement. This design supplements roadmap v5, preserves existing frozen lanes and requires no partner data.
+User clarification: the product must consume the observed event trajectory day by day and predict its remaining daily behaviour. Daily revisions of one final-attendance number do not fulfil this requirement. This design supplements roadmap v6, preserves existing frozen lanes and requires no partner data.
 
 ## 1. Required behaviour
 

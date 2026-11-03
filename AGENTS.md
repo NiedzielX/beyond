@@ -4,7 +4,7 @@ Last updated: **2026-10-30**
 
 ## Read first
 
-1. `ml/MAE_RESEARCH_ROADMAP_V5.md`;
+1. `ml/MAE_RESEARCH_ROADMAP_V6.md`;
 2. `ml/EXECUTION_PLAN_CURRENT.md`;
 3. `ml/PROGRESS_TRACKING.md`;
 4. `ml/TRAJECTORY_FORECASTING_PLAN_V1.md`;
@@ -13,7 +13,7 @@ Last updated: **2026-10-30**
 
 Query live machine state before acting on prospective windows. Read the exact precommit before touching a frozen experiment.
 
-Roadmap v5 is canonical.
+Roadmap v6 is canonical.
 
 Protecting frozen experiments does not stop R&D. The restriction on new model search concerns retuning the frozen model on the same exposed evidence. New, separately versioned and precommitted MAE experiments proceed in parallel, without contaminating existing evaluation streams:
 
@@ -175,7 +175,7 @@ Never:
 
 ## Next decision rule
 
-Do not restart a broad model tournament to repair frozen results on the same exposed cohort. This is not a global research pause: new-information experiments with their own versions, precommits and valid evaluation designs may proceed now under roadmap v5.
+Do not restart a broad model tournament to repair frozen results on the same exposed cohort. This is not a global research pause: new-information experiments with their own versions, precommits and valid evaluation designs may proceed now under roadmap v6.
 
 The supported SSP encoder has answered its frozen representation question. For the existing frozen attendance candidate, the current question is:
 
