@@ -1,0 +1,3861 @@
+{
+  "available_cohort": {
+    "baseline_event_balanced_mae": 2498.9231254543975,
+    "delta_vs_baseline": -725.0345125611047,
+    "event_balanced_mae": 1773.8886128932918,
+    "event_count": 603,
+    "event_improvement_rate": 0.6749585406301825,
+    "median_event_ae": 1129.2758344485387,
+    "overprediction_rate": 0.520840243228303,
+    "p90_event_ae": 4195.789748294914,
+    "row_count": 3010,
+    "signed_bias": 14.58951189465065,
+    "worst_event_ae": 25101.721231868847
+  },
+  "club_by_season": {
+    "2024/2025": [
+      {
+        "baseline_event_balanced_mae": 6418.356954600571,
+        "contribution_to_overall_mae": 307.72830396218836,
+        "delta_vs_baseline": -987.8574729148951,
+        "effective_event_weight": 16.999999999999996,
+        "error_share": 0.1767560028089455,
+        "event_balanced_mae": 5430.499481685676,
+        "event_count": 17,
+        "event_improvement_rate": 0.6470588235294118,
+        "median_event_ae": 5500.122008818207,
+        "overprediction_rate": 0.48235294117647054,
+        "p90_event_ae": 7979.285138045548,
+        "row_count": 85,
+        "signed_bias": -64.43506161780721,
+        "value": "lech",
+        "worst_event_ae": 11022.380244462194
+      },
+      {
+        "baseline_event_balanced_mae": 7945.2560242679265,
+        "contribution_to_overall_mae": 274.32364787613614,
+        "delta_vs_baseline": -3104.250473512584,
+        "effective_event_weight": 16.999999999999996,
+        "error_share": 0.15756870866357622,
+        "event_balanced_mae": 4841.005550755343,
+        "event_count": 17,
+        "event_improvement_rate": 0.9411764705882353,
+        "median_event_ae": 3876.9105374105484,
+        "overprediction_rate": 0.6705882352941177,
+        "p90_event_ae": 9091.053002274966,
+        "row_count": 85,
+        "signed_bias": 424.35345328734155,
+        "value": "slask_wroclaw",
+        "worst_event_ae": 10003.649842413133
+      },
+      {
+        "baseline_event_balanced_mae": 3885.791748459153,
+        "contribution_to_overall_mae": 156.32295715019453,
+        "delta_vs_baseline": -1127.1513281616028,
+        "effective_event_weight": 16.999999999999996,
+        "error_share": 0.08979031404448765,
+        "event_balanced_mae": 2758.6404202975505,
+        "event_count": 17,
+        "event_improvement_rate": 0.7647058823529411,
+        "median_event_ae": 2271.6199207954787,
+        "overprediction_rate": 0.5529411764705883,
+        "p90_event_ae": 4641.360049972624,
+        "row_count": 85,
+        "signed_bias": 699.7040907333421,
+        "value": "gornikzabrze",
+        "worst_event_ae": 5439.2727888138215
+      },
+      {
+        "baseline_event_balanced_mae": 3605.595219519043,
+        "contribution_to_overall_mae": 110.80479897050526,
+        "delta_vs_baseline": -1650.216414157186,
+        "effective_event_weight": 16.999999999999996,
+        "error_share": 0.06364514770302634,
+        "event_balanced_mae": 1955.3788053618575,
+        "event_count": 17,
+        "event_improvement_rate": 0.7058823529411765,
+        "median_event_ae": 1627.3919537394636,
+        "overprediction_rate": 0.5058823529411764,
+        "p90_event_ae": 3647.6857548103194,
+        "row_count": 85,
+        "signed_bias": -386.40167627121696,
+        "value": "lechiagdansk",
+        "worst_event_ae": 4502.983270379084
+      },
+      {
+        "baseline_event_balanced_mae": 2754.3294247956965,
+        "contribution_to_overall_mae": 103.97092125221542,
+        "delta_vs_baseline": -919.548461521307,
+        "effective_event_weight": 16.999999999999996,
+        "error_share": 0.059719837961877374,
+        "event_balanced_mae": 1834.7809632743895,
+        "event_count": 17,
+        "event_improvement_rate": 0.8235294117647058,
+        "median_event_ae": 1033.5350656716219,
+        "overprediction_rate": 0.6588235294117648,
+        "p90_event_ae": 4292.219583798522,
+        "row_count": 85,
+        "signed_bias": 1078.1356272036492,
+        "value": "pogonszczecin",
+        "worst_event_ae": 6002.119952626919
+      },
+      {
+        "baseline_event_balanced_mae": 2378.477761330365,
+        "contribution_to_overall_mae": 95.4866986087872,
+        "delta_vs_baseline": -693.4183741164737,
+        "effective_event_weight": 16.999999999999996,
+        "error_share": 0.054846586908643795,
+        "event_balanced_mae": 1685.0593872138913,
+        "event_count": 17,
+        "event_improvement_rate": 0.7647058823529411,
+        "median_event_ae": 1764.5434717868982,
+        "overprediction_rate": 0.7529411764705882,
+        "p90_event_ae": 2122.6237982597813,
+        "row_count": 85,
+        "signed_bias": 724.8745613099074,
+        "value": "zaglebie_lubin",
+        "worst_event_ae": 4844.152581335331
+      },
+      {
+        "baseline_event_balanced_mae": 2188.5608350223406,
+        "contribution_to_overall_mae": 90.98699719147668,
+        "delta_vs_baseline": -582.9079434080463,
+        "effective_event_weight": 16.999999999999996,
+        "error_share": 0.05226200425531958,
+        "event_balanced_mae": 1605.6528916142943,
+        "event_count": 17,
+        "event_improvement_rate": 0.7058823529411765,
+        "median_event_ae": 1012.0424827886789,
+        "overprediction_rate": 0.3294117647058824,
+        "p90_event_ae": 2332.119395510173,
+        "row_count": 85,
+        "signed_bias": -22.382770648783488,
+        "value": "cracovia",
+        "worst_event_ae": 8594.447721459444
+      },
+      {
+        "baseline_event_balanced_mae": 2572.345156830866,
+        "contribution_to_overall_mae": 84.19998168432056,
+        "delta_vs_baseline": -1086.4631271075623,
+        "effective_event_weight": 16.999999999999996,
+        "error_share": 0.04836361169083631,
+        "event_balanced_mae": 1485.8820297233037,
+        "event_count": 17,
+        "event_improvement_rate": 0.6470588235294118,
+        "median_event_ae": 969.9413351941832,
+        "overprediction_rate": 0.6117647058823529,
+        "p90_event_ae": 3133.6583846263006,
+        "row_count": 85,
+        "signed_bias": 410.9975204628307,
+        "value": "jagiellonia",
+        "worst_event_ae": 4263.738872666811
+      },
+      {
+        "baseline_event_balanced_mae": 1875.9073471828058,
+        "contribution_to_overall_mae": 82.94528921590981,
+        "delta_vs_baseline": -412.1669492549859,
+        "effective_event_weight": 16.999999999999996,
+        "error_share": 0.04764292911918042,
+        "event_balanced_mae": 1463.74039792782,
+        "event_count": 17,
+        "event_improvement_rate": 0.6470588235294118,
+        "median_event_ae": 1234.1545383500597,
+        "overprediction_rate": 0.5058823529411764,
+        "p90_event_ae": 2821.221302062382,
+        "row_count": 85,
+        "signed_bias": 333.04512905447916,
+        "value": "legia",
+        "worst_event_ae": 4466.108297430833
+      },
+      {
+        "baseline_event_balanced_mae": 2144.0934428666574,
+        "contribution_to_overall_mae": 81.16258891679144,
+        "delta_vs_baseline": -404.8951089354122,
+        "effective_event_weight": 13.999999999999996,
+        "error_share": 0.046618964228654164,
+        "event_balanced_mae": 1739.1983339312449,
+        "event_count": 14,
+        "event_improvement_rate": 0.42857142857142855,
+        "median_event_ae": 500.29978205234204,
+        "overprediction_rate": 0.07619047619047618,
+        "p90_event_ae": 4405.345236393617,
+        "row_count": 67,
+        "signed_bias": -1694.3227298917789,
+        "value": "gkskatowice",
+        "worst_event_ae": 7786.124760424112
+      },
+      {
+        "baseline_event_balanced_mae": 2286.013071049481,
+        "contribution_to_overall_mae": 74.89553374796593,
+        "delta_vs_baseline": -964.3271813794942,
+        "effective_event_weight": 16.999999999999996,
+        "error_share": 0.04301923158540387,
+        "event_balanced_mae": 1321.6858896699866,
+        "event_count": 17,
+        "event_improvement_rate": 0.8235294117647058,
+        "median_event_ae": 1173.1335840396175,
+        "overprediction_rate": 0.5647058823529413,
+        "p90_event_ae": 2088.72420594819,
+        "row_count": 85,
+        "signed_bias": 159.41508412686605,
+        "value": "koronakielce",
+        "worst_event_ae": 3107.415306727079
+      },
+      {
+        "baseline_event_balanced_mae": 1327.4829593388158,
+        "contribution_to_overall_mae": 58.50832438747257,
+        "delta_vs_baseline": -294.9831172069469,
+        "effective_event_weight": 16.999999999999996,
+        "error_share": 0.033606585473689526,
+        "event_balanced_mae": 1032.4998421318687,
+        "event_count": 17,
+        "event_improvement_rate": 0.7647058823529411,
+        "median_event_ae": 825.3484866404567,
+        "overprediction_rate": 0.6,
+        "p90_event_ae": 2006.5930784485624,
+        "row_count": 85,
+        "signed_bias": 22.62656857913993,
+        "value": "piastgliwice",
+        "worst_event_ae": 2971.5899283809094
+      },
+      {
+        "baseline_event_balanced_mae": 1293.653603634927,
+        "contribution_to_overall_mae": 53.43059220588411,
+        "delta_vs_baseline": -350.7608000016784,
+        "effective_event_weight": 16.999999999999996,
+        "error_share": 0.03068998783806156,
+        "event_balanced_mae": 942.8928036332487,
+        "event_count": 17,
+        "event_improvement_rate": 0.7647058823529411,
+        "median_event_ae": 770.7281744044919,
+        "overprediction_rate": 0.5058823529411764,
+        "p90_event_ae": 2095.7718880774964,
+        "row_count": 85,
+        "signed_bias": -61.515103431070536,
+        "value": "radomiak_radom",
+        "worst_event_ae": 2698.214642305604
+      },
+      {
+        "baseline_event_balanced_mae": 1145.5625967484896,
+        "contribution_to_overall_mae": 46.57832075438209,
+        "delta_vs_baseline": -147.45572344030182,
+        "effective_event_weight": 13.999999999999996,
+        "error_share": 0.02675411292394196,
+        "event_balanced_mae": 998.1068733081876,
+        "event_count": 14,
+        "event_improvement_rate": 0.5,
+        "median_event_ae": 901.3021067089785,
+        "overprediction_rate": 0.4714285714285715,
+        "p90_event_ae": 2330.531982026395,
+        "row_count": 69,
+        "signed_bias": -173.08161952997605,
+        "value": "motorlublin",
+        "worst_event_ae": 2591.3553591086575
+      },
+      {
+        "baseline_event_balanced_mae": 591.6892514473224,
+        "contribution_to_overall_mae": 41.81574685286148,
+        "delta_vs_baseline": 146.2356930149389,
+        "effective_event_weight": 16.999999999999996,
+        "error_share": 0.024018538993705034,
+        "event_balanced_mae": 737.9249444622612,
+        "event_count": 17,
+        "event_improvement_rate": 0.5882352941176471,
+        "median_event_ae": 426.6275062962701,
+        "overprediction_rate": 0.5764705882352942,
+        "p90_event_ae": 1870.5887030329257,
+        "row_count": 85,
+        "signed_bias": 488.68258228120334,
+        "value": "puszcza_niepolomice",
+        "worst_event_ae": 2484.961456688947
+      },
+      {
+        "baseline_event_balanced_mae": 915.6207357636597,
+        "contribution_to_overall_mae": 36.70789779862243,
+        "delta_vs_baseline": -267.83430402326366,
+        "effective_event_weight": 16.999999999999996,
+        "error_share": 0.021084642533242687,
+        "event_balanced_mae": 647.7864317403959,
+        "event_count": 17,
+        "event_improvement_rate": 0.7647058823529411,
+        "median_event_ae": 634.1592635592885,
+        "overprediction_rate": 0.5764705882352941,
+        "p90_event_ae": 1227.434671471641,
+        "row_count": 85,
+        "signed_bias": 302.4089523414001,
+        "value": "stal_mielec",
+        "worst_event_ae": 1382.0724687541172
+      },
+      {
+        "baseline_event_balanced_mae": 605.0434196080735,
+        "contribution_to_overall_mae": 34.76791143633164,
+        "delta_vs_baseline": 8.507958680131832,
+        "effective_event_weight": 16.999999999999996,
+        "error_share": 0.019970334130384425,
+        "event_balanced_mae": 613.5513782882053,
+        "event_count": 17,
+        "event_improvement_rate": 0.4117647058823529,
+        "median_event_ae": 526.0,
+        "overprediction_rate": 0.6705882352941177,
+        "p90_event_ae": 1019.6600925435397,
+        "row_count": 85,
+        "signed_bias": 303.71187646477193,
+        "value": "widzewlodz",
+        "worst_event_ae": 1425.9997069605402
+      },
+      {
+        "baseline_event_balanced_mae": 118.65389654847256,
+        "contribution_to_overall_mae": 6.341441052496663,
+        "delta_vs_baseline": -6.746113269119706,
+        "effective_event_weight": 16.999999999999996,
+        "error_share": 0.003642459137023644,
+        "event_balanced_mae": 111.90778327935286,
+        "event_count": 17,
+        "event_improvement_rate": 0.47058823529411764,
+        "median_event_ae": 70.97059437846364,
+        "overprediction_rate": 0.3647058823529412,
+        "p90_event_ae": 210.35230215861293,
+        "row_count": 85,
+        "signed_bias": -33.55003961967987,
+        "value": "rakow",
+        "worst_event_ae": 586.1926409156586
+      }
+    ],
+    "2025/2026": [
+      {
+        "baseline_event_balanced_mae": 7609.052539026718,
+        "contribution_to_overall_mae": 309.94966201689635,
+        "delta_vs_baseline": -2084.655621902036,
+        "effective_event_weight": 16.999999999999996,
+        "error_share": 0.17157720550728944,
+        "event_balanced_mae": 5524.396917124681,
+        "event_count": 17,
+        "event_improvement_rate": 0.7058823529411765,
+        "median_event_ae": 4432.635601479053,
+        "overprediction_rate": 0.35294117647058826,
+        "p90_event_ae": 9734.881705155034,
+        "row_count": 85,
+        "signed_bias": -1940.7823887641164,
+        "value": "lech",
+        "worst_event_ae": 11949.783929930738
+      },
+      {
+        "baseline_event_balanced_mae": 7802.806503343831,
+        "contribution_to_overall_mae": 243.75280464957274,
+        "delta_vs_baseline": -3458.271220472034,
+        "effective_event_weight": 16.999999999999996,
+        "error_share": 0.13493295906242364,
+        "event_balanced_mae": 4344.535282871796,
+        "event_count": 17,
+        "event_improvement_rate": 0.9411764705882353,
+        "median_event_ae": 2244.6143743638386,
+        "overprediction_rate": 0.611764705882353,
+        "p90_event_ae": 6972.089671756417,
+        "row_count": 85,
+        "signed_bias": -1004.7824321283323,
+        "value": "lechiagdansk",
+        "worst_event_ae": 25101.721231868847
+      },
+      {
+        "baseline_event_balanced_mae": 2990.3982005998614,
+        "contribution_to_overall_mae": 143.78002942186689,
+        "delta_vs_baseline": -427.7306173748229,
+        "effective_event_weight": 16.999999999999996,
+        "error_share": 0.07959155527201373,
+        "event_balanced_mae": 2562.667583225038,
+        "event_count": 17,
+        "event_improvement_rate": 0.5882352941176471,
+        "median_event_ae": 2124.1817934048254,
+        "overprediction_rate": 0.48235294117647054,
+        "p90_event_ae": 4917.902507122548,
+        "row_count": 85,
+        "signed_bias": -399.2214288674237,
+        "value": "gornikzabrze",
+        "worst_event_ae": 6408.287066391234
+      },
+      {
+        "baseline_event_balanced_mae": 3453.2108338912144,
+        "contribution_to_overall_mae": 118.73630639059425,
+        "delta_vs_baseline": -1336.910784694152,
+        "effective_event_weight": 16.999999999999996,
+        "error_share": 0.06572823312723892,
+        "event_balanced_mae": 2116.3000491970633,
+        "event_count": 17,
+        "event_improvement_rate": 0.7647058823529411,
+        "median_event_ae": 1743.8535283454833,
+        "overprediction_rate": 0.44705882352941173,
+        "p90_event_ae": 3161.019886246411,
+        "row_count": 85,
+        "signed_bias": 70.2868250244147,
+        "value": "legia",
+        "worst_event_ae": 6398.03491830452
+      },
+      {
+        "baseline_event_balanced_mae": 2843.8133167188444,
+        "contribution_to_overall_mae": 101.54242531429473,
+        "delta_vs_baseline": -1033.9689125875914,
+        "effective_event_weight": 16.999999999999996,
+        "error_share": 0.05621030673977502,
+        "event_balanced_mae": 1809.844404131253,
+        "event_count": 17,
+        "event_improvement_rate": 0.5882352941176471,
+        "median_event_ae": 1403.9512707767033,
+        "overprediction_rate": 0.4,
+        "p90_event_ae": 3800.8365936379023,
+        "row_count": 85,
+        "signed_bias": -25.16189715211192,
+        "value": "pogonszczecin",
+        "worst_event_ae": 4403.816577411743
+      },
+      {
+        "baseline_event_balanced_mae": 2481.03607358424,
+        "contribution_to_overall_mae": 98.99803450045704,
+        "delta_vs_baseline": -716.5416939584468,
+        "effective_event_weight": 16.999999999999996,
+        "error_share": 0.05480182168863503,
+        "event_balanced_mae": 1764.4943796257928,
+        "event_count": 17,
+        "event_improvement_rate": 0.8235294117647058,
+        "median_event_ae": 1318.8694454347594,
+        "overprediction_rate": 0.4588235294117647,
+        "p90_event_ae": 3812.039449371747,
+        "row_count": 85,
+        "signed_bias": -203.111008229727,
+        "value": "wisla_plock",
+        "worst_event_ae": 4707.341988931549
+      },
+      {
+        "baseline_event_balanced_mae": 2159.0147710862766,
+        "contribution_to_overall_mae": 94.37968717165616,
+        "delta_vs_baseline": -476.8356409091107,
+        "effective_event_weight": 16.999999999999996,
+        "error_share": 0.05224526742888394,
+        "event_balanced_mae": 1682.1791301771657,
+        "event_count": 17,
+        "event_improvement_rate": 0.6470588235294118,
+        "median_event_ae": 1344.1692245187091,
+        "overprediction_rate": 0.5294117647058824,
+        "p90_event_ae": 3497.8294031364208,
+        "row_count": 85,
+        "signed_bias": -269.2197383809154,
+        "value": "zaglebie_lubin",
+        "worst_event_ae": 5292.118659068936
+      },
+      {
+        "baseline_event_balanced_mae": 2371.816118889761,
+        "contribution_to_overall_mae": 92.26032667439686,
+        "delta_vs_baseline": -727.4114728696285,
+        "effective_event_weight": 16.999999999999996,
+        "error_share": 0.051072064176407195,
+        "event_balanced_mae": 1644.4046460201323,
+        "event_count": 17,
+        "event_improvement_rate": 0.8235294117647058,
+        "median_event_ae": 980.9579755879447,
+        "overprediction_rate": 0.5764705882352942,
+        "p90_event_ae": 3709.2394457035166,
+        "row_count": 85,
+        "signed_bias": 489.79228836380776,
+        "value": "motorlublin",
+        "worst_event_ae": 4026.2948334766247
+      },
+      {
+        "baseline_event_balanced_mae": 1864.2419455481113,
+        "contribution_to_overall_mae": 89.18791940295051,
+        "delta_vs_baseline": -274.5984408955228,
+        "effective_event_weight": 16.999999999999996,
+        "error_share": 0.04937128782974254,
+        "event_balanced_mae": 1589.6435046525885,
+        "event_count": 17,
+        "event_improvement_rate": 0.5882352941176471,
+        "median_event_ae": 1537.9652373032843,
+        "overprediction_rate": 0.28235294117647064,
+        "p90_event_ae": 3349.613865947993,
+        "row_count": 85,
+        "signed_bias": -1192.7672940898137,
+        "value": "radomiak_radom",
+        "worst_event_ae": 4771.684669286044
+      },
+      {
+        "baseline_event_balanced_mae": 2319.574162718289,
+        "contribution_to_overall_mae": 89.09092337282435,
+        "delta_vs_baseline": -731.6594696614787,
+        "effective_event_weight": 16.999999999999996,
+        "error_share": 0.049317594247094136,
+        "event_balanced_mae": 1587.9146930568102,
+        "event_count": 17,
+        "event_improvement_rate": 0.8235294117647058,
+        "median_event_ae": 1650.064992763991,
+        "overprediction_rate": 0.623529411764706,
+        "p90_event_ae": 2700.9683945178053,
+        "row_count": 85,
+        "signed_bias": 539.9796995437715,
+        "value": "jagiellonia",
+        "worst_event_ae": 3598.5717740862483
+      },
+      {
+        "baseline_event_balanced_mae": 2246.6428285603283,
+        "contribution_to_overall_mae": 84.95167841463426,
+        "delta_vs_baseline": -408.04578858645857,
+        "effective_event_weight": 13.999999999999996,
+        "error_share": 0.047026254168789174,
+        "event_balanced_mae": 1838.59703997387,
+        "event_count": 14,
+        "event_improvement_rate": 0.7857142857142857,
+        "median_event_ae": 1494.3484501019666,
+        "overprediction_rate": 0.8428571428571429,
+        "p90_event_ae": 3440.5890955131563,
+        "row_count": 69,
+        "signed_bias": 918.1671074785119,
+        "value": "arkagdynia",
+        "worst_event_ae": 4544.779732274917
+      },
+      {
+        "baseline_event_balanced_mae": 1827.675537608297,
+        "contribution_to_overall_mae": 76.02458713155491,
+        "delta_vs_baseline": -472.6490728517595,
+        "effective_event_weight": 16.999999999999996,
+        "error_share": 0.04208453116224581,
+        "event_balanced_mae": 1355.0264647565375,
+        "event_count": 17,
+        "event_improvement_rate": 0.8235294117647058,
+        "median_event_ae": 1130.5543197896827,
+        "overprediction_rate": 0.6941176470588235,
+        "p90_event_ae": 2364.264277471433,
+        "row_count": 85,
+        "signed_bias": 478.25360635275746,
+        "value": "cracovia",
+        "worst_event_ae": 2976.378383821878
+      },
+      {
+        "baseline_event_balanced_mae": 1656.5548237767614,
+        "contribution_to_overall_mae": 69.52987292932843,
+        "delta_vs_baseline": -417.28708862461355,
+        "effective_event_weight": 16.999999999999996,
+        "error_share": 0.03848928635334591,
+        "event_balanced_mae": 1239.2677351521477,
+        "event_count": 17,
+        "event_improvement_rate": 0.7058823529411765,
+        "median_event_ae": 924.4290270988931,
+        "overprediction_rate": 0.6823529411764706,
+        "p90_event_ae": 2364.937831855809,
+        "row_count": 85,
+        "signed_bias": 703.5504577554766,
+        "value": "koronakielce",
+        "worst_event_ae": 2550.9700982568775
+      },
+      {
+        "baseline_event_balanced_mae": 1437.5153911448028,
+        "contribution_to_overall_mae": 60.21239075658537,
+        "delta_vs_baseline": -364.3180735421344,
+        "effective_event_weight": 16.999999999999996,
+        "error_share": 0.033331456713653985,
+        "event_balanced_mae": 1073.1973176026684,
+        "event_count": 17,
+        "event_improvement_rate": 0.5882352941176471,
+        "median_event_ae": 1002.4775180075824,
+        "overprediction_rate": 0.611764705882353,
+        "p90_event_ae": 1990.3697763815821,
+        "row_count": 85,
+        "signed_bias": 191.21965276784795,
+        "value": "piastgliwice",
+        "worst_event_ae": 2736.8017344783957
+      },
+      {
+        "baseline_event_balanced_mae": 1167.2626313968615,
+        "contribution_to_overall_mae": 46.19015112732836,
+        "delta_vs_baseline": -343.9911142450677,
+        "effective_event_weight": 16.999999999999996,
+        "error_share": 0.025569239213928712,
+        "event_balanced_mae": 823.2715171517938,
+        "event_count": 17,
+        "event_improvement_rate": 0.5882352941176471,
+        "median_event_ae": 747.2708595234519,
+        "overprediction_rate": 0.48235294117647054,
+        "p90_event_ae": 1336.2245521719829,
+        "row_count": 85,
+        "signed_bias": -80.72945478157192,
+        "value": "gkskatowice",
+        "worst_event_ae": 1598.9993039511708
+      },
+      {
+        "baseline_event_balanced_mae": 427.41759783757203,
+        "contribution_to_overall_mae": 39.87768536384492,
+        "delta_vs_baseline": 283.34350011801666,
+        "effective_event_weight": 16.999999999999996,
+        "error_share": 0.02207488071548361,
+        "event_balanced_mae": 710.7610979555888,
+        "event_count": 17,
+        "event_improvement_rate": 0.29411764705882354,
+        "median_event_ae": 677.4452649411284,
+        "overprediction_rate": 0.5294117647058824,
+        "p90_event_ae": 1240.482109685434,
+        "row_count": 85,
+        "signed_bias": -31.74471205848807,
+        "value": "widzewlodz",
+        "worst_event_ae": 1547.4067351141377
+      },
+      {
+        "baseline_event_balanced_mae": 745.9390121412613,
+        "contribution_to_overall_mae": 38.21340152313692,
+        "delta_vs_baseline": -64.84132617005616,
+        "effective_event_weight": 16.999999999999996,
+        "error_share": 0.021153591856184744,
+        "event_balanced_mae": 681.0976859712052,
+        "event_count": 17,
+        "event_improvement_rate": 0.47058823529411764,
+        "median_event_ae": 651.2839790676131,
+        "overprediction_rate": 0.3764705882352941,
+        "p90_event_ae": 1041.4157783513617,
+        "row_count": 85,
+        "signed_bias": -320.7991062183976,
+        "value": "termalica",
+        "worst_event_ae": 1715.7123421008007
+      },
+      {
+        "baseline_event_balanced_mae": 158.86139567276246,
+        "contribution_to_overall_mae": 9.795538443002874,
+        "delta_vs_baseline": 15.729671870171133,
+        "effective_event_weight": 16.999999999999996,
+        "error_share": 0.005422464736864396,
+        "event_balanced_mae": 174.5910675429336,
+        "event_count": 17,
+        "event_improvement_rate": 0.5294117647058824,
+        "median_event_ae": 170.7818244794549,
+        "overprediction_rate": 0.25882352941176473,
+        "p90_event_ae": 332.32977967084105,
+        "row_count": 85,
+        "signed_bias": -85.2105069418013,
+        "value": "rakow",
+        "worst_event_ae": 469.3696240536918
+      }
+    ]
+  },
+  "common_cohort_per_horizon": {
+    "T-1": {
+      "baseline_event_balanced_mae": 2477.425740150954,
+      "delta_vs_baseline": -770.0835070820614,
+      "event_balanced_mae": 1707.3422330688925,
+      "event_count": 599,
+      "event_improvement_rate": 0.656093489148581,
+      "median_event_ae": 1020.3047628789827,
+      "overprediction_rate": 0.5091819699499165,
+      "p90_event_ae": 3959.777606764364,
+      "row_count": 599,
+      "signed_bias": -48.708975449757546,
+      "worst_event_ae": 25274.812834854903
+    },
+    "T-14": {
+      "baseline_event_balanced_mae": 2409.428491930996,
+      "delta_vs_baseline": -591.7059993646006,
+      "event_balanced_mae": 1817.7224925663952,
+      "event_count": 599,
+      "event_improvement_rate": 0.6193656093489148,
+      "median_event_ae": 1107.3407538461615,
+      "overprediction_rate": 0.4774624373956594,
+      "p90_event_ae": 4171.644602439478,
+      "row_count": 599,
+      "signed_bias": -233.1003824829012,
+      "worst_event_ae": 26170.77454502704
+    },
+    "T-3": {
+      "baseline_event_balanced_mae": 2479.3266210382913,
+      "delta_vs_baseline": -750.0341182069504,
+      "event_balanced_mae": 1729.292502831341,
+      "event_count": 599,
+      "event_improvement_rate": 0.6427378964941569,
+      "median_event_ae": 1111.8048390473923,
+      "overprediction_rate": 0.5242070116861436,
+      "p90_event_ae": 3978.034284633089,
+      "row_count": 599,
+      "signed_bias": -43.63661986935529,
+      "worst_event_ae": 25866.915550787136
+    },
+    "T-30": {
+      "baseline_event_balanced_mae": 2719.659122738656,
+      "delta_vs_baseline": -852.0157142084539,
+      "event_balanced_mae": 1867.6434085302024,
+      "event_count": 599,
+      "event_improvement_rate": 0.6527545909849749,
+      "median_event_ae": 1173.3354752779233,
+      "overprediction_rate": 0.5792988313856428,
+      "p90_event_ae": 4275.826696271545,
+      "row_count": 599,
+      "signed_bias": 289.71433407715443,
+      "worst_event_ae": 23855.989870323137
+    },
+    "T-7": {
+      "baseline_event_balanced_mae": 2479.780666731542,
+      "delta_vs_baseline": -678.5992097836095,
+      "event_balanced_mae": 1801.1814569479327,
+      "event_count": 599,
+      "event_improvement_rate": 0.657762938230384,
+      "median_event_ae": 1145.3143875179003,
+      "overprediction_rate": 0.5175292153589316,
+      "p90_event_ae": 4341.685721802769,
+      "row_count": 599,
+      "signed_bias": 106.40455392092383,
+      "worst_event_ae": 24340.113358352028
+    }
+  },
+  "common_five_horizon_cohort": {
+    "baseline_event_balanced_mae": 2513.124128518088,
+    "delta_vs_baseline": -728.4877097291352,
+    "event_balanced_mae": 1784.6364187889528,
+    "event_count": 599,
+    "event_improvement_rate": 0.674457429048414,
+    "median_event_ae": 1132.032517914752,
+    "overprediction_rate": 0.5215358931552587,
+    "p90_event_ae": 4217.347709644762,
+    "row_count": 2995,
+    "signed_bias": 14.134582039212855,
+    "worst_event_ae": 25101.721231868847
+  },
+  "coverage": {
+    "candidate_events": 612,
+    "common_five_horizon_events": 599,
+    "evaluated_events": 603,
+    "exclusion_contract": "Existing training-eligibility/history and baseline-availability gates; see per-fold counts"
+  },
+  "evidence_kind": "exposed_historical_fixed_split_diagnostic_replay",
+  "limitations": [
+    "Already exposed test seasons; not fresh confirmatory evidence",
+    "PIT replay of archived fixture times/capacity does not establish historical publication timestamps",
+    "Outcome-conditioned attendance/fill bins are descriptive only",
+    "No historical booking curves; event shocks and causal error attribution unassessed",
+    "Ekstraklasa-only historical cohort differs from current prospective events"
+  ],
+  "live_adjustment": 0,
+  "new_model_selection": false,
+  "production_change": false,
+  "prospective_validation": false,
+  "provenance": {
+    "audit_code_sha256": "87edb9ccfa36d630aaa0f2c61dd779a3b6ec98efae635553e29443278be9fffd",
+    "event_predictions_sha256": "913ae957dd9ac373ef7135fe4ba64fb88f628e67319a002e8aac4b6b77a7ca97",
+    "feature_code_sha256": "da0295fedaf66e0e0976a53394c78ec72aa05be106a58c2f92ba83883fb9ceb2",
+    "historical_sha256": "3c6b35142c6bd20a484f2aa758cd41284fd6f4c6db1353b138f81cf321161569",
+    "libraries": {
+      "numpy": "2.3.5",
+      "pandas": "2.2.3",
+      "sklearn": "1.8.0"
+    },
+    "manifest_sha256": "251f377b9791209e380d287d37c28dd8f93e0973f17bfa3912e6c3b930378ba5",
+    "runtime_code_sha256": "534a72c5a4f16f816042b194e6684d61dffd6f82fde8be74337980e4bbb8c079"
+  },
+  "quality": {
+    "capacity_missing": 0,
+    "failures": [],
+    "feature_set_version": "structural-prior-pit-v1",
+    "invalid_time_rows": 0,
+    "matches": 1530,
+    "rows": 7650,
+    "rows_by_season_horizon": {
+      "2021/2022": {
+        "T-1": 306,
+        "T-14": 306,
+        "T-3": 306,
+        "T-30": 306,
+        "T-7": 306
+      },
+      "2022/2023": {
+        "T-1": 306,
+        "T-14": 306,
+        "T-3": 306,
+        "T-30": 306,
+        "T-7": 306
+      },
+      "2023/2024": {
+        "T-1": 306,
+        "T-14": 306,
+        "T-3": 306,
+        "T-30": 306,
+        "T-7": 306
+      },
+      "2024/2025": {
+        "T-1": 306,
+        "T-14": 306,
+        "T-3": 306,
+        "T-30": 306,
+        "T-7": 306
+      },
+      "2025/2026": {
+        "T-1": 306,
+        "T-14": 306,
+        "T-3": 306,
+        "T-30": 306,
+        "T-7": 306
+      }
+    },
+    "status": "PASS",
+    "training_eligible_rows": 7198
+  },
+  "reproduction": [
+    {
+      "candidate_event_count": 306,
+      "earliest_evaluation_cutoff": "2024-06-19 16:00:00+00:00",
+      "evaluated_event_count": 297,
+      "excluded_event_count": 9,
+      "frozen_expected_mae": 1889.3672272292858,
+      "horizon": "T-30",
+      "latest_training_label_at": "2024-05-25 19:20:00+00:00",
+      "replayed_mae": 1889.3672272292858,
+      "season": "2024/2025",
+      "status": "MATCH",
+      "training_rows": 815,
+      "training_seasons": [
+        "2021/2022",
+        "2022/2023",
+        "2023/2024"
+      ]
+    },
+    {
+      "candidate_event_count": 306,
+      "earliest_evaluation_cutoff": "2024-07-05 16:00:00+00:00",
+      "evaluated_event_count": 299,
+      "excluded_event_count": 7,
+      "frozen_expected_mae": 1748.4970512511325,
+      "horizon": "T-14",
+      "latest_training_label_at": "2024-05-25 19:20:00+00:00",
+      "replayed_mae": 1748.4970512511325,
+      "season": "2024/2025",
+      "status": "MATCH",
+      "training_rows": 840,
+      "training_seasons": [
+        "2021/2022",
+        "2022/2023",
+        "2023/2024"
+      ]
+    },
+    {
+      "candidate_event_count": 306,
+      "earliest_evaluation_cutoff": "2024-07-12 16:00:00+00:00",
+      "evaluated_event_count": 300,
+      "excluded_event_count": 6,
+      "frozen_expected_mae": 1777.6927306628588,
+      "horizon": "T-7",
+      "latest_training_label_at": "2024-05-25 19:20:00+00:00",
+      "replayed_mae": 1777.6927306628588,
+      "season": "2024/2025",
+      "status": "MATCH",
+      "training_rows": 843,
+      "training_seasons": [
+        "2021/2022",
+        "2022/2023",
+        "2023/2024"
+      ]
+    },
+    {
+      "candidate_event_count": 306,
+      "earliest_evaluation_cutoff": "2024-07-16 16:00:00+00:00",
+      "evaluated_event_count": 300,
+      "excluded_event_count": 6,
+      "frozen_expected_mae": 1661.715966441126,
+      "horizon": "T-3",
+      "latest_training_label_at": "2024-05-25 19:20:00+00:00",
+      "replayed_mae": 1661.715966441126,
+      "season": "2024/2025",
+      "status": "MATCH",
+      "training_rows": 845,
+      "training_seasons": [
+        "2021/2022",
+        "2022/2023",
+        "2023/2024"
+      ]
+    },
+    {
+      "candidate_event_count": 306,
+      "earliest_evaluation_cutoff": "2024-07-18 16:00:00+00:00",
+      "evaluated_event_count": 300,
+      "excluded_event_count": 6,
+      "frozen_expected_mae": 1651.733625020056,
+      "horizon": "T-1",
+      "latest_training_label_at": "2024-05-25 19:20:00+00:00",
+      "replayed_mae": 1651.733625020056,
+      "season": "2024/2025",
+      "status": "MATCH",
+      "training_rows": 845,
+      "training_seasons": [
+        "2021/2022",
+        "2022/2023",
+        "2023/2024"
+      ]
+    },
+    {
+      "candidate_event_count": 306,
+      "earliest_evaluation_cutoff": "2025-06-18 16:00:00+00:00",
+      "evaluated_event_count": 302,
+      "excluded_event_count": 4,
+      "frozen_expected_mae": 1846.2792557036205,
+      "horizon": "T-30",
+      "latest_training_label_at": "2025-05-24 18:30:00+00:00",
+      "replayed_mae": 1846.2792557036205,
+      "season": "2025/2026",
+      "status": "MATCH",
+      "training_rows": 1112,
+      "training_seasons": [
+        "2021/2022",
+        "2022/2023",
+        "2023/2024",
+        "2024/2025"
+      ]
+    },
+    {
+      "candidate_event_count": 306,
+      "earliest_evaluation_cutoff": "2025-07-04 16:00:00+00:00",
+      "evaluated_event_count": 303,
+      "excluded_event_count": 3,
+      "frozen_expected_mae": 1870.393553818474,
+      "horizon": "T-14",
+      "latest_training_label_at": "2025-05-24 18:30:00+00:00",
+      "replayed_mae": 1870.393553818474,
+      "season": "2025/2026",
+      "status": "MATCH",
+      "training_rows": 1139,
+      "training_seasons": [
+        "2021/2022",
+        "2022/2023",
+        "2023/2024",
+        "2024/2025"
+      ]
+    },
+    {
+      "candidate_event_count": 306,
+      "earliest_evaluation_cutoff": "2025-07-11 16:00:00+00:00",
+      "evaluated_event_count": 303,
+      "excluded_event_count": 3,
+      "frozen_expected_mae": 1802.2755802253876,
+      "horizon": "T-7",
+      "latest_training_label_at": "2025-05-24 18:30:00+00:00",
+      "replayed_mae": 1802.2755802253876,
+      "season": "2025/2026",
+      "status": "MATCH",
+      "training_rows": 1143,
+      "training_seasons": [
+        "2021/2022",
+        "2022/2023",
+        "2023/2024",
+        "2024/2025"
+      ]
+    },
+    {
+      "candidate_event_count": 306,
+      "earliest_evaluation_cutoff": "2025-07-15 16:00:00+00:00",
+      "evaluated_event_count": 303,
+      "excluded_event_count": 3,
+      "frozen_expected_mae": 1775.069078799718,
+      "horizon": "T-3",
+      "latest_training_label_at": "2025-05-24 18:30:00+00:00",
+      "replayed_mae": 1775.069078799718,
+      "season": "2025/2026",
+      "status": "MATCH",
+      "training_rows": 1145,
+      "training_seasons": [
+        "2021/2022",
+        "2022/2023",
+        "2023/2024",
+        "2024/2025"
+      ]
+    },
+    {
+      "candidate_event_count": 306,
+      "earliest_evaluation_cutoff": "2025-07-17 16:00:00+00:00",
+      "evaluated_event_count": 303,
+      "excluded_event_count": 3,
+      "frozen_expected_mae": 1742.835142803119,
+      "horizon": "T-1",
+      "latest_training_label_at": "2025-05-24 18:30:00+00:00",
+      "replayed_mae": 1742.835142803119,
+      "season": "2025/2026",
+      "status": "MATCH",
+      "training_rows": 1145,
+      "training_seasons": [
+        "2021/2022",
+        "2022/2023",
+        "2023/2024",
+        "2024/2025"
+      ]
+    }
+  ],
+  "segments": {
+    "actual_fill_bucket": [
+      {
+        "baseline_event_balanced_mae": 2500.042993468974,
+        "contribution_to_overall_mae": 850.0228258958815,
+        "delta_vs_baseline": -587.4916352032405,
+        "effective_event_weight": 268.0,
+        "error_share": 0.4791861336262011,
+        "event_balanced_mae": 1912.5513582657334,
+        "event_count": 268,
+        "event_improvement_rate": 0.6940298507462687,
+        "median_event_ae": 1200.8755698644072,
+        "overprediction_rate": 0.5932835820895522,
+        "p90_event_ae": 4441.675505321217,
+        "row_count": 1338,
+        "signed_bias": 155.96209191212947,
+        "value": "normal:50-<85%",
+        "worst_event_ae": 10003.649842413133
+      },
+      {
+        "baseline_event_balanced_mae": 3396.9350503302167,
+        "contribution_to_overall_mae": 428.8681177886771,
+        "delta_vs_baseline": -1128.448427290109,
+        "effective_event_weight": 113.99999999999999,
+        "error_share": 0.24176721958273015,
+        "event_balanced_mae": 2268.4866230401076,
+        "event_count": 114,
+        "event_improvement_rate": 0.7368421052631579,
+        "median_event_ae": 1774.1075149723229,
+        "overprediction_rate": 0.7526315789473685,
+        "p90_event_ae": 5184.563670475828,
+        "row_count": 570,
+        "signed_bias": 1573.1875481682607,
+        "value": "low:<50%",
+        "worst_event_ae": 11022.380244462194
+      },
+      {
+        "baseline_event_balanced_mae": 2228.0967711304042,
+        "contribution_to_overall_mae": 307.8939266004917,
+        "delta_vs_baseline": -613.6616603469563,
+        "effective_event_weight": 114.99999999999997,
+        "error_share": 0.17357004513282426,
+        "event_balanced_mae": 1614.4351107834475,
+        "event_count": 115,
+        "event_improvement_rate": 0.6695652173913044,
+        "median_event_ae": 1002.9820750710154,
+        "overprediction_rate": 0.3565217391304348,
+        "p90_event_ae": 2879.8719870227683,
+        "row_count": 575,
+        "signed_bias": -996.169440909384,
+        "value": "near:85-<95%",
+        "worst_event_ae": 25101.721231868847
+      },
+      {
+        "baseline_event_balanced_mae": 1945.417825823909,
+        "contribution_to_overall_mae": 183.39150399822208,
+        "delta_vs_baseline": -828.3968469256467,
+        "effective_event_weight": 99.0,
+        "error_share": 0.10338388930695165,
+        "event_balanced_mae": 1117.020978898262,
+        "event_count": 99,
+        "event_improvement_rate": 0.6060606060606061,
+        "median_event_ae": 444.9622301368792,
+        "overprediction_rate": 0.28552188552188557,
+        "p90_event_ae": 3413.4937580625783,
+        "row_count": 493,
+        "signed_bias": -965.1088875225956,
+        "value": "sellout-prone:95-100%",
+        "worst_event_ae": 8529.52817069564
+      },
+      {
+        "baseline_event_balanced_mae": 108.71903215831797,
+        "contribution_to_overall_mae": 3.7122386100198015,
+        "delta_vs_baseline": 211.06380810481633,
+        "effective_event_weight": 7.000000000000001,
+        "error_share": 0.0020927123512930012,
+        "event_balanced_mae": 319.7828402631343,
+        "event_count": 7,
+        "event_improvement_rate": 0.0,
+        "median_event_ae": 181.734707918634,
+        "overprediction_rate": 0.0,
+        "p90_event_ae": 711.0624637561561,
+        "row_count": 34,
+        "signed_bias": -319.7828402631343,
+        "value": "above-capacity",
+        "worst_event_ae": 803.2763030045347
+      }
+    ],
+    "attendance_bucket": [
+      {
+        "baseline_event_balanced_mae": 2560.526254013799,
+        "contribution_to_overall_mae": 791.1506299002773,
+        "delta_vs_baseline": -753.4662925370295,
+        "effective_event_weight": 263.99999999999994,
+        "error_share": 0.44599791900680574,
+        "event_balanced_mae": 1807.0599614767698,
+        "event_count": 264,
+        "event_improvement_rate": 0.6856060606060606,
+        "median_event_ae": 1168.667273235982,
+        "overprediction_rate": 0.5462121212121211,
+        "p90_event_ae": 4382.182691718974,
+        "row_count": 1318,
+        "signed_bias": 284.2374824477093,
+        "value": "10k-<20k",
+        "worst_event_ae": 11022.380244462194
+      },
+      {
+        "baseline_event_balanced_mae": 4777.37864049818,
+        "contribution_to_overall_mae": 564.4030243932497,
+        "delta_vs_baseline": -1407.724940407789,
+        "effective_event_weight": 101.00000000000001,
+        "error_share": 0.3181727535150491,
+        "event_balanced_mae": 3369.6537000903927,
+        "event_count": 101,
+        "event_improvement_rate": 0.693069306930693,
+        "median_event_ae": 2035.1405101471864,
+        "overprediction_rate": 0.3643564356435644,
+        "p90_event_ae": 7491.100069376783,
+        "row_count": 505,
+        "signed_bias": -1749.467788092945,
+        "value": "20k+",
+        "worst_event_ae": 25101.721231868847
+      },
+      {
+        "baseline_event_balanced_mae": 1535.7649093685332,
+        "contribution_to_overall_mae": 274.46464636765745,
+        "delta_vs_baseline": -494.87068446477537,
+        "effective_event_weight": 159.0,
+        "error_share": 0.1547248482079116,
+        "event_balanced_mae": 1040.8942249037573,
+        "event_count": 159,
+        "event_improvement_rate": 0.6415094339622641,
+        "median_event_ae": 756.8511696567991,
+        "overprediction_rate": 0.48218029350104824,
+        "p90_event_ae": 2358.6341826727253,
+        "row_count": 792,
+        "signed_bias": 298.65602843021384,
+        "value": "5k-<10k",
+        "worst_event_ae": 4939.119372690712
+      },
+      {
+        "baseline_event_balanced_mae": 1318.6057001195627,
+        "contribution_to_overall_mae": 143.87031223210772,
+        "delta_vs_baseline": -220.45635485423412,
+        "effective_event_weight": 79.0,
+        "error_share": 0.08110447927023377,
+        "event_balanced_mae": 1098.1493452653287,
+        "event_count": 79,
+        "event_improvement_rate": 0.6835443037974683,
+        "median_event_ae": 940.777484424375,
+        "overprediction_rate": 0.7139240506329114,
+        "p90_event_ae": 2026.9817402409342,
+        "row_count": 395,
+        "signed_bias": 797.0723845982601,
+        "value": "<5k",
+        "worst_event_ae": 8594.447721459444
+      }
+    ],
+    "baseline_fill_bucket": [
+      {
+        "baseline_event_balanced_mae": 2741.172937187875,
+        "contribution_to_overall_mae": 1096.7877723157474,
+        "delta_vs_baseline": -802.0510764096542,
+        "effective_event_weight": 342.20000000000005,
+        "error_share": 0.6182957398474064,
+        "event_balanced_mae": 1939.1218607782207,
+        "event_count": 390,
+        "event_improvement_rate": 0.7153846153846154,
+        "median_event_ae": 1317.9421101323137,
+        "overprediction_rate": 0.518034188034188,
+        "p90_event_ae": 4449.741016283199,
+        "row_count": 1710,
+        "signed_bias": 142.38824157174054,
+        "value": "normal:50-<85%",
+        "worst_event_ae": 11949.783929930738
+      },
+      {
+        "baseline_event_balanced_mae": 4168.464734629518,
+        "contribution_to_overall_mae": 463.6330392710684,
+        "delta_vs_baseline": -1434.3272009604084,
+        "effective_event_weight": 107.79999999999998,
+        "error_share": 0.2613653618954474,
+        "event_balanced_mae": 2734.13753366911,
+        "event_count": 136,
+        "event_improvement_rate": 0.7426470588235294,
+        "median_event_ae": 1778.9963580111018,
+        "overprediction_rate": 0.5094362745098039,
+        "p90_event_ae": 5563.4519493172265,
+        "row_count": 539,
+        "signed_bias": -906.1890083121316,
+        "value": "low:<50%",
+        "worst_event_ae": 25101.721231868847
+      },
+      {
+        "baseline_event_balanced_mae": 1519.315043132929,
+        "contribution_to_overall_mae": 175.06890472530466,
+        "delta_vs_baseline": -187.51492292466412,
+        "effective_event_weight": 81.19999999999999,
+        "error_share": 0.09869216333699748,
+        "event_balanced_mae": 1331.800120208265,
+        "event_count": 138,
+        "event_improvement_rate": 0.5652173913043478,
+        "median_event_ae": 911.8202197777441,
+        "overprediction_rate": 0.5989130434782609,
+        "p90_event_ae": 3001.5795215384064,
+        "row_count": 405,
+        "signed_bias": 543.8909584579633,
+        "value": "near:85-<95%",
+        "worst_event_ae": 5894.2579296691765
+      },
+      {
+        "baseline_event_balanced_mae": 418.9336719550601,
+        "contribution_to_overall_mae": 33.630481026123164,
+        "delta_vs_baseline": 22.609606632117526,
+        "effective_event_weight": 57.19999999999999,
+        "error_share": 0.018958620502823084,
+        "event_balanced_mae": 441.5432785871777,
+        "event_count": 75,
+        "event_improvement_rate": 0.4533333333333333,
+        "median_event_ae": 269.0950328864516,
+        "overprediction_rate": 0.5244444444444444,
+        "p90_event_ae": 1120.6302215661108,
+        "row_count": 286,
+        "signed_bias": 190.52492918336316,
+        "value": "sellout-prone:95-100%",
+        "worst_event_ae": 2982.0
+      },
+      {
+        "baseline_event_balanced_mae": 178.77608604503138,
+        "contribution_to_overall_mae": 4.768415555048596,
+        "delta_vs_baseline": 5.267948162377465,
+        "effective_event_weight": 14.599999999999994,
+        "error_share": 0.002688114417325841,
+        "event_balanced_mae": 184.04403420740886,
+        "event_count": 16,
+        "event_improvement_rate": 0.5,
+        "median_event_ae": 95.21097708415464,
+        "overprediction_rate": 0.29166666666666663,
+        "p90_event_ae": 500.29978205234204,
+        "row_count": 70,
+        "signed_bias": -139.8173566285503,
+        "value": "above-capacity",
+        "worst_event_ae": 803.2763030045347
+      }
+    ],
+    "error_direction": [
+      {
+        "baseline_event_balanced_mae": 2319.597721682008,
+        "contribution_to_overall_mae": 894.2390623939715,
+        "delta_vs_baseline": -856.4896562681344,
+        "effective_event_weight": 314.06666666666666,
+        "error_share": 0.5041122965074044,
+        "event_balanced_mae": 1463.1080654138736,
+        "event_count": 423,
+        "event_improvement_rate": 0.7092198581560284,
+        "median_event_ae": 1000.0013470281574,
+        "overprediction_rate": 1.0,
+        "p90_event_ae": 3342.673845077419,
+        "row_count": 1568,
+        "signed_bias": 1463.1080654138736,
+        "value": "over",
+        "worst_event_ae": 11022.380244462194
+      },
+      {
+        "baseline_event_balanced_mae": 2422.1069931424668,
+        "contribution_to_overall_mae": 879.6495504993208,
+        "delta_vs_baseline": -835.1710393705953,
+        "effective_event_weight": 278.5333333333333,
+        "error_share": 0.4958877034925958,
+        "event_balanced_mae": 1586.9359537718715,
+        "event_count": 385,
+        "event_improvement_rate": 0.6623376623376623,
+        "median_event_ae": 893.2976391841257,
+        "overprediction_rate": 0.0,
+        "p90_event_ae": 3794.8167640936686,
+        "row_count": 1390,
+        "signed_bias": -1586.9359537718715,
+        "value": "under",
+        "worst_event_ae": 25101.721231868847
+      },
+      {
+        "baseline_event_balanced_mae": 162.08604043287863,
+        "contribution_to_overall_mae": 0.0,
+        "delta_vs_baseline": -162.08604043287863,
+        "effective_event_weight": 10.399999999999997,
+        "error_share": 0.0,
+        "event_balanced_mae": 0.0,
+        "event_count": 12,
+        "event_improvement_rate": 1.0,
+        "median_event_ae": 0.0,
+        "overprediction_rate": 0.0,
+        "p90_event_ae": 0.0,
+        "row_count": 52,
+        "signed_bias": 0.0,
+        "value": "exact",
+        "worst_event_ae": 0.0
+      }
+    ],
+    "history_support_bucket": [
+      {
+        "baseline_event_balanced_mae": 2679.2116051808534,
+        "contribution_to_overall_mae": 1571.4768768269225,
+        "delta_vs_baseline": -816.5651622808547,
+        "effective_event_weight": 507.5999999999999,
+        "error_share": 0.8858937733772209,
+        "event_balanced_mae": 1862.6464428999989,
+        "event_count": 509,
+        "event_improvement_rate": 0.6915520628683693,
+        "median_event_ae": 1217.7028068608438,
+        "overprediction_rate": 0.5261296660117877,
+        "p90_event_ae": 4420.744986096013,
+        "row_count": 2538,
+        "signed_bias": 18.188069304574924,
+        "value": "30+",
+        "worst_event_ae": 25101.721231868847
+      },
+      {
+        "baseline_event_balanced_mae": 1548.9281889065767,
+        "contribution_to_overall_mae": 161.43794259070648,
+        "delta_vs_baseline": -251.16012972950395,
+        "effective_event_weight": 73.6,
+        "error_share": 0.09100793669755508,
+        "event_balanced_mae": 1297.7680591770727,
+        "event_count": 78,
+        "event_improvement_rate": 0.6282051282051282,
+        "median_event_ae": 924.4420756947235,
+        "overprediction_rate": 0.5346153846153846,
+        "p90_event_ae": 3308.927375691747,
+        "row_count": 368,
+        "signed_bias": -3.298491695708409,
+        "value": "10-<30",
+        "worst_event_ae": 7786.124760424112
+      },
+      {
+        "baseline_event_balanced_mae": 1309.6214253968253,
+        "contribution_to_overall_mae": 40.97379347566326,
+        "delta_vs_baseline": -115.0196114285967,
+        "effective_event_weight": 21.800000000000004,
+        "error_share": 0.023098289925224315,
+        "event_balanced_mae": 1194.6018139682287,
+        "event_count": 25,
+        "event_improvement_rate": 0.52,
+        "median_event_ae": 697.1674833609977,
+        "overprediction_rate": 0.4106666666666666,
+        "p90_event_ae": 2950.0659439914416,
+        "row_count": 104,
+        "signed_bias": -24.057731799351185,
+        "value": "<10",
+        "worst_event_ae": 4268.826714100032
+      }
+    ],
+    "home_club_key": [
+      {
+        "baseline_event_balanced_mae": 7013.704746813644,
+        "contribution_to_overall_mae": 308.8445087558476,
+        "delta_vs_baseline": -1536.2565474084652,
+        "effective_event_weight": 33.99999999999999,
+        "error_share": 0.17410591990446814,
+        "event_balanced_mae": 5477.4481994051785,
+        "event_count": 34,
+        "event_improvement_rate": 0.6764705882352942,
+        "median_event_ae": 5470.863689469283,
+        "overprediction_rate": 0.41764705882352937,
+        "p90_event_ae": 9845.895851603167,
+        "row_count": 170,
+        "signed_bias": -1002.6087251909615,
+        "value": "lech",
+        "worst_event_ae": 11949.783929930738
+      },
+      {
+        "baseline_event_balanced_mae": 5704.200861431436,
+        "contribution_to_overall_mae": 177.60951824207646,
+        "delta_vs_baseline": -2554.24381731461,
+        "effective_event_weight": 33.99999999999999,
+        "error_share": 0.10012439166199244,
+        "event_balanced_mae": 3149.957044116827,
+        "event_count": 34,
+        "event_improvement_rate": 0.8235294117647058,
+        "median_event_ae": 2132.8226113737455,
+        "overprediction_rate": 0.5588235294117647,
+        "p90_event_ae": 4808.278541997223,
+        "row_count": 170,
+        "signed_bias": -695.5920541997746,
+        "value": "lechiagdansk",
+        "worst_event_ae": 25101.721231868847
+      },
+      {
+        "baseline_event_balanced_mae": 3438.094974529508,
+        "contribution_to_overall_mae": 150.02029197327366,
+        "delta_vs_baseline": -777.440972768213,
+        "effective_event_weight": 33.99999999999999,
+        "error_share": 0.08457142736182507,
+        "event_balanced_mae": 2660.6540017612947,
+        "event_count": 34,
+        "event_improvement_rate": 0.6764705882352942,
+        "median_event_ae": 2220.100961964441,
+        "overprediction_rate": 0.5176470588235293,
+        "p90_event_ae": 4717.5642703932435,
+        "row_count": 170,
+        "signed_bias": 150.24133093295927,
+        "value": "gornikzabrze",
+        "worst_event_ae": 6408.287066391234
+      },
+      {
+        "baseline_event_balanced_mae": 7945.2560242679265,
+        "contribution_to_overall_mae": 136.47942680404782,
+        "delta_vs_baseline": -3104.250473512584,
+        "effective_event_weight": 16.999999999999996,
+        "error_share": 0.07693799137784856,
+        "event_balanced_mae": 4841.005550755343,
+        "event_count": 17,
+        "event_improvement_rate": 0.9411764705882353,
+        "median_event_ae": 3876.9105374105484,
+        "overprediction_rate": 0.6705882352941177,
+        "p90_event_ae": 9091.053002274966,
+        "row_count": 85,
+        "signed_bias": 424.35345328734155,
+        "value": "slask_wroclaw",
+        "worst_event_ae": 10003.649842413133
+      },
+      {
+        "baseline_event_balanced_mae": 2799.0713707572704,
+        "contribution_to_overall_mae": 102.75063224858364,
+        "delta_vs_baseline": -976.7586870544491,
+        "effective_event_weight": 33.99999999999999,
+        "error_share": 0.05792394826921672,
+        "event_balanced_mae": 1822.3126837028215,
+        "event_count": 34,
+        "event_improvement_rate": 0.7058823529411765,
+        "median_event_ae": 1121.6102614644033,
+        "overprediction_rate": 0.5294117647058824,
+        "p90_event_ae": 4208.36411927684,
+        "row_count": 170,
+        "signed_bias": 526.4868650257686,
+        "value": "pogonszczecin",
+        "worst_event_ae": 6002.119952626919
+      },
+      {
+        "baseline_event_balanced_mae": 2664.5590905370104,
+        "contribution_to_overall_mae": 100.92983018428359,
+        "delta_vs_baseline": -874.5388669745689,
+        "effective_event_weight": 33.99999999999999,
+        "error_share": 0.05689750159659829,
+        "event_balanced_mae": 1790.0202235624413,
+        "event_count": 34,
+        "event_improvement_rate": 0.7058823529411765,
+        "median_event_ae": 1530.7835736455468,
+        "overprediction_rate": 0.4764705882352941,
+        "p90_event_ae": 3054.7259526092103,
+        "row_count": 170,
+        "signed_bias": 201.665977039447,
+        "value": "legia",
+        "worst_event_ae": 6398.03491830452
+      },
+      {
+        "baseline_event_balanced_mae": 2268.7462662083203,
+        "contribution_to_overall_mae": 94.93043913042781,
+        "delta_vs_baseline": -585.1270075127923,
+        "effective_event_weight": 33.99999999999999,
+        "error_share": 0.053515445355721634,
+        "event_balanced_mae": 1683.6192586955285,
+        "event_count": 34,
+        "event_improvement_rate": 0.7058823529411765,
+        "median_event_ae": 1667.3233403369309,
+        "overprediction_rate": 0.6411764705882353,
+        "p90_event_ae": 2394.10562103018,
+        "row_count": 170,
+        "signed_bias": 227.8274114644961,
+        "value": "zaglebie_lubin",
+        "worst_event_ae": 5292.118659068936
+      },
+      {
+        "baseline_event_balanced_mae": 2445.9596597745776,
+        "contribution_to_overall_mae": 86.65761905018563,
+        "delta_vs_baseline": -909.0612983845206,
+        "effective_event_weight": 33.99999999999999,
+        "error_share": 0.048851781572036346,
+        "event_balanced_mae": 1536.898361390057,
+        "event_count": 34,
+        "event_improvement_rate": 0.7352941176470589,
+        "median_event_ae": 1336.072449264478,
+        "overprediction_rate": 0.6176470588235294,
+        "p90_event_ae": 2929.1751025536305,
+        "row_count": 170,
+        "signed_bias": 475.48861000330123,
+        "value": "jagiellonia",
+        "worst_event_ae": 4263.738872666811
+      },
+      {
+        "baseline_event_balanced_mae": 2008.1181863153188,
+        "contribution_to_overall_mae": 83.46857223599359,
+        "delta_vs_baseline": -527.7785081299029,
+        "effective_event_weight": 33.99999999999999,
+        "error_share": 0.04705400983427737,
+        "event_balanced_mae": 1480.3396781854156,
+        "event_count": 34,
+        "event_improvement_rate": 0.7647058823529411,
+        "median_event_ae": 1128.9422271445933,
+        "overprediction_rate": 0.5117647058823529,
+        "p90_event_ae": 2386.45732757538,
+        "row_count": 170,
+        "signed_bias": 227.93541785198687,
+        "value": "cracovia",
+        "worst_event_ae": 8594.447721459444
+      },
+      {
+        "baseline_event_balanced_mae": 1971.2839474131213,
+        "contribution_to_overall_mae": 72.19935592367544,
+        "delta_vs_baseline": -690.807135002054,
+        "effective_event_weight": 33.99999999999999,
+        "error_share": 0.04070117785237656,
+        "event_balanced_mae": 1280.476812411067,
+        "event_count": 34,
+        "event_improvement_rate": 0.7647058823529411,
+        "median_event_ae": 935.3160938901843,
+        "overprediction_rate": 0.6235294117647059,
+        "p90_event_ae": 2254.500747058329,
+        "row_count": 170,
+        "signed_bias": 431.48277094117134,
+        "value": "koronakielce",
+        "worst_event_ae": 3107.415306727079
+      },
+      {
+        "baseline_event_balanced_mae": 1578.9477745915192,
+        "contribution_to_overall_mae": 71.39820437953439,
+        "delta_vs_baseline": -312.6796204486006,
+        "effective_event_weight": 33.99999999999999,
+        "error_share": 0.04024954208544172,
+        "event_balanced_mae": 1266.2681541429188,
+        "event_count": 34,
+        "event_improvement_rate": 0.6764705882352942,
+        "median_event_ae": 888.8627971566968,
+        "overprediction_rate": 0.3941176470588235,
+        "p90_event_ae": 2488.7905305381732,
+        "row_count": 170,
+        "signed_bias": -627.1411987604421,
+        "value": "radomiak_radom",
+        "worst_event_ae": 4771.684669286044
+      },
+      {
+        "baseline_event_balanced_mae": 1818.0242056646705,
+        "contribution_to_overall_mae": 69.53296054503627,
+        "delta_vs_baseline": -465.49597312735193,
+        "effective_event_weight": 30.999999999999996,
+        "error_share": 0.039198042109095506,
+        "event_balanced_mae": 1352.5282325373184,
+        "event_count": 31,
+        "event_improvement_rate": 0.6774193548387096,
+        "median_event_ae": 980.9579755879447,
+        "overprediction_rate": 0.529032258064516,
+        "p90_event_ae": 3616.316717643632,
+        "row_count": 154,
+        "signed_bias": 190.42987834726026,
+        "value": "motorlublin",
+        "worst_event_ae": 4026.2948334766247
+      },
+      {
+        "baseline_event_balanced_mae": 1608.4120301251564,
+        "contribution_to_overall_mae": 63.58937390815576,
+        "delta_vs_baseline": -371.4961441052233,
+        "effective_event_weight": 31.0,
+        "error_share": 0.03584744467378853,
+        "event_balanced_mae": 1236.9158860199325,
+        "event_count": 31,
+        "event_improvement_rate": 0.5161290322580645,
+        "median_event_ae": 700.5372603452979,
+        "overprediction_rate": 0.29892473118279567,
+        "p90_event_ae": 3199.7647120206925,
+        "row_count": 152,
+        "signed_bias": -809.4489983797299,
+        "value": "gkskatowice",
+        "worst_event_ae": 7786.124760424112
+      },
+      {
+        "baseline_event_balanced_mae": 1382.4991752418093,
+        "contribution_to_overall_mae": 59.36459654309641,
+        "delta_vs_baseline": -329.6505953745406,
+        "effective_event_weight": 33.99999999999999,
+        "error_share": 0.033465797182310165,
+        "event_balanced_mae": 1052.8485798672687,
+        "event_count": 34,
+        "event_improvement_rate": 0.6764705882352942,
+        "median_event_ae": 913.0357665218521,
+        "overprediction_rate": 0.6058823529411765,
+        "p90_event_ae": 2069.4380596059814,
+        "row_count": 170,
+        "signed_bias": 106.92311067349395,
+        "value": "piastgliwice",
+        "worst_event_ae": 2971.5899283809094
+      },
+      {
+        "baseline_event_balanced_mae": 2481.03607358424,
+        "contribution_to_overall_mae": 49.74528101764259,
+        "delta_vs_baseline": -716.5416939584468,
+        "effective_event_weight": 16.999999999999996,
+        "error_share": 0.028043069139784264,
+        "event_balanced_mae": 1764.4943796257928,
+        "event_count": 17,
+        "event_improvement_rate": 0.8235294117647058,
+        "median_event_ae": 1318.8694454347594,
+        "overprediction_rate": 0.4588235294117647,
+        "p90_event_ae": 3812.039449371747,
+        "row_count": 85,
+        "signed_bias": -203.111008229727,
+        "value": "wisla_plock",
+        "worst_event_ae": 4707.341988931549
+      },
+      {
+        "baseline_event_balanced_mae": 2246.6428285603283,
+        "contribution_to_overall_mae": 42.68716179043811,
+        "delta_vs_baseline": -408.04578858645857,
+        "effective_event_weight": 13.999999999999996,
+        "error_share": 0.02406417262063227,
+        "event_balanced_mae": 1838.59703997387,
+        "event_count": 14,
+        "event_improvement_rate": 0.7857142857142857,
+        "median_event_ae": 1494.3484501019666,
+        "overprediction_rate": 0.8428571428571429,
+        "p90_event_ae": 3440.5890955131563,
+        "row_count": 69,
+        "signed_bias": 918.1671074785119,
+        "value": "arkagdynia",
+        "worst_event_ae": 4544.779732274917
+      },
+      {
+        "baseline_event_balanced_mae": 516.2305087228226,
+        "contribution_to_overall_mae": 37.33550928050497,
+        "delta_vs_baseline": 145.92572939907427,
+        "effective_event_weight": 33.99999999999999,
+        "error_share": 0.0210472681368697,
+        "event_balanced_mae": 662.1562381218971,
+        "event_count": 34,
+        "event_improvement_rate": 0.35294117647058826,
+        "median_event_ae": 641.1159481759187,
+        "overprediction_rate": 0.6,
+        "p90_event_ae": 1179.919859447747,
+        "row_count": 170,
+        "signed_bias": 135.98358220314196,
+        "value": "widzewlodz",
+        "worst_event_ae": 1547.4067351141377
+      },
+      {
+        "baseline_event_balanced_mae": 591.6892514473224,
+        "contribution_to_overall_mae": 20.803854155652477,
+        "delta_vs_baseline": 146.2356930149389,
+        "effective_event_weight": 16.999999999999996,
+        "error_share": 0.011727824399143336,
+        "event_balanced_mae": 737.9249444622612,
+        "event_count": 17,
+        "event_improvement_rate": 0.5882352941176471,
+        "median_event_ae": 426.6275062962701,
+        "overprediction_rate": 0.5764705882352942,
+        "p90_event_ae": 1870.5887030329257,
+        "row_count": 85,
+        "signed_bias": 488.68258228120334,
+        "value": "puszcza_niepolomice",
+        "worst_event_ae": 2484.961456688947
+      },
+      {
+        "baseline_event_balanced_mae": 745.9390121412613,
+        "contribution_to_overall_mae": 19.201758974312586,
+        "delta_vs_baseline": -64.84132617005616,
+        "effective_event_weight": 16.999999999999996,
+        "error_share": 0.01082467006933071,
+        "event_balanced_mae": 681.0976859712052,
+        "event_count": 17,
+        "event_improvement_rate": 0.47058823529411764,
+        "median_event_ae": 651.2839790676131,
+        "overprediction_rate": 0.3764705882352941,
+        "p90_event_ae": 1041.4157783513617,
+        "row_count": 85,
+        "signed_bias": -320.7991062183976,
+        "value": "termalica",
+        "worst_event_ae": 1715.7123421008007
+      },
+      {
+        "baseline_event_balanced_mae": 915.6207357636597,
+        "contribution_to_overall_mae": 18.262635720707678,
+        "delta_vs_baseline": -267.83430402326366,
+        "effective_event_weight": 16.999999999999996,
+        "error_share": 0.010295255061658298,
+        "event_balanced_mae": 647.7864317403959,
+        "event_count": 17,
+        "event_improvement_rate": 0.7647058823529411,
+        "median_event_ae": 634.1592635592885,
+        "overprediction_rate": 0.5764705882352941,
+        "p90_event_ae": 1227.434671471641,
+        "row_count": 85,
+        "signed_bias": 302.4089523414001,
+        "value": "stal_mielec",
+        "worst_event_ae": 1382.0724687541172
+      },
+      {
+        "baseline_event_balanced_mae": 138.75764611061751,
+        "contribution_to_overall_mae": 8.077082029815704,
+        "delta_vs_baseline": 4.491779300525715,
+        "effective_event_weight": 33.99999999999999,
+        "error_share": 0.004553319735584537,
+        "event_balanced_mae": 143.2494254111432,
+        "event_count": 34,
+        "event_improvement_rate": 0.5,
+        "median_event_ae": 93.35642324784158,
+        "overprediction_rate": 0.311764705882353,
+        "p90_event_ae": 292.8623899249695,
+        "row_count": 170,
+        "signed_bias": -59.38027328074059,
+        "value": "rakow",
+        "worst_event_ae": 586.1926409156586
+      }
+    ],
+    "horizon": [
+      {
+        "baseline_event_balanced_mae": 2719.659122738656,
+        "contribution_to_overall_mae": 371.0508795056688,
+        "delta_vs_baseline": -852.0157142084539,
+        "effective_event_weight": 119.79999999999998,
+        "error_share": 0.2091737197075008,
+        "event_balanced_mae": 1867.6434085302024,
+        "event_count": 599,
+        "event_improvement_rate": 0.6527545909849749,
+        "median_event_ae": 1173.3354752779233,
+        "overprediction_rate": 0.5792988313856428,
+        "p90_event_ae": 4275.826696271545,
+        "row_count": 599,
+        "signed_bias": 289.71433407715443,
+        "value": "T-30",
+        "worst_event_ae": 23855.989870323137
+      },
+      {
+        "baseline_event_balanced_mae": 2399.832779623477,
+        "contribution_to_overall_mae": 361.42898446170483,
+        "delta_vs_baseline": -589.9825053193473,
+        "effective_event_weight": 120.54999999999998,
+        "error_share": 0.2037495375046114,
+        "event_balanced_mae": 1809.85027430413,
+        "event_count": 602,
+        "event_improvement_rate": 0.6196013289036545,
+        "median_event_ae": 1101.7326919773795,
+        "overprediction_rate": 0.47674418604651164,
+        "p90_event_ae": 4125.140705460132,
+        "row_count": 602,
+        "signed_bias": -231.06529458909344,
+        "value": "T-14",
+        "worst_event_ae": 26170.77454502704
+      },
+      {
+        "baseline_event_balanced_mae": 2465.8006401971147,
+        "contribution_to_overall_mae": 358.05133648575446,
+        "delta_vs_baseline": -675.7553333859208,
+        "effective_event_weight": 120.88333333333333,
+        "error_share": 0.20184544502022406,
+        "event_balanced_mae": 1790.0453068111942,
+        "event_count": 603,
+        "event_improvement_rate": 0.6583747927031509,
+        "median_event_ae": 1142.7331903773284,
+        "overprediction_rate": 0.5157545605306799,
+        "p90_event_ae": 4335.523087324581,
+        "row_count": 603,
+        "signed_bias": 106.24054036914289,
+        "value": "T-7",
+        "worst_event_ae": 24340.113358352028
+      },
+      {
+        "baseline_event_balanced_mae": 2465.3496064155943,
+        "contribution_to_overall_mae": 343.7777263206056,
+        "delta_vs_baseline": -746.6751108788573,
+        "effective_event_weight": 120.88333333333333,
+        "error_share": 0.19379893631533532,
+        "event_balanced_mae": 1718.6744955367371,
+        "event_count": 603,
+        "event_improvement_rate": 0.6434494195688225,
+        "median_event_ae": 1099.3178020147152,
+        "overprediction_rate": 0.5240464344941956,
+        "p90_event_ae": 3966.363890134047,
+        "row_count": 603,
+        "signed_bias": -42.69474074226226,
+        "value": "T-3",
+        "worst_event_ae": 25866.915550787136
+      },
+      {
+        "baseline_event_balanced_mae": 2463.4613350200466,
+        "contribution_to_overall_mae": 339.5796861195585,
+        "delta_vs_baseline": -765.9503304174564,
+        "effective_event_weight": 120.88333333333333,
+        "error_share": 0.19143236145232864,
+        "event_balanced_mae": 1697.51100460259,
+        "event_count": 603,
+        "event_improvement_rate": 0.6567164179104478,
+        "median_event_ae": 1007.5401668941431,
+        "overprediction_rate": 0.5091210613598673,
+        "p90_event_ae": 3954.9088464047595,
+        "row_count": 603,
+        "signed_bias": -48.26235498650449,
+        "value": "T-1",
+        "worst_event_ae": 25274.812834854903
+      }
+    ],
+    "opponent_draw_bucket": [
+      {
+        "baseline_event_balanced_mae": 2437.369045761546,
+        "contribution_to_overall_mae": 1072.8948909621795,
+        "delta_vs_baseline": -727.4896647550295,
+        "effective_event_weight": 383.00000000000006,
+        "error_share": 0.6048265280942527,
+        "event_balanced_mae": 1709.879381006517,
+        "event_count": 391,
+        "event_improvement_rate": 0.6649616368286445,
+        "median_event_ae": 1017.3613304328246,
+        "overprediction_rate": 0.500383631713555,
+        "p90_event_ae": 4026.2948334766247,
+        "row_count": 1912,
+        "signed_bias": -63.8297398294148,
+        "value": "above:1.1+",
+        "worst_event_ae": 25413.154072255278
+      },
+      {
+        "baseline_event_balanced_mae": 2717.942147858221,
+        "contribution_to_overall_mae": 658.970817545428,
+        "delta_vs_baseline": -680.5038671126,
+        "effective_event_weight": 203.20000000000005,
+        "error_share": 0.37148376327339794,
+        "event_balanced_mae": 2037.4382807456213,
+        "event_count": 216,
+        "event_improvement_rate": 0.6805555555555556,
+        "median_event_ae": 1243.193832081456,
+        "overprediction_rate": 0.5654320987654321,
+        "p90_event_ae": 4505.444014852875,
+        "row_count": 1014,
+        "signed_bias": 83.05488453074767,
+        "value": "typical:.9-<1.1",
+        "worst_event_ae": 23855.989870323137
+      },
+      {
+        "baseline_event_balanced_mae": 2701.060301120448,
+        "contribution_to_overall_mae": 30.359964615779155,
+        "delta_vs_baseline": -1320.2589472301788,
+        "effective_event_weight": 11.799999999999997,
+        "error_share": 0.017114921644522364,
+        "event_balanced_mae": 1380.801353890269,
+        "event_count": 14,
+        "event_improvement_rate": 0.7857142857142857,
+        "median_event_ae": 1112.452404925451,
+        "overprediction_rate": 0.40714285714285714,
+        "p90_event_ae": 2832.4779420476207,
+        "row_count": 59,
+        "signed_bias": -68.23772633737075,
+        "value": "below:.9",
+        "worst_event_ae": 3256.067512531314
+      },
+      {
+        "baseline_event_balanced_mae": 2276.580330882353,
+        "contribution_to_overall_mae": 11.662939769905693,
+        "delta_vs_baseline": -996.1625127548562,
+        "effective_event_weight": 5.000000000000001,
+        "error_share": 0.006574786987827221,
+        "event_balanced_mae": 1280.4178181274967,
+        "event_count": 8,
+        "event_improvement_rate": 0.75,
+        "median_event_ae": 805.712743048889,
+        "overprediction_rate": 0.4,
+        "p90_event_ae": 2767.3923641585425,
+        "row_count": 25,
+        "signed_bias": -923.8534157982533,
+        "value": "unknown",
+        "worst_event_ae": 4331.703625102507
+      }
+    ],
+    "opponent_position_bucket": [
+      {
+        "baseline_event_balanced_mae": 2535.068403898534,
+        "contribution_to_overall_mae": 992.0669010217883,
+        "delta_vs_baseline": -703.3155032814898,
+        "effective_event_weight": 327.9666666666667,
+        "error_share": 0.5592611023099601,
+        "event_balanced_mae": 1831.7529006170446,
+        "event_count": 428,
+        "event_improvement_rate": 0.6588785046728972,
+        "median_event_ae": 1148.0191493464326,
+        "overprediction_rate": 0.5351246105919004,
+        "p90_event_ae": 4210.402620420979,
+        "row_count": 1636,
+        "signed_bias": 124.14710915549202,
+        "value": "middle",
+        "worst_event_ae": 25058.448331122338
+      },
+      {
+        "baseline_event_balanced_mae": 2653.700115788975,
+        "contribution_to_overall_mae": 419.7536113486262,
+        "delta_vs_baseline": -713.975777644862,
+        "effective_event_weight": 140.19999999999996,
+        "error_share": 0.2366290692085729,
+        "event_balanced_mae": 1939.724338144113,
+        "event_count": 205,
+        "event_improvement_rate": 0.6634146341463415,
+        "median_event_ae": 1170.9185954528812,
+        "overprediction_rate": 0.530650406504065,
+        "p90_event_ae": 4122.900895095525,
+        "row_count": 701,
+        "signed_bias": -83.49824849047191,
+        "value": "bottom4",
+        "worst_event_ae": 25274.812834854903
+      },
+      {
+        "baseline_event_balanced_mae": 2614.148273913249,
+        "contribution_to_overall_mae": 362.0681005228776,
+        "delta_vs_baseline": -914.0413070878568,
+        "effective_event_weight": 134.83333333333331,
+        "error_share": 0.20410982848146722,
+        "event_balanced_mae": 1700.1069668253917,
+        "event_count": 197,
+        "event_improvement_rate": 0.6700507614213198,
+        "median_event_ae": 1054.1711813922532,
+        "overprediction_rate": 0.4796954314720812,
+        "p90_event_ae": 3950.2767863971562,
+        "row_count": 673,
+        "signed_bias": -19.599610613073715,
+        "value": "top4",
+        "worst_event_ae": 10003.649842413133
+      }
+    ],
+    "season": [
+      {
+        "baseline_event_balanced_mae": 2534.0866143056023,
+        "contribution_to_overall_mae": 907.7304272890424,
+        "delta_vs_baseline": -727.6131897006765,
+        "effective_event_weight": 303.0,
+        "error_share": 0.5117178275407571,
+        "event_balanced_mae": 1806.4734246049256,
+        "event_count": 303,
+        "event_improvement_rate": 0.66996699669967,
+        "median_event_ae": 1175.186985863828,
+        "overprediction_rate": 0.5102310231023103,
+        "p90_event_ae": 3661.6327440279456,
+        "row_count": 1514,
+        "signed_bias": -130.4068215774899,
+        "value": "2025/2026",
+        "worst_event_ae": 25101.721231868847
+      },
+      {
+        "baseline_event_balanced_mae": 2463.4080017146794,
+        "contribution_to_overall_mae": 866.1581856042499,
+        "delta_vs_baseline": -722.4300486501376,
+        "effective_event_weight": 300.0,
+        "error_share": 0.4882821724592431,
+        "event_balanced_mae": 1740.977953064542,
+        "event_count": 300,
+        "event_improvement_rate": 0.68,
+        "median_event_ae": 1073.4589970494121,
+        "overprediction_rate": 0.5315555555555556,
+        "p90_event_ae": 4469.795794725659,
+        "row_count": 1496,
+        "signed_bias": 161.03580870151256,
+        "value": "2024/2025",
+        "worst_event_ae": 11022.380244462194
+      }
+    ],
+    "season_phase": [
+      {
+        "baseline_event_balanced_mae": 2550.9006409695808,
+        "contribution_to_overall_mae": 599.4661091856165,
+        "delta_vs_baseline": -725.2538539042941,
+        "effective_event_weight": 198.00000000000003,
+        "error_share": 0.33793898040072556,
+        "event_balanced_mae": 1825.6467870652864,
+        "event_count": 198,
+        "event_improvement_rate": 0.6717171717171717,
+        "median_event_ae": 1153.1526418965805,
+        "overprediction_rate": 0.5878787878787879,
+        "p90_event_ae": 4412.462284631936,
+        "row_count": 990,
+        "signed_bias": 622.8559237025681,
+        "value": "mid",
+        "worst_event_ae": 11949.783929930738
+      },
+      {
+        "baseline_event_balanced_mae": 2544.6695649252883,
+        "contribution_to_overall_mae": 592.234056742889,
+        "delta_vs_baseline": -655.1609076979759,
+        "effective_event_weight": 189.0,
+        "error_share": 0.33386203194400615,
+        "event_balanced_mae": 1889.5086572273121,
+        "event_count": 189,
+        "event_improvement_rate": 0.6507936507936508,
+        "median_event_ae": 1170.27543645769,
+        "overprediction_rate": 0.46913580246913583,
+        "p90_event_ae": 4277.3318231539515,
+        "row_count": 940,
+        "signed_bias": -341.59414188710076,
+        "value": "early",
+        "worst_event_ae": 25101.721231868847
+      },
+      {
+        "baseline_event_balanced_mae": 2411.2489350284486,
+        "contribution_to_overall_mae": 582.1884469647869,
+        "delta_vs_baseline": -785.9728539184192,
+        "effective_event_weight": 215.99999999999997,
+        "error_share": 0.32819898765526845,
+        "event_balanced_mae": 1625.2760811100295,
+        "event_count": 216,
+        "event_improvement_rate": 0.6990740740740741,
+        "median_event_ae": 1095.1021268131158,
+        "overprediction_rate": 0.5046296296296297,
+        "p90_event_ae": 3273.887592264563,
+        "row_count": 1080,
+        "signed_bias": -231.32733520357453,
+        "value": "late",
+        "worst_event_ae": 10003.649842413133
+      }
+    ],
+    "week_part": [
+      {
+        "baseline_event_balanced_mae": 2636.381247122795,
+        "contribution_to_overall_mae": 1284.4695463982778,
+        "delta_vs_baseline": -751.8675330640077,
+        "effective_event_weight": 411.0000000000001,
+        "error_share": 0.7240981970695726,
+        "event_balanced_mae": 1884.5137140587865,
+        "event_count": 411,
+        "event_improvement_rate": 0.6763990267639902,
+        "median_event_ae": 1126.0468683124636,
+        "overprediction_rate": 0.5004055150040552,
+        "p90_event_ae": 4432.635601479053,
+        "row_count": 2052,
+        "signed_bias": -115.76234891295347,
+        "value": "weekend",
+        "worst_event_ae": 25101.721231868847
+      },
+      {
+        "baseline_event_balanced_mae": 2204.676833757984,
+        "contribution_to_overall_mae": 489.4190664950146,
+        "delta_vs_baseline": -667.5950780470785,
+        "effective_event_weight": 192.00000000000003,
+        "error_share": 0.2759018029304276,
+        "event_balanced_mae": 1537.081755710905,
+        "event_count": 192,
+        "event_improvement_rate": 0.671875,
+        "median_event_ae": 1138.452280304,
+        "overprediction_rate": 0.5645833333333333,
+        "p90_event_ae": 3233.947495674047,
+        "row_count": 958,
+        "signed_bias": 293.62396393592826,
+        "value": "weekday",
+        "worst_event_ae": 8529.52817069564
+      }
+    ]
+  },
+  "target": "attendance",
+  "unit": "people",
+  "version": "mae01-incumbent-error-decomposition-v1",
+  "worst_events": [
+    {
+      "actual_attendance": 37500.0,
+      "associations_only": [
+        "same_signed_error_across_available_horizons",
+        "prediction_horizon_spread_at_least_1000"
+      ],
+      "away_club_key": "arkagdynia",
+      "baseline_event_balanced_mae": 22458.48431372549,
+      "delta_vs_baseline": 2643.236918143357,
+      "error_share": 0.023467122705351576,
+      "event_balanced_mae": 25101.721231868847,
+      "event_count": 1,
+      "event_improvement_rate": 0.0,
+      "home_club_key": "lechiagdansk",
+      "horizons": [
+        {
+          "capacity": 41620.0,
+          "horizon": "T-30",
+          "prediction": 13644.010129676863,
+          "signed_error": -23855.989870323137
+        },
+        {
+          "capacity": 41620.0,
+          "horizon": "T-14",
+          "prediction": 11329.225454972959,
+          "signed_error": -26170.77454502704
+        },
+        {
+          "capacity": 41620.0,
+          "horizon": "T-7",
+          "prediction": 13159.886641647972,
+          "signed_error": -24340.113358352028
+        },
+        {
+          "capacity": 41620.0,
+          "horizon": "T-3",
+          "prediction": 11633.084449212864,
+          "signed_error": -25866.915550787136
+        },
+        {
+          "capacity": 41620.0,
+          "horizon": "T-1",
+          "prediction": 12225.187165145097,
+          "signed_error": -25274.812834854903
+        }
+      ],
+      "kickoff_at": "2025-08-24 15:30:00+00:00",
+      "match_key": "2025/2026|2025-08-24|lechiagdansk|arkagdynia",
+      "median_event_ae": 25101.721231868847,
+      "overprediction_rate": 0.0,
+      "p90_event_ae": 25101.721231868847,
+      "row_count": 5,
+      "season": "2025/2026",
+      "signed_bias": -25101.721231868847,
+      "unassessed": [
+        "booking_curve_dynamics",
+        "source_defect",
+        "event_specific_shock"
+      ],
+      "worst_event_ae": 25101.721231868847
+    },
+    {
+      "actual_attendance": 39496.0,
+      "associations_only": [
+        "same_signed_error_across_available_horizons",
+        "prediction_horizon_spread_at_least_1000"
+      ],
+      "away_club_key": "pogonszczecin",
+      "baseline_event_balanced_mae": 9879.673333333334,
+      "delta_vs_baseline": 2070.110596597404,
+      "error_share": 0.011171626168411756,
+      "event_balanced_mae": 11949.783929930738,
+      "event_count": 1,
+      "event_improvement_rate": 0.0,
+      "home_club_key": "lech",
+      "horizons": [
+        {
+          "capacity": 42837.0,
+          "horizon": "T-30",
+          "prediction": 24962.28395503469,
+          "signed_error": -14533.71604496531
+        },
+        {
+          "capacity": 42837.0,
+          "horizon": "T-14",
+          "prediction": 27321.469680213664,
+          "signed_error": -12174.530319786336
+        },
+        {
+          "capacity": 42837.0,
+          "horizon": "T-7",
+          "prediction": 28799.629501434803,
+          "signed_error": -10696.370498565197
+        },
+        {
+          "capacity": 42837.0,
+          "horizon": "T-3",
+          "prediction": 28348.91406572308,
+          "signed_error": -11147.085934276922
+        },
+        {
+          "capacity": 42837.0,
+          "horizon": "T-1",
+          "prediction": 28298.78314794007,
+          "signed_error": -11197.21685205993
+        }
+      ],
+      "kickoff_at": "2025-10-19 12:45:00+00:00",
+      "match_key": "2025/2026|2025-10-19|lech|pogonszczecin",
+      "median_event_ae": 11949.783929930738,
+      "overprediction_rate": 0.0,
+      "p90_event_ae": 11949.783929930738,
+      "row_count": 5,
+      "season": "2025/2026",
+      "signed_bias": -11949.783929930738,
+      "unassessed": [
+        "booking_curve_dynamics",
+        "source_defect",
+        "event_specific_shock"
+      ],
+      "worst_event_ae": 11949.783929930738
+    },
+    {
+      "actual_attendance": 16610.0,
+      "associations_only": [
+        "same_signed_error_across_available_horizons",
+        "prediction_horizon_spread_at_least_1000"
+      ],
+      "away_club_key": "zaglebie_lubin",
+      "baseline_event_balanced_mae": 13345.69898989899,
+      "delta_vs_baseline": -2323.3187454367962,
+      "error_share": 0.010304614066601984,
+      "event_balanced_mae": 11022.380244462194,
+      "event_count": 1,
+      "event_improvement_rate": 1.0,
+      "home_club_key": "lech",
+      "horizons": [
+        {
+          "capacity": 42837.0,
+          "horizon": "T-30",
+          "prediction": 28260.588910605744,
+          "signed_error": 11650.588910605744
+        },
+        {
+          "capacity": 42837.0,
+          "horizon": "T-14",
+          "prediction": 29116.116571497198,
+          "signed_error": 12506.116571497198
+        },
+        {
+          "capacity": 42837.0,
+          "horizon": "T-7",
+          "prediction": 28869.66705318208,
+          "signed_error": 12259.667053182078
+        },
+        {
+          "capacity": 42837.0,
+          "horizon": "T-3",
+          "prediction": 25205.99941184786,
+          "signed_error": 8595.99941184786
+        },
+        {
+          "capacity": 42837.0,
+          "horizon": "T-1",
+          "prediction": 26709.529275178087,
+          "signed_error": 10099.529275178087
+        }
+      ],
+      "kickoff_at": "2025-02-23 16:30:00+00:00",
+      "match_key": "2024/2025|2025-02-23|lech|zaglebie_lubin",
+      "median_event_ae": 11022.380244462194,
+      "overprediction_rate": 1.0,
+      "p90_event_ae": 11022.380244462194,
+      "row_count": 5,
+      "season": "2024/2025",
+      "signed_bias": 11022.380244462194,
+      "unassessed": [
+        "booking_curve_dynamics",
+        "source_defect",
+        "event_specific_shock"
+      ],
+      "worst_event_ae": 11022.380244462194
+    },
+    {
+      "actual_attendance": 33546.0,
+      "associations_only": [
+        "same_signed_error_across_available_horizons",
+        "prediction_horizon_spread_at_least_1000"
+      ],
+      "away_club_key": "lech",
+      "baseline_event_balanced_mae": 18539.06666666667,
+      "delta_vs_baseline": -8535.416824253536,
+      "error_share": 0.00935222235100099,
+      "event_balanced_mae": 10003.649842413133,
+      "event_count": 1,
+      "event_improvement_rate": 1.0,
+      "home_club_key": "slask_wroclaw",
+      "horizons": [
+        {
+          "capacity": 42771.0,
+          "horizon": "T-30",
+          "prediction": 22706.754035200407,
+          "signed_error": -10839.245964799593
+        },
+        {
+          "capacity": 42771.0,
+          "horizon": "T-14",
+          "prediction": 21510.929732241584,
+          "signed_error": -12035.070267758416
+        },
+        {
+          "capacity": 42771.0,
+          "horizon": "T-7",
+          "prediction": 23714.452303996986,
+          "signed_error": -9831.547696003014
+        },
+        {
+          "capacity": 42771.0,
+          "horizon": "T-3",
+          "prediction": 25401.882256065655,
+          "signed_error": -8144.117743934345
+        },
+        {
+          "capacity": 42771.0,
+          "horizon": "T-1",
+          "prediction": 24377.732460429695,
+          "signed_error": -9168.267539570305
+        }
+      ],
+      "kickoff_at": "2025-03-29 19:15:00+00:00",
+      "match_key": "2024/2025|2025-03-29|slask_wroclaw|lech",
+      "median_event_ae": 10003.649842413133,
+      "overprediction_rate": 0.0,
+      "p90_event_ae": 10003.649842413133,
+      "row_count": 5,
+      "season": "2024/2025",
+      "signed_bias": -10003.649842413133,
+      "unassessed": [
+        "booking_curve_dynamics",
+        "source_defect",
+        "event_specific_shock"
+      ],
+      "worst_event_ae": 10003.649842413133
+    },
+    {
+      "actual_attendance": 14638.0,
+      "associations_only": [
+        "same_signed_error_across_available_horizons",
+        "prediction_horizon_spread_at_least_1000"
+      ],
+      "away_club_key": "piastgliwice",
+      "baseline_event_balanced_mae": 13879.788888888888,
+      "delta_vs_baseline": -3920.400164902696,
+      "error_share": 0.009310843471536644,
+      "event_balanced_mae": 9959.388723986192,
+      "event_count": 1,
+      "event_improvement_rate": 1.0,
+      "home_club_key": "lech",
+      "horizons": [
+        {
+          "capacity": 42837.0,
+          "horizon": "T-30",
+          "prediction": 24436.589478778973,
+          "signed_error": 9798.589478778973
+        },
+        {
+          "capacity": 42837.0,
+          "horizon": "T-14",
+          "prediction": 22904.16622632278,
+          "signed_error": 8266.16622632278
+        },
+        {
+          "capacity": 42837.0,
+          "horizon": "T-7",
+          "prediction": 26780.892584454446,
+          "signed_error": 12142.892584454446
+        },
+        {
+          "capacity": 42837.0,
+          "horizon": "T-3",
+          "prediction": 24580.36612346518,
+          "signed_error": 9942.36612346518
+        },
+        {
+          "capacity": 42837.0,
+          "horizon": "T-1",
+          "prediction": 24284.929206909583,
+          "signed_error": 9646.929206909583
+        }
+      ],
+      "kickoff_at": "2026-02-15 16:30:00+00:00",
+      "match_key": "2025/2026|2026-02-15|lech|piastgliwice",
+      "median_event_ae": 9959.388723986192,
+      "overprediction_rate": 1.0,
+      "p90_event_ae": 9959.388723986192,
+      "row_count": 5,
+      "season": "2025/2026",
+      "signed_bias": 9959.388723986192,
+      "unassessed": [
+        "booking_curve_dynamics",
+        "source_defect",
+        "event_specific_shock"
+      ],
+      "worst_event_ae": 9959.388723986192
+    },
+    {
+      "actual_attendance": 34285.0,
+      "associations_only": [
+        "same_signed_error_across_available_horizons",
+        "prediction_horizon_spread_at_least_1000"
+      ],
+      "away_club_key": "slask_wroclaw",
+      "baseline_event_balanced_mae": 10445.5,
+      "delta_vs_baseline": -487.8817945387309,
+      "error_share": 0.009309188247375214,
+      "event_balanced_mae": 9957.61820546127,
+      "event_count": 1,
+      "event_improvement_rate": 1.0,
+      "home_club_key": "lech",
+      "horizons": [
+        {
+          "capacity": 42837.0,
+          "horizon": "T-30",
+          "prediction": 21380.743429817478,
+          "signed_error": -12904.256570182522
+        },
+        {
+          "capacity": 42837.0,
+          "horizon": "T-14",
+          "prediction": 21024.209466278033,
+          "signed_error": -13260.790533721967
+        },
+        {
+          "capacity": 42837.0,
+          "horizon": "T-7",
+          "prediction": 26648.416946584926,
+          "signed_error": -7636.583053415074
+        },
+        {
+          "capacity": 42837.0,
+          "horizon": "T-3",
+          "prediction": 25898.071001629705,
+          "signed_error": -8386.928998370295
+        },
+        {
+          "capacity": 42837.0,
+          "horizon": "T-1",
+          "prediction": 26685.468128383505,
+          "signed_error": -7599.531871616495
+        }
+      ],
+      "kickoff_at": "2024-09-22 15:30:00+00:00",
+      "match_key": "2024/2025|2024-09-22|lech|slask_wroclaw",
+      "median_event_ae": 9957.61820546127,
+      "overprediction_rate": 0.0,
+      "p90_event_ae": 9957.61820546127,
+      "row_count": 5,
+      "season": "2024/2025",
+      "signed_bias": -9957.61820546127,
+      "unassessed": [
+        "booking_curve_dynamics",
+        "source_defect",
+        "event_specific_shock"
+      ],
+      "worst_event_ae": 9957.61820546127
+    },
+    {
+      "actual_attendance": 36239.0,
+      "associations_only": [
+        "same_signed_error_across_available_horizons",
+        "prediction_horizon_spread_at_least_1000"
+      ],
+      "away_club_key": "termalica",
+      "baseline_event_balanced_mae": 10083.404545454547,
+      "delta_vs_baseline": -498.1941861869527,
+      "error_share": 0.008961031220917312,
+      "event_balanced_mae": 9585.210359267594,
+      "event_count": 1,
+      "event_improvement_rate": 1.0,
+      "home_club_key": "lech",
+      "horizons": [
+        {
+          "capacity": 42837.0,
+          "horizon": "T-30",
+          "prediction": 29123.130422434744,
+          "signed_error": -7115.869577565256
+        },
+        {
+          "capacity": 42837.0,
+          "horizon": "T-14",
+          "prediction": 21747.324517134297,
+          "signed_error": -14491.675482865703
+        },
+        {
+          "capacity": 42837.0,
+          "horizon": "T-7",
+          "prediction": 28908.341297938096,
+          "signed_error": -7330.6587020619045
+        },
+        {
+          "capacity": 42837.0,
+          "horizon": "T-3",
+          "prediction": 26414.26436042702,
+          "signed_error": -9824.73563957298
+        },
+        {
+          "capacity": 42837.0,
+          "horizon": "T-1",
+          "prediction": 27075.88760572788,
+          "signed_error": -9163.11239427212
+        }
+      ],
+      "kickoff_at": "2026-03-22 13:45:00+00:00",
+      "match_key": "2025/2026|2026-03-22|lech|termalica",
+      "median_event_ae": 9585.210359267594,
+      "overprediction_rate": 0.0,
+      "p90_event_ae": 9585.210359267594,
+      "row_count": 5,
+      "season": "2025/2026",
+      "signed_bias": -9585.210359267594,
+      "unassessed": [
+        "booking_curve_dynamics",
+        "source_defect",
+        "event_specific_shock"
+      ],
+      "worst_event_ae": 9585.210359267594
+    },
+    {
+      "actual_attendance": 35000.0,
+      "associations_only": [
+        "same_signed_error_across_available_horizons",
+        "prediction_horizon_spread_at_least_1000"
+      ],
+      "away_club_key": "legia",
+      "baseline_event_balanced_mae": 21595.022023809524,
+      "delta_vs_baseline": -12099.428970136942,
+      "error_share": 0.008877249703008846,
+      "event_balanced_mae": 9495.593053672583,
+      "event_count": 1,
+      "event_improvement_rate": 1.0,
+      "home_club_key": "lechiagdansk",
+      "horizons": [
+        {
+          "capacity": 41620.0,
+          "horizon": "T-30",
+          "prediction": 26425.1869299873,
+          "signed_error": -8574.8130700127
+        },
+        {
+          "capacity": 41620.0,
+          "horizon": "T-14",
+          "prediction": 24151.473194320177,
+          "signed_error": -10848.526805679823
+        },
+        {
+          "capacity": 41620.0,
+          "horizon": "T-7",
+          "prediction": 28207.523151868376,
+          "signed_error": -6792.476848131624
+        },
+        {
+          "capacity": 41620.0,
+          "horizon": "T-3",
+          "prediction": 24729.19298539283,
+          "signed_error": -10270.80701460717
+        },
+        {
+          "capacity": 41620.0,
+          "horizon": "T-1",
+          "prediction": 24008.65847006841,
+          "signed_error": -10991.34152993159
+        }
+      ],
+      "kickoff_at": "2026-05-17 15:30:00+00:00",
+      "match_key": "2025/2026|2026-05-17|lechiagdansk|legia",
+      "median_event_ae": 9495.593053672583,
+      "overprediction_rate": 0.0,
+      "p90_event_ae": 9495.593053672583,
+      "row_count": 5,
+      "season": "2025/2026",
+      "signed_bias": -9495.593053672583,
+      "unassessed": [
+        "booking_curve_dynamics",
+        "source_defect",
+        "event_specific_shock"
+      ],
+      "worst_event_ae": 9495.593053672583
+    },
+    {
+      "actual_attendance": 29987.0,
+      "associations_only": [
+        "same_signed_error_across_available_horizons",
+        "prediction_horizon_spread_at_least_1000"
+      ],
+      "away_club_key": "zaglebie_lubin",
+      "baseline_event_balanced_mae": 10940.65025641026,
+      "delta_vs_baseline": -1566.8052222389506,
+      "error_share": 0.008763429790566244,
+      "event_balanced_mae": 9373.845034171309,
+      "event_count": 1,
+      "event_improvement_rate": 1.0,
+      "home_club_key": "slask_wroclaw",
+      "horizons": [
+        {
+          "capacity": 42771.0,
+          "horizon": "T-30",
+          "prediction": 20877.875534315266,
+          "signed_error": -9109.124465684734
+        },
+        {
+          "capacity": 42771.0,
+          "horizon": "T-14",
+          "prediction": 22109.17850381963,
+          "signed_error": -7877.8214961803715
+        },
+        {
+          "capacity": 42771.0,
+          "horizon": "T-7",
+          "prediction": 21246.766266778155,
+          "signed_error": -8740.233733221845
+        },
+        {
+          "capacity": 42771.0,
+          "horizon": "T-3",
+          "prediction": 19746.095021208697,
+          "signed_error": -10240.904978791303
+        },
+        {
+          "capacity": 42771.0,
+          "horizon": "T-1",
+          "prediction": 19085.859503021707,
+          "signed_error": -10901.140496978293
+        }
+      ],
+      "kickoff_at": "2025-05-03 15:30:00+00:00",
+      "match_key": "2024/2025|2025-05-03|slask_wroclaw|zaglebie_lubin",
+      "median_event_ae": 9373.845034171309,
+      "overprediction_rate": 0.0,
+      "p90_event_ae": 9373.845034171309,
+      "row_count": 5,
+      "season": "2024/2025",
+      "signed_bias": -9373.845034171309,
+      "unassessed": [
+        "booking_curve_dynamics",
+        "source_defect",
+        "event_specific_shock"
+      ],
+      "worst_event_ae": 9373.845034171309
+    },
+    {
+      "actual_attendance": 26361.0,
+      "associations_only": [
+        "same_signed_error_across_available_horizons",
+        "prediction_horizon_spread_at_least_1000"
+      ],
+      "away_club_key": "motorlublin",
+      "baseline_event_balanced_mae": 10805.820512820514,
+      "delta_vs_baseline": -1903.2955318097756,
+      "error_share": 0.008322801619340693,
+      "event_balanced_mae": 8902.524981010738,
+      "event_count": 1,
+      "event_improvement_rate": 1.0,
+      "home_club_key": "slask_wroclaw",
+      "horizons": [
+        {
+          "capacity": 42771.0,
+          "horizon": "T-30",
+          "prediction": 18654.520791380204,
+          "signed_error": -7706.479208619796
+        },
+        {
+          "capacity": 42771.0,
+          "horizon": "T-14",
+          "prediction": 13424.04636720247,
+          "signed_error": -12936.95363279753
+        },
+        {
+          "capacity": 42771.0,
+          "horizon": "T-7",
+          "prediction": 17727.29579138092,
+          "signed_error": -8633.704208619081
+        },
+        {
+          "capacity": 42771.0,
+          "horizon": "T-3",
+          "prediction": 19102.407733294014,
+          "signed_error": -7258.592266705986
+        },
+        {
+          "capacity": 42771.0,
+          "horizon": "T-1",
+          "prediction": 18384.10441168871,
+          "signed_error": -7976.89558831129
+        }
+      ],
+      "kickoff_at": "2025-04-05 15:30:00+00:00",
+      "match_key": "2024/2025|2025-04-05|slask_wroclaw|motorlublin",
+      "median_event_ae": 8902.524981010738,
+      "overprediction_rate": 0.0,
+      "p90_event_ae": 8902.524981010738,
+      "row_count": 5,
+      "season": "2024/2025",
+      "signed_bias": -8902.524981010738,
+      "unassessed": [
+        "booking_curve_dynamics",
+        "source_defect",
+        "event_specific_shock"
+      ],
+      "worst_event_ae": 8902.524981010738
+    },
+    {
+      "actual_attendance": 2800.0,
+      "associations_only": [
+        "same_signed_error_across_available_horizons",
+        "prediction_horizon_spread_at_least_1000"
+      ],
+      "away_club_key": "pogonszczecin",
+      "baseline_event_balanced_mae": 8192.966666666667,
+      "delta_vs_baseline": 401.4810547927773,
+      "error_share": 0.008034786037228342,
+      "event_balanced_mae": 8594.447721459444,
+      "event_count": 1,
+      "event_improvement_rate": 0.0,
+      "home_club_key": "cracovia",
+      "horizons": [
+        {
+          "capacity": 15016.0,
+          "horizon": "T-30",
+          "prediction": 11099.055093350935,
+          "signed_error": 8299.055093350935
+        },
+        {
+          "capacity": 15016.0,
+          "horizon": "T-14",
+          "prediction": 11056.632461439991,
+          "signed_error": 8256.632461439991
+        },
+        {
+          "capacity": 15016.0,
+          "horizon": "T-7",
+          "prediction": 10831.522233853353,
+          "signed_error": 8031.522233853353
+        },
+        {
+          "capacity": 15016.0,
+          "horizon": "T-3",
+          "prediction": 12051.913208222824,
+          "signed_error": 9251.913208222824
+        },
+        {
+          "capacity": 15016.0,
+          "horizon": "T-1",
+          "prediction": 11933.115610430117,
+          "signed_error": 9133.115610430117
+        }
+      ],
+      "kickoff_at": "2024-09-14 15:30:00+00:00",
+      "match_key": "2024/2025|2024-09-14|cracovia|pogonszczecin",
+      "median_event_ae": 8594.447721459444,
+      "overprediction_rate": 1.0,
+      "p90_event_ae": 8594.447721459444,
+      "row_count": 5,
+      "season": "2024/2025",
+      "signed_bias": 8594.447721459444,
+      "unassessed": [
+        "booking_curve_dynamics",
+        "source_defect",
+        "event_specific_shock"
+      ],
+      "worst_event_ae": 8594.447721459444
+    },
+    {
+      "actual_attendance": 41598.0,
+      "associations_only": [
+        "same_signed_error_across_available_horizons",
+        "prediction_horizon_spread_at_least_1000",
+        "high_actual_fill"
+      ],
+      "away_club_key": "arkagdynia",
+      "baseline_event_balanced_mae": 11573.89641025641,
+      "delta_vs_baseline": -3044.3682395607702,
+      "error_share": 0.007974093981505235,
+      "event_balanced_mae": 8529.52817069564,
+      "event_count": 1,
+      "event_improvement_rate": 1.0,
+      "home_club_key": "lech",
+      "horizons": [
+        {
+          "capacity": 42837.0,
+          "horizon": "T-30",
+          "prediction": 30799.60050429713,
+          "signed_error": -10798.39949570287
+        },
+        {
+          "capacity": 42837.0,
+          "horizon": "T-14",
+          "prediction": 34600.403690674604,
+          "signed_error": -6997.596309325396
+        },
+        {
+          "capacity": 42837.0,
+          "horizon": "T-7",
+          "prediction": 36152.68890753394,
+          "signed_error": -5445.311092466058
+        },
+        {
+          "capacity": 42837.0,
+          "horizon": "T-3",
+          "prediction": 31438.69466984709,
+          "signed_error": -10159.30533015291
+        },
+        {
+          "capacity": 42837.0,
+          "horizon": "T-1",
+          "prediction": 32350.971374169036,
+          "signed_error": -9247.028625830964
+        }
+      ],
+      "kickoff_at": "2026-05-08 18:30:00+00:00",
+      "match_key": "2025/2026|2026-05-08|lech|arkagdynia",
+      "median_event_ae": 8529.52817069564,
+      "overprediction_rate": 0.0,
+      "p90_event_ae": 8529.52817069564,
+      "row_count": 5,
+      "season": "2025/2026",
+      "signed_bias": -8529.52817069564,
+      "unassessed": [
+        "booking_curve_dynamics",
+        "source_defect",
+        "event_specific_shock"
+      ],
+      "worst_event_ae": 8529.52817069564
+    },
+    {
+      "actual_attendance": 17827.0,
+      "associations_only": [
+        "same_signed_error_across_available_horizons",
+        "prediction_horizon_spread_at_least_1000"
+      ],
+      "away_club_key": "lechiagdansk",
+      "baseline_event_balanced_mae": 12889.155555555557,
+      "delta_vs_baseline": -5012.5204283916355,
+      "error_share": 0.007363716668152823,
+      "event_balanced_mae": 7876.635127163921,
+      "event_count": 1,
+      "event_improvement_rate": 1.0,
+      "home_club_key": "lech",
+      "horizons": [
+        {
+          "capacity": 42837.0,
+          "horizon": "T-30",
+          "prediction": 24448.619656786588,
+          "signed_error": 6621.619656786588
+        },
+        {
+          "capacity": 42837.0,
+          "horizon": "T-14",
+          "prediction": 24244.230544468242,
+          "signed_error": 6417.230544468242
+        },
+        {
+          "capacity": 42837.0,
+          "horizon": "T-7",
+          "prediction": 27231.5439467413,
+          "signed_error": 9404.543946741302
+        },
+        {
+          "capacity": 42837.0,
+          "horizon": "T-3",
+          "prediction": 26439.10453058848,
+          "signed_error": 8612.10453058848
+        },
+        {
+          "capacity": 42837.0,
+          "horizon": "T-1",
+          "prediction": 26154.676957234995,
+          "signed_error": 8327.676957234995
+        }
+      ],
+      "kickoff_at": "2026-01-31 19:15:00+00:00",
+      "match_key": "2025/2026|2026-01-31|lech|lechiagdansk",
+      "median_event_ae": 7876.635127163921,
+      "overprediction_rate": 1.0,
+      "p90_event_ae": 7876.635127163921,
+      "row_count": 5,
+      "season": "2025/2026",
+      "signed_bias": 7876.635127163921,
+      "unassessed": [
+        "booking_curve_dynamics",
+        "source_defect",
+        "event_specific_shock"
+      ],
+      "worst_event_ae": 7876.635127163921
+    },
+    {
+      "actual_attendance": 15048.0,
+      "associations_only": [
+        "same_signed_error_across_available_horizons",
+        "high_actual_fill"
+      ],
+      "away_club_key": "gornikzabrze",
+      "baseline_event_balanced_mae": 8248.39090909091,
+      "delta_vs_baseline": -462.26614866679756,
+      "error_share": 0.007279100244331939,
+      "event_balanced_mae": 7786.124760424112,
+      "event_count": 1,
+      "event_improvement_rate": 1.0,
+      "home_club_key": "gkskatowice",
+      "horizons": [
+        {
+          "capacity": 15048.0,
+          "horizon": "T-30",
+          "prediction": 7414.039740521941,
+          "signed_error": -7633.960259478059
+        },
+        {
+          "capacity": 15048.0,
+          "horizon": "T-14",
+          "prediction": 7320.405367627675,
+          "signed_error": -7727.594632372325
+        },
+        {
+          "capacity": 15048.0,
+          "horizon": "T-7",
+          "prediction": 6919.708266664939,
+          "signed_error": -8128.291733335061
+        },
+        {
+          "capacity": 15048.0,
+          "horizon": "T-3",
+          "prediction": 7214.737082492681,
+          "signed_error": -7833.262917507319
+        },
+        {
+          "capacity": 15048.0,
+          "horizon": "T-1",
+          "prediction": 7440.485740572205,
+          "signed_error": -7607.514259427795
+        }
+      ],
+      "kickoff_at": "2025-03-30 15:30:00+00:00",
+      "match_key": "2024/2025|2025-03-30|gkskatowice|gornikzabrze",
+      "median_event_ae": 7786.124760424112,
+      "overprediction_rate": 0.0,
+      "p90_event_ae": 7786.124760424112,
+      "row_count": 5,
+      "season": "2024/2025",
+      "signed_bias": -7786.124760424112,
+      "unassessed": [
+        "booking_curve_dynamics",
+        "source_defect",
+        "event_specific_shock"
+      ],
+      "worst_event_ae": 7786.124760424112
+    },
+    {
+      "actual_attendance": 35299.0,
+      "associations_only": [
+        "same_signed_error_across_available_horizons",
+        "prediction_horizon_spread_at_least_1000"
+      ],
+      "away_club_key": "jagiellonia",
+      "baseline_event_balanced_mae": 7145.253333333334,
+      "delta_vs_baseline": 430.7405718694017,
+      "error_share": 0.0070826528964345395,
+      "event_balanced_mae": 7575.993905202736,
+      "event_count": 1,
+      "event_improvement_rate": 0.0,
+      "home_club_key": "lech",
+      "horizons": [
+        {
+          "capacity": 42837.0,
+          "horizon": "T-30",
+          "prediction": 30369.539162028555,
+          "signed_error": -4929.460837971445
+        },
+        {
+          "capacity": 42837.0,
+          "horizon": "T-14",
+          "prediction": 23418.686887397656,
+          "signed_error": -11880.313112602344
+        },
+        {
+          "capacity": 42837.0,
+          "horizon": "T-7",
+          "prediction": 29100.962003732733,
+          "signed_error": -6198.037996267267
+        },
+        {
+          "capacity": 42837.0,
+          "horizon": "T-3",
+          "prediction": 27705.970117021436,
+          "signed_error": -7593.029882978564
+        },
+        {
+          "capacity": 42837.0,
+          "horizon": "T-1",
+          "prediction": 28019.87230380594,
+          "signed_error": -7279.12769619406
+        }
+      ],
+      "kickoff_at": "2025-09-28 12:45:00+00:00",
+      "match_key": "2025/2026|2025-09-28|lech|jagiellonia",
+      "median_event_ae": 7575.993905202736,
+      "overprediction_rate": 0.0,
+      "p90_event_ae": 7575.993905202736,
+      "row_count": 5,
+      "season": "2025/2026",
+      "signed_bias": -7575.993905202736,
+      "unassessed": [
+        "booking_curve_dynamics",
+        "source_defect",
+        "event_specific_shock"
+      ],
+      "worst_event_ae": 7575.993905202736
+    },
+    {
+      "actual_attendance": 33877.0,
+      "associations_only": [
+        "same_signed_error_across_available_horizons",
+        "prediction_horizon_spread_at_least_1000"
+      ],
+      "away_club_key": "radomiak",
+      "baseline_event_balanced_mae": 3207.2845238095238,
+      "delta_vs_baseline": 4283.815545567259,
+      "error_share": 0.0070032872607534965,
+      "event_balanced_mae": 7491.100069376783,
+      "event_count": 1,
+      "event_improvement_rate": 0.0,
+      "home_club_key": "lech",
+      "horizons": [
+        {
+          "capacity": 42837.0,
+          "horizon": "T-30",
+          "prediction": 27279.846288715373,
+          "signed_error": -6597.153711284627
+        },
+        {
+          "capacity": 42837.0,
+          "horizon": "T-14",
+          "prediction": 26624.73948825438,
+          "signed_error": -7252.260511745619
+        },
+        {
+          "capacity": 42837.0,
+          "horizon": "T-7",
+          "prediction": 27352.47510991885,
+          "signed_error": -6524.524890081149
+        },
+        {
+          "capacity": 42837.0,
+          "horizon": "T-3",
+          "prediction": 25034.857762980704,
+          "signed_error": -8842.142237019296
+        },
+        {
+          "capacity": 42837.0,
+          "horizon": "T-1",
+          "prediction": 25637.58100324678,
+          "signed_error": -8239.418996753218
+        }
+      ],
+      "kickoff_at": "2025-11-23 13:45:00+00:00",
+      "match_key": "2025/2026|2025-11-23|lech|radomiak",
+      "median_event_ae": 7491.100069376783,
+      "overprediction_rate": 0.0,
+      "p90_event_ae": 7491.100069376783,
+      "row_count": 5,
+      "season": "2025/2026",
+      "signed_bias": -7491.100069376783,
+      "unassessed": [
+        "booking_curve_dynamics",
+        "source_defect",
+        "event_specific_shock"
+      ],
+      "worst_event_ae": 7491.100069376783
+    },
+    {
+      "actual_attendance": 32365.0,
+      "associations_only": [
+        "same_signed_error_across_available_horizons",
+        "prediction_horizon_spread_at_least_1000"
+      ],
+      "away_club_key": "jagiellonia",
+      "baseline_event_balanced_mae": 9922.3,
+      "delta_vs_baseline": -3261.903573564934,
+      "error_share": 0.006226678193167079,
+      "event_balanced_mae": 6660.396426435065,
+      "event_count": 1,
+      "event_improvement_rate": 1.0,
+      "home_club_key": "lech",
+      "horizons": [
+        {
+          "capacity": 42837.0,
+          "horizon": "T-30",
+          "prediction": 23287.76188218611,
+          "signed_error": -9077.23811781389
+        },
+        {
+          "capacity": 42837.0,
+          "horizon": "T-14",
+          "prediction": 21076.78807946367,
+          "signed_error": -11288.21192053633
+        },
+        {
+          "capacity": 42837.0,
+          "horizon": "T-7",
+          "prediction": 25100.904806357583,
+          "signed_error": -7264.095193642417
+        },
+        {
+          "capacity": 42837.0,
+          "horizon": "T-3",
+          "prediction": 28999.135050110093,
+          "signed_error": -3365.8649498899067
+        },
+        {
+          "capacity": 42837.0,
+          "horizon": "T-1",
+          "prediction": 30058.428049707218,
+          "signed_error": -2306.5719502927823
+        }
+      ],
+      "kickoff_at": "2024-09-14 18:15:00+00:00",
+      "match_key": "2024/2025|2024-09-14|lech|jagiellonia",
+      "median_event_ae": 6660.396426435065,
+      "overprediction_rate": 0.0,
+      "p90_event_ae": 6660.396426435065,
+      "row_count": 5,
+      "season": "2024/2025",
+      "signed_bias": -6660.396426435065,
+      "unassessed": [
+        "booking_curve_dynamics",
+        "source_defect",
+        "event_specific_shock"
+      ],
+      "worst_event_ae": 6660.396426435065
+    },
+    {
+      "actual_attendance": 19620.0,
+      "associations_only": [
+        "same_signed_error_across_available_horizons",
+        "prediction_horizon_spread_at_least_1000"
+      ],
+      "away_club_key": "gornikzabrze",
+      "baseline_event_balanced_mae": 5305.650980392158,
+      "delta_vs_baseline": 1303.3895276069798,
+      "error_share": 0.006178666519845974,
+      "event_balanced_mae": 6609.040507999138,
+      "event_count": 1,
+      "event_improvement_rate": 0.0,
+      "home_club_key": "lech",
+      "horizons": [
+        {
+          "capacity": 42837.0,
+          "horizon": "T-30",
+          "prediction": 21570.632333714842,
+          "signed_error": 1950.6323337148424
+        },
+        {
+          "capacity": 42837.0,
+          "horizon": "T-14",
+          "prediction": 29151.55324300572,
+          "signed_error": 9531.553243005721
+        },
+        {
+          "capacity": 42837.0,
+          "horizon": "T-7",
+          "prediction": 26255.29978832266,
+          "signed_error": 6635.29978832266
+        },
+        {
+          "capacity": 42837.0,
+          "horizon": "T-3",
+          "prediction": 27846.578219431765,
+          "signed_error": 8226.578219431765
+        },
+        {
+          "capacity": 42837.0,
+          "horizon": "T-1",
+          "prediction": 26321.1389555207,
+          "signed_error": 6701.138955520699
+        }
+      ],
+      "kickoff_at": "2024-07-21 15:30:00+00:00",
+      "match_key": "2024/2025|2024-07-21|lech|gornikzabrze",
+      "median_event_ae": 6609.040507999138,
+      "overprediction_rate": 1.0,
+      "p90_event_ae": 6609.040507999138,
+      "row_count": 5,
+      "season": "2024/2025",
+      "signed_bias": 6609.040507999138,
+      "unassessed": [
+        "booking_curve_dynamics",
+        "source_defect",
+        "event_specific_shock"
+      ],
+      "worst_event_ae": 6609.040507999138
+    },
+    {
+      "actual_attendance": 14482.0,
+      "associations_only": [
+        "same_signed_error_across_available_horizons",
+        "prediction_horizon_spread_at_least_1000"
+      ],
+      "away_club_key": "cracovia",
+      "baseline_event_balanced_mae": 10163.0,
+      "delta_vs_baseline": -3668.1351772672724,
+      "error_share": 0.006071925838943473,
+      "event_balanced_mae": 6494.864822732728,
+      "event_count": 1,
+      "event_improvement_rate": 1.0,
+      "home_club_key": "slask_wroclaw",
+      "horizons": [
+        {
+          "capacity": 42771.0,
+          "horizon": "T-30",
+          "prediction": 24215.358541821814,
+          "signed_error": 9733.358541821814
+        },
+        {
+          "capacity": 42771.0,
+          "horizon": "T-14",
+          "prediction": 19624.94782926721,
+          "signed_error": 5142.94782926721
+        },
+        {
+          "capacity": 42771.0,
+          "horizon": "T-7",
+          "prediction": 21299.07415508225,
+          "signed_error": 6817.0741550822495
+        },
+        {
+          "capacity": 42771.0,
+          "horizon": "T-3",
+          "prediction": 19906.602978325656,
+          "signed_error": 5424.602978325656
+        },
+        {
+          "capacity": 42771.0,
+          "horizon": "T-1",
+          "prediction": 19838.34060916671,
+          "signed_error": 5356.340609166709
+        }
+      ],
+      "kickoff_at": "2024-10-06 12:45:00+00:00",
+      "match_key": "2024/2025|2024-10-06|slask_wroclaw|cracovia",
+      "median_event_ae": 6494.864822732728,
+      "overprediction_rate": 1.0,
+      "p90_event_ae": 6494.864822732728,
+      "row_count": 5,
+      "season": "2024/2025",
+      "signed_bias": 6494.864822732728,
+      "unassessed": [
+        "booking_curve_dynamics",
+        "source_defect",
+        "event_specific_shock"
+      ],
+      "worst_event_ae": 6494.864822732728
+    },
+    {
+      "actual_attendance": 36208.0,
+      "associations_only": [
+        "prediction_horizon_spread_at_least_1000"
+      ],
+      "away_club_key": "legia",
+      "baseline_event_balanced_mae": 14599.5,
+      "delta_vs_baseline": -8146.045741044001,
+      "error_share": 0.006033211888913125,
+      "event_balanced_mae": 6453.454258955999,
+      "event_count": 1,
+      "event_improvement_rate": 1.0,
+      "home_club_key": "slask_wroclaw",
+      "horizons": [
+        {
+          "capacity": 42771.0,
+          "horizon": "T-30",
+          "prediction": 42771.0,
+          "signed_error": 6563.0
+        },
+        {
+          "capacity": 42771.0,
+          "horizon": "T-14",
+          "prediction": 35386.33379695234,
+          "signed_error": -821.6662030476582
+        },
+        {
+          "capacity": 42771.0,
+          "horizon": "T-7",
+          "prediction": 28354.442150276715,
+          "signed_error": -7853.5578497232855
+        },
+        {
+          "capacity": 42771.0,
+          "horizon": "T-3",
+          "prediction": 28413.354623677733,
+          "signed_error": -7794.645376322267
+        },
+        {
+          "capacity": 42771.0,
+          "horizon": "T-1",
+          "prediction": 26973.598134313215,
+          "signed_error": -9234.401865686785
+        }
+      ],
+      "kickoff_at": "2024-08-25 18:15:00+00:00",
+      "match_key": "2024/2025|2024-08-25|slask_wroclaw|legia",
+      "median_event_ae": 6453.454258955999,
+      "overprediction_rate": 0.2,
+      "p90_event_ae": 6453.454258955999,
+      "row_count": 5,
+      "season": "2024/2025",
+      "signed_bias": -3828.254258955999,
+      "unassessed": [
+        "booking_curve_dynamics",
+        "source_defect",
+        "event_specific_shock"
+      ],
+      "worst_event_ae": 6453.454258955999
+    },
+    {
+      "actual_attendance": 41109.0,
+      "associations_only": [
+        "same_signed_error_across_available_horizons",
+        "prediction_horizon_spread_at_least_1000",
+        "high_actual_fill"
+      ],
+      "away_club_key": "piastgliwice",
+      "baseline_event_balanced_mae": 12494.056666666667,
+      "delta_vs_baseline": -6045.064057974522,
+      "error_share": 0.00602904077677133,
+      "event_balanced_mae": 6448.992608692145,
+      "event_count": 1,
+      "event_improvement_rate": 1.0,
+      "home_club_key": "lech",
+      "horizons": [
+        {
+          "capacity": 42837.0,
+          "horizon": "T-30",
+          "prediction": 34525.33908350903,
+          "signed_error": -6583.660916490968
+        },
+        {
+          "capacity": 42837.0,
+          "horizon": "T-14",
+          "prediction": 30875.35722631358,
+          "signed_error": -10233.64277368642
+        },
+        {
+          "capacity": 42837.0,
+          "horizon": "T-7",
+          "prediction": 35671.493166913904,
+          "signed_error": -5437.506833086096
+        },
+        {
+          "capacity": 42837.0,
+          "horizon": "T-3",
+          "prediction": 36132.29451711545,
+          "signed_error": -4976.70548288455
+        },
+        {
+          "capacity": 42837.0,
+          "horizon": "T-1",
+          "prediction": 36095.55296268731,
+          "signed_error": -5013.44703731269
+        }
+      ],
+      "kickoff_at": "2025-05-24 15:30:00+00:00",
+      "match_key": "2024/2025|2025-05-24|lech|piastgliwice",
+      "median_event_ae": 6448.992608692145,
+      "overprediction_rate": 0.0,
+      "p90_event_ae": 6448.992608692145,
+      "row_count": 5,
+      "season": "2024/2025",
+      "signed_bias": -6448.992608692145,
+      "unassessed": [
+        "booking_curve_dynamics",
+        "source_defect",
+        "event_specific_shock"
+      ],
+      "worst_event_ae": 6448.992608692145
+    },
+    {
+      "actual_attendance": 28236.0,
+      "associations_only": [
+        "same_signed_error_across_available_horizons",
+        "prediction_horizon_spread_at_least_1000",
+        "high_actual_fill"
+      ],
+      "away_club_key": "gkskatowice",
+      "baseline_event_balanced_mae": 5318.9,
+      "delta_vs_baseline": 1089.387066391234,
+      "error_share": 0.0059909859379361895,
+      "event_balanced_mae": 6408.287066391234,
+      "event_count": 1,
+      "event_improvement_rate": 0.0,
+      "home_club_key": "gornikzabrze",
+      "horizons": [
+        {
+          "capacity": 28236.0,
+          "horizon": "T-30",
+          "prediction": 24703.162446876933,
+          "signed_error": -3532.8375531230668
+        },
+        {
+          "capacity": 28236.0,
+          "horizon": "T-14",
+          "prediction": 21243.349581497125,
+          "signed_error": -6992.650418502875
+        },
+        {
+          "capacity": 28236.0,
+          "horizon": "T-7",
+          "prediction": 21380.64993245948,
+          "signed_error": -6855.350067540519
+        },
+        {
+          "capacity": 28236.0,
+          "horizon": "T-3",
+          "prediction": 21041.507621577042,
+          "signed_error": -7194.492378422958
+        },
+        {
+          "capacity": 28236.0,
+          "horizon": "T-1",
+          "prediction": 20769.895085633252,
+          "signed_error": -7466.104914366748
+        }
+      ],
+      "kickoff_at": "2025-08-23 18:15:00+00:00",
+      "match_key": "2025/2026|2025-08-23|gornikzabrze|gkskatowice",
+      "median_event_ae": 6408.287066391234,
+      "overprediction_rate": 0.0,
+      "p90_event_ae": 6408.287066391234,
+      "row_count": 5,
+      "season": "2025/2026",
+      "signed_bias": -6408.287066391234,
+      "unassessed": [
+        "booking_curve_dynamics",
+        "source_defect",
+        "event_specific_shock"
+      ],
+      "worst_event_ae": 6408.287066391234
+    },
+    {
+      "actual_attendance": 37457.0,
+      "associations_only": [
+        "same_signed_error_across_available_horizons",
+        "prediction_horizon_spread_at_least_1000"
+      ],
+      "away_club_key": "koronakielce",
+      "baseline_event_balanced_mae": 10649.594871794872,
+      "delta_vs_baseline": -4245.846043502135,
+      "error_share": 0.0059867432252815565,
+      "event_balanced_mae": 6403.748828292737,
+      "event_count": 1,
+      "event_improvement_rate": 1.0,
+      "home_club_key": "lech",
+      "horizons": [
+        {
+          "capacity": 42837.0,
+          "horizon": "T-30",
+          "prediction": 35092.35907904105,
+          "signed_error": -2364.6409209589474
+        },
+        {
+          "capacity": 42837.0,
+          "horizon": "T-14",
+          "prediction": 24115.431512119023,
+          "signed_error": -13341.568487880977
+        },
+        {
+          "capacity": 42837.0,
+          "horizon": "T-7",
+          "prediction": 32831.69337526598,
+          "signed_error": -4625.3066247340175
+        },
+        {
+          "capacity": 42837.0,
+          "horizon": "T-3",
+          "prediction": 31395.832479680503,
+          "signed_error": -6061.167520319497
+        },
+        {
+          "capacity": 42837.0,
+          "horizon": "T-1",
+          "prediction": 31830.939412429754,
+          "signed_error": -5626.060587570246
+        }
+      ],
+      "kickoff_at": "2025-04-05 18:15:00+00:00",
+      "match_key": "2024/2025|2025-04-05|lech|koronakielce",
+      "median_event_ae": 6403.748828292737,
+      "overprediction_rate": 0.0,
+      "p90_event_ae": 6403.748828292737,
+      "row_count": 5,
+      "season": "2024/2025",
+      "signed_bias": -6403.748828292737,
+      "unassessed": [
+        "booking_curve_dynamics",
+        "source_defect",
+        "event_specific_shock"
+      ],
+      "worst_event_ae": 6403.748828292737
+    },
+    {
+      "actual_attendance": 14585.0,
+      "associations_only": [
+        "same_signed_error_across_available_horizons",
+        "prediction_horizon_spread_at_least_1000"
+      ],
+      "away_club_key": "koronakielce",
+      "baseline_event_balanced_mae": 8431.377777777778,
+      "delta_vs_baseline": -2033.3428594732577,
+      "error_share": 0.005981401399293521,
+      "event_balanced_mae": 6398.03491830452,
+      "event_count": 1,
+      "event_improvement_rate": 1.0,
+      "home_club_key": "legia",
+      "horizons": [
+        {
+          "capacity": 31006.0,
+          "horizon": "T-30",
+          "prediction": 20961.88313643851,
+          "signed_error": 6376.883136438511
+        },
+        {
+          "capacity": 31006.0,
+          "horizon": "T-14",
+          "prediction": 20928.307145668186,
+          "signed_error": 6343.307145668186
+        },
+        {
+          "capacity": 31006.0,
+          "horizon": "T-7",
+          "prediction": 21530.326810473958,
+          "signed_error": 6945.326810473958
+        },
+        {
+          "capacity": 31006.0,
+          "horizon": "T-3",
+          "prediction": 20423.168504077057,
+          "signed_error": 5838.168504077057
+        },
+        {
+          "capacity": 31006.0,
+          "horizon": "T-1",
+          "prediction": 21071.488994864885,
+          "signed_error": 6486.488994864885
+        }
+      ],
+      "kickoff_at": "2026-02-01 16:30:00+00:00",
+      "match_key": "2025/2026|2026-02-01|legia|koronakielce",
+      "median_event_ae": 6398.03491830452,
+      "overprediction_rate": 1.0,
+      "p90_event_ae": 6398.03491830452,
+      "row_count": 5,
+      "season": "2025/2026",
+      "signed_bias": 6398.03491830452,
+      "unassessed": [
+        "booking_curve_dynamics",
+        "source_defect",
+        "event_specific_shock"
+      ],
+      "worst_event_ae": 6398.03491830452
+    },
+    {
+      "actual_attendance": 24890.0,
+      "associations_only": [
+        "same_signed_error_across_available_horizons",
+        "prediction_horizon_spread_at_least_1000"
+      ],
+      "away_club_key": "lechiagdansk",
+      "baseline_event_balanced_mae": 9316.125490196078,
+      "delta_vs_baseline": -3107.791038079773,
+      "error_share": 0.0058040540342989095,
+      "event_balanced_mae": 6208.334452116305,
+      "event_count": 1,
+      "event_improvement_rate": 1.0,
+      "home_club_key": "gornikzabrze",
+      "horizons": [
+        {
+          "capacity": 28236.0,
+          "horizon": "T-30",
+          "prediction": 19283.027983043838,
+          "signed_error": -5606.972016956162
+        },
+        {
+          "capacity": 28236.0,
+          "horizon": "T-14",
+          "prediction": 17975.980013466564,
+          "signed_error": -6914.019986533436
+        },
+        {
+          "capacity": 28236.0,
+          "horizon": "T-7",
+          "prediction": 17756.478189236503,
+          "signed_error": -7133.521810763497
+        },
+        {
+          "capacity": 28236.0,
+          "horizon": "T-3",
+          "prediction": 19407.169311681406,
+          "signed_error": -5482.830688318594
+        },
+        {
+          "capacity": 28236.0,
+          "horizon": "T-1",
+          "prediction": 18985.672241990163,
+          "signed_error": -5904.3277580098365
+        }
+      ],
+      "kickoff_at": "2025-07-20 12:45:00+00:00",
+      "match_key": "2025/2026|2025-07-20|gornikzabrze|lechiagdansk",
+      "median_event_ae": 6208.334452116305,
+      "overprediction_rate": 0.0,
+      "p90_event_ae": 6208.334452116305,
+      "row_count": 5,
+      "season": "2025/2026",
+      "signed_bias": -6208.334452116305,
+      "unassessed": [
+        "booking_curve_dynamics",
+        "source_defect",
+        "event_specific_shock"
+      ],
+      "worst_event_ae": 6208.334452116305
+    },
+    {
+      "actual_attendance": 25226.0,
+      "associations_only": [
+        "same_signed_error_across_available_horizons",
+        "prediction_horizon_spread_at_least_1000"
+      ],
+      "away_club_key": "puszcza_niepolomice",
+      "baseline_event_balanced_mae": 2508.6594871794887,
+      "delta_vs_baseline": 3624.876437447958,
+      "error_share": 0.005734126310755708,
+      "event_balanced_mae": 6133.535924627447,
+      "event_count": 1,
+      "event_improvement_rate": 0.0,
+      "home_club_key": "lech",
+      "horizons": [
+        {
+          "capacity": 42837.0,
+          "horizon": "T-30",
+          "prediction": 35686.277880912705,
+          "signed_error": 10460.277880912705
+        },
+        {
+          "capacity": 42837.0,
+          "horizon": "T-14",
+          "prediction": 25660.132739930537,
+          "signed_error": 434.13273993053735
+        },
+        {
+          "capacity": 42837.0,
+          "horizon": "T-7",
+          "prediction": 33127.81467226642,
+          "signed_error": 7901.814672266417
+        },
+        {
+          "capacity": 42837.0,
+          "horizon": "T-3",
+          "prediction": 30546.60686520143,
+          "signed_error": 5320.606865201429
+        },
+        {
+          "capacity": 42837.0,
+          "horizon": "T-1",
+          "prediction": 31776.847464826144,
+          "signed_error": 6550.847464826144
+        }
+      ],
+      "kickoff_at": "2025-05-03 18:15:00+00:00",
+      "match_key": "2024/2025|2025-05-03|lech|puszcza_niepolomice",
+      "median_event_ae": 6133.535924627447,
+      "overprediction_rate": 1.0,
+      "p90_event_ae": 6133.535924627447,
+      "row_count": 5,
+      "season": "2024/2025",
+      "signed_bias": 6133.535924627447,
+      "unassessed": [
+        "booking_curve_dynamics",
+        "source_defect",
+        "event_specific_shock"
+      ],
+      "worst_event_ae": 6133.535924627447
+    },
+    {
+      "actual_attendance": 13096.0,
+      "associations_only": [
+        "same_signed_error_across_available_horizons",
+        "prediction_horizon_spread_at_least_1000"
+      ],
+      "away_club_key": "widzewlodz",
+      "baseline_event_balanced_mae": 3010.5088888888895,
+      "delta_vs_baseline": 3115.0434644860643,
+      "error_share": 0.005726662621533818,
+      "event_balanced_mae": 6125.552353374954,
+      "event_count": 1,
+      "event_improvement_rate": 0.0,
+      "home_club_key": "slask_wroclaw",
+      "horizons": [
+        {
+          "capacity": 42771.0,
+          "horizon": "T-30",
+          "prediction": 21545.902733576768,
+          "signed_error": 8449.902733576768
+        },
+        {
+          "capacity": 42771.0,
+          "horizon": "T-14",
+          "prediction": 18724.6214284499,
+          "signed_error": 5628.6214284499
+        },
+        {
+          "capacity": 42771.0,
+          "horizon": "T-7",
+          "prediction": 17032.08322457228,
+          "signed_error": 3936.0832245722813
+        },
+        {
+          "capacity": 42771.0,
+          "horizon": "T-3",
+          "prediction": 19639.49498039998,
+          "signed_error": 6543.494980399981
+        },
+        {
+          "capacity": 42771.0,
+          "horizon": "T-1",
+          "prediction": 19165.65939987584,
+          "signed_error": 6069.65939987584
+        }
+      ],
+      "kickoff_at": "2025-02-15 13:45:00+00:00",
+      "match_key": "2024/2025|2025-02-15|slask_wroclaw|widzewlodz",
+      "median_event_ae": 6125.552353374954,
+      "overprediction_rate": 1.0,
+      "p90_event_ae": 6125.552353374954,
+      "row_count": 5,
+      "season": "2024/2025",
+      "signed_bias": 6125.552353374954,
+      "unassessed": [
+        "booking_curve_dynamics",
+        "source_defect",
+        "event_specific_shock"
+      ],
+      "worst_event_ae": 6125.552353374954
+    },
+    {
+      "actual_attendance": 13662.0,
+      "associations_only": [
+        "same_signed_error_across_available_horizons",
+        "prediction_horizon_spread_at_least_1000"
+      ],
+      "away_club_key": "motorlublin",
+      "baseline_event_balanced_mae": 4574.184761904762,
+      "delta_vs_baseline": 1427.9351907221571,
+      "error_share": 0.005611268013036104,
+      "event_balanced_mae": 6002.119952626919,
+      "event_count": 1,
+      "event_improvement_rate": 0.0,
+      "home_club_key": "pogonszczecin",
+      "horizons": [
+        {
+          "capacity": 21163.0,
+          "horizon": "T-30",
+          "prediction": 20339.953049660595,
+          "signed_error": 6677.953049660595
+        },
+        {
+          "capacity": 21163.0,
+          "horizon": "T-14",
+          "prediction": 19556.257929669177,
+          "signed_error": 5894.2579296691765
+        },
+        {
+          "capacity": 21163.0,
+          "horizon": "T-7",
+          "prediction": 19101.374057424047,
+          "signed_error": 5439.374057424047
+        },
+        {
+          "capacity": 21163.0,
+          "horizon": "T-3",
+          "prediction": 20158.770373023537,
+          "signed_error": 6496.770373023537
+        },
+        {
+          "capacity": 21163.0,
+          "horizon": "T-1",
+          "prediction": 19164.24435335724,
+          "signed_error": 5502.2443533572405
+        }
+      ],
+      "kickoff_at": "2025-05-14 18:30:00+00:00",
+      "match_key": "2024/2025|2025-05-14|pogonszczecin|motorlublin",
+      "median_event_ae": 6002.119952626919,
+      "overprediction_rate": 1.0,
+      "p90_event_ae": 6002.119952626919,
+      "row_count": 5,
+      "season": "2024/2025",
+      "signed_bias": 6002.119952626919,
+      "unassessed": [
+        "booking_curve_dynamics",
+        "source_defect",
+        "event_specific_shock"
+      ],
+      "worst_event_ae": 6002.119952626919
+    },
+    {
+      "actual_attendance": 14081.0,
+      "associations_only": [
+        "same_signed_error_across_available_horizons",
+        "prediction_horizon_spread_at_least_1000"
+      ],
+      "away_club_key": "koronakielce",
+      "baseline_event_balanced_mae": 8491.313725490196,
+      "delta_vs_baseline": -2496.3067908010225,
+      "error_share": 0.005604618187583556,
+      "event_balanced_mae": 5995.006934689173,
+      "event_count": 1,
+      "event_improvement_rate": 1.0,
+      "home_club_key": "slask_wroclaw",
+      "horizons": [
+        {
+          "capacity": 42771.0,
+          "horizon": "T-30",
+          "prediction": 20729.132324131577,
+          "signed_error": 6648.132324131577
+        },
+        {
+          "capacity": 42771.0,
+          "horizon": "T-14",
+          "prediction": 21870.537526043394,
+          "signed_error": 7789.537526043394
+        },
+        {
+          "capacity": 42771.0,
+          "horizon": "T-7",
+          "prediction": 20494.530576422345,
+          "signed_error": 6413.530576422345
+        },
+        {
+          "capacity": 42771.0,
+          "horizon": "T-3",
+          "prediction": 19180.882822872878,
+          "signed_error": 5099.882822872878
+        },
+        {
+          "capacity": 42771.0,
+          "horizon": "T-1",
+          "prediction": 18104.95142397567,
+          "signed_error": 4023.951423975672
+        }
+      ],
+      "kickoff_at": "2024-08-18 12:45:00+00:00",
+      "match_key": "2024/2025|2024-08-18|slask_wroclaw|koronakielce",
+      "median_event_ae": 5995.006934689173,
+      "overprediction_rate": 1.0,
+      "p90_event_ae": 5995.006934689173,
+      "row_count": 5,
+      "season": "2024/2025",
+      "signed_bias": 5995.006934689173,
+      "unassessed": [
+        "booking_curve_dynamics",
+        "source_defect",
+        "event_specific_shock"
+      ],
+      "worst_event_ae": 5995.006934689173
+    },
+    {
+      "actual_attendance": 29156.0,
+      "associations_only": [
+        "same_signed_error_across_available_horizons",
+        "prediction_horizon_spread_at_least_1000"
+      ],
+      "away_club_key": "pogonszczecin",
+      "baseline_event_balanced_mae": 9187.366666666665,
+      "delta_vs_baseline": -3352.5814271011486,
+      "error_share": 0.005454829966098859,
+      "event_balanced_mae": 5834.785239565516,
+      "event_count": 1,
+      "event_improvement_rate": 1.0,
+      "home_club_key": "lech",
+      "horizons": [
+        {
+          "capacity": 42837.0,
+          "horizon": "T-30",
+          "prediction": 22045.490149087625,
+          "signed_error": -7110.5098509123745
+        },
+        {
+          "capacity": 42837.0,
+          "horizon": "T-14",
+          "prediction": 20523.58480581559,
+          "signed_error": -8632.41519418441
+        },
+        {
+          "capacity": 42837.0,
+          "horizon": "T-7",
+          "prediction": 22624.88096595827,
+          "signed_error": -6531.119034041731
+        },
+        {
+          "capacity": 42837.0,
+          "horizon": "T-3",
+          "prediction": 25790.295905712537,
+          "signed_error": -3365.704094287463
+        },
+        {
+          "capacity": 42837.0,
+          "horizon": "T-1",
+          "prediction": 25621.821975598396,
+          "signed_error": -3534.1780244016045
+        }
+      ],
+      "kickoff_at": "2024-08-25 15:30:00+00:00",
+      "match_key": "2024/2025|2024-08-25|lech|pogonszczecin",
+      "median_event_ae": 5834.785239565516,
+      "overprediction_rate": 0.0,
+      "p90_event_ae": 5834.785239565516,
+      "row_count": 5,
+      "season": "2024/2025",
+      "signed_bias": -5834.785239565516,
+      "unassessed": [
+        "booking_curve_dynamics",
+        "source_defect",
+        "event_specific_shock"
+      ],
+      "worst_event_ae": 5834.785239565516
+    }
+  ]
+}

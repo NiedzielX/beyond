@@ -15,6 +15,8 @@ Read in this order:
 
 Roadmap v6 is canonical. Read the exact precommit before touching a frozen experiment.
 
+Shared AI working records are mandatory: [AGENTS.md](AGENTS.md) and [CLAUDE.md](CLAUDE.md) describe `.ai/specs/YYYY-MM-DD-slug.md` (with `implemented/` and `archive/`), `.ai/runs/YYYY-MM-DD-slug.md`, and the long-term memory index [.ai/lessons.md](.ai/lessons.md) with detailed notes in `.ai/lessons/`. These records complement the canonical ML plan.
+
 Frozen validation and new R&D run in parallel. "No new model search justified" prohibits retuning frozen models against the same exposed evidence; it is not a stop on separately versioned, precommitted research.
 
 The MAE research loop is:

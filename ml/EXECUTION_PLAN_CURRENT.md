@@ -441,6 +441,8 @@ When no immutable evidence window is currently at risk, execute the following pr
 
 ## MAE-01 — Error decomposition
 
+2026-11-03 execution: historical diagnostic complete,603events /3,010rows; all10frozen horizon/season metrics reproduced. Result and next hypothesis: `MAE01_INCUMBENT_ERROR_AUDIT_RESULT_V1.md`. This is exposed-history diagnosis, not fresh validation. Hosted reproducibility checks pending.
+
 Build a reproducible incumbent-error view by club, horizon, attendance/fill regime, weekday/weekend, opponent/context and signed error. Rank the worst absolute-error events and identify which categories contribute most to MAE.
 
 ## MAE-02 — Structural baseline benchmark
@@ -514,7 +516,7 @@ Do not use narrative memory as the experiment registry.
 6. Keep frozen SSP encoder, frozen trajectory head and frozen P9 policies unchanged while their prospective evidence accumulates.
 7. Fix collection only when genuine source semantics are preserved.
 8. Score frozen prospective rows only after genuine confirmed attendance outcomes.
-9. Outside imminent evidence protection, begin/continue **MAE-01 error decomposition** and then follow the v6 MAE programme.
+9. Outside imminent evidence protection, continue **MAE-02 structural objective audit** after the completed MAE-01 historical decomposition; follow the v6 MAE programme.
 10. Do not reactively retune frozen candidates against the first future scores.
 11. Do not lower or optimize toward the 550-seat business scale after seeing outcomes.
 12. Production remains separately review-gated and OFF.

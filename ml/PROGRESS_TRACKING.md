@@ -36,8 +36,8 @@ The attendance history read on2026-11-03 ended at2026-10-25. The six tracked fix
 
 | Work package | Status | Current decision |
 |---|---|---|
-| MAE-01 — Incumbent error decomposition | 🟢 NEXT / ACTIVE PRIORITY | build reproducible error map before choosing another feature/model |
-| MAE-02 — Structural baseline benchmark | ⚪ QUEUED | verify research anchor after MAE-01 identifies dominant error segments |
+| MAE-01 — Incumbent error decomposition | ✅ HISTORICAL DIAGNOSTIC COMPLETE |603events; all10frozen MAEs reproduced; see `MAE01_INCUMBENT_ERROR_AUDIT_RESULT_V1.md`; hosted checks pending |
+| MAE-02 — Structural baseline benchmark | 🟢 NEXT | isolate raw-seat objective weighting with existing medianT-3/T-1specifications; no frozen model mutation |
 | MAE-03 — Context residual model | ⚪ QUEUED | form/standings/opponent/fixture/odds; squad only with trustworthy PIT-safe source |
 | MAE-04 — Engineered trajectory benchmark | ⚪ QUEUED | velocity/acceleration/deltas/plateau/surge/density/similarity |
 | MAE-05 — Horizon-specific correction | ⚪ QUEUED | test whether early vs late horizons need distinct residual logic |
@@ -227,7 +227,7 @@ Human-readable registry:
 3. Protect an immutable legal cutoff only if one is currently at risk.
 4. Never backfill a missed prospective row.
 5. Keep frozen prospective candidates unchanged while evidence accumulates.
-6. Execute **MAE-01 incumbent error decomposition**.
+6. MAE-01 historical diagnostic is reproduced; continue **MAE-02 structural objective audit** under a separate protocol/version.
 7. Use the decomposition to choose the next falsifiable PIT-safe hypothesis instead of guessing a feature.
 8. Follow MAE-02 through MAE-08 in evidence-driven order, skipping/reordering only when the preceding evidence clearly justifies it.
 9. Update `ml/MAE_EXPERIMENT_SCOREBOARD.md` after every serious challenger.
