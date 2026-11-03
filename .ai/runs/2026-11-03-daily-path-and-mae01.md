@@ -9,7 +9,10 @@ User authorization: continue cloud work across routine steps until the session l
 - Backend draft PR205 and panel draft PR8 published. Backend checks pass; panel hosted TypeScript and production build pass. No merge or production activation.
 - Reconciled remote v6 documentation, preserving eight newer main commits and the latest product requirement for daily trajectories.
 - Existing frozen attendance workflow run41706363428 succeeded; fresh DB read at20:16UTC confirmed Wisła448 P-3 failed-input attempt at19:47:17UTC. No prediction was fabricated; open due checkpoints=0.
-- MAE-01 fixed-split historical replay reproduced all10 frozen benchmark MAEs, 603 events /3,010 horizon rows; 10 dedicated accounting/validation tests pass. Report and interpretation are being finalized.
+- MAE-01 fixed-split historical replay reproduced all10 frozen benchmark MAEs,603events /3,010horizon rows;10dedicated accounting/validation tests pass. Draft PR206 and hosted Demand Engine run41711896063 also passed the full reproduction. Four clubs contribute43.57%of error on19.73%of events; Lech alone contributes17.41%.
+- MAE-02 weighting-only experiment rejected: developmentDelta+155.01atT-3,+104.75atT-1; no weighted old-holdout fitting or post-result weight variants. Nine tests pass. Source/archived manifest hashes verified, no serving changes. Hosted verification pending.
+- Existing frozen Pre-Live v3 historical anchor and C2 sequence/stakes rejection were reconciled into the current record; do not restart old context tournaments under new work-package names.
+- Target-free live context check20:27UTC:12PIT odds events /10clubs /2,721quotes; latest capture19:51UTC, healthy. P4a has5labeled events vs unchanged9-event gate. The combined `ml_research_readiness_v1` RPC returnsHTTP500; separate read-only endpoints still work.
 
 ## Runtime and blockers
 
@@ -19,4 +22,4 @@ New remote SQL and Edge function deployment still need project migration/admin c
 
 ## Next
 
-Publish MAE-01 reproducible ranked report and derived hypothesis; verify its hosted checks. Continue independent MAE research in a separate version without modifying frozen lanes. Update this log and canonical handoff with concrete outcomes.
+Publish MAE-02 rejection and verify hosted reproduction. Audit genuinely new timestamped context and paired outcomes without fitting below support gates; preserve the older frozen research anchor and closed C2 results. Keep the daily-path watcher collecting independently. Update this log and canonical handoff with concrete outcomes.

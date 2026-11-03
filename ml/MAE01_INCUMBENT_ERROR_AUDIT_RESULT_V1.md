@@ -29,7 +29,7 @@ The largest miss is Lechia–Arka on2025-08-24:37,500observed attendance vs11,32
 
 ## Decision and next hypothesis
 
-**MAE-01 historical diagnostic deliverable complete**, subject to hosted reproducibility checks. No challenger was selected, no prospective gates opened, no production change.
+**MAE-01 historical diagnostic deliverable complete**, with hosted reproduction passed in Demand Engine run41711896063. No challenger was selected, no prospective gates opened, no production change.
 
 Proceed to a restrained **MAE-02 structural objective audit**. The incumbent learns residual occupancy; an absolute occupancy error contributes fewer objective units for a large stadium even when it corresponds to many more seats. Test whether aligning a separately versioned median learner's training weights with raw-seat absolute error helps the persistent high-seat-error clubs. Use fixed historical development splits; label exposed-season regression checks as exposed and require new future evidence before promotion. Start with the existing absolute-lossT-3/T-1 specification so weighting can be isolated without a model tournament. Also retain the current structural anchor and simple existing PIT summaries as benchmarks. Do not change serving weights or frozen models.
 
