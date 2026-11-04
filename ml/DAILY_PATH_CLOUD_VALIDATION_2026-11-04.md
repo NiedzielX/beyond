@@ -55,3 +55,11 @@ Next genuine encoder cutoff:Korona603P-3atNov4 11:15UTC(12:15Warsaw), currently 
 ## Still blocked / not deployed
 
 The new SQL migration, new Edge gateway and new daily GitHub schedule remain **undeployed/disabled**. The environment lacks project migration/admin binding; the saved setup draft is not applied. Isolated PostgreSQL/Deno/UI-contract tests do not remove this deployment requirement. Existing attendance lanes, historical misses, model parameters and550-seat contract remain frozen. `production_change=false`, `live_adjustment=0`.
+
+## Genuine window and latest checks —11:20UTC
+
+Hosted Demand Engine41819264406passed312unit checks including the fixed-drift comparator, exact coefficient decomposition and9worker-lifecycle cases with real zombie/live children. SQL/feature/panel/Deno chain41819264228passed.
+
+`FROZEN_WINDOW_GUARDIAN_EVIDENCE_2026-11-04.md`now proves the complete guardian→existing main encoder workflow→success→expected DB record chain. Guardian11:18:58UTCdispatched run41819915267; event603/P-3recordedMODEL_INPUT_INSUFFICIENTat11:19:48UTCand run completed successfully. No model/eligibility relaxation. P9heartbeat and READYforecast/scoring chains are separate.
+
+The new drift watcher froze at11:06:27UTCand automatically captured its first new legal failure issue11:19:58UTCwith verified private backup. Originalv1source was read-only. Its initial proxy-less launch failed; correctedPID154636has a successful post-launch cycle. Watcher deadlines remainNov5 09:30UTC; live managed deployment remains blocked. Source-statev2preparedSQL→feature contract passed; it is not deployed or connected to frozen models. No newMAEimprovement is established.

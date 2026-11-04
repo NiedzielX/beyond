@@ -188,3 +188,5 @@ Separate public-inventory research comparator. Precommit:`DAILY_INVENTORY_DRIFT_
 - Independent scored events/clubs0; prediction/error coverage and baseline/challengerMAE,Delta,improvement,median/tail/bias/per-lead errors pending genuine future targets. No accuracy claim.
 - PIT/source limitations inherited from actualv1public prefix; active/visible metadata absent, no independent raw immutability certification. OldNov3points cannot become new drift evidence.
 - Decision:FROZEN_RULE / BOUNDED_LOCAL_COLLECTING. First review after8independent genuine+1events/5clubs; separate primary same-target event-balanced metrics against persistence. No production promotion, attendance change or modelv1repair.
+
+Drift operational update11:20UTC:first legal new issue captured automatically11:19:58UTC,1attempt/0points/0scores,INSUFFICIENT_PREFIX_SPAN,privatebackupverified. This is genuine coverage evidence, not a forecast/MAE. Originalv1now8attempts/57points/0scores; no metric cohort changed. READYdrift forecast and new target labels remain pending.

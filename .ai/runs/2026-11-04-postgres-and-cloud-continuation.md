@@ -75,3 +75,13 @@ Initial driftPID154243failed DNS because the manually filtered environment omitt
 The observation exposed kill(0)'s zombie false positive. Shared v1launcher now checks actual process state and fails closed on inspection errors. Three new real live/unreaped-child/error checks plus six prior lifecycle checks pass locally. Existing v1worker still reportsHEALTHY; it was not restarted. Hosted proof of the new operational guard pending.
 
 Hosted final operational guard proof:Demand Engine41819264406passed312Pythonchecks, including9launcher lifecycle cases; SQL/feature/parser/Deno chain41819264228passed. Frozen artifact/predictor/precommit checks passed. No restart of the original worker or change to any forecast.
+
+## Actual cutoff captured; full existing encoder DBchain proven
+
+At11:15:09UTCthe unchanged dailyv1cycle legally recorded event603asINSUFFICIENT_PREFIX_SPAN(12hourly observations),0newpoints,verifiedbackup. Direct extra driftCLI was refused by its lifetime watcher lock; no duplicate started. Existing driftPID154636then automatically recorded the same new post-freeze issue11:19:58UTC,1attempt/0points/0scores,privatebackupverified. The published comparator is now collecting actual legal coverage evidence.
+
+Guardian dispatched existing main encoder workflow11:18:58UTC; run41819915267created11:19:02UTCand completedSUCCESS11:19:53UTC. Fresh DBpreflight shows Korona603/P-3MODEL_INPUT_INSUFFICIENTattempt11:19:48.745719UTC. Full chain, not YAML-only, recorded in`FROZEN_WINDOW_GUARDIAN_EVIDENCE_2026-11-04.md`; private proof SHA50e3239b68314f554cf614b30abac6381d260d76ba6132f6500fac8cc290bdbe. Fresh11:20:35decision confirms encoder9/5/0,P9v1 6/0/0,P9v2 5/3/0,productionfalse/adjustment0. This is fail-closed encoder capture proof, not P9heartbeat, READYforecast, new daily SQLdeployment or accuracy.
+
+Next due protection:Górnik449/P-3at16:30UTC. First existing localv1targets17:00UTC; new drift targets belong to later new issues and must not reuse Nov3targets. DeadlinesNov5 09:30UTC. Managed deployment/admin binding remains blocked.
+
+Handoff rewritten as current operations only, with fresh counts, next legal windows, runtime/deadline checks, exact freeze identities, proven-vs-pending scope and concrete deployment blockers. Earlier dated research/launch details remain in this run log, dedicated results/lessons and Git history; no historical miss or failed experiment was rewritten as success.
