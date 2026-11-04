@@ -177,3 +177,14 @@ These are not new MAE challenger results.
 - Prefix-regime diagnosticv1:8hosted tests passed(run41816697000). Full eligible primary evaluator unchanged; zero-only, constant-positive and varying groups are descriptive, with reconciled primary contributions and overlapping-vintage event warning. Actual0scores means allMAEsnull.
 - Exact coefficient auditv1:57issued points reconstructed within9.10e-13places; all120relative-value-history weights0. No target values, refit or accuracy evaluation. See`DAILY_PATH_COEFFICIENT_AUDIT_2026-11-04.md`. Decision:retain frozenv1evidence, explicitly qualify its learned-mechanism limitation; next separately precommit a restrained genuine-prefix-change comparator rather than tunev1.
 - Source-stateinformationv2:isolatedSQL→featurecontract passed(run41816696989;20SQL+13adaptertests); seven fixed fields/masks, known-at guards, zero/hidden separation and exact input whitelist. No learner orMAE, no live deployment. Decision:PREPARED_INFORMATION_CONTRACT; admin deployment binding remains the blocker.
+
+## daily-inventory-genuine-24h-drift-v1
+
+Separate public-inventory research comparator. Precommit:`DAILY_INVENTORY_DRIFT_COMPARATOR_PRECOMMIT_V1.md`. Hypothesis:actual recent daily inventory change adds signal beyond persistence; fixed rule, no fit/search. Originalv1relative-value coefficients were0, as diagnosed before first outcomes.
+
+- Frozen2026-11-04T11:06:27Z; artifactSHA332f6fd37bc2a09ce665668ef3c9c23d8d34ec3613f18435ec729d95d3bb43cf. Predictor source and precommit hashes remain fixed.
+- Thirteen hosted tests passed(run41818376777,total309Pythonchecks). Rule/lifecycle correctness only; synthetic fixture errors are not model accuracy.
+- Actual first no-due cycle completed, original source/model bytes unchanged and private read-back verified.0attempts/points/scores at freeze; no eligible post-freeze source issue yet. These counts are not a failed prospective window.
+- Independent scored events/clubs0; prediction/error coverage and baseline/challengerMAE,Delta,improvement,median/tail/bias/per-lead errors pending genuine future targets. No accuracy claim.
+- PIT/source limitations inherited from actualv1public prefix; active/visible metadata absent, no independent raw immutability certification. OldNov3points cannot become new drift evidence.
+- Decision:FROZEN_RULE / BOUNDED_LOCAL_COLLECTING. First review after8independent genuine+1events/5clubs; separate primary same-target event-balanced metrics against persistence. No production promotion, attendance change or modelv1repair.

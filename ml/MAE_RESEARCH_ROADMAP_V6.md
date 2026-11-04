@@ -24,6 +24,8 @@ Implementation: [`DAILY_INVENTORY_PATH_IMPLEMENTATION_V1.md`](DAILY_INVENTORY_PA
 
 Current operational counters, watcher health and deadlines belong in `NEXT_SESSION_HANDOFF.md` and the live runtime status command. Verified milestones:one frozen daily-path model; genuine post-freeze local captures and private backup/restore; hosted panel TypeScript/build; isolated PostgreSQL16persistence and typed panel-feed contract tests(run41810511980). These test milestones do not prove the undeployed SQL/Edge/scheduled workflow in live Supabase. No private partner transactions, production activation or old-model retuning is required.
 
+Pre-outcome audit2026-11-04:`DAILY_PATH_COEFFICIENT_AUDIT_2026-11-04.md`reconstructs all57issued points and finds all120relative-value-history coefficients0. Receiving a full prefix is not proof the fit learned its changes. Frozenv1stays unchanged; a separate parameter-free genuine24-hour drift comparator is now precommitted/frozen and collecting only new legal issues(`DAILY_INVENTORY_DRIFT_COMPARATOR_PRECOMMIT_V1.md`). No newMAEis claimed. Source-statev2SQL→feature preparation passed isolated integration but remains undeployed.
+
 The attendance history read on2026-11-03 ended at2026-10-25. The six tracked fixtures onOctober30–November2 had no confirmed outcomes in `ticket_event_outcomes`; zero attendance scores are therefore not evidence of zero error. Keep this source-ingestion blocker separate from daily inventory-target scoring.
 
 ---

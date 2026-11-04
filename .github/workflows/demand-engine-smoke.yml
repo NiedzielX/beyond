@@ -30,6 +30,7 @@ on:
       - 'ml/test_daily_path_coefficient_audit_v1.py'
       - 'ml/*drift*v1.py'
       - 'ml/DAILY_INVENTORY_DRIFT_COMPARATOR_PRECOMMIT_V1.md'
+      - 'ml/artifacts/daily_inventory_drift_comparator_v1.json'
       - 'ml/recovered/v17/**'
       - 'ml/live_benchmark_v02.py'
       - 'ml/live_benchmark_v03.py'
@@ -64,6 +65,7 @@ on:
       - 'ml/test_daily_path_coefficient_audit_v1.py'
       - 'ml/*drift*v1.py'
       - 'ml/DAILY_INVENTORY_DRIFT_COMPARATOR_PRECOMMIT_V1.md'
+      - 'ml/artifacts/daily_inventory_drift_comparator_v1.json'
       - 'ml/recovered/v17/**'
       - 'ml/live_benchmark_v02.py'
       - 'ml/live_benchmark_v03.py'
@@ -125,6 +127,16 @@ jobs:
 
       - name: Verify isolated fixed-drift rule, immutable capture and paired target scoring
         run: python -m unittest ml.test_daily_inventory_drift_v1 -v
+
+      - name: Verify persisted drift freeze matches unchanged rule and precommit
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          from ml.daily_inventory_drift_comparator_v1 import validate_artifact
+          validate_artifact(json.loads(Path('ml/artifacts/daily_inventory_drift_comparator_v1.json').read_text()))
+          print('Frozen drift artifact, rule implementation and precommit hashes agree; no fit performed.')
+          PY
 
       - name: Verify recovered v1.7 strict benchmark evidence
         run: python ml/recovered/v17/verify_recovered_bundle.py
