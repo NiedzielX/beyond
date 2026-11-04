@@ -85,3 +85,7 @@ Guardian dispatched existing main encoder workflow11:18:58UTC; run41819915267cre
 Next due protection:Górnik449/P-3at16:30UTC. First existing localv1targets17:00UTC; new drift targets belong to later new issues and must not reuse Nov3targets. DeadlinesNov5 09:30UTC. Managed deployment/admin binding remains blocked.
 
 Handoff rewritten as current operations only, with fresh counts, next legal windows, runtime/deadline checks, exact freeze identities, proven-vs-pending scope and concrete deployment blockers. Earlier dated research/launch details remain in this run log, dedicated results/lessons and Git history; no historical miss or failed experiment was rewritten as success.
+
+## Corrected live-MAE scope after user clarification
+
+Earlier answer incorrectly substituted historical Pre-Live results and generalized new-lane zero scores to the whole project. Actual DBread11:42UTCshows existing C1v8has11scored events,latest policyMAE4121.45,raw live7127.99,prior4314.72; full-window policy4971.62. Latest stored main-panel structural-shadow version has panel-ruleMAE4314.73on11events,all adjustments0. All evaluated latest rows precede kickoff and label confirmation. C1latest scoreOct25and six later completed fixtures still lack outcomes. Fixed handoff/scoreboard/lesson scope; no prediction, score or model was changed. Private panel-rule audit saved`/workspace/ops-runtime/2026-11-04-review/live-model-panel-metrics.json`.

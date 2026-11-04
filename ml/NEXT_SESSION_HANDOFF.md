@@ -23,7 +23,13 @@ Read strategy and state first: `MAE_RESEARCH_ROADMAP_V6.md` → `EXECUTION_PLAN_
 | Local daily inventory v1 |8|4events /57future points|0|New Korona issue failed prefix-span gate |
 | Fixed genuine24-hour drift |1|0points|0|First legal issue captured; same insufficient prefix span |
 
-Zero scored targets means **MAE=null**, not zero error. Inventory-path error and final-attendance error are different targets. Public availability is not confirmed paid sales or attendance.
+### Existing live models — do not omit these scores
+
+Fresh DB read2026-11-04T11:42UTC from `dashboard_c1_shadow_v8_status_v1`: package`c1-shadow-v8-frozen-2026-10-16-n9`,101prediction rows /17events /11scored events. Latest-row MAE:structural prior4314.722244, raw live7127.992602, governed policy4121.454326. Representative-window policyMAE4971.620552. Latest scoreOct25; six tracked completed Oct30–Nov2fixtures still have no outcome. These are existing persisted live-shadow evaluations, distinct from historical research replay and from the new zero-score lanes above.
+
+The actual latest main-panel version is `beyond-demand-engine-v1-structural-prior-shadow`. Reproducing `modelPerformanceService`'s latest-per-event rule from stored forecasts givesMAE4314.727273on11events;1313rows /24forecast events at the read. All adjustments0; no evaluated latest row was after kickoff or label confirmation. The0scores in the decision-summary RPC's newer encoder/P9lanes do not describe this older pipeline orC1v8.
+
+Rows with zero scored targets mean **MAE=null**, not zero error. Inventory-path error and final-attendance error are different targets. Public availability is not confirmed paid sales or attendance.
 
 ### Full guardian chain: proven for one fail-closed encoder checkpoint
 

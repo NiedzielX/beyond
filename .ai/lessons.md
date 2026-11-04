@@ -10,4 +10,6 @@ Read after the canonical ML state files and before implementation. Add or update
 
 - [Cloud proxy and exited workers](lessons/2026-11-04-cloud-proxy-and-exited-workers.md): preserve the working cloud environment; zombies answer kill(0), so require actual process state and a verified cycle after launch.
 
+- [Live scoreboard scope](lessons/2026-11-04-live-scoreboard-scope.md): the newer encoder/P9summary excludes existing C1scores and panel forecasts; query actual model/package IDs before answering live-MAE questions.
+
 This index is durable memory, not a substitute for the authoritative execution plan or current handoff. No secrets or private source exports belong here.

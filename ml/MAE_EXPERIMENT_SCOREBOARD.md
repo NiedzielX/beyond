@@ -190,3 +190,9 @@ Separate public-inventory research comparator. Precommit:`DAILY_INVENTORY_DRIFT_
 - Decision:FROZEN_RULE / BOUNDED_LOCAL_COLLECTING. First review after8independent genuine+1events/5clubs; separate primary same-target event-balanced metrics against persistence. No production promotion, attendance change or modelv1repair.
 
 Drift operational update11:20UTC:first legal new issue captured automatically11:19:58UTC,1attempt/0points/0scores,INSUFFICIENT_PREFIX_SPAN,privatebackupverified. This is genuine coverage evidence, not a forecast/MAE. Originalv1now8attempts/57points/0scores; no metric cohort changed. READYdrift forecast and new target labels remain pending.
+
+## Existing persisted live evaluations —2026-11-04T11:42UTC
+
+Do not describe every live model as unscored just because the newer prospective summary has0scores. The deployed public view`dashboard_c1_shadow_v8_status_v1`returns C1v8package`c1-shadow-v8-frozen-2026-10-16-n9`:101prediction rows,17events,11scored events,last score2026-10-25. Latest-row priorMAE4314.722244,raw live7127.992602,policy4121.454326; representative-window policyMAE4971.620552(vs prior4314.722244). These are actual persisted live-shadow scores, not Pre-Live historical validation.
+
+Main-panel`forecast_observations`latest version`beyond-demand-engine-v1-structural-prior-shadow`:latest-per-event panel-ruleMAE4314.727273,11scored events,24forecast events,1313rows,alllive_adjustment0. Latest evaluated forecasts pass kickoff/confirmation-time checks. Two manually seeded D2Long72rows appear in the raw table but are excluded by the official Long72quality contract; do not present their panel aggregate as official prospective scoring. Other older tiny version cohorts must not be pooled or compared as identical validation.
