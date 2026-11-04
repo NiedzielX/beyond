@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import argparse
+import base64
 from datetime import datetime, timezone
 import fcntl
 import json
@@ -12,6 +13,7 @@ import subprocess
 import sys
 import time
 import urllib.parse
+import zlib
 
 import pandas as pd
 
@@ -34,28 +36,58 @@ def validate_bounds(until, interval, now):
         raise ValueError('Require a future deadline within72hours and60–900second interval')
 
 
+def lock_source_contract(runtime, hashes):
+    path = runtime/'collection-contract.json'
+    runtime.mkdir(mode=0o700, parents=True, exist_ok=True)
+    if path.exists():
+        if json.loads(path.read_text())['source_hashes'] != hashes:
+            raise ValueError('Frozen collection/scoring implementation changed; require a new version')
+        return
+    with path.open('x') as file:
+        json.dump({'version': 'c1-training-expansion-collection-contract-v1',
+                   'created_at': datetime.now(timezone.utc).isoformat(), 'source_hashes': hashes}, file, indent=2)
+        file.write('\n')
+    path.chmod(0o440)
+
+
 def backup(runtime, artifact_dir, storage=None):
     load_frozen(artifact_dir)
-    files = sorted(runtime.glob('evidence/event-*.json')) + sorted(runtime.glob('attempt-*.json'))
+    files = (sorted(runtime.glob('evidence/event-*.json')) + sorted(runtime.glob('attempt-*.json'))
+             + sorted(runtime.glob('scores/event-*.json')) + sorted(runtime.glob('first-review.json'))
+             + sorted(runtime.glob('inputs/input-*.json')) + sorted(runtime.glob('collection-contract.json')))
     if len(files) > 10000: raise ValueError('Bounded evidence source unexpectedly expanded')
     bundle = {'version': 'c1-training-expansion-private-evidence-v1',
               'manifest': json.loads((artifact_dir/'manifest.json').read_text()),
-              'files': [{'name': str(p.relative_to(runtime)), 'content': json.loads(p.read_text())} for p in files],
+              'files': [{'name': str(p.relative_to(runtime)), 'sha256': digest(p.read_bytes()),
+                         'base64': base64.b64encode(p.read_bytes()).decode()} for p in files],
               'production_change': False, 'live_adjustment': 0}
-    raw = encode(bundle); storage = storage or ExpansionStorage()
+    raw = encode({'version': 'c1-training-expansion-compressed-backup-v1', 'encoding': 'zlib+base64',
+                  'payload_sha256': digest(encode(bundle)),
+                  'payload': base64.b64encode(zlib.compress(encode(bundle))).decode()})
+    storage = storage or ExpansionStorage()
     storage.ensure_private_bucket()
     return storage.put_verified('c1-expansion-v1/'+digest(raw)+'.json', raw, 'application/json')
 
 
 def cycle(runtime, artifact_dir):
-    result = subprocess.run([sys.executable, '-m', 'ml.c1_training_expansion_capture_v1',
-        '--artifact-dir', str(artifact_dir), '--output-dir', str(runtime/'evidence')],
+    names = ['ml/watch_c1_training_expansion_v1.py', 'ml/collect_c1_training_expansion_v1.py',
+             'ml/score_c1_training_expansion_v1.py']
+    lock_source_contract(runtime, {name: digest((ROOT/name).read_bytes()) for name in names})
+    result = subprocess.run([sys.executable, '-m', 'ml.collect_c1_training_expansion_v1',
+        '--artifact-dir', str(artifact_dir), '--runtime', str(runtime)],
         cwd=ROOT, capture_output=True, text=True, timeout=180)
     if result.returncode: raise ValueError('Current capture subprocess failed; no successful cycle claim')
     capture = json.loads(result.stdout)
+    scored = subprocess.run([sys.executable, '-m', 'ml.score_c1_training_expansion_v1',
+        '--artifact-dir', str(artifact_dir), '--runtime', str(runtime)],
+        cwd=ROOT, capture_output=True, text=True, timeout=180)
+    if scored.returncode: raise ValueError('Confirmed-outcome scorer failed; no successful cycle claim')
+    scorecard = json.loads(scored.stdout)
     receipt = backup(runtime, artifact_dir)
     return {'status': 'CYCLE_VERIFIED', 'checked_at': datetime.now(timezone.utc).isoformat(),
-            'capture': capture, 'private_backup': receipt, 'host_dependent': True,
+            'capture': capture, 'scored_events': scorecard['scored_independent_events'],
+            'expanded_policy_mae': scorecard['metrics']['expanded_policy']['latest_row_mae'],
+            'private_backup': receipt, 'host_dependent': True,
             'production_change': False, 'live_adjustment': 0}
 
 

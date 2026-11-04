@@ -41,7 +41,8 @@ def fixture():
     payload = {'version': 'c1-shadow-v8-inputs-v1', 'package_version': EXPECTED_PACKAGE,
                'requested_at': NOW, 'candidate_count': 1, 'candidates': [candidate()]}
     manifest = {'frozen_at': FREEZE, 'artifact': {'sha256': 'new-test-hash'}, 'precommit_sha256': 'test-precommit',
-                '_verified_manifest_sha256': 'test-manifest-hash'}
+                '_verified_manifest_sha256': 'test-manifest-hash',
+                'old_frozen_hashes': {'ml/artifacts/c1_shadow_v8/c1_v2_live_expert_v1.joblib': 'original-test-hash'}}
     old_manifest = {'artifact': {'sha256': 'original-test-hash'}}
     return payload, manifest, old_manifest, new, old
 

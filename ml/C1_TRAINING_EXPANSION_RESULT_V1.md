@@ -33,8 +33,16 @@ At the12:17UTCfixture read, the first final24window opensNov5 17:00UTC forMotor5
 
 ## Evidence gate and next action
 
-Local validation:341unit checks (189core+152entry-point/operational), including15candidate timing/integrity/immutability cases and2collector-bound/namespace cases. Frozen package validation passed without fitting. Hosted validation including the committed new artifact is still pending at this entry.
+Local validation:354unit checks (189core+165entry-point/operational), including15candidate timing/integrity/immutability,4worker/backup/source-lock,8confirmed-outcome scoring and3exact-anchor enrichment cases. Hosted artifact checks41829752800/41829761093passed onbadcdac; newer collector/scorer hosted checks are pending at this entry. No fit occurs during these checks.
 
 Start and verify the bounded collector; later inspect its first genuine immutable paired forecast and private read-back. No lower-MAE claim until future confirmed outcomes exist. First fixed review is30new scored events /8clubs with paired event-bootstrap intervals against both originalv8policy and shared prior. If raw improves but the unchanged policy does not, this candidate has not met its primary objective; do not change its thresholds after the result. Bias/tail and coverage must be reported. Source publication-time verification and missing current-season history remain separate limitations.
 
 Production remainsOFF: `production_change=false`, `live_adjustment=0`. No old gateway rows, historical forecasts or labels changed.
+
+## Complete collection/scoring path prepared
+
+Actual SQL inspection showed the existing C1input RPC omits `prior.target_as_of_at`. The separate `collect_c1_training_expansion_v1` adapter resolves the actual prior at the latest source time, verifies ID/values/model/contract/generated time, and adds only that real metadata before calling the unchanged frozen inference code. No computed substitute, model change, gate relaxation or refit. Raw input/resolution packs are private and content-addressed. Direct no-due invocation of the old adapter did not prove this positive-candidate branch; three schema tests now cover it.
+
+`score_c1_training_expansion_v1` attaches only genuinely later confirmed attendance with source provenance; known/future/invalid/changed outcomes fail closed. It preserves immutable per-observation scores, latest-time selection, equal-event window MAE, paired deltas, bias/P90/worst, descriptive club/horizon groups and explicit coverage failures. Below30events/8clubs, review and bootstrap gates remainfalse/null. At first eligibility it preserves an immutable review; it never substitutes the better expert after outcomes. Eight synthetic lifecycle/denominator/label/integrity/review tests are correctness evidence only. Actual DBscorer returned0events/nullMAE.
+
+Manual complete cycle at12:35:39UTC: current collector0eligible→inference0predictions→scorer0scores/nullMAE→private compressed backup read-backverified. Payload SHA00ac0a29b54b2bf6e373d5938de106581430c26ee2e147e9d2614d2500a3ef0f. New backup encoding retains original filebytes/hashes; a focused recovery test verifies whitespace/byte preservation. The bounded worker freezes its collector/scorer implementation hashes at first launch, protecting future evidence from subsequent code changes. Source-contract lock and post-launch proof remain to be recorded.
