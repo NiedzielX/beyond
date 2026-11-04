@@ -4,4 +4,4 @@ Validate the undeployed Edge gateway using Deno's real typecheck and isolated au
 
 Check service-key transport consistently with the existing Python reader: opaque `sb_` API keys belong in `apikey`, while legacy JWT keys may also use Bearer authorization. No keys or request headers may be logged. This source change does not deploy a gateway, enable its schedule or change frozen prediction semantics.
 
-Acceptance: typecheck and negative claim/header tests pass; production credentials are absent from the test job; migration/typed-feed checks stay green. Live Deno/OIDC request and production DB-chain proof remain separate deployment steps.
+Acceptance: typecheck and negative claim/header tests pass; run the actual Deno entry point on isolated localhost without inherited credentials and check405/401responses before body parsing. Production credentials are absent from the test job; migration/typed-feed checks stay green. A locally rejected request is not a successful live signed OIDC request. Live Deno/OIDC and production DB-chain proof remain separate deployment steps.

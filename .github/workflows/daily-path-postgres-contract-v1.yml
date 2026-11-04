@@ -104,3 +104,7 @@ jobs:
         run: deno check supabase/functions/daily_inventory_path_gateway_v1/index.ts
       - name: Verify scoped gateway policy and Supabase key transport
         run: deno test supabase/functions/daily_inventory_path_gateway_v1/policy_test.ts
+      - name: Verify real gateway rejects unauthorized local HTTP requests
+        run: >-
+          deno test --allow-run --allow-env=HOME,DENO_DIR --allow-net=127.0.0.1:8000
+          supabase/functions/daily_inventory_path_gateway_v1/http_test.ts
