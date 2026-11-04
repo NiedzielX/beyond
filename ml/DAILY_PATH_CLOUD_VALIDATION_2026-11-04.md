@@ -14,7 +14,15 @@ Actual Actions run**41811081476**, source`b1e5e942504695e2445b72ac02dc9130075845
 
 Initial PostgreSQL failures were test assertions against GENERATED ALWAYS identity columns; those fail before custom triggers. Tests were corrected to mutate ordinary fields. **No SQL/model change was needed.** Unit success does not show a production deployment or valid signed live OIDC request.
 
-Hosted Demand Engine run**41811081596**passed260Python unit tests plus fixed historical reproductions and existing bundle integrity/runtime checks. The subsequent legal-window guardian adds9separate operational unit tests; its new hosted check is pending at this checkpoint.
+Hosted Demand Engine run**41811862372**passed269Python unit tests including9guardian checks, plus fixed historical reproductions and existing bundle integrity/runtime checks. No frozen model was refitted.
+
+## Browser interaction verification
+
+Companion panel source`1a6dd609473bfdbb3730d98ccfb8cb1e24e18f09`:actual Chromium run**41812968199**and TypeScript/production-build run**41812968190**passed. The isolated harness tested the actual React component:full daily points, vintage selection, refresh, keyboard inspection, zero-valued later outcome/errors, lead support warning, mobile page width, absent/HTML/invalid export and failed-input states. Zero-only prefixes now explicitly avoid implying confirmed sellout or sales. Synthetic screenshots/result artifacts belong to those test runs; no fake research feed is committed or served in production.
+
+The initial browser tooling step failed on the moving runner; the workflow now pins supportedUbuntu24.04and captures installation diagnostics. Both actual chart/browser and app-build checks pass. The live app's new feed remains undeployed; this is isolated component behaviour, not a successful live end-to-end feed request.
+
+Separately, the **actual immutable forecast paths**were plotted for review in private `/workspace/ops-runtime/2026-11-04-review/daily-path-review.pdf`with a feed SHA provenance file. `DAILY_PATH_INITIAL_OUTPUT_REVIEW_2026-11-04.md`records near-flat-prefix/steep-forecast and zero-only-source limitations before outcomes, without modifying predictions or claiming accuracy.
 
 ## Bounded cloud inference
 
