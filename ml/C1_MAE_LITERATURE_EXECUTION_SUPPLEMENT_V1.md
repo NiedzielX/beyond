@@ -31,3 +31,7 @@ Istniejący `AI_LITERATURE_REVIEW_AND_MVP_PLAN_2026-11-03.md` opisuje celowany p
 Wykres realnej obserwowanej historii→dziś→modelowe przyszłe dni i zachowane vintages jest przygotowany w panelPR8. Dodajemy czytelny oddzielny wynik istniejącegoC1v8z aktualnego publicznego read-only dashboardu. Rozróżniać kod/testy, VercelPreview, wdrożenieProduction i faktycznie podłączony livefeed. Brak outcome pozostaje brakiemMAE. Aktualizacja prezentacji nie aktywuje modelu ani nie dowodzi accuracy.
 
 `production_change=false`, `live_adjustment=0`.
+
+## Wykonanie — 17:36 UTC
+
+Punkt 1 częściowo wykonany: 15 rekordów / 5 potwierdzonych outcomes, event445 zablokowany. Czas wiedzy w bazie zachowany, ale starszy konsument go usuwa. Kolejne konkretne zadanie to wersjonowana integracja kontroli known-at (`ATTENDANCE_KNOWLEDGE_TIME_AUDIT_V1.md`), bez zmiany modeli lub backfill. Punkt 2 wykonany do freeze osobnej mediany (`C1_SEAT_MEDIAN_RESULT_V1.md`), przyszłe MAE nadal null. Punkt 3 ma dwa pierwsze wyniki inventory v1 i 16 nowych punktów drift bez ocen; żadnego retuningu. Zamrożone review gates pozostają bez zmian. To postęp wykonania zaakceptowanego planu, nie nowa strategia lub deklaracja osiągnięcia 1200.

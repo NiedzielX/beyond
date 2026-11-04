@@ -1,0 +1,11 @@
+# Verified public data and non-ready operational contracts
+
+A public website inaccessible from the attached cloud may still be reachable from an authorized hosted runner. Keep retrieval read-only, bounded and allowlisted; expose sanitized structured Checks output when artifact redirects are blocked. Retrieval HTTP200 is not fixture verification. Match registered team identities, competition, season, exact kickoff and DST; conflicting source time remains blocked. Do not move kickoff to force a label join.
+
+When source retrieval and verification happen at different times, feature knowledge starts at verification/ingestion. Preserve original retrieval separately. Fifteen appended history rows passed900frozen-training-cell replay before/after; five delayed genuine labels scored old already-issued predictions. C1MAE3428.29on16events versus4121.45on11is cohort growth, not model improvement. Early encoder/P9 results worsened, so no promotion. See `ml/VERIFIED_ATTENDANCE_IMPORT_RESULT_2026-11-04.md`.
+
+Frozen successful paths can coexist with a broken non-ready branch. P9v2 asserted five neighbors even when frozen representation/reference were explicitly unavailable. A narrow typed no-prediction diagnostic preserves support gates and valid output. Before-edit full-output synthetic goldens test that boundary. Actual in-window local DB persistence does not make a failed hosted workflow chain DONE. See `ml/P9_NONREADY_OPERATIONAL_FIX_2026-11-04.md`.
+
+A further consumer audit found that the old history view and Edge selector drop knowledge timestamps and the frozen structural builder filters kickoff only. Source timestamp persistence and old training-cell parity do not establish end-to-end PIT enforcement. A separate read-only guard verifies actual before/after availability; versioned serving integration is still pending. See `ml/ATTENDANCE_KNOWLEDGE_TIME_AUDIT_V1.md`.
+
+Validate the source guard against actual aliases and the unchanged feature consumer. The registered PKO BP Ekstraklasa alias initially rejected4 genuine outcomes; correcting that gave the proper1-known-versus6-unfiltered Górnik history count. Preserve earlier development-probe receipts and label the corrected final result; no retrospective prediction is needed to demonstrate the input defect.

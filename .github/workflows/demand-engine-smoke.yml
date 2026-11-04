@@ -32,6 +32,11 @@ on:
       - 'ml/*c1*matched*audit*v1.py'
       - 'ml/*c1*objective*audit*v1.py'
       - 'ml/*c1_training_expansion*v1.py'
+      - 'ml/*c1_seat_median*v1.py'
+      - 'ml/*public_attendance_source_audit*v1.py'
+      - 'ml/*verified_attendance_source_rows*v1.py'
+      - 'ml/*attendance_knowledge_time_guard*v1.py'
+      - 'ml/artifacts/c1_seat_median_v1/**'
       - 'ml/artifacts/c1_training_expansion_v1/**'
       - 'ml/DAILY_INVENTORY_DRIFT_COMPARATOR_PRECOMMIT_V1.md'
       - 'ml/artifacts/daily_inventory_drift_comparator_v1.json'
@@ -71,6 +76,11 @@ on:
       - 'ml/*c1*matched*audit*v1.py'
       - 'ml/*c1*objective*audit*v1.py'
       - 'ml/*c1_training_expansion*v1.py'
+      - 'ml/*c1_seat_median*v1.py'
+      - 'ml/*public_attendance_source_audit*v1.py'
+      - 'ml/*verified_attendance_source_rows*v1.py'
+      - 'ml/*attendance_knowledge_time_guard*v1.py'
+      - 'ml/artifacts/c1_seat_median_v1/**'
       - 'ml/artifacts/c1_training_expansion_v1/**'
       - 'ml/DAILY_INVENTORY_DRIFT_COMPARATOR_PRECOMMIT_V1.md'
       - 'ml/artifacts/daily_inventory_drift_comparator_v1.json'
@@ -144,6 +154,31 @@ jobs:
 
       - name: Verify separately versioned C1 expansion capture and immutable timing guards
         run: python -m unittest ml.test_c1_training_expansion_v1 ml.test_watch_c1_training_expansion_v1 ml.test_score_c1_training_expansion_v1 ml.test_collect_c1_training_expansion_v1 -v
+
+      - name: Verify isolated direct-person median decoding, paired gates and immutable evidence
+        run: python -m unittest ml.test_c1_seat_median_v1 -v
+
+      - name: Verify bounded public-source extraction without data imports
+        run: python -m unittest ml.test_public_attendance_source_audit_v1 -v
+
+      - name: Verify source fixture identity and append-only knowledge timestamps
+        run: python -m unittest ml.test_verified_attendance_source_rows_v1 -v
+
+      - name: Verify source availability before structural attendance cutoffs
+        run: python -m unittest ml.test_attendance_knowledge_time_guard_v1 -v
+
+      - name: Verify seat-median freeze when present without fitting
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          from ml.capture_c1_seat_median_v1 import load_models
+          path = Path('ml/artifacts/c1_seat_median_v1')
+          if (path / 'manifest.json').exists():
+              load_models(path)
+              print('Median, Ridge20 and originalC1 artifacts/representation verified; no fit performed.')
+          else:
+              print('Before-fit median source checks only; no candidate freeze claimed.')
+          PY
 
       - name: Verify C1 expansion freeze when present without fitting
         run: |

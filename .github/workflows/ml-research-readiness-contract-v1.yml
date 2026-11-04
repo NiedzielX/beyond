@@ -2,6 +2,15 @@ name: ML Research Readiness Contract v1
 
 on:
   workflow_dispatch:
+    inputs:
+      public_source_audit:
+        description: 'Fetch fixed public attendance-source pages without model or database operations'
+        type: boolean
+        default: false
+      p9_failure_diagnostic:
+        description: 'Read the fixed existing failed P9 job log, without prediction or DB operations'
+        type: boolean
+        default: false
   pull_request:
     paths:
       - "supabase/sql/ml_research_readiness_v1.sql"
@@ -20,6 +29,39 @@ permissions:
   contents: read
 
 jobs:
+  public-source-audit:
+    if: github.event_name == 'workflow_dispatch' && (inputs.public_source_audit || inputs.p9_failure_diagnostic)
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    permissions:
+      contents: read
+      checks: write
+      actions: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Verify bounded extraction and URL whitelist
+        run: python -m unittest ml.test_public_attendance_source_audit_v1 -v
+      - name: Fetch public sources and expose structured read-only check evidence
+        if: inputs.public_source_audit
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: python -m ml.public_attendance_source_audit_v1 --output-dir "$RUNNER_TEMP/public-attendance-sources" --publish-checks
+      - name: Read the fixed existing failed P9 job log without model operations
+        if: inputs.p9_failure_diagnostic
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: python -m ml.p9_failed_job_log_audit_v1
+      - name: Preserve raw public-source receipts for review
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: public-attendance-source-audit-${{ github.run_id }}
+          path: ${{ runner.temp }}/public-attendance-sources
+          retention-days: 14
+          if-no-files-found: ignore
   validate-contract:
     runs-on: ubuntu-latest
     timeout-minutes: 10

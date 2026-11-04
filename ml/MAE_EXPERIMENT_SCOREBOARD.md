@@ -1,6 +1,6 @@
 # Beyond Ticketing — MAE Experiment Scoreboard
 
-Last updated: **2026-11-03**
+Last updated: **2026-11-04**
 
 Status: **CANONICAL HUMAN-READABLE MAE EXPERIMENT REGISTRY**
 
@@ -200,3 +200,20 @@ Main-panel`forecast_observations`latest version`beyond-demand-engine-v1-structur
 ## c1-objective-geometry-audit-v1 —2026-11-04
 
 Target-free contract audit, not a new predictor or accuracy result.20frozen training events/74rows; equal-event mass3.7verified; capacities15004–43708give8.4861small/large-capacity squared-occupancy loss ratio for the same person error. No target columns parsed, fit/inference/trainingMAE or new DeltaMAE. ExistingC1L1trees/clubvariants and structuralweighting rejection preserved. Result:`C1_OBJECTIVE_GEOMETRY_AUDIT_RESULT_V1.md`. Decision:OBJECTIVE_CONTRACT_DOCUMENTED; exact separate median-linear precommit still required beforefit; futureevidenceonly. Sixunitchecks pass.
+
+## c1-live-seat-median-v1-frozen-2026-11-04-n20
+
+**Work package:** MAE-04 / live-objective supplement. **Status:** FROZEN / BOUNDED_LOCAL_COLLECTING. **Hypothesis:** direct-person conditional median improves future event errors over expanded occupancy Ridge using identical information. **Incumbents:** original9C1, expanded20Ridge and shared prior, with raw/governed metrics separate. **Training:**20exposed events/74rows/11clubs, same30features/exact fitted preprocessor, no fresh validation from those20. **Protocol:** final24genuine current paired captures; first30newscored events/8clubs,10000eventbootstrap seed42 and distinct raw/product gates. **Prospective result:**0predictions/0scores, all MAE/bias/tail/improvement/coverage-result fields null, not zero error. No promotion. Fit13:44:30UTC; worker17:19verified. Full manifest/evidence:`C1_SEAT_MEDIAN_RESULT_V1.md`, precommit:`C1_SEAT_MEDIAN_PRECOMMIT_V1.md`.
+
+## Existing prospective scores after delayed genuine outcomes —17:19UTC
+
+These are dated cohort expansions, not newly trained experiments or comparable all-model tournaments. Details, source timing and immutable evidence:`VERIFIED_ATTENDANCE_IMPORT_RESULT_2026-11-04.md`.
+
+| Frozen lane/target | Independent events | Incumbent MAE | Challenger MAE | Paired delta | Decision |
+|---|---:|---:|---:|---:|---|
+| C1v8 attendance, latest row |16|3303.287177 prior|3428.290290 governed|+125.003114|Collect; unchanged model; old11event score retained |
+| Frozen encoder attendance |3|923.271989|1529.709219|+606.437230|Early worse; no promotion/retuning |
+| P9v2 attendance |2|1248.354372|1984.717101|+736.362730|Early worse; keep v1separate |
+| Dailyv1available_total at+1day |2|326.500000|258.941674|−67.558326|Early only;1/2improve; availability is not attendance |
+
+Expanded20Ridge still0future scores/nullMAE. Do not replace dated historical closed experiment results or reuse these completed old fixtures to validate either Nov4freeze. Partial source-import status/event445block remains explicit.
