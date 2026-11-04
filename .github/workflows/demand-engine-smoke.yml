@@ -18,6 +18,8 @@ on:
       - 'ml/test_mae02_seat_weighted_median_v1.py'
       - 'ml/mae03_context_evidence_audit_v1.py'
       - 'ml/test_mae03_context_evidence_audit_v1.py'
+      - 'ml/start_daily_inventory_path_watcher_v1.py'
+      - 'ml/test_start_daily_inventory_path_watcher_v1.py'
       - 'ml/recovered/v17/**'
       - 'ml/live_benchmark_v02.py'
       - 'ml/live_benchmark_v03.py'
@@ -40,6 +42,8 @@ on:
       - 'ml/test_mae02_seat_weighted_median_v1.py'
       - 'ml/mae03_context_evidence_audit_v1.py'
       - 'ml/test_mae03_context_evidence_audit_v1.py'
+      - 'ml/start_daily_inventory_path_watcher_v1.py'
+      - 'ml/test_start_daily_inventory_path_watcher_v1.py'
       - 'ml/recovered/v17/**'
       - 'ml/live_benchmark_v02.py'
       - 'ml/live_benchmark_v03.py'
@@ -83,6 +87,9 @@ jobs:
 
       - name: Verify context evidence timing, source isolation and grouped variance
         run: python -m unittest ml.test_mae03_context_evidence_audit_v1 -v
+
+      - name: Verify bounded detached worker lifecycle and health
+        run: python -m unittest ml.test_start_daily_inventory_path_watcher_v1 -v
 
       - name: Verify recovered v1.7 strict benchmark evidence
         run: python ml/recovered/v17/verify_recovered_bundle.py

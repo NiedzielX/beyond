@@ -1,6 +1,6 @@
 # Beyond Ticketing — Next Session Handoff
 
-Last updated: **2026-11-03**
+Last updated: **2026-11-04**
 
 Status: **DAILY-PATH MVP + LIVE EVIDENCE PROTECTION; MAE-01 FOR ATTENDANCE R&D**
 
@@ -16,7 +16,7 @@ The latest user instruction requires **genuine observed prefix → predictions f
 
 Implementation: [`DAILY_INVENTORY_PATH_IMPLEMENTATION_V1.md`](DAILY_INVENTORY_PATH_IMPLEMENTATION_V1.md). Deployment/recovery: [`DAILY_INVENTORY_PATH_DEPLOYMENT_V1.md`](DAILY_INVENTORY_PATH_DEPLOYMENT_V1.md). Formal lane precommit: [`DAILY_INVENTORY_PATH_PRECOMMIT_V1.md`](DAILY_INVENTORY_PATH_PRECOMMIT_V1.md).
 
-Recorded at 20:01 UTC: 7 local immutable attempts / 57 future-day points / 0 scores, plus verified private Supabase Storage backup and full restore. A bounded host-dependent watcher runs through2026-11-04T17:15Z; its status is `/workspace/ops-runtime/2026-11-03-daily-path/latest-cycle.json`. Inspect it and `watcher.pid` before starting another process. First targets mature2026-11-04T17:00Z. Local/cloud inference is verified; new SQL/gateway/GitHub schedule remain prepared but not deployed/enabled. Panel parser/geometry are verified; full TypeScript check and production build passed in GitHub Actions on the companion panel PR. Local npm access remains blocked. Missing network/management-token requirements are saved as an environment draft, not applied. No private transaction access, production activation or old-model retuning is required.
+Recorded2026-11-04T09:44:27Z:the detached host-dependent worker completed a new export/capture/score cycle and byte-verified private backup. The ledger retains7attempts /4predicted events /57future-day points /0scores. First targets maturetoday17:00UTC(18:00Europe/Warsaw). The prior foreground worker stopped after2026-11-03T20:54; missed issue windows are not reconstructed. Current detached worker is bounded until2026-11-05T09:30Z. Inspect `python -m ml.start_daily_inventory_path_watcher_v1 --runtime /workspace/ops-runtime/2026-11-03-daily-path --status`; HEALTHY requires both a live PID and a recent successful, model-matched, backup-verified cycle. Runtime state is host-dependent, not an autonomous coding service. Isolated PostgreSQL16tests and DB→pinned panel parser passed in Actions run41810511980; this is synthetic test evidence, not live Supabase deployment. SQL/Edge/GitHub scheduling remain undeployed/disabled. Deno/transport validation is in progress. Panel real TypeScript/build already passed; local npm remains blocked. Saved cloud setup draft is not applied and admin deployment binding is still absent.
 
 The attendance history read on2026-11-03 ended at2026-10-25. The six tracked fixtures onOctober30–November2 had no confirmed outcomes in `ticket_event_outcomes`; zero attendance scores are therefore not evidence of zero error. Keep this source-ingestion blocker separate from daily inventory-target scoring.
 

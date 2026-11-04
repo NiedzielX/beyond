@@ -14,3 +14,10 @@ Continuation authorized by the user. Canonical MAE order and frozen flags remain
 Prepared a disposable PostgreSQL16GitHub Actions service to execute the real daily-path migration with synthetic contracts: capture/retries, timing/lineage/flags, atomicity, private permissions, immutable updates/deletes, genuine zero target matching and idempotent scoring. Test code refuses any target other than localhost database`daily_path_contract`. No production credentials or actual prospective rows are used.
 
 Next:publish source, inspect actual cloud SQL test results, correct defects and reverify. Isolated test success remains distinct from deploying the SQL/Edge gateway to Supabase. Production remains off; admin deployment binding is still absent.
+
+## Verified progress
+
+- Detached worker completed09:44:27UTCcycle with57pending points and byte-verified private backup. Reusable bounded launcher/status tool added;6local lifecycle tests pass. It distinguishes live PID, launch-only and recent verified cycle; no duplicate was started.
+- Actual PostgreSQL16run41810511980passed9contract tests and the companion panel parser accepted both DB-produced ready and zero-scored feeds. Initial failure was a test's identity-column assertion, corrected to check ordinary fields; migration source remained unchanged.
+- Prepared gateway now handles opaque Supabase keys consistently with Python and requires signed token lifetime claims/RS256before its exact workflow policy. Six policy/header tests pass under Node; real Deno typecheck/tests are being added to cloud CI. No deployment was performed.
+- Local Python checks:260tests pass(189engine +71CLI/research/worker). Frozen artifacts and experiment contracts remain unchanged.

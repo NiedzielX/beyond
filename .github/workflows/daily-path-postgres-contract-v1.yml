@@ -5,12 +5,18 @@ on:
     paths:
       - 'supabase/sql/daily_inventory_path_shadow_v1.sql'
       - 'tests/postgres/test_daily_inventory_path_contract_v1.py'
+      - 'supabase/functions/daily_inventory_path_gateway_v1/**'
+      - 'ml/start_daily_inventory_path_watcher_v1.py'
+      - 'ml/test_start_daily_inventory_path_watcher_v1.py'
       - 'ml/artifacts/daily_inventory_path_v1.json'
       - '.github/workflows/daily-path-postgres-contract-v1.yml'
   pull_request:
     paths:
       - 'supabase/sql/daily_inventory_path_shadow_v1.sql'
       - 'tests/postgres/test_daily_inventory_path_contract_v1.py'
+      - 'supabase/functions/daily_inventory_path_gateway_v1/**'
+      - 'ml/start_daily_inventory_path_watcher_v1.py'
+      - 'ml/test_start_daily_inventory_path_watcher_v1.py'
       - 'ml/artifacts/daily_inventory_path_v1.json'
       - '.github/workflows/daily-path-postgres-contract-v1.yml'
   workflow_dispatch:
@@ -91,3 +97,10 @@ jobs:
           assert.equal(scored.events[0].points[0].score.baseline_abs_error, 50);
           console.log('Actual synthetic PostgreSQL ready/scored feeds satisfy the pinned panel parser.');
           JS
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+      - name: Typecheck prepared Edge gateway without deploying
+        run: deno check supabase/functions/daily_inventory_path_gateway_v1/index.ts
+      - name: Verify scoped gateway policy and Supabase key transport
+        run: deno test supabase/functions/daily_inventory_path_gateway_v1/policy_test.ts
