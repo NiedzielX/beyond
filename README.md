@@ -35,6 +35,10 @@ Production remains:
 
 ---
 
+## Daily-path MVP and cloud validation
+
+The separate public-inventory lane now predicts every remaining day from the genuine observed prefix. It remains a frozen research shadow with production off. See [implementation](ml/DAILY_INVENTORY_PATH_IMPLEMENTATION_V1.md), [deployment/recovery](ml/DAILY_INVENTORY_PATH_DEPLOYMENT_V1.md), and [verified cloud tests and bounded workers](ml/DAILY_PATH_CLOUD_VALIDATION_2026-11-04.md). Inventory-path MAE and attendance MAE are separate targets; no score is zero merely because future outcomes have not matured.
+
 ## Current state in one minute
 
 The structural model remains the attendance incumbent.

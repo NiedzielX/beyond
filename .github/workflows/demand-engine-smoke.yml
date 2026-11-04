@@ -20,6 +20,8 @@ on:
       - 'ml/test_mae03_context_evidence_audit_v1.py'
       - 'ml/start_daily_inventory_path_watcher_v1.py'
       - 'ml/test_start_daily_inventory_path_watcher_v1.py'
+      - 'ml/frozen_window_guardian_v1.py'
+      - 'ml/test_frozen_window_guardian_v1.py'
       - 'ml/recovered/v17/**'
       - 'ml/live_benchmark_v02.py'
       - 'ml/live_benchmark_v03.py'
@@ -44,6 +46,8 @@ on:
       - 'ml/test_mae03_context_evidence_audit_v1.py'
       - 'ml/start_daily_inventory_path_watcher_v1.py'
       - 'ml/test_start_daily_inventory_path_watcher_v1.py'
+      - 'ml/frozen_window_guardian_v1.py'
+      - 'ml/test_frozen_window_guardian_v1.py'
       - 'ml/recovered/v17/**'
       - 'ml/live_benchmark_v02.py'
       - 'ml/live_benchmark_v03.py'
@@ -90,6 +94,9 @@ jobs:
 
       - name: Verify bounded detached worker lifecycle and health
         run: python -m unittest ml.test_start_daily_inventory_path_watcher_v1 -v
+
+      - name: Verify legal-window guardian and no-backfill routing
+        run: python -m unittest ml.test_frozen_window_guardian_v1 -v
 
       - name: Verify recovered v1.7 strict benchmark evidence
         run: python ml/recovered/v17/verify_recovered_bundle.py

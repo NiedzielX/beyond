@@ -21,3 +21,9 @@ Next:publish source, inspect actual cloud SQL test results, correct defects and 
 - Actual PostgreSQL16run41810511980passed9contract tests and the companion panel parser accepted both DB-produced ready and zero-scored feeds. Initial failure was a test's identity-column assertion, corrected to check ordinary fields; migration source remained unchanged.
 - Prepared gateway now handles opaque Supabase keys consistently with Python and requires signed token lifetime claims/RS256before its exact workflow policy. Six policy/header tests pass under Node; real Deno typecheck/tests are being added to cloud CI. No deployment was performed.
 - Local Python checks:260tests pass(189engine +71CLI/research/worker). Frozen artifacts and experiment contracts remain unchanged.
+
+## Further verified progress
+
+Run41811081476passed real Deno typecheck,6policy/header tests and real-entry-point405/401HTTPtests with no inherited credentials, alongside9PostgreSQLcontracts and typed DB feeds. Run41811081596passed260Pythonchecks. PR209now contains the isolated validation and detached inference hardening.
+
+Observed frozen-encoder scheduling gap:latest scheduled success03:22UTCdespite twice-hourly YAML. Manual main health run41811629783passed at10:03UTCwith no due checkpoint. Started one detached legal-window guardian under `/workspace/ops-runtime/2026-11-04-frozen-window-guardian/`,300second polling, deadlineNov5 09:30UTC. Nine local tests pass; first live cycle correctly found no due checkpoint and did not dispatch. Future due-window run/DB proof remains pending, not DONE. No P9heartbeat claim.
