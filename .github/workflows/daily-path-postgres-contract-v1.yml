@@ -46,4 +46,18 @@ jobs:
       - name: Apply actual migration and test synthetic contracts
         env:
           DAILY_PATH_TEST_DSN: postgresql://postgres:postgres@127.0.0.1:5432/daily_path_contract
-        run: python -m unittest discover -s tests/postgres -p 'test_daily_inventory_path_contract_v1.py' -v
+        run: |
+          python - <<'PY'
+          import subprocess
+          import sys
+          result = subprocess.run([
+              sys.executable, '-m', 'unittest', 'discover', '-s', 'tests/postgres',
+              '-p', 'test_daily_inventory_path_contract_v1.py', '-v',
+          ], stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
+          print(result.stdout, flush=True)
+          if result.returncode:
+              # Only synthetic fixture diagnostics; also visible through the Checks API.
+              detail = result.stdout[-16000:].replace('%', '%25').replace('\r', '%0D').replace('\n', '%0A')
+              print('::error title=Isolated PostgreSQL contract failed::' + detail, flush=True)
+          raise SystemExit(result.returncode)
+          PY
