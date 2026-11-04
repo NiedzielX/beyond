@@ -1,0 +1,16 @@
+# PostgreSQL contract validation and cloud continuation
+
+Continuation authorized by the user. Canonical MAE order and frozen flags remain unchanged.
+
+## Operational check09:43UTC /10:43Europe-Warsaw
+
+- Actual RPC: no open due encoder checkpoints; nextKorona603P-3at11:15UTC, currently insufficient input. Next readyGórnik449P-3at16:30UTC. P9v1counts6/0/0;P9v2 5/3/0;frozen encoder8/5/0.
+- Daily path still57future points /0scores; first target not mature until17:00UTC. Old watcher PID was gone; last successful cycle2026-11-03T20:54:53Z. No historical issue was backfilled.
+- Started one detached bounded subprocess, log/runtime under `/workspace/ops-runtime/2026-11-03-daily-path/`, deadline2026-11-05T09:30Z. It remains host-dependent and is an inference worker, not an autonomous coding service. Verify new cycle/backup before claiming execution.
+- MAE-03 hosted checks passed in runs41715153450and41715203331; no context model fit.
+
+## Current implementation
+
+Prepared a disposable PostgreSQL16GitHub Actions service to execute the real daily-path migration with synthetic contracts: capture/retries, timing/lineage/flags, atomicity, private permissions, immutable updates/deletes, genuine zero target matching and idempotent scoring. Test code refuses any target other than localhost database`daily_path_contract`. No production credentials or actual prospective rows are used.
+
+Next:publish source, inspect actual cloud SQL test results, correct defects and reverify. Isolated test success remains distinct from deploying the SQL/Edge gateway to Supabase. Production remains off; admin deployment binding is still absent.
