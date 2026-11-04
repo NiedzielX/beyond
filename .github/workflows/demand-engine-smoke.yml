@@ -37,6 +37,7 @@ on:
       - 'ml/*verified_attendance_source_rows*v1.py'
       - 'ml/*attendance_knowledge_time_guard*v1.py'
       - 'ml/*structural_known_at*v1.py'
+      - 'ml/*prepare_c1_training_data26*v1.py'
       - 'ml/*blocked_outcome_source_audit*v1.py'
       - 'ml/*verify_blocked_outcome445_composite*v1.py'
       - 'ml/artifacts/c1_seat_median_v1/**'
@@ -84,6 +85,7 @@ on:
       - 'ml/*verified_attendance_source_rows*v1.py'
       - 'ml/*attendance_knowledge_time_guard*v1.py'
       - 'ml/*structural_known_at*v1.py'
+      - 'ml/*prepare_c1_training_data26*v1.py'
       - 'ml/*blocked_outcome_source_audit*v1.py'
       - 'ml/*verify_blocked_outcome445_composite*v1.py'
       - 'ml/artifacts/c1_seat_median_v1/**'
@@ -169,6 +171,9 @@ jobs:
 
       - name: Verify source fixture identity and append-only knowledge timestamps
         run: python -m unittest ml.test_verified_attendance_source_rows_v1 -v
+
+      - name: Verify exposed training support preserves frozen data and serving parity
+        run: python -m unittest ml.test_prepare_c1_training_data26_v1 -v
 
       - name: Verify source availability before structural attendance cutoffs
         run: python -m unittest ml.test_attendance_knowledge_time_guard_v1 -v
