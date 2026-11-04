@@ -117,6 +117,16 @@ class DailyPathPostgresContract(unittest.TestCase):
                                 (payload["issue"]["ticket_event_id"],)).fetchone()[0]
         self.assertEqual(count, 0)
 
+    def export_synthetic_feed(self, name, event):
+        directory = os.environ.get("DAILY_PATH_TEST_FEED_DIR")
+        if directory is None:
+            return
+        with self.role("service_role"):
+            feed = self.db.execute("select public.daily_inventory_path_feed_v1()").fetchone()[0]
+        feed["events"] = [vintage for vintage in feed["events"] if vintage["ticket_event_id"] == event]
+        output = Path(directory); output.mkdir(parents=True, exist_ok=True)
+        (output/name).write_text(json.dumps(feed, sort_keys=True)+"\n")
+
     def test_capture_exact_retry_and_remote_feed(self):
         payload = self.fixture()
         first = self.record(payload)
@@ -134,6 +144,7 @@ class DailyPathPostgresContract(unittest.TestCase):
         self.assertEqual(len(vintage["observations"]), 4)
         self.assertFalse(feed["production_change"])
         self.assertTrue(all(point["score"] is None for point in vintage["points"]))
+        self.export_synthetic_feed("ready.json", payload["issue"]["ticket_event_id"])
 
     def test_conflicting_retry_never_overwrites(self):
         payload = self.fixture(); self.record(payload)
@@ -210,6 +221,14 @@ class DailyPathPostgresContract(unittest.TestCase):
           (model["model_version"],model["model_sha256"],model["trained_through"],model["fitted_at"]))
         payload = self.fixture(age_minutes=3*24*60, n=5, artifact=model)
         issue = payload["issue"]
+        # Keep the synthetic scored feed internally consistent, including persistence.
+        last_prefix = issue["observed_prefix"][-1]
+        last_prefix["available_total"] = 50
+        self.db.execute("update public.snapshots set available_total=50 where id=%s", (last_prefix["snapshot_id"],))
+        manifest = hashlib.sha256(json.dumps(issue["observed_prefix"], sort_keys=True).encode()).hexdigest()
+        issue["input_manifest_sha256"] = manifest
+        for point in payload["points"]:
+            point.update(predicted_available_total=20, baseline_available_total=50, input_manifest_sha256=manifest)
         attempt = self.db.execute("""insert into private.daily_inventory_path_attempts_v1
           (ticket_event_id,issued_as_of_at,kickoff_at,model_version,model_sha256,received_at,github_sha,status,input_manifest_sha256,payload)
           values(%s,%s,%s,%s,%s,%s,%s,'READY',%s,%s) returning id""",
@@ -239,11 +258,17 @@ class DailyPathPostgresContract(unittest.TestCase):
             retry = self.db.execute("select public.score_daily_inventory_path_v1()").fetchone()[0]
         self.assertEqual(retry["inserted_scores"], 0)
         self.assertEqual(self.db.execute("select scored_at from private.daily_inventory_path_scores_v1 where point_id=%s", (points[0],)).fetchone()[0], score[4])
-        for table, column, identifier in (("models", "model_version", self.artifact["model_version"]),
-                                          ("attempts", "id", attempt), ("points", "id", points[0]), ("scores", "point_id", points[0])):
+        event = self.db.execute("select ticket_event_id from private.daily_inventory_path_attempts_v1 where id=%s", (attempt,)).fetchone()[0]
+        self.export_synthetic_feed("scored.json", event)
+        for table, column, identifier, update_column in (
+                ("models", "model_version", self.artifact["model_version"], "model_sha256"),
+                ("attempts", "id", attempt, "github_sha"),
+                ("points", "id", points[0], "predicted_available_total"),
+                ("scores", "point_id", points[0], "actual_available_total")):
             for operation in ("update", "delete"):
                 name = "daily_inventory_path_"+table+"_v1"
-                query = (sql.SQL("update private.{} set {}={} where {}=%s").format(sql.Identifier(name),sql.Identifier(column),sql.Identifier(column),sql.Identifier(column))
+                # Mutate an ordinary field: GENERATED ALWAYS identity checks run before triggers.
+                query = (sql.SQL("update private.{} set {}={} where {}=%s").format(sql.Identifier(name),sql.Identifier(update_column),sql.Identifier(update_column),sql.Identifier(column))
                          if operation == "update" else sql.SQL("delete from private.{} where {}=%s").format(sql.Identifier(name),sql.Identifier(column)))
                 with self.subTest(table=table, operation=operation), self.assertRaisesRegex(psycopg.Error, "IMMUTABLE"):
                     self.db.execute(query, (identifier,))

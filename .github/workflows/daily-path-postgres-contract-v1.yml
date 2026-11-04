@@ -46,6 +46,7 @@ jobs:
       - name: Apply actual migration and test synthetic contracts
         env:
           DAILY_PATH_TEST_DSN: postgresql://postgres:postgres@127.0.0.1:5432/daily_path_contract
+          DAILY_PATH_TEST_FEED_DIR: ${{ runner.temp }}/daily-path-feeds
         run: |
           python - <<'PY'
           import subprocess
@@ -61,3 +62,32 @@ jobs:
               print('::error title=Isolated PostgreSQL contract failed::' + detail, flush=True)
           raise SystemExit(result.returncode)
           PY
+      - name: Checkout exact companion panel parser
+        uses: actions/checkout@v4
+        with:
+          repository: NiedzielX/BeyondTicketingPanel
+          ref: 3983c10403c32892d66e7c51b62107b1e2272f4f
+          path: panel-contract
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Parse actual synthetic DB feeds with the panel contract
+        env:
+          DAILY_PATH_TEST_FEED_DIR: ${{ runner.temp }}/daily-path-feeds
+        run: |
+          node --experimental-strip-types --input-type=module <<'JS'
+          import assert from 'node:assert/strict';
+          import { readFileSync } from 'node:fs';
+          import { parseDailyInventoryPathFeed } from './panel-contract/src/services/dailyInventoryPathService.ts';
+          const read = (name) => parseDailyInventoryPathFeed(JSON.parse(readFileSync(`${process.env.DAILY_PATH_TEST_FEED_DIR}/${name}`, 'utf8')));
+          const ready = read('ready.json');
+          assert.equal(ready.events[0].points.length, 2);
+          assert.ok(ready.events[0].points.every((point) => point.score == null));
+          const scored = read('scored.json');
+          assert.equal(scored.events[0].observations.length, 4);
+          assert.equal(scored.events[0].points[0].score.target_available_total, 0);
+          assert.equal(scored.events[0].points[0].score.candidate_abs_error, 20);
+          assert.equal(scored.events[0].points[0].score.baseline_abs_error, 50);
+          console.log('Actual synthetic PostgreSQL ready/scored feeds satisfy the pinned panel parser.');
+          JS
