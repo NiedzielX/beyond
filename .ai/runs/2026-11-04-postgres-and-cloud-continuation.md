@@ -73,3 +73,5 @@ Source3039e494passed hosted Demand Engine41818376777(309unit checks plus origina
 Initial driftPID154243failed DNS because the manually filtered environment omitted the cloud proxy. The prior manual no-due cycle remains valid; the detached launch was not cycle-verified and is retained as failed. Replaced only after confirming the exited/zombie state, inheriting the working environment. PID154636completed11:09:54UTCcycle after its new launch with private read-back verified. No rule/artifact change or new freeze.
 
 The observation exposed kill(0)'s zombie false positive. Shared v1launcher now checks actual process state and fails closed on inspection errors. Three new real live/unreaped-child/error checks plus six prior lifecycle checks pass locally. Existing v1worker still reportsHEALTHY; it was not restarted. Hosted proof of the new operational guard pending.
+
+Hosted final operational guard proof:Demand Engine41819264406passed312Pythonchecks, including9launcher lifecycle cases; SQL/feature/parser/Deno chain41819264228passed. Frozen artifact/predictor/precommit checks passed. No restart of the original worker or change to any forecast.
