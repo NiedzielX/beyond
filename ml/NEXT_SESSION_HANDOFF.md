@@ -87,3 +87,7 @@ Reviewable source: [backend draft PR209](https://github.com/NiedzielX/beyond/pul
 Existing attendance/P9/SSP/Form5 policies, models and550-seat comparison remain frozen. All missed prospective windows stay missing, including historical event443P9T-24/encoderP-1 and event6P9T-48. Do not weaken support or reinterpret source zeros to repair eligibility. Korona hidden availability remains unknown; Widzew literal zero remains zero; Wisła Kraków VAO rights contract remains fail-closed.
 
 MAE-01 diagnostic and MAE-02 weighting rejection are complete; MAE-03 context audit remainsDATA_BOUND. Follow the execution plan for new research. Do not repeat closed/exposed searches, and do not spend another session rerunning unchanged isolated checks. Next evidence is a genuine new forecast/outcome pair, not a more persuasive picture.
+
+## Latest user research priority: C1 live MAE toward1,200
+
+Read `C1_LIVE_MAE_1200_PLAN_V1.md`. Current C1policyMAE4121.45on11scored events;4events account for83.45%of error. Even an outcome-aware selector between current prior/live forecasts yields4103.05, not1200. Basic ranking/oracle diagnostic complete; underlying causes are not established. Next research task:matched-cohort audit of actual bad-event inputs/labels/anchor contracts and existing D2, then one separately precommitted challenger. No old-model retuning, cosmeticv3T1replacement, subgroup deletion or paid-sales claim.

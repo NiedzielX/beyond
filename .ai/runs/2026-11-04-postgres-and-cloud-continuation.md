@@ -89,3 +89,9 @@ Handoff rewritten as current operations only, with fresh counts, next legal wind
 ## Corrected live-MAE scope after user clarification
 
 Earlier answer incorrectly substituted historical Pre-Live results and generalized new-lane zero scores to the whole project. Actual DBread11:42UTCshows existing C1v8has11scored events,latest policyMAE4121.45,raw live7127.99,prior4314.72; full-window policy4971.62. Latest stored main-panel structural-shadow version has panel-ruleMAE4314.73on11events,all adjustments0. All evaluated latest rows precede kickoff and label confirmation. C1latest scoreOct25and six later completed fixtures still lack outcomes. Fixed handoff/scoreboard/lesson scope; no prediction, score or model was changed. Private panel-rule audit saved`/workspace/ops-runtime/2026-11-04-review/live-model-panel-metrics.json`.
+
+## C1 MAE1200plan grounded in measured live errors
+
+User requests a plan specifically for existing C1v8toward1200vs4121MAE. Read-only11-event audit:Wisła16error17009.69,Lech5 7669.07,Górnik11 7160.62,Śląsk23 5993.33;top4share83.45%. Policy selectsPRIOR10/LIVE1. Inadmissible outcome-aware min(priorAE,liveAE) diagnosticMAE4103.05shows switching alone cannot remove dominant errors. Required reduction to1200about70.9%. No subgroup was removed or model fitted. Private evidence:`/workspace/ops-runtime/2026-11-04-review/c1-v8-live-error-plan-audit.json`.
+
+Created `C1_LIVE_MAE_1200_PLAN_V1.md`and activeSDDspec. Plan prioritizes bad-input/label/anchor investigation, exact-cohort existingD2comparison(v3T1equalsv2),then one new-information challenger and genuine future review. Does not promise1200or repeat rejected grids; proposed new-candidate review does not change frozen gates. Existingv8prediction/score/parameters remain unchanged.
