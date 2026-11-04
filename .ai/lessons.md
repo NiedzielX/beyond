@@ -12,4 +12,6 @@ Read after the canonical ML state files and before implementation. Add or update
 
 - [Live scoreboard scope](lessons/2026-11-04-live-scoreboard-scope.md): the newer encoder/P9summary excludes existing C1scores and panel forecasts; query actual model/package IDs before answering live-MAE questions.
 
+- [Same-time C1/D2 audit](lessons/2026-11-04-c1-same-time-and-training-support.md): identical events do not imply identical forecast opportunities; numerical parity and missing history are distinct findings.
+
 This index is durable memory, not a substitute for the authoritative execution plan or current handoff. No secrets or private source exports belong here.

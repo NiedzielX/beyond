@@ -2,6 +2,8 @@
 
 Data: 2026-11-04. Status: plan R&D, bez zmiany modelu, parametrów i produkcji. Uzupełnia `MAE_RESEARCH_ROADMAP_V6.md` i `EXECUTION_PLAN_CURRENT.md`. C1 v8 pozostaje zamrożonym benchmarkiem; nowy challenger otrzyma osobną wersję i precommit przed treningiem.
 
+Zaakceptowane uzupełnienie wykonawcze po ocenie literatury: [`C1_MAE_LITERATURE_EXECUTION_SUPPLEMENT_V1.md`](C1_MAE_LITERATURE_EXECUTION_SUPPLEMENT_V1.md). Kolejność: kompletność bazy → audyt celu MAE eksperta live → osobny test informacji z dynamiki → przyszłe porównanie. Zamrożone kolektory działają równolegle.
+
 ## Cel i punkt wyjścia
 
 Cel użytkownika: zbliżyć MAE prognozy końcowej frekwencji z danych live do **1 200 miejsc**, zachowując użyteczną dynamikę prognozy. To wymaga około **70,9% redukcji** wobec obecnego latest-row MAE 4 121,45. To cel badawczy, nie obietnica wyniku ani gwarancja błędu pojedynczego meczu. MAE przyszłej dostępności miejsc jest osobnym targetem.
@@ -64,6 +66,6 @@ Pierwszym sukcesem jest powtarzalna poprawa względem obu właściwych benchmark
 
 ## Najbliższe konkretne zadanie
 
-**Matched-cohort audit C1 v8 vs jego baza vs istniejący D2, zaczynając od 4 dominujących błędów i ich rzeczywistych wejść.** Nie kolejne prace nad schedulowaniem poza ochroną zagrożonych okien. Podstawowy ranking i granica idealnego selektora są już policzone; przyczyny dużych pomyłek nie są jeszcze ustalone.
+**Audyt matched-cohort wykonany:** `C1_LIVE_MATCHED_AUDIT_RESULT_V1.md`. D2na tych samych chwilach5157,52vsC1 4121,45; zgodność numerycznaC1potwierdzona; brakuje wcześniejszej historii sezonu Wisły/Górnika. Zewnętrzna weryfikacja źródeł i6nowych outcomes nadal zablokowane. Kolejny osobny eksperyment precommitted: `C1_TRAINING_EXPANSION_PRECOMMIT_V1.md`,9→20meczów treningowych przy stałych cechach/parametrach/polityce; tylko przyszły test może wykazać poprawę. Nie kolejne prace nad schedulowaniem poza ochroną zagrożonych okien.
 
 Plan nie gwarantuje 1 200 miejsc. Wyznacza testowalną drogę do tego celu i punkty, w których uczciwy wynik może odrzucić hipotezę. `production_change=false`, `live_adjustment=0`; frozen v8, D2, encoder, P9 i historyczne braki pozostają bez zmian.

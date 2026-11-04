@@ -1,0 +1,246 @@
+{
+  "version": "c1-source-followups-v1",
+  "status": "UNVERIFIED_QUEUE_NOT_LABELS",
+  "fixtures": [
+    {
+      "kind": "MISSING_CURRENT_SEASON_HOME_HISTORY",
+      "club_slug": "gornikzabrze",
+      "home_team": "Górnik Zabrze",
+      "away_team": "Śląsk Wrocław",
+      "match_date": "2026-07-25",
+      "needed_for_event_id": 11,
+      "actual_attendance": null,
+      "independently_verified": false
+    },
+    {
+      "kind": "MISSING_CURRENT_SEASON_HOME_HISTORY",
+      "club_slug": "gornikzabrze",
+      "home_team": "Górnik Zabrze",
+      "away_team": "Wisła Kraków",
+      "match_date": "2026-08-16",
+      "needed_for_event_id": 11,
+      "actual_attendance": null,
+      "independently_verified": false
+    },
+    {
+      "kind": "MISSING_CURRENT_SEASON_HOME_HISTORY",
+      "club_slug": "gornikzabrze",
+      "home_team": "Górnik Zabrze",
+      "away_team": "GKS Katowice",
+      "match_date": "2026-08-30",
+      "needed_for_event_id": 11,
+      "actual_attendance": null,
+      "independently_verified": false
+    },
+    {
+      "kind": "MISSING_CURRENT_SEASON_HOME_HISTORY",
+      "club_slug": "gornikzabrze",
+      "home_team": "Górnik Zabrze",
+      "away_team": "Lech Poznań",
+      "match_date": "2026-09-12",
+      "needed_for_event_id": 11,
+      "actual_attendance": null,
+      "independently_verified": false
+    },
+    {
+      "kind": "MISSING_CURRENT_SEASON_HOME_HISTORY",
+      "club_slug": "wislakrakow",
+      "home_team": "Wisła Kraków",
+      "away_team": "GKS Katowice",
+      "match_date": "2026-07-26",
+      "needed_for_event_id": 16,
+      "actual_attendance": null,
+      "independently_verified": false
+    },
+    {
+      "kind": "MISSING_CURRENT_SEASON_HOME_HISTORY",
+      "club_slug": "wislakrakow",
+      "home_team": "Wisła Kraków",
+      "away_team": "Wisła Płock",
+      "match_date": "2026-08-07",
+      "needed_for_event_id": 16,
+      "actual_attendance": null,
+      "independently_verified": false
+    },
+    {
+      "kind": "MISSING_CURRENT_SEASON_HOME_HISTORY",
+      "club_slug": "wislakrakow",
+      "home_team": "Wisła Kraków",
+      "away_team": "Wieczysta Kraków",
+      "match_date": "2026-08-29",
+      "needed_for_event_id": 16,
+      "actual_attendance": null,
+      "independently_verified": false
+    },
+    {
+      "kind": "MISSING_CURRENT_SEASON_HOME_HISTORY",
+      "club_slug": "wislakrakow",
+      "home_team": "Wisła Kraków",
+      "away_team": "Jagiellonia Białystok",
+      "match_date": "2026-09-11",
+      "needed_for_event_id": 16,
+      "actual_attendance": null,
+      "independently_verified": false
+    },
+    {
+      "kind": "MISSING_CURRENT_SEASON_HOME_HISTORY",
+      "club_slug": "wislakrakow",
+      "home_team": "Wisła Kraków",
+      "away_team": "Śląsk Wrocław",
+      "match_date": "2026-09-18",
+      "needed_for_event_id": 16,
+      "actual_attendance": null,
+      "independently_verified": false
+    },
+    {
+      "kind": "MISSING_CURRENT_SEASON_HOME_HISTORY",
+      "club_slug": "zaglebie_lubin",
+      "home_team": "Zagłębie Lubin",
+      "away_team": "Piast Gliwice",
+      "match_date": "2026-07-27",
+      "needed_for_event_id": 19,
+      "actual_attendance": null,
+      "independently_verified": false
+    },
+    {
+      "kind": "MISSING_CURRENT_SEASON_HOME_HISTORY",
+      "club_slug": "zaglebie_lubin",
+      "home_team": "Zagłębie Lubin",
+      "away_team": "Śląsk Wrocław",
+      "match_date": "2026-08-15",
+      "needed_for_event_id": 19,
+      "actual_attendance": null,
+      "independently_verified": false
+    },
+    {
+      "kind": "MISSING_CURRENT_SEASON_HOME_HISTORY",
+      "club_slug": "zaglebie_lubin",
+      "home_team": "Zagłębie Lubin",
+      "away_team": "Pogoń Szczecin",
+      "match_date": "2026-08-29",
+      "needed_for_event_id": 19,
+      "actual_attendance": null,
+      "independently_verified": false
+    },
+    {
+      "kind": "MISSING_CURRENT_SEASON_HOME_HISTORY",
+      "club_slug": "zaglebie_lubin",
+      "home_team": "Zagłębie Lubin",
+      "away_team": "GKS Katowice",
+      "match_date": "2026-09-12",
+      "needed_for_event_id": 19,
+      "actual_attendance": null,
+      "independently_verified": false
+    },
+    {
+      "kind": "MISSING_CURRENT_SEASON_HOME_HISTORY",
+      "club_slug": "zaglebie_lubin",
+      "home_team": "Zagłębie Lubin",
+      "away_team": "Wisła Płock",
+      "match_date": "2026-09-20",
+      "needed_for_event_id": 19,
+      "actual_attendance": null,
+      "independently_verified": false
+    },
+    {
+      "kind": "MISSING_CURRENT_SEASON_HOME_HISTORY",
+      "club_slug": "wisla_plock",
+      "home_team": "Wisła Płock",
+      "away_team": "Widzew Łódź",
+      "match_date": "2026-07-31",
+      "needed_for_event_id": 20,
+      "actual_attendance": null,
+      "independently_verified": false
+    },
+    {
+      "kind": "MISSING_CURRENT_SEASON_HOME_HISTORY",
+      "club_slug": "wisla_plock",
+      "home_team": "Wisła Płock",
+      "away_team": "Korona Kielce",
+      "match_date": "2026-08-28",
+      "needed_for_event_id": 20,
+      "actual_attendance": null,
+      "independently_verified": false
+    },
+    {
+      "kind": "MISSING_CURRENT_SEASON_HOME_HISTORY",
+      "club_slug": "wisla_plock",
+      "home_team": "Wisła Płock",
+      "away_team": "Cracovia",
+      "match_date": "2026-09-13",
+      "needed_for_event_id": 20,
+      "actual_attendance": null,
+      "independently_verified": false
+    },
+    {
+      "kind": "MISSING_CURRENT_SEASON_HOME_HISTORY",
+      "club_slug": "slaskwroclaw",
+      "home_team": "Śląsk Wrocław",
+      "away_team": "Korona Kielce",
+      "match_date": "2026-09-12",
+      "needed_for_event_id": 23,
+      "actual_attendance": null,
+      "independently_verified": false
+    },
+    {
+      "kind": "MISSING_COMPLETED_EVENT_OUTCOME",
+      "ticket_event_id": 443,
+      "club_slug": "cracovia",
+      "home_team": "Cracovia",
+      "away_team": "Motor Lublin",
+      "match_date": "2026-10-30",
+      "actual_attendance": null,
+      "independently_verified": false
+    },
+    {
+      "kind": "MISSING_COMPLETED_EVENT_OUTCOME",
+      "ticket_event_id": 446,
+      "club_slug": "wisla_plock",
+      "home_team": "Wisła Płock",
+      "away_team": "Piast Gliwice",
+      "match_date": "2026-10-31",
+      "actual_attendance": null,
+      "independently_verified": false
+    },
+    {
+      "kind": "MISSING_COMPLETED_EVENT_OUTCOME",
+      "ticket_event_id": 6,
+      "club_slug": "lech",
+      "home_team": "Lech Poznań",
+      "away_team": "Wisła Kraków",
+      "match_date": "2026-10-31",
+      "actual_attendance": null,
+      "independently_verified": false
+    },
+    {
+      "kind": "MISSING_COMPLETED_EVENT_OUTCOME",
+      "ticket_event_id": 444,
+      "club_slug": "gkskatowice",
+      "home_team": "GKS Katowice",
+      "away_team": "Widzew Łódź",
+      "match_date": "2026-10-31",
+      "actual_attendance": null,
+      "independently_verified": false
+    },
+    {
+      "kind": "MISSING_COMPLETED_EVENT_OUTCOME",
+      "ticket_event_id": 445,
+      "club_slug": "zaglebie_lubin",
+      "home_team": "KGHM Zagłębie Lubin",
+      "away_team": "Korona Kielce",
+      "match_date": "2026-11-02",
+      "actual_attendance": null,
+      "independently_verified": false
+    },
+    {
+      "kind": "MISSING_COMPLETED_EVENT_OUTCOME",
+      "ticket_event_id": 447,
+      "club_slug": "rakow",
+      "home_team": "Raków Częstochowa",
+      "away_team": "Pogoń Szczecin",
+      "match_date": "2026-11-02",
+      "actual_attendance": null,
+      "independently_verified": false
+    }
+  ]
+}

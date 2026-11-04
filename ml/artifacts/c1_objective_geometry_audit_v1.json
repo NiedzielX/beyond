@@ -1,0 +1,27 @@
+{
+  "version": "c1-objective-geometry-audit-v1",
+  "independent_training_events": 20,
+  "training_rows": 74,
+  "min_capacity": 15004.0,
+  "max_capacity": 43708.0,
+  "event_weight_mass": 3.6999999999999997,
+  "same_seat_error_small_vs_large_capacity_squared_loss_ratio": 8.48609243169208,
+  "same_seat_error_small_vs_large_capacity_absolute_occupancy_loss_ratio": 2.913089842708611,
+  "same_seat_error_small_vs_large_capacity_absolute_seat_loss_ratio": 1.0,
+  "current_data_loss": "sum(row_event_weight * seat_error**2 / capacity**2)",
+  "current_penalty": "Ridge alpha10; unchanged original preprocessing and clipping",
+  "point_functional": {
+    "squared_loss": "conditional mean",
+    "absolute_loss": "conditional median"
+  },
+  "target_values_parsed": false,
+  "predictions_computed": false,
+  "training_mae_computed": false,
+  "model_fitted": false,
+  "mae_improvement_proven": false,
+  "production_change": false,
+  "live_adjustment": 0,
+  "source_frame_sha256": "be9aab4721e69661b8f14d3e1e8938abde569dabd6f7878e0986868fc0756549",
+  "source_manifest_sha256": "488efa09f774c53a94d37ee2ea2299f9090c6b1f66e783eab3550f1608e63fc4",
+  "interpretation": "Loss geometry is not observed forecast error or a causal diagnosis. Capacity is known in X; rescaling does not by itself change the unrestricted conditional functional. Finite model/regularization tradeoffs require a new precommitted future test; old structural capacity-weighting remains rejected."
+}
