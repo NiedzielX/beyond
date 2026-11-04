@@ -95,3 +95,7 @@ Read `C1_LIVE_MAE_1200_PLAN_V1.md`. Current C1policyMAE4121.45on11scored events;
 ## C1 audit execution —2026-11-04 12:20UTC
 
 Read `C1_LIVE_MATCHED_AUDIT_RESULT_V1.md`: reusable fresh read-only exporter→audit executed;11events/44rows, C1policy4121.45vsD2P2 5157.52at identical persisted times. No train/serve mismatch found. Missing Wisła/Górnikseason-history inputs confirmed, their causal improvement unproven.18history checks+6outcomes remain unverified; public sites unreachable from this host. Private sources/results stay outside Git. New training-support-only challenger precommitted in `C1_TRAINING_EXPANSION_PRECOMMIT_V1.md`, pending implementation/fit at this entry; do not conflate it with an active upgraded C1. No old frozen artifacts or forecasts changed.
+
+### C1 training-support challenger actually frozen —12:27UTC
+
+See `C1_TRAINING_EXPANSION_RESULT_V1.md`. New separate20event/74rowpackage frozen once12:26:39UTC, estimatorSHA04dbdf1e5b8846782194f2ca1e833078a10238d1c9ca151b8391a869449027ba; original30features/Ridge10/policy unchanged. No training-MAEclaim. Current DBinference12:27returns0eligiblecandidates/0predictions/0scores; MAEnull. Privatefreeze/input/lineagebackupbyteverified. Prepared separate bounded collector untilNov6 20:30UTC; startup proof pending at this entry. FirsteligiblewindowNov5 17:00, later than oldworkersdeadline. Candidate needs genuinefuturepairedforecasts and30newscored events/8clubs. No oldmodel/score/gateway/productionwrites.

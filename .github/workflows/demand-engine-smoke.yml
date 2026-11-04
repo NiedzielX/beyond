@@ -138,7 +138,7 @@ jobs:
         run: python -m unittest ml.test_c1_live_matched_audit_v1 -v
 
       - name: Verify separately versioned C1 expansion capture and immutable timing guards
-        run: python -m unittest ml.test_c1_training_expansion_v1 -v
+        run: python -m unittest ml.test_c1_training_expansion_v1 ml.test_watch_c1_training_expansion_v1 -v
 
       - name: Verify C1 expansion freeze when present without fitting
         run: |
