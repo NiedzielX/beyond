@@ -30,6 +30,8 @@ on:
       - 'ml/test_daily_path_coefficient_audit_v1.py'
       - 'ml/*drift*v1.py'
       - 'ml/*c1*matched*audit*v1.py'
+      - 'ml/*c1_training_expansion*v1.py'
+      - 'ml/artifacts/c1_training_expansion_v1/**'
       - 'ml/DAILY_INVENTORY_DRIFT_COMPARATOR_PRECOMMIT_V1.md'
       - 'ml/artifacts/daily_inventory_drift_comparator_v1.json'
       - 'ml/recovered/v17/**'
@@ -66,6 +68,8 @@ on:
       - 'ml/test_daily_path_coefficient_audit_v1.py'
       - 'ml/*drift*v1.py'
       - 'ml/*c1*matched*audit*v1.py'
+      - 'ml/*c1_training_expansion*v1.py'
+      - 'ml/artifacts/c1_training_expansion_v1/**'
       - 'ml/DAILY_INVENTORY_DRIFT_COMPARATOR_PRECOMMIT_V1.md'
       - 'ml/artifacts/daily_inventory_drift_comparator_v1.json'
       - 'ml/recovered/v17/**'
@@ -132,6 +136,22 @@ jobs:
 
       - name: Verify C1 matched forecast times, truth reconciliation and input gaps
         run: python -m unittest ml.test_c1_live_matched_audit_v1 -v
+
+      - name: Verify separately versioned C1 expansion capture and immutable timing guards
+        run: python -m unittest ml.test_c1_training_expansion_v1 -v
+
+      - name: Verify C1 expansion freeze when present without fitting
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          from ml.c1_training_expansion_capture_v1 import load_frozen
+          path = Path('ml/artifacts/c1_training_expansion_v1')
+          if (path / 'manifest.json').exists():
+              load_frozen(path)
+              print('New expansion package and old frozen dependencies verified; no fit performed.')
+          else:
+              print('Before-fit source validation only; candidate not frozen in this commit.')
+          PY
 
       - name: Verify persisted drift freeze matches unchanged rule and precommit
         run: |
