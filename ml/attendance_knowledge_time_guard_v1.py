@@ -9,6 +9,9 @@ import math
 from zoneinfo import ZoneInfo
 
 VERSION = 'attendance-knowledge-time-guard-v1'
+# Exact registered alias from structural_prior_materializer_v1.sql; no fuzzy
+# competition matching that could pull cup/European fixtures into league data.
+COMPETITIONS = {'ekstraklasa', 'Ekstraklasa', 'PKO BP Ekstraklasa'}
 
 
 def timestamp(value):
@@ -36,7 +39,7 @@ def source_catalog(history, outcomes, events):
             try:
                 fixture = row if kind == 'history' else event_by[row['ticket_event_id']]
                 competition = fixture.get('competition_key', fixture.get('competition'))
-                if competition not in ('ekstraklasa', 'Ekstraklasa'): raise ValueError('Competition outside contract')
+                if competition not in COMPETITIONS: raise ValueError('Competition outside contract')
                 club, kickoff = fixture['club_slug'], timestamp(fixture['kickoff_at'])
                 if not isinstance(club, str) or not club: raise ValueError('Missing canonical club')
                 if source_id is None: raise ValueError('Missing source identity')
@@ -87,3 +90,25 @@ def available_at(catalog, cutoff):
     return {'version': VERSION, 'as_of_at': as_of.isoformat(), 'eligible': selected,
             'excluded_sources': excluded, 'conflicts': conflicts, 'rejected_sources': catalog['rejected_sources'],
             'production_change': False, 'live_adjustment': 0}
+
+
+def build_guarded_feature_row(*, catalog, historical_matches, sporting_state, event, horizon):
+    """Integration boundary before the unchanged frozen feature builder; no model fit/predict."""
+    import pandas as pd
+    from ml.demand_engine.current_structural_prior_features import (
+        HORIZON_DAYS, build_current_structural_prior_row,
+    )
+    if horizon not in HORIZON_DAYS: raise ValueError('Unknown canonical horizon')
+    target = event.normalized()
+    cutoff = target.kickoff_at - pd.Timedelta(days=HORIZON_DAYS[horizon])
+    audit = available_at(catalog, cutoff.isoformat())
+    if audit['conflicts']: raise ValueError('Conflicting known attendance; feature build refused')
+    # The frozen builder assigns current rows to the event season. Restrict
+    # here rather than silently reclassifying earlier seasons as current.
+    rows = [r for r in audit['eligible'] if r['season'] == target.season]
+    frame = pd.DataFrame(rows, columns=['club_slug', 'kickoff_at', 'actual_attendance', 'season'])
+    features = build_current_structural_prior_row(historical_matches=historical_matches,
+        current_attendance=frame, sporting_state=sporting_state, event=target, horizon=horizon)
+    return features, {**audit, 'event_season_eligible_count': len(rows),
+        'target_event_id': target.ticket_event_id, 'horizon': horizon,
+        'frozen_feature_builder_changed': False, 'model_inference_performed': False}

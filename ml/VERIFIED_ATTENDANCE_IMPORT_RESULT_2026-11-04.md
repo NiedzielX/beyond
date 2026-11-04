@@ -28,3 +28,7 @@ Local daily-path17:14UTC evidence concerns **available inventory**, not attendan
 `production_change=false`, `live_adjustment=0` throughout. Updated data is available to existing C1status consumers; no panel production deployment occurred.
 
 Private source/verification recovery contains17audit files,56,721bytes, SHA256 `cf411e24b2623d464e671f34acf38f3e2567f3d1f9c6dfc6fc56eceb0294d224`; private Storage read-back and decompression verified. No raw source exports were committed.
+
+## New-five decomposition, unchanged forecasts
+
+The five newly labelled events alone have priorMAE1078.130029 and policyMAE1903.329413. Four latest forecasts selected PRIOR; Raków447 selected LIVE666.15 against actual5089, whereas its prior4792.15 had only296.85error. This single event adds4125.996918seats of policy error relative to prior. Across all16events,14selectPRIOR/2LIVE. This explains why the current policy is worse than its baseline despite the larger cohort's lower aggregateMAE; it does not authorize a post-result threshold change. Lech6latest policy correctly retained prior34872.64 vs actual36229 while raw19312.72would be much worse. Keep raw and policy/window results distinct. These five are exposed diagnostic evidence, never validation for the Nov4freezes.

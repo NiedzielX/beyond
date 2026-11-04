@@ -256,21 +256,32 @@ See `C1_TRAINING_EXPANSION_RESULT_V1.md`. New separate20event/74rowpackage froze
 
 User authorized `C1_MAE_LITERATURE_EXECUTION_SUPPLEMENT_V1.md`: baseline-history completeness, bounded live-objective novelty/contract audit, separately precommitted dynamics mechanism and future paired evaluation. This expands the research programme beyond the20eventtraining expansion; it changes no frozen candidate or review gate. StructuralT1alreadyusesL1; C1v1/v2alreadytestedL1trees; weighting-only experiment rejected. Next objective experiment must identify its exact difference before fit. Public source revalidation remains blocked. Panelwork proceeds separately: existing public browser-readable C1scoreboard added to preview; daily-pathlivefeed stillundeployed. Productionoff.
 
-## Latest execution update —2026-11-04 17:20UTC
+## Current execution snapshot — 2026-11-04 17:36 UTC
 
-This update supersedes earlier dated counters/blockers; frozen plans and review gates remain unchanged.
+This supersedes earlier dated operational counters. Existing frozen models, review gates, historical misses and production flags remain unchanged.
 
-1. Verified public attendance history is now partially unblocked: 15 append-only records imported with actual17:18:36UTCknowledge time, five exact genuine outcomes synced, all old outcomes unchanged, original900training cells reproduce before/after. Event445stillblocked by a10minute kickoff discrepancy. No historical forecasts/priors/models rewritten. Evidence:`VERIFIED_ATTENDANCE_IMPORT_RESULT_2026-11-04.md`.
-2. Existing C1v8 now16scored events, policyMAE3428.290290 vs prior3303.287177; raw6540.763694. Its old11event4121.45result remains a dated subset, not a model-improvement comparison. Encoder1530vs923on3events and P9v2 1985vs1248on2events are early worse results; no promotion/retuning.
-3. Separately precommitted direct-person median fitted once13:44:30UTC on the exact same20/74training frame/preprocessor as expanded Ridge. ArtifactSHA96e3b1a86eafd1922eb09f2f0493c054b7eac4e8e017b4b0a9c1e193cdf08c4a. Bounded separate worker active untilNov6 20:30UTC, verified17:19capture/scoring/privatebackupcycle. Both new lanes0forecasts/0scores, MAEnull. First possible final24windowNov5 17:00UTC; first review30newscored events/8clubs. `C1_SEAT_MEDIAN_RESULT_V1.md` records proof.
-4. Daily availability first genuine outcomes: 2events/2maturepoints, MAE258.941674 vs persistence326.50, one of two events improves. Not attendance, not enough evidence to select/retune. Continue fixed v1 and separately frozen drift stream.
-5. P9 heartbeat17:00chain failed in v2 on legitimate zero-neighbor non-ready freeze. Isolated main-based draftPR212corrects negative handling with all valid five-neighbor output unchanged. Actual local17:17in-window DBcoverage attempt recorded; **hosted P9 chain remains NOT DONE** until corrected release and genuine heartbeat→workflowSUCCESS→DBproof. No mainmerge. See`P9_NONREADY_OPERATIONAL_FIX_2026-11-04.md`.
-6. Protect Widzew7372/P-3 today19:15UTC and Wisła448/P9T48today19:30UTC. Existing encoder guardian remains active; fail-closed inputs remain failures. Original daily/drift/guardian workers stopNov5 09:30UTC; both C1research collectors stopNov6 20:30UTC. Inspect actual process/cycles before renewal.
+| Lane / target | Latest genuine evidence | Current interpretation |
+|---|---|---|
+| Original C1 v8 attendance | 101 prediction rows / 17 events / 16 scored; policy MAE 3428.29, prior 3303.29, raw 6540.76 | Five delayed genuine outcomes expanded the cohort; the old 4121.45 on 11 events is not a model-improvement comparison |
+| Expanded Ridge20 attendance | Frozen once at 12:26 UTC; 0 future predictions / 0 scores / null MAE | Collect only new final24 observations |
+| Direct-person median attendance | Frozen once at 13:44 UTC; separate verified worker cycle; 0 predictions / 0 scores / null MAE | Same 20-event / 74-row training information; no training-MAE claim |
+| Frozen encoder attendance | 10 attempts / 6 predictions / 3 scores; MAE 1529.71 vs 923.27 | Early worse results; no promotion or retuning |
+| P9 v1 / v2 attendance | v1: 7 / 0 / 0; v2: 6 attempts / 3 predictions / 3 score rows across 2 events | v2 event MAE 1984.72 vs 1248.35; keep lanes separate |
+| Daily v1 inventory | 2 mature points / 2 events; MAE 258.94 vs persistence 326.50; 71 points pending at 17:14 | Availability is a separate target; 1 of 2 events improves; too early for a decision |
+| Fixed drift inventory | 5 attempts / 16 future points / 0 scores at 17:27; 2 READY issues | Actual post-freeze forecasts now exist; no drift-MAE claim |
 
-PanelPR8preview was built/deployed successfully, with independent public C1card; productionmain unchanged. Newdailyfeed SQL/Edge still undeployed. No current-source attendance repair is evidence that weather/hype now supplies useful PIT signal. Preserve roadmap order and genuine paired future evaluation. `production_change=false`, `live_adjustment=0`.
+### Completed data work and remaining source boundary
 
-### Follow-up17:28UTC — source-consumer knowledge-time gap
+Inserted 15 verified absent history records at actual knowledge time 17:18:36 UTC and synced five exact outcomes: 6, 443, 444, 446, 447. Old outcomes and forecast counts remain unchanged; 900 original training cells reproduce before and after import. Event445 remains missing because source and canonical kickoff differ by 10 minutes. See `VERIFIED_ATTENDANCE_IMPORT_RESULT_2026-11-04.md`.
 
-`ATTENDANCE_KNOWLEDGE_TIME_AUDIT_V1.md`: existing history view/C1export/structural Edge input omit availability timestamps; the frozen structural builder checks kickoff only. Preserving DBingestiontime does not by itself repair that consumer. New separate read-only `attendance-knowledge-time-guard-v1` passed7tests and actual15rowbefore/aftercutoffaudit (0eligibleat16:30,15at17:28), without changing any frozen source or serving path. Versioned export→per-cutoffguard→unchangedpredictor integration is the next input-contract task and remains NOT_DEPLOYED. Never regenerate old priors with newknowledge. Original900cellparity is a different assertion.
+The existing history view / C1 export / structural Edge feed omit source knowledge timestamps. A separate guard now preserves actual availability and connects to the unchanged frozen feature builder. Actual Górnik449 / T-3 input audit: unfiltered season_home_n=6 versus correctly known=1 at the 16:30 cutoff. All 15 new records are excluded before ingestion and available at the later actual read. The registered PKO competition alias is handled explicitly. This is tested input integration, **not deployed serving enforcement**. Never regenerate old priors using newly obtained history. See `ATTENDANCE_KNOWLEDGE_TIME_AUDIT_V1.md`.
 
-Drift17:27actualstatus now5attempts /16futurepoints /0scores,2READYissues,2MEASUREMENT_CHANGED,1INSUFFICIENT_PREFIX_SPAN; privatebackupverified. This supersedes earlier zero-prediction drift snapshot. Keep frozen first-review gates; no driftMAEclaim yet.
+### Automation and immediate next actions
+
+1. Finish the separately versioned raw-source export → per-cutoff guard → unchanged predictor integration and its release verification. Do not change frozen collectors to repair old evidence.
+2. Protect Widzew7372 / P-3 at **19:15 UTC (20:15 Warsaw)** and Wisła448 / P9 T-48 at **19:30 UTC (20:30 Warsaw)**. Invalid or absent inventory remains a coverage failure.
+3. P9 heartbeat run41873299368 succeeded but child41873320229 failed on a non-ready zero-neighbor freeze. Main-based draft PR212 fixes only that negative path; hosted contract tests pass. An actual in-window local DB attempt was recorded at17:17 UTC. **P9 redundancy remains NOT DONE** until corrected hosted execution succeeds and produces the expected DB record. No main merge occurred. See `P9_NONREADY_OPERATIONAL_FIX_2026-11-04.md`.
+4. The distinct positive encoder chain is proven: guardian → mainrun41867901421 SUCCESS → Górnik449/P-3 immutable prediction_id6 at16:31:16 UTC. This does not prove the P9 chain.
+5. Original daily/drift/guardian workers stop **Nov5 09:30 UTC**; both C1 research collectors stop **Nov6 20:30 UTC** and depend on this host. Median PID200395 has an actual post-launch capture → scorer → verified private backup cycle and a separate byte-verified restore. Inspect process state and current cycles before renewal. First possible new C1 final24 window: **Nov5 17:00 UTC (18:00 Warsaw)**. First review remains 30 new scored events / 8 clubs.
+
+Panel PR8 has a successful Preview and an independent C1 accuracy card. Its public browser-role endpoint now returns the actual16-event / 3428.29 result. Production main and the new daily-path livefeed deployment remain unchanged / pending. No production activation: `production_change=false`, `live_adjustment=0`.

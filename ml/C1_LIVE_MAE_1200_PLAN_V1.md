@@ -4,6 +4,14 @@ Data: 2026-11-04. Status: plan R&D, bez zmiany modelu, parametrów i produkcji. 
 
 Zaakceptowane uzupełnienie wykonawcze po ocenie literatury: [`C1_MAE_LITERATURE_EXECUTION_SUPPLEMENT_V1.md`](C1_MAE_LITERATURE_EXECUTION_SUPPLEMENT_V1.md). Kolejność: kompletność bazy → audyt celu MAE eksperta live → osobny test informacji z dynamiki → przyszłe porównanie. Zamrożone kolektory działają równolegle.
 
+## Aktualizacja wykonania — 2026-11-04 17:36 UTC
+
+Pierwotny punkt wyjścia poniżej opisuje 11 meczów. Po dołączeniu pięciu prawdziwych wyników stary C1 ma MAE **3428,29 na 16 meczach**, a baza 3303,29. To zmiana zakresu oceny, nie poprawa modelu. Nowych pięć: baza 1078,13, polityka 1903,33; Raków447 pokazuje kolejną szkodliwą decyzję LIVE. Nie stroimy progów po tych wynikach.
+
+Uzupełniono 15 rekordów historii; event445 pozostaje zablokowany przez rozbieżność kickoffu. Ridge20 i osobna mediana w osobach zostały zamrożone i zbierają wyłącznie przyszłe dowody, obecnie bez ocen. Pierwsze dzienne inventory MAE 258,94 vs 326,50 na dwóch meczach nie jest wynikiem frekwencji. Szczegóły: `VERIFIED_ATTENDANCE_IMPORT_RESULT_2026-11-04.md`, `C1_SEAT_MEDIAN_RESULT_V1.md`.
+
+Najbliższa praca nad wejściami: wersjonowany eksport czasu wiedzy → kontrola dostępności danych na cutoff → niezmieniony predictor. Istniejący eksport gubi te timestampy. Osobna kontrola ma już testy integracyjne z zamrożonym builderem, lecz nie jest wdrożona do serving. Dowód: `ATTENDANCE_KNOWLEDGE_TIME_AUDIT_V1.md`. Nie regenerować dawnych priory ani nie mylić 900 zgodnych wartości treningowych z pełnym dowodem PIT. Chronić rzeczywiste przyszłe okna i kontynuować zamrożony benchmark dynamiki.
+
 ## Cel i punkt wyjścia
 
 Cel użytkownika: zbliżyć MAE prognozy końcowej frekwencji z danych live do **1 200 miejsc**, zachowując użyteczną dynamikę prognozy. To wymaga około **70,9% redukcji** wobec obecnego latest-row MAE 4 121,45. To cel badawczy, nie obietnica wyniku ani gwarancja błędu pojedynczego meczu. MAE przyszłej dostępności miejsc jest osobnym targetem.
@@ -66,6 +74,6 @@ Pierwszym sukcesem jest powtarzalna poprawa względem obu właściwych benchmark
 
 ## Najbliższe konkretne zadanie
 
-**Audyt matched-cohort wykonany:** `C1_LIVE_MATCHED_AUDIT_RESULT_V1.md`. D2na tych samych chwilach5157,52vsC1 4121,45; zgodność numerycznaC1potwierdzona; brakuje wcześniejszej historii sezonu Wisły/Górnika. Zewnętrzna weryfikacja źródeł i6nowych outcomes nadal zablokowane. Kolejny osobny eksperyment precommitted: `C1_TRAINING_EXPANSION_PRECOMMIT_V1.md`,9→20meczów treningowych przy stałych cechach/parametrach/polityce; tylko przyszły test może wykazać poprawę. Nie kolejne prace nad schedulowaniem poza ochroną zagrożonych okien.
+**Audyt matched-cohort wykonany, źródła częściowo uzupełnione, dwa challengery zamrożone.** Aktualny krok: domknąć wersjonowany kontrakt czasu wiedzy i jego testy integracyjne; zachować osobne przyszłe strumienie Ridge20/mediany/persistence/drift. Nowe pary oceniać dopiero po rzeczywistych wynikach. Nie ponawiać historycznego turnieju ani naprawiać dawnych missed observations. Wydanie poprawki P9PR212i podłączenie nowego livefeed panelu pozostają osobnymi zadaniami wdrożeniowymi.
 
 Plan nie gwarantuje 1 200 miejsc. Wyznacza testowalną drogę do tego celu i punkty, w których uczciwy wynik może odrzucić hipotezę. `production_change=false`, `live_adjustment=0`; frozen v8, D2, encoder, P9 i historyczne braki pozostają bez zmian.
