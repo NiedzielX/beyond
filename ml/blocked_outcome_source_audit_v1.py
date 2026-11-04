@@ -14,7 +14,8 @@ import urllib.request
 from ml.public_attendance_source_audit_v1 import extract, MAX_BYTES
 
 VERSION='blocked-outcome-445-official-source-audit-v1'
-SOURCES=('https://www.zaglebie.com/aktualnosci', 'https://www.zaglebie.com/mecze', 'https://www.korona-kielce.pl/')
+SOURCES=('https://www.zaglebie.com/aktualnosci', 'https://www.zaglebie.com/mecze', 'https://www.korona-kielce.pl/',
+         'https://www.zaglebie.com/Aktualnosci/Pierwszy-zespol/trzy-punkty-na-rozpoczecie-tygodnia_n20423')
 HOSTS={'www.zaglebie.com','zaglebie.com','www.korona-kielce.pl','korona-kielce.pl'}
 
 
