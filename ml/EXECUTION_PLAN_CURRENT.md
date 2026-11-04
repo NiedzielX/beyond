@@ -12,6 +12,18 @@ Important: operational counters and cutoff lists below are dated snapshots. Quer
 
 ---
 
+## Input-contract continuation — 2026-11-04 18:10 UTC
+
+The separate raw-source export → per-event knowledge/revision guard → unchanged frozen predictor implementation is complete in draft [PR213](https://github.com/NiedzielX/beyond/pull/213), initially published asdf4fc02. Actual source counts:43history /26outcomes /38ticket events /135sporting fixtures /20aliases; one due target is not ready, so actual inspection produced0forecasts. Synthetic integration matches the original predictor's complete output for already known data; no fit. Managed serving is still unchanged: this output is explicitly non-persistable and activates no new prospective lane.
+
+Private source snapshots are now actually collecting: PID209974, runtime `/workspace/ops-runtime/2026-11-04-known-at-source-archive/`, every900seconds until **Nov6 20:30UTC**. Published source/dependency hashes and exclusive lifetime/runtime locks are enforced. Post-launch18:08:50UTCcycle captured, privately uploaded, read-back and restored;12,105bytes, SHA9a47abe50d656453128815da5e22e58a86be3c37d03af09b2a451a22acbd713e. This collector never predicts or writes official forecast/outcome rows. It depends on this cloud host.
+
+A separate read-only as-of reader now selects the latest verified snapshot at/before an elapsed cutoff, within60minutes, and verifies source/recovery identity. Actual18:10lookup selects the18:08:49capture;16:30lookup honestly returns no pre-cutoff archive. Five tests include later source revisions and corruption; no backfilled history or forecast. The archive/predictor sources are unchanged after their collection hash lock.
+
+Actual old managed process created Górnik449/T-3prior74at17:55:18UTC, with canonical16:30cutoff andseason_home_n=6, confirming the consumer gap. Newly verified source history was not known at16:30. Preserve the record and actual generated_at; do not use it as evidence available at the earlier cutoff. This lane did not write that prior. Release of guarded managed serving remains a separate task; no old priors/forecasts are overwritten.
+
+Fresh18:10C1read remains101rows /17events /16scored, policyMAE3428.29vsprior3303.29. All five earlier workers remain live; their deadlines and frozen gates are unchanged. PR211headc058e93nowhas all non-skipped hosted checksSUCCESS; new PR213 validation is separate. Evidence and commands: `STRUCTURAL_KNOWN_AT_INPUT_INTEGRATION_V1.md`.
+
 ## Current execution snapshot — 2026-11-04 17:36 UTC
 
 This supersedes earlier dated operational counters. Existing frozen models, review gates, historical misses and production flags remain unchanged.

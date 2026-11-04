@@ -217,3 +217,7 @@ These are dated cohort expansions, not newly trained experiments or comparable a
 | Dailyv1available_total at+1day |2|326.500000|258.941674|−67.558326|Early only;1/2improve; availability is not attendance |
 
 Expanded20Ridge still0future scores/nullMAE. Do not replace dated historical closed experiment results or reuse these completed old fixtures to validate either Nov4freeze. Partial source-import status/event445block remains explicit.
+
+## Structural attendance source-contract integration —2026-11-04
+
+Input integrity work, not a new learner/MAE result: exact-count raw export, per-cutoff source/revision filtering, unchanged frozen-predictor integration and bounded private source archive. Actual current inspection0forecasts/no-ready target; synthetic predictor parity is correctness only. Separate as-of lookup preserves genuinely earlier source values and leaves missing earlier archives missing. No new prospective candidate activated and no production/old-score change. Details:`STRUCTURAL_KNOWN_AT_INPUT_INTEGRATION_V1.md`.

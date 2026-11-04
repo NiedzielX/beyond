@@ -17,3 +17,5 @@ Read after the canonical ML state files and before implementation. Add or update
 This index is durable memory, not a substitute for the authoritative execution plan or current handoff. No secrets or private source exports belong here.
 
 - [Public data known-at and non-ready inputs](lessons/2026-11-04-public-source-known-at-and-nonready-input.md): verification time controls knowledge, larger score cohorts are not model improvements, and local DB repair does not prove hosted workflow redundancy.
+
+- [Immutable knowledge-time input archives](lessons/2026-11-04-immutable-knowledge-time-inputs.md): row revisions need availability timestamps, API exact-count receipts prevent silent truncation, and actual pre-cutoff snapshots preserve prior source values without fabricating history.

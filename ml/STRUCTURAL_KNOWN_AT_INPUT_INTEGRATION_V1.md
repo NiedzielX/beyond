@@ -43,3 +43,11 @@ python -m ml.archive_structural_known_at_inputs_v1 \
 ```
 
 No new project SQL or Edge deployment is performed here. Existing managed serving still drops these timestamps until a separately reviewed integration is released. `production_change=false`, `live_adjustment=0`.
+
+## Actual archive activation and read-only retrieval
+
+Published source df4fc022 before launch. Bounded workerPID209974 started18:08:47UTC, interval900s, untilNov6 20:30UTC. Actual post-launch18:08:50UTCcycle: capture completed18:08:49.277936, exact counts verified, private12,105byte backup SHA256 `9a47abe50d656453128815da5e22e58a86be3c37d03af09b2a451a22acbd713e`, read-back/decompression/restore all verified. Archive source contractSHA846d1abbe99547c680b35f52fb6f9c3f5dce8b350020190214f2fac51a10bd4d. No official DB writes or predictions.
+
+Separate `ml.select_structural_known_at_snapshot_v1` implements read-only latest-pre-cutoff lookup with a fixed60-minute freshness bound. It validates capture/recovery identity and refuses post-cutoff, stale, partial, conflicting or tampered captures. Five tests preserve the earlier captured value after a later source-row revision. Actual18:10lookup selects18:08:49; actual16:30lookup returns `NO_GENUINE_PRE_CUTOFF_SNAPSHOT`. Raw returned inputs still require per-cutoff/season/target checks before any future reviewed predictor integration. No snapshot or forecast was fabricated.
+
+Live consumer gap is confirmed, not merely hypothetical: old managed materializer created Górnik449prior74at17:55:18UTCwith declared16:30cutoff and6season home records. Five of those records were acquired17:18UTC. This lane preserves that evidence and writes no replacement. Existing generated_at restrictions remain essential; no earlier cutoff can claim this prior was already available.
