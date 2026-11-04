@@ -1,0 +1,26 @@
+name: P9 Fallback Nonready Input Contract v2
+on:
+  pull_request:
+    paths:
+      - 'ml/p9_booking_curve_prospective_family_fallback_v2.py'
+      - 'ml/test_p9_booking_curve_prospective_family_fallback_v2.py'
+      - 'ml/artifacts/p9_family_fallback_v2_synthetic_goldens.json'
+      - '.github/workflows/p9-fallback-input-contract-v2.yml'
+  push:
+    paths:
+      - 'ml/p9_booking_curve_prospective_family_fallback_v2.py'
+      - 'ml/test_p9_booking_curve_prospective_family_fallback_v2.py'
+      - 'ml/artifacts/p9_family_fallback_v2_synthetic_goldens.json'
+      - '.github/workflows/p9-fallback-input-contract-v2.yml'
+permissions:
+  contents: read
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install numpy==2.3.5
+      - run: python -m ml.test_p9_booking_curve_prospective_family_fallback_v2

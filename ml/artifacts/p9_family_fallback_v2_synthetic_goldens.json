@@ -1,0 +1,236 @@
+{
+  "evidence_kind": "synthetic_contract_fixture_only",
+  "cases": [
+    {
+      "d2": [
+        1,
+        2
+      ],
+      "structural": [
+        1,
+        2,
+        3
+      ],
+      "result": {
+        "version": "p9-booking-curve-prospective-family-fallback-builder-v2",
+        "precommit_id": "p9-knn-median-residual-k5-family-fallback-v2",
+        "cutoff_hours": 48,
+        "p9a_manifest_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "reference_outcomes_sha256": "d24eb95ee1016f5ba763a4bedda55148aea500b99a2e35f50f81b084eb1a90a3",
+        "predictions": [
+          {
+            "ticket_event_id": 100,
+            "cutoff_hours": 48,
+            "target_as_of_at": "2026-10-30T12:00:00+00:00",
+            "target_at": "2026-11-01T12:00:00+00:00",
+            "stadium_capacity": 30000,
+            "fallback_from_family": "d2_long72_forward_predictions_v1",
+            "v1_residual_reference_count": 2,
+            "incumbent_source": "structural_prior_forecasts_v1",
+            "incumbent_row_id": 1001,
+            "incumbent_p50": 12000.0,
+            "trajectory_residual": 1000.0,
+            "challenger_p50": 13000.0,
+            "selected_neighbor_event_ids": [
+              1,
+              2,
+              3,
+              4,
+              5
+            ],
+            "residual_reference_event_ids": [
+              1,
+              2,
+              3
+            ],
+            "reference_incumbent_row_ids": [
+              2001,
+              2002,
+              2003
+            ],
+            "p9a_manifest_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "support_manifest_sha256": "fbe7612543f25bdbae05d0627da507a855dcdcf856e5ceb6a3fed7e99b3b6f59",
+            "reference_outcomes_sha256": "d24eb95ee1016f5ba763a4bedda55148aea500b99a2e35f50f81b084eb1a90a3",
+            "prediction_identity_sha256": "68e9cd87b10dd392d3f004d06bf7d52aca55a4154975949a63e83f4425f3a47d",
+            "source_version": "p9-booking-curve-prospective-family-fallback-builder-v2"
+          }
+        ],
+        "diagnostics": [
+          {
+            "ticket_event_id": 100,
+            "cutoff_hours": 48,
+            "status": "FALLBACK_PREDICTION_READY",
+            "v1_target_incumbent_source_family": "d2_long72_forward_predictions_v1",
+            "v1_residual_reference_count": 2,
+            "fallback_target_incumbent_source_family": "structural_prior_forecasts_v1",
+            "fallback_residual_reference_count": 3,
+            "selected_neighbor_event_ids": [
+              1,
+              2,
+              3,
+              4,
+              5
+            ],
+            "support_manifest_sha256": "fbe7612543f25bdbae05d0627da507a855dcdcf856e5ceb6a3fed7e99b3b6f59"
+          }
+        ],
+        "target_values_used": false,
+        "production_activation_allowed": false,
+        "live_adjustment": 0,
+        "production_change": false
+      }
+    },
+    {
+      "d2": [
+        1,
+        2,
+        3
+      ],
+      "structural": [
+        1,
+        2,
+        3
+      ],
+      "result": {
+        "version": "p9-booking-curve-prospective-family-fallback-builder-v2",
+        "precommit_id": "p9-knn-median-residual-k5-family-fallback-v2",
+        "cutoff_hours": 48,
+        "p9a_manifest_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "reference_outcomes_sha256": "d24eb95ee1016f5ba763a4bedda55148aea500b99a2e35f50f81b084eb1a90a3",
+        "predictions": [],
+        "diagnostics": [
+          {
+            "ticket_event_id": 100,
+            "cutoff_hours": 48,
+            "status": "V1_COVERED",
+            "v1_target_incumbent_source_family": "d2_long72_forward_predictions_v1",
+            "v1_residual_reference_count": 3,
+            "selected_neighbor_event_ids": [
+              1,
+              2,
+              3,
+              4,
+              5
+            ]
+          }
+        ],
+        "target_values_used": false,
+        "production_activation_allowed": false,
+        "live_adjustment": 0,
+        "production_change": false
+      }
+    },
+    {
+      "d2": [
+        1,
+        2
+      ],
+      "structural": [
+        1,
+        2
+      ],
+      "result": {
+        "version": "p9-booking-curve-prospective-family-fallback-builder-v2",
+        "precommit_id": "p9-knn-median-residual-k5-family-fallback-v2",
+        "cutoff_hours": 48,
+        "p9a_manifest_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "reference_outcomes_sha256": "d24eb95ee1016f5ba763a4bedda55148aea500b99a2e35f50f81b084eb1a90a3",
+        "predictions": [],
+        "diagnostics": [
+          {
+            "ticket_event_id": 100,
+            "cutoff_hours": 48,
+            "status": "FALLBACK_SUPPORT_INSUFFICIENT",
+            "v1_target_incumbent_source_family": "d2_long72_forward_predictions_v1",
+            "v1_residual_reference_count": 2,
+            "fallback_target_incumbent_source_family": "structural_prior_forecasts_v1",
+            "fallback_residual_reference_count": 2,
+            "selected_neighbor_event_ids": [
+              1,
+              2,
+              3,
+              4,
+              5
+            ],
+            "fallback_missing_reference_rows": [
+              {
+                "ticket_event_id": 3,
+                "reason": "missing_same_family_pit_incumbent"
+              },
+              {
+                "ticket_event_id": 4,
+                "reason": "missing_same_family_pit_incumbent"
+              },
+              {
+                "ticket_event_id": 5,
+                "reason": "missing_same_family_pit_incumbent"
+              }
+            ],
+            "support_manifest_sha256": "263ec11b1e5bdc3adf7f55e9edbdae554fd8b1e7737b05eed3e07e745d277c65"
+          }
+        ],
+        "target_values_used": false,
+        "production_activation_allowed": false,
+        "live_adjustment": 0,
+        "production_change": false
+      }
+    },
+    {
+      "d2": [],
+      "structural": [],
+      "result": {
+        "version": "p9-booking-curve-prospective-family-fallback-builder-v2",
+        "precommit_id": "p9-knn-median-residual-k5-family-fallback-v2",
+        "cutoff_hours": 48,
+        "p9a_manifest_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "reference_outcomes_sha256": "d24eb95ee1016f5ba763a4bedda55148aea500b99a2e35f50f81b084eb1a90a3",
+        "predictions": [],
+        "diagnostics": [
+          {
+            "ticket_event_id": 100,
+            "cutoff_hours": 48,
+            "status": "FALLBACK_SUPPORT_INSUFFICIENT",
+            "v1_target_incumbent_source_family": "d2_long72_forward_predictions_v1",
+            "v1_residual_reference_count": 0,
+            "fallback_target_incumbent_source_family": "structural_prior_forecasts_v1",
+            "fallback_residual_reference_count": 0,
+            "selected_neighbor_event_ids": [
+              1,
+              2,
+              3,
+              4,
+              5
+            ],
+            "fallback_missing_reference_rows": [
+              {
+                "ticket_event_id": 1,
+                "reason": "missing_same_family_pit_incumbent"
+              },
+              {
+                "ticket_event_id": 2,
+                "reason": "missing_same_family_pit_incumbent"
+              },
+              {
+                "ticket_event_id": 3,
+                "reason": "missing_same_family_pit_incumbent"
+              },
+              {
+                "ticket_event_id": 4,
+                "reason": "missing_same_family_pit_incumbent"
+              },
+              {
+                "ticket_event_id": 5,
+                "reason": "missing_same_family_pit_incumbent"
+              }
+            ],
+            "support_manifest_sha256": "0d774103d0f9c103c57811ada96c12a06d57e7510a652de8e38a54575bc9130e"
+          }
+        ],
+        "target_values_used": false,
+        "production_activation_allowed": false,
+        "live_adjustment": 0,
+        "production_change": false
+      }
+    }
+  ]
+}

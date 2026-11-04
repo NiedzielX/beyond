@@ -180,12 +180,53 @@ def test_target_outcome_is_rejected() -> None:
         raise AssertionError("target outcome leak must be rejected")
 
 
+def test_nonready_short_neighbor_set_records_no_prediction() -> None:
+    for count in range(5):
+        p9a, catalog, outcomes = payloads({1, 2}, {1, 2, 3})
+        target = p9a['targets'][0]
+        target.update(freeze_ready=False, reference_ready=False)
+        target['lineage']['selected_neighbor_event_ids'] = REF_IDS[:count]
+        result = build_fallback_predictions(p9a, catalog, outcomes)
+        assert result['predictions'] == []
+        diagnostic = result['diagnostics'][0]
+        assert diagnostic['status'] == 'FALLBACK_SUPPORT_INSUFFICIENT'
+        assert diagnostic['reason'] == 'P9A_NONREADY_NEIGHBOR_SET'
+        assert diagnostic['selected_neighbor_event_ids'] == REF_IDS[:count]
+        assert diagnostic['fallback_residual_reference_count'] == 0
+
+
+def test_short_neighbor_set_without_explicit_nonready_metadata_is_rejected() -> None:
+    for metadata in [{}, {'freeze_ready': True, 'reference_ready': False}, {'freeze_ready': False, 'reference_ready': True}]:
+        p9a, catalog, outcomes = payloads({1, 2}, {1, 2, 3})
+        target = p9a['targets'][0]; target.update(metadata)
+        target['lineage']['selected_neighbor_event_ids'] = []
+        try:
+            build_fallback_predictions(p9a, catalog, outcomes)
+        except RuntimeError as exc:
+            assert 'neighbor count' in str(exc)
+        else:
+            raise AssertionError('A malformed ready/unknown neighbor set must remain rejected')
+
+
+def test_original_five_neighbor_goldens_unchanged() -> None:
+    from pathlib import Path
+    import json
+    golden = json.loads((Path(__file__).parent/'artifacts/p9_family_fallback_v2_synthetic_goldens.json').read_text())
+    assert golden['evidence_kind'] == 'synthetic_contract_fixture_only'
+    for case in golden['cases']:
+        result = build_fallback_predictions(*payloads(set(case['d2']), set(case['structural'])))
+        assert result == case['result'], 'Previously valid frozen prediction/diagnostic output changed'
+
+
 def main() -> None:
     test_d2_insufficient_structural_ready_emits_fallback()
     test_v1_d2_support_sufficient_does_not_duplicate()
     test_v1_structural_support_sufficient_does_not_duplicate()
     test_both_families_insufficient_fail_closed()
     test_target_outcome_is_rejected()
+    test_nonready_short_neighbor_set_records_no_prediction()
+    test_short_neighbor_set_without_explicit_nonready_metadata_is_rejected()
+    test_original_five_neighbor_goldens_unchanged()
     print("p9 family fallback v2 tests: OK")
 
 
