@@ -22,6 +22,8 @@ on:
       - 'ml/test_start_daily_inventory_path_watcher_v1.py'
       - 'ml/frozen_window_guardian_v1.py'
       - 'ml/test_frozen_window_guardian_v1.py'
+      - 'ml/daily_inventory_source_state_features_v2.py'
+      - 'ml/test_daily_inventory_source_state_features_v2.py'
       - 'ml/recovered/v17/**'
       - 'ml/live_benchmark_v02.py'
       - 'ml/live_benchmark_v03.py'
@@ -48,6 +50,8 @@ on:
       - 'ml/test_start_daily_inventory_path_watcher_v1.py'
       - 'ml/frozen_window_guardian_v1.py'
       - 'ml/test_frozen_window_guardian_v1.py'
+      - 'ml/daily_inventory_source_state_features_v2.py'
+      - 'ml/test_daily_inventory_source_state_features_v2.py'
       - 'ml/recovered/v17/**'
       - 'ml/live_benchmark_v02.py'
       - 'ml/live_benchmark_v03.py'
@@ -97,6 +101,9 @@ jobs:
 
       - name: Verify legal-window guardian and no-backfill routing
         run: python -m unittest ml.test_frozen_window_guardian_v1 -v
+
+      - name: Verify independent source-state feature masks and receipt time
+        run: python -m unittest ml.test_daily_inventory_source_state_features_v2 -v
 
       - name: Verify recovered v1.7 strict benchmark evidence
         run: python ml/recovered/v17/verify_recovered_bundle.py

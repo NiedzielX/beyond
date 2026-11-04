@@ -7,6 +7,8 @@ on:
       - 'supabase/sql/daily_inventory_source_state_as_known_v2.sql'
       - 'tests/postgres/test_daily_inventory_path_contract_v1.py'
       - 'tests/postgres/test_daily_inventory_source_state_v2.py'
+      - 'ml/daily_inventory_source_state_features_v2.py'
+      - 'ml/test_daily_inventory_source_state_features_v2.py'
       - 'supabase/functions/daily_inventory_path_gateway_v1/**'
       - 'ml/start_daily_inventory_path_watcher_v1.py'
       - 'ml/test_start_daily_inventory_path_watcher_v1.py'
@@ -18,6 +20,8 @@ on:
       - 'supabase/sql/daily_inventory_source_state_as_known_v2.sql'
       - 'tests/postgres/test_daily_inventory_path_contract_v1.py'
       - 'tests/postgres/test_daily_inventory_source_state_v2.py'
+      - 'ml/daily_inventory_source_state_features_v2.py'
+      - 'ml/test_daily_inventory_source_state_features_v2.py'
       - 'supabase/functions/daily_inventory_path_gateway_v1/**'
       - 'ml/start_daily_inventory_path_watcher_v1.py'
       - 'ml/test_start_daily_inventory_path_watcher_v1.py'
@@ -72,6 +76,12 @@ jobs:
               print('::error title=Isolated PostgreSQL contract failed::' + detail, flush=True)
           raise SystemExit(result.returncode)
           PY
+      - name: Validate source-state features and actual SQL response
+        env:
+          DAILY_PATH_TEST_FEED_DIR: ${{ runner.temp }}/daily-path-feeds
+        run: |
+          python -m unittest ml.test_daily_inventory_source_state_features_v2 -v
+          python -m ml.daily_inventory_source_state_features_v2 --input "$DAILY_PATH_TEST_FEED_DIR/source-state.json" --output "$DAILY_PATH_TEST_FEED_DIR/source-state-features.json"
       - name: Checkout exact companion panel parser
         uses: actions/checkout@v4
         with:

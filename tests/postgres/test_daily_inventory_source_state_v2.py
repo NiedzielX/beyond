@@ -144,6 +144,10 @@ class SourceStateContract(unittest.TestCase):
         self.assertLessEqual(datetime.fromisoformat(row['known_at']),cutoff)
         self.assertFalse(result['production_change']);self.assertFalse(result['target_values_used'])
         self.assertFalse(result['raw_table_immutability_independently_proven'])
+        directory=os.environ.get('DAILY_PATH_TEST_FEED_DIR')
+        if directory:
+            output=Path(directory);output.mkdir(parents=True,exist_ok=True)
+            (output/'source-state.json').write_text(json.dumps(result,sort_keys=True)+'\n')
 
 
 if __name__=='__main__':unittest.main()

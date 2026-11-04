@@ -455,6 +455,8 @@ This creates a new research baseline version; it does not rewrite the frozen pro
 
 ## MAE-03 — Context residual model
 
+Separate new-information preparation for the public-inventory lane: `DAILY_INVENTORY_SOURCE_STATE_CONTRACT_V2.md`. A read-only source receipt/active/visible-state RPC has passed isolated PostgreSQL tests; its fixed feature adapter is being integrated/tested. It is not wired to frozen v1 and does not authorize a fit. Any benefit needs a separate experimental precommit and genuine future evidence after project deployment.
+
 2026-11-03 audit complete:121stored snapshots,70prospective-window-valid,11distinct events with outcome presence; all37numeric source/baseline/checkpoint groups fail support or grouped-variance screening. No attendance values requested, no model fit. Result:`MAE03_CONTEXT_EVIDENCE_AUDIT_RESULT_V1.md`. Existing Hype gates and P4a9-event gate remain unchanged. Continue forward collection; use independent time to validate prepared daily-path SQL in a disposable database.
 
 Predict `actual - structural forecast` using separately tested PIT-safe context families such as standings/form, opponent strength, future-fixture context and odds. Do not add squad/absence features without a trustworthy timestamped source.

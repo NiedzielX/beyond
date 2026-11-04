@@ -37,3 +37,9 @@ The deployed Stellis collector was read with`mode=audit`only. Current Korona sou
 Reviewed actual4-event/57-point paths and wrote a private PDF/PNG+hash provenance under `/workspace/ops-runtime/2026-11-04-review/`. Near-flat Piast/Jagiellonia prefixes can produce strong declines and Widzew has a zero-only source history. Recorded these limitations before targets mature in `DAILY_PATH_INITIAL_OUTPUT_REVIEW_2026-11-04.md`; did not tune or overwrite v1. Persistence remains the already-issued control.
 
 Observed frozen-encoder scheduling gap:latest scheduled success03:22UTCdespite twice-hourly YAML. Manual main health run41811629783passed at10:03UTCwith no due checkpoint. Started one detached legal-window guardian under `/workspace/ops-runtime/2026-11-04-frozen-window-guardian/`,300second polling, deadlineNov5 09:30UTC. Nine local tests pass; first live cycle correctly found no due checkpoint and did not dispatch. Future due-window run/DB proof remains pending, not DONE. No P9heartbeat claim.
+
+## New information without partner transactions
+
+Prepared a separate read-only source-state-as-known v2RPC over existing Stellis raw observations. It requires event existence and source capture/receipt by cutoff, masks later promotion links, preserves genuine visible0and separates hidden/inactive/invalid states. It never modifies frozen v1inputs, source rows or forecasts. Eleven new PostgreSQL tests passed alongside the9existing persistence contracts in run41814622537.
+
+A fixed seven-field feature adapter now independently validates timestamps/flags/counts and emits explicit null/missing masks with hourly48-hour source-state summaries. Twelve local tests pass; actual SQL→feature-row validation is being added to the hosted contract. No learner was fitted and project RPC deployment still needs admin binding. Both frontend agent instruction files now point to canonical backend plans and shared `.ai`records, avoiding a second strategy/memory copy.
