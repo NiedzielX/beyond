@@ -9,7 +9,7 @@ import numpy as np
 import pandas as pd
 
 from ml.c1_training_expansion_v1 import PACKAGE, MODEL_ID, fit_once
-from ml.c1_training_expansion_capture_v1 import capture, immutable_save, validate_current
+from ml.c1_training_expansion_capture_v1 import capture, immutable_save, validate_current, load_frozen
 from ml.demand_engine.c1_shadow_runtime_v8 import C1ShadowRuntimeV8
 from ml.demand_engine.run_c1_shadow_v8 import EXPECTED_PACKAGE
 
@@ -40,7 +40,8 @@ def fixture():
     old = C1ShadowRuntimeV8(FixedEstimator(.4), new.features, EXPECTED_PACKAGE, (), 30)
     payload = {'version': 'c1-shadow-v8-inputs-v1', 'package_version': EXPECTED_PACKAGE,
                'requested_at': NOW, 'candidate_count': 1, 'candidates': [candidate()]}
-    manifest = {'frozen_at': FREEZE, 'artifact': {'sha256': 'new-test-hash'}, 'precommit_sha256': 'test-precommit'}
+    manifest = {'frozen_at': FREEZE, 'artifact': {'sha256': 'new-test-hash'}, 'precommit_sha256': 'test-precommit',
+                '_verified_manifest_sha256': 'test-manifest-hash'}
     old_manifest = {'artifact': {'sha256': 'original-test-hash'}}
     return payload, manifest, old_manifest, new, old
 
@@ -146,6 +147,14 @@ class ExpansionCaptureTests(unittest.TestCase):
     def test_new_destination_cannot_bypass_single_fixed_freeze_path(self):
         with tempfile.TemporaryDirectory() as d, self.assertRaisesRegex(ValueError, 'fixed freeze'):
             fit_once(Path(d), Path(d)/'another-freeze', Path(d)/'lineage')
+
+    def test_manifest_edits_are_rejected_before_artifact_load(self):
+        with tempfile.TemporaryDirectory() as d, patch('joblib.load') as loader:
+            directory = Path(d)
+            (directory/'manifest.json').write_text('{}')
+            (directory/'freeze_receipt.json').write_text(json.dumps({'package_version': PACKAGE, 'manifest_sha256': 'wrong'}))
+            with self.assertRaisesRegex(ValueError, 'manifest hash'): load_frozen(directory)
+            loader.assert_not_called()
 
 
 if __name__ == '__main__': unittest.main()

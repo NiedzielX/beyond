@@ -19,6 +19,10 @@ from ml.export_c1_matched_audit_inputs_v1 import Reader
 
 
 def load_frozen(artifact_dir):
+    receipt = json.loads((artifact_dir/'freeze_receipt.json').read_text())
+    manifest_sha = sha256_file(artifact_dir/'manifest.json')
+    if receipt.get('package_version') != PACKAGE or receipt.get('manifest_sha256') != manifest_sha:
+        raise ValueError('Expansion freeze manifest hash mismatch')
     manifest = json.loads((artifact_dir/'manifest.json').read_text())
     if (manifest['package_version'] != PACKAGE or manifest['live_model_id'] != MODEL_ID
             or manifest.get('production_activation') is not False or manifest.get('production_change') is not False
@@ -40,6 +44,7 @@ def load_frozen(artifact_dir):
             or runtime.training_event_ids != EVENT_IDS or runtime.training_rows != 74
             or runtime.policy_id != old.policy_id):
         raise ValueError('Runtime identities differ from frozen protocol')
+    manifest['_verified_manifest_sha256'] = manifest_sha
     return manifest, old_manifest, runtime, old
 
 
@@ -130,6 +135,7 @@ def capture(payload, manifest, old_manifest, runtime, old, *, now, labelled_ids,
             evidence = {'version': 'c1-training-expansion-paired-evidence-v1', 'package_version': PACKAGE,
                 'issued_at': pd.Timestamp(now).isoformat(), 'input_requested_at': payload['requested_at'],
                 'frozen_at': manifest['frozen_at'], 'precommit_sha256': manifest['precommit_sha256'],
+                'manifest_sha256': manifest['_verified_manifest_sha256'],
                 'artifact_sha256': manifest['artifact']['sha256'], 'baseline_artifact_sha256': old_manifest['artifact']['sha256'],
                 'ticket_event_id': c['ticket_event_id'], 'kickoff_at': c['kickoff_at'],
                 'as_of_at': latest.isoformat(), 'source_snapshot_id': new['source_snapshot_id'],

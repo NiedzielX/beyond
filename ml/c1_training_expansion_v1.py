@@ -135,13 +135,17 @@ def fit_once(input_dir: Path, output_dir: Path, private_dir: Path):
         'artifact': {'filename': artifact_path.name, 'sha256': sha256_file(artifact_path)},
         'source_hashes': source_hashes, 'old_frozen_hashes': before,
         'source_code_sha256': {name: sha256_file(ROOT/name) for name in
-            ['ml/c1_training_expansion_v1.py', 'ml/c1_training_expansion_capture_v1.py']},
+            ['ml/c1_training_expansion_v1.py', 'ml/c1_training_expansion_capture_v1.py',
+             'ml/demand_engine/c1_shadow_runtime_v8.py', 'ml/demand_engine/run_c1_shadow_v8.py',
+             'ml/c1_alpha_t1_tournament_v2.py', 'ml/run_d2_live_replay_anchor_v1.py']},
         'libraries': {'numpy': np.__version__, 'pandas': pd.__version__, 'scikit_learn': sklearn.__version__, 'joblib': joblib.__version__},
         'attendance_accuracy_evidence': None, 'historical_publication_times_independently_verified': False,
         'scheduled_inference_must_not_fit': True}
     if before != frozen_hashes():
         raise ValueError('Old frozen dependencies changed')
     (output_dir/'manifest.json').write_text(json.dumps(manifest, indent=2, sort_keys=True)+'\n')
+    (output_dir/'freeze_receipt.json').write_text(json.dumps({'package_version': PACKAGE,
+        'manifest_sha256': sha256_file(output_dir/'manifest.json')}, indent=2)+'\n')
     print(json.dumps({k: manifest[k] for k in ['package_version', 'frozen_at', 'artifact', 'attendance_accuracy_evidence']}))
 
 
