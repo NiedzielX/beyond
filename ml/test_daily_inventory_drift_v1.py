@@ -88,6 +88,8 @@ class DriftTests(unittest.TestCase):
             with DailyInventoryPathLedger(path):pass
             before=path.read_bytes()
             with self.assertRaisesRegex(ValueError,'non-drift'):DriftLedger(path)
+            artifact_path=Path(folder)/'artifact.json';artifact_path.write_text(json.dumps(model()))
+            with self.assertRaisesRegex(ValueError,'separate ledger identity'):backup(path,artifact_path,MemoryStorage())
             self.assertEqual(path.read_bytes(),before)
 
     def test_record_retry_conflict_window_and_immutable_sql(self):

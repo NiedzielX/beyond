@@ -7,10 +7,11 @@ from datetime import datetime, timedelta, timezone
 import fcntl
 import json
 from pathlib import Path
+import sqlite3
 import time
 
 from ml.daily_inventory_drift_comparator_v1 import freeze_artifact, predict, validate_artifact
-from ml.daily_inventory_drift_ledger_v1 import DriftLedger
+from ml.daily_inventory_drift_ledger_v1 import DriftLedger, MARKER
 from ml.daily_path_prefix_diagnostics_v1 import build_report, read_ledger
 from ml.demand_engine.daily_inventory_path_dataset_v1 import parse_timestamp
 from ml.demand_engine.daily_inventory_path_storage_v1 import BUCKET, PrivateResearchStorage, digest, encode, sqlite_snapshot
@@ -31,6 +32,13 @@ def write_json(path: Path, payload: dict, *, exclusive=False):
 
 
 def backup(ledger_path: Path, artifact_path: Path, storage=None):
+    with sqlite3.connect(ledger_path.resolve().as_uri()+'?mode=ro',uri=True) as source:
+        try:
+            marker=source.execute('select version from drift_ledger_meta where singleton=1').fetchone()
+        except sqlite3.Error:
+            raise ValueError('Drift backup requires its separate ledger identity') from None
+        if not marker or marker[0]!=MARKER:
+            raise ValueError('Drift backup ledger identity mismatch')
     storage = storage or DriftStorage()
     storage.ensure_private_bucket()
     validate_artifact(json.loads(artifact_path.read_text()))
