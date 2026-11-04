@@ -51,3 +51,7 @@ Published source df4fc022 before launch. Bounded workerPID209974 started18:08:47
 Separate `ml.select_structural_known_at_snapshot_v1` implements read-only latest-pre-cutoff lookup with a fixed60-minute freshness bound. It validates capture/recovery identity and refuses post-cutoff, stale, partial, conflicting or tampered captures. Five tests preserve the earlier captured value after a later source-row revision. Actual18:10lookup selects18:08:49; actual16:30lookup returns `NO_GENUINE_PRE_CUTOFF_SNAPSHOT`. Raw returned inputs still require per-cutoff/season/target checks before any future reviewed predictor integration. No snapshot or forecast was fabricated.
 
 Live consumer gap is confirmed, not merely hypothetical: old managed materializer created Górnik449prior74at17:55:18UTCwith declared16:30cutoff and6season home records. Five of those records were acquired17:18UTC. This lane preserves that evidence and writes no replacement. Existing generated_at restrictions remain essential; no earlier cutoff can claim this prior was already available.
+
+## Source coverage follow-up18:32UTC
+
+The remaining445outcome is now composite-verified and appended with actual knowledge time; all6trackedoutcomes are present. Later captures will contain44history/27outcomes; earlier immutable snapshots correctly retain43/26. The old17forecast-event C1cohort is now fully scored, policyMAE3248.81vsprior3131.16. No new model or archive-generated forecast is validated by those old fixtures. Detailed provenance:`OUTCOME445_COMPOSITE_VERIFICATION_RESULT_V1.md`.

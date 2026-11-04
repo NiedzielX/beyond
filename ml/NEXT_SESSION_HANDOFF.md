@@ -1,8 +1,16 @@
 # Beyond — operational handoff
 
-Updated **2026-11-04 18:10 UTC**. Production remains **OFF**: `production_change=false`, `live_adjustment=0`.
+Updated **2026-11-04 18:32 UTC**. Production remains **OFF**: `production_change=false`, `live_adjustment=0`.
 
 Read strategy and state first: `MAE_RESEARCH_ROADMAP_V6.md` → `EXECUTION_PLAN_CURRENT.md` → `PROGRESS_TRACKING.md` → `TRAJECTORY_FORECASTING_PLAN_V1.md` → this handoff. This file supplies operational state; it does not define a competing MAE strategy.
+
+## Last tracked outcome resolved — 2026-11-04 18:32 UTC
+
+All six tracked Oct30–Nov2 outcomes are now present. Event445 is supported by an exact independent official fixture schedule/date/result and the matching primary provider attendance3396. The primary18:10display is retained as a discrepancy; its cause and independent official attendance corroboration remain unverified. No canonical time was changed or generalized tolerance introduced. Actual append-only history/outcome write18:29UTC; old outcomes, forecasts and frozen hashes unchanged. Across the two source tasks:16new history records and6genuine outcomes. Evidence: `OUTCOME445_COMPOSITE_VERIFICATION_RESULT_V1.md`.
+
+Fresh C1v8 status: **101rows /17forecast events /17scored, latest policyMAE3248.807865, prior3131.157876, raw6241.964642; window policy3913.558409**. Older4121.45/11 and3428.29/16 remain dated scopes; no model improvement is inferred from cohort growth. Encoder now4scores/4clubs, MAE1623.917287vs1051.043479; P9v2 unchanged1984.717101vs1248.354372on2events. Keep all frozen review gates and no promotion. Both newer C1challengers still0future scores/nullMAE.
+
+The source archive, as-of reader and frozen-predictor boundary in PR213 are implemented/tested; the bounded archive is collecting. Managed serving still needs its guarded release, and P9PR212stillneeds the actual corrected hosted chain. Protect genuine19:15/19:30UTCcheckpoints; never backfill missed observations. `production_change=false`, `live_adjustment=0`.
 
 ## Input-contract continuation — 2026-11-04 18:10 UTC
 

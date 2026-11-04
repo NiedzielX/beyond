@@ -2,6 +2,10 @@
 
 2026-11-04. Użytkownik zaakceptował zapisanie tego planu i dalsze wykonanie. Uzupełnia `C1_LIVE_MAE_1200_PLAN_V1.md` oraz roadmap v6; nie zmienia żadnego zamrożonego modelu, bramki lub protokołu.
 
+## Aktualny status — 18:32 UTC
+
+Uzupełniono16rekordów historii i wszystkie6śledzonych wyników; C1v8ma3248,81MAEna17meczach, baza3131,16. To pełniejsza ocena tego samego modelu. Dwa nowe warianty są zamrożone i nadal bez przyszłych ocen. Eksport→kontrola known-at→niezmieniony predictor działa jako osobny, niepublikujący prognoz pipeline; prywatne archiwum faktycznie zbiera wejścia. Stary serving wymaga osobnego wdrożenia tej kontroli. Szczegóły w`OUTCOME445_COMPOSITE_VERIFICATION_RESULT_V1.md`oraz`STRUCTURAL_KNOWN_AT_INPUT_INTEGRATION_V1.md`. Wcześniejsze informacje o blokadach poniżej opisują stan w chwili akceptacji planu.
+
 ## Cel i kolejność
 
 Obniżyć rzeczywiste MAE końcowej frekwencji w kierunku1200miejsc. Rozszerzenie treningu C1z9do20meczów jest kontrolowanym pierwszym eksperymentem, a nie kompletnym programem ani dowodem osiągnięcia celu. Codzienna przyszła dostępność miejsc jest osobnym targetem i metryką.
@@ -35,3 +39,7 @@ Wykres realnej obserwowanej historii→dziś→modelowe przyszłe dni i zachowan
 ## Wykonanie — 17:36 UTC
 
 Punkt 1 częściowo wykonany: 15 rekordów / 5 potwierdzonych outcomes, event445 zablokowany. Czas wiedzy w bazie zachowany, ale starszy konsument go usuwa. Kolejne konkretne zadanie to wersjonowana integracja kontroli known-at (`ATTENDANCE_KNOWLEDGE_TIME_AUDIT_V1.md`), bez zmiany modeli lub backfill. Punkt 2 wykonany do freeze osobnej mediany (`C1_SEAT_MEDIAN_RESULT_V1.md`), przyszłe MAE nadal null. Punkt 3 ma dwa pierwsze wyniki inventory v1 i 16 nowych punktów drift bez ocen; żadnego retuningu. Zamrożone review gates pozostają bez zmian. To postęp wykonania zaakceptowanego planu, nie nowa strategia lub deklaracja osiągnięcia 1200.
+
+## Update18:32UTC
+
+The remaining445fixture identity is now resolved by the exact official18:00Warsaw schedule/date/result plus unique canonical match and primary attendance3396. Both source clocks/provenance retained; no claimed cause of the10minute difference or independent official attendance count. One append-only history/outcome write completes16historyrecords/6trackedoutcomes. Current unchanged C1v8policyMAE3248.81on17eventsvsprior3131.16; cohort growth, not improved model. Encoder4events now1623.92vs1051.04. New challengers still unscored; future paired evidence and managed source-guard release remain next. See`OUTCOME445_COMPOSITE_VERIFICATION_RESULT_V1.md`. Earlier blocked statuses above are dated snapshots.
