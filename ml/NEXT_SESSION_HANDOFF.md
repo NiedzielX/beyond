@@ -1,10 +1,23 @@
 # Beyond — operational handoff
 
-Updated **2026-11-04 13:25 UTC**. Production remains **OFF**: `production_change=false`, `live_adjustment=0`.
+Updated **2026-11-04 17:20 UTC**. Production remains **OFF**: `production_change=false`, `live_adjustment=0`.
 
 Read strategy and state first: `MAE_RESEARCH_ROADMAP_V6.md` → `EXECUTION_PLAN_CURRENT.md` → `PROGRESS_TRACKING.md` → `TRAJECTORY_FORECASTING_PLAN_V1.md` → this handoff. This file supplies operational state; it does not define a competing MAE strategy.
 
-## Next actions
+## Latest execution update —2026-11-04 17:20UTC
+
+This update supersedes earlier dated counters/blockers; frozen plans and review gates remain unchanged.
+
+1. Verified public attendance history is now partially unblocked: 15 append-only records imported with actual17:18:36UTCknowledge time, five exact genuine outcomes synced, all old outcomes unchanged, original900training cells reproduce before/after. Event445stillblocked by a10minute kickoff discrepancy. No historical forecasts/priors/models rewritten. Evidence:`VERIFIED_ATTENDANCE_IMPORT_RESULT_2026-11-04.md`.
+2. Existing C1v8 now16scored events, policyMAE3428.290290 vs prior3303.287177; raw6540.763694. Its old11event4121.45result remains a dated subset, not a model-improvement comparison. Encoder1530vs923on3events and P9v2 1985vs1248on2events are early worse results; no promotion/retuning.
+3. Separately precommitted direct-person median fitted once13:44:30UTC on the exact same20/74training frame/preprocessor as expanded Ridge. ArtifactSHA96e3b1a86eafd1922eb09f2f0493c054b7eac4e8e017b4b0a9c1e193cdf08c4a. Bounded separate worker active untilNov6 20:30UTC, verified17:19capture/scoring/privatebackupcycle. Both new lanes0forecasts/0scores, MAEnull. First possible final24windowNov5 17:00UTC; first review30newscored events/8clubs. `C1_SEAT_MEDIAN_RESULT_V1.md` records proof.
+4. Daily availability first genuine outcomes: 2events/2maturepoints, MAE258.941674 vs persistence326.50, one of two events improves. Not attendance, not enough evidence to select/retune. Continue fixed v1 and separately frozen drift stream.
+5. P9 heartbeat17:00chain failed in v2 on legitimate zero-neighbor non-ready freeze. Isolated main-based draftPR212corrects negative handling with all valid five-neighbor output unchanged. Actual local17:17in-window DBcoverage attempt recorded; **hosted P9 chain remains NOT DONE** until corrected release and genuine heartbeat→workflowSUCCESS→DBproof. No mainmerge. See`P9_NONREADY_OPERATIONAL_FIX_2026-11-04.md`.
+6. Protect Widzew7372/P-3 today19:15UTC and Wisła448/P9T48today19:30UTC. Existing encoder guardian remains active; fail-closed inputs remain failures. Original daily/drift/guardian workers stopNov5 09:30UTC; both C1research collectors stopNov6 20:30UTC. Inspect actual process/cycles before renewal.
+
+PanelPR8preview was built/deployed successfully, with independent public C1card; productionmain unchanged. Newdailyfeed SQL/Edge still undeployed. No current-source attendance repair is evidence that weather/hype now supplies useful PIT signal. Preserve roadmap order and genuine paired future evaluation. `production_change=false`, `live_adjustment=0`.
+
+## Earlier13:25UTC action snapshot — superseded above
 
 1. Query fresh `public.prospective_decision_summary_v1(10)` before relying on the dated snapshot below.
 2. Protect the next genuine encoder checkpoint: **Górnik449 / P-3, Nov4 16:30 UTC (17:30 Warsaw)**, READY at the latest check. The existing guardian should dispatch the main workflow only if the legal window is open and unrecorded. Verify the actual run and expected DB record.

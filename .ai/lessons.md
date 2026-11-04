@@ -15,3 +15,5 @@ Read after the canonical ML state files and before implementation. Add or update
 - [Same-time C1/D2 audit](lessons/2026-11-04-c1-same-time-and-training-support.md): identical events do not imply identical forecast opportunities; numerical parity and missing history are distinct findings.
 
 This index is durable memory, not a substitute for the authoritative execution plan or current handoff. No secrets or private source exports belong here.
+
+- [Public data known-at and non-ready inputs](lessons/2026-11-04-public-source-known-at-and-nonready-input.md): verification time controls knowledge, larger score cohorts are not model improvements, and local DB repair does not prove hosted workflow redundancy.

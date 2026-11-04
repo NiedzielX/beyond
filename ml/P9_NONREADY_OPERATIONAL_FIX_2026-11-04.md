@@ -1,0 +1,13 @@
+# P9 non-ready fallback input incident and isolated correction
+
+Motor5091 T-48 cutoff **Nov4 17:00 UTC**. Independent heartbeat dispatch17:00:53.467428UTC → [heartbeat41873299368](https://github.com/NiedzielX/beyond/actions/runs/41873299368) SUCCESS → [P9 child41873320229](https://github.com/NiedzielX/beyond/actions/runs/41873320229) FAILURE. v1 recorded `PIT_SUPPORT_INSUFFICIENT`; v2 crashed `unexpected frozen neighbor count event=5091` on a legitimately non-ready P9a zero-neighbor freeze. Read-only hosted failed-job diagnostic verified the exact exception, not an inferred network/schema issue.
+
+Focused main-based [draft PR212](https://github.com/NiedzielX/beyond/pull/212), commit `794f74a7a6ab8cdbd4d68015ba2e659b2a243ae4`: explicit freeze_ready=false/reference_ready=false with0–4neighbors emits existing `FALLBACK_SUPPORT_INSUFFICIENT` diagnostic and **no prediction**. Unknown/contradictory metadata and oversized sets stay rejected. Original valid five-neighbor output remains byte-identical to four synthetic before-edit goldens. Hosted contract check SUCCESS. No model, minimum support, neighbor ranking, SQL or readiness-gate changes.
+
+Actual attached-cloud service-role execution at **17:17:25.478954UTC**, inside the existing90minute window, ran fresh current RPC exports through the original freezer and corrected builder, then existing attempt-recording RPC. Result: one new DB attempt, v2attempts6 / predictions3; target5091 diagnostic `P9A_NONREADY_NEIGHBOR_SET`, empty neighbors, no forecast. Private inputs/output/DBreceipt under `/workspace/ops-runtime/2026-11-04-p9-nonready-capture/`; receipt contains exact code SHA. Source known-at gates remain enforced. This is actual in-window coverage failure recording, not backfill or successful prediction.
+
+**P9 heartbeat redundancy is NOT DONE**: its child workflow failed; the fix is published but unmerged, and local DB proof does not replace corrected hosted workflow success. Main-only OIDC cannot execute the research branch. No main merge or production release performed. After release, require a genuine heartbeat→P9workflow→SUCCESS→expected DB record chain; preserve this failed execution.
+
+Separate positive encoder chain is proven: guardian dispatch16:30:25.751002UTC → mainrun41867901421 SUCCESS → Górnik449/P-3 DBattempt16:31:15.879696UTC and immutable prediction_id6 at16:31:16.286576UTC. This READY encoder evidence does not prove P9 redundancy.
+
+Next checkpoints: Widzew7372/P-3 **19:15UTC (20:15Warsaw)**, Wisła448/P9T-48 **19:30UTC (20:30Warsaw)**; keep fail-closed for invalid/absent inventory. `production_change=false`, `live_adjustment=0`.
