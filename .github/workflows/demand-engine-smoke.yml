@@ -28,6 +28,8 @@ on:
       - 'ml/test_daily_path_prefix_diagnostics_v1.py'
       - 'ml/daily_path_coefficient_audit_v1.py'
       - 'ml/test_daily_path_coefficient_audit_v1.py'
+      - 'ml/*drift*v1.py'
+      - 'ml/DAILY_INVENTORY_DRIFT_COMPARATOR_PRECOMMIT_V1.md'
       - 'ml/recovered/v17/**'
       - 'ml/live_benchmark_v02.py'
       - 'ml/live_benchmark_v03.py'
@@ -60,6 +62,8 @@ on:
       - 'ml/test_daily_path_prefix_diagnostics_v1.py'
       - 'ml/daily_path_coefficient_audit_v1.py'
       - 'ml/test_daily_path_coefficient_audit_v1.py'
+      - 'ml/*drift*v1.py'
+      - 'ml/DAILY_INVENTORY_DRIFT_COMPARATOR_PRECOMMIT_V1.md'
       - 'ml/recovered/v17/**'
       - 'ml/live_benchmark_v02.py'
       - 'ml/live_benchmark_v03.py'
@@ -118,6 +122,9 @@ jobs:
 
       - name: Verify exact frozen path coefficient decomposition without refitting
         run: python -m unittest ml.test_daily_path_coefficient_audit_v1 -v
+
+      - name: Verify isolated fixed-drift rule, immutable capture and paired target scoring
+        run: python -m unittest ml.test_daily_inventory_drift_v1 -v
 
       - name: Verify recovered v1.7 strict benchmark evidence
         run: python ml/recovered/v17/verify_recovered_bundle.py
