@@ -25,6 +25,12 @@ This update supersedes earlier dated counters/blockers; frozen plans and review 
 
 PanelPR8preview was built/deployed successfully, with independent public C1card; productionmain unchanged. Newdailyfeed SQL/Edge still undeployed. No current-source attendance repair is evidence that weather/hype now supplies useful PIT signal. Preserve roadmap order and genuine paired future evaluation. `production_change=false`, `live_adjustment=0`.
 
+### Follow-up17:28UTC — source-consumer knowledge-time gap
+
+`ATTENDANCE_KNOWLEDGE_TIME_AUDIT_V1.md`: existing history view/C1export/structural Edge input omit availability timestamps; the frozen structural builder checks kickoff only. Preserving DBingestiontime does not by itself repair that consumer. New separate read-only `attendance-knowledge-time-guard-v1` passed7tests and actual15rowbefore/aftercutoffaudit (0eligibleat16:30,15at17:28), without changing any frozen source or serving path. Versioned export→per-cutoffguard→unchangedpredictor integration is the next input-contract task and remains NOT_DEPLOYED. Never regenerate old priors with newknowledge. Original900cellparity is a different assertion.
+
+Drift17:27actualstatus now5attempts /16futurepoints /0scores,2READYissues,2MEASUREMENT_CHANGED,1INSUFFICIENT_PREFIX_SPAN; privatebackupverified. This supersedes earlier zero-prediction drift snapshot. Keep frozen first-review gates; no driftMAEclaim yet.
+
 ## User-requested daily-path MVP — 2026-11-03 update
 
 The latest user instruction requires **genuine observed prefix → predictions for every remaining day**, updated daily. Terminal attendance alone is insufficient for this product deliverable. The parallel error-driven attendance research programme below remains canonical; the new inventory-path lane has its own observable target, baseline and metrics and does not replace attendance evidence or its 550-seat contract. Partner transactions are unavailable for MVP and are not a prerequisite.

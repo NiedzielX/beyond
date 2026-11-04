@@ -23,3 +23,7 @@ Actual browser-role GETreturned200and the exact new parser validated the genuine
 3. End-to-end project verification still requires the deployed frontend consuming a real deployed pathfeed and actual prediction/outcome records. IsolatedSQL/adapter/browsertests and VercelPreviewmetadata are narrower evidence.
 
 No merge/main/model activation performed. `production_change=false`, `live_adjustment=0` refer to forecasting behaviour; UIpreviewdeployment does not alter predictions.
+
+## Data refresh proof after verified outcomes —17:25UTC
+
+Actual GETwiththepanel'spublishablebrowserrole returnedHTTP200,16scored C1events/policyMAE3428.290290/adjustment0. DBscoreschanged throughfivegenuineoutcomes; frontend source/productiondeploymentunchanged. The localtsxdependencyisnotinstalledonthisattachedhost, so the new16eventpayloadwasnotrerunthroughTypeScripthere; previousparser/browsertestsremain theirdatedevidence. This read provespublicdataavailability, notproductionDOMornewpathfeeddeployment.

@@ -1,6 +1,6 @@
 # Beyond — operational handoff
 
-Updated **2026-11-04 17:20 UTC**. Production remains **OFF**: `production_change=false`, `live_adjustment=0`.
+Updated **2026-11-04 17:30 UTC**. Production remains **OFF**: `production_change=false`, `live_adjustment=0`.
 
 Read strategy and state first: `MAE_RESEARCH_ROADMAP_V6.md` → `EXECUTION_PLAN_CURRENT.md` → `PROGRESS_TRACKING.md` → `TRAJECTORY_FORECASTING_PLAN_V1.md` → this handoff. This file supplies operational state; it does not define a competing MAE strategy.
 
@@ -16,6 +16,12 @@ This update supersedes earlier dated counters/blockers; frozen plans and review 
 6. Protect Widzew7372/P-3 today19:15UTC and Wisła448/P9T48today19:30UTC. Existing encoder guardian remains active; fail-closed inputs remain failures. Original daily/drift/guardian workers stopNov5 09:30UTC; both C1research collectors stopNov6 20:30UTC. Inspect actual process/cycles before renewal.
 
 PanelPR8preview was built/deployed successfully, with independent public C1card; productionmain unchanged. Newdailyfeed SQL/Edge still undeployed. No current-source attendance repair is evidence that weather/hype now supplies useful PIT signal. Preserve roadmap order and genuine paired future evaluation. `production_change=false`, `live_adjustment=0`.
+
+### Follow-up17:28UTC — source-consumer knowledge-time gap
+
+`ATTENDANCE_KNOWLEDGE_TIME_AUDIT_V1.md`: existing history view/C1export/structural Edge input omit availability timestamps; the frozen structural builder checks kickoff only. Preserving DBingestiontime does not by itself repair that consumer. New separate read-only `attendance-knowledge-time-guard-v1` passed7tests and actual15rowbefore/aftercutoffaudit (0eligibleat16:30,15at17:28), without changing any frozen source or serving path. Versioned export→per-cutoffguard→unchangedpredictor integration is the next input-contract task and remains NOT_DEPLOYED. Never regenerate old priors with newknowledge. Original900cellparity is a different assertion.
+
+Drift17:27actualstatus now5attempts /16futurepoints /0scores,2READYissues,2MEASUREMENT_CHANGED,1INSUFFICIENT_PREFIX_SPAN; privatebackupverified. This supersedes earlier zero-prediction drift snapshot. Keep frozen first-review gates; no driftMAEclaim yet.
 
 ## Earlier13:25UTC action snapshot — superseded above
 
