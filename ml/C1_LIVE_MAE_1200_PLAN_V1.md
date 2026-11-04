@@ -64,6 +64,6 @@ Pierwszym sukcesem jest powtarzalna poprawa względem obu właściwych benchmark
 
 ## Najbliższe konkretne zadanie
 
-**Matched-cohort audit C1 v8 vs jego baza vs istniejący D2, zaczynając od 4 dominujących błędów i ich rzeczywistych wejść.** Nie kolejne prace nad schedulowaniem poza ochroną zagrożonych okien. Podstawowy ranking i granica idealnego selektora są już policzone; przyczyny dużych pomyłek nie są jeszcze ustalone.
+**Audyt matched-cohort wykonany:** `C1_LIVE_MATCHED_AUDIT_RESULT_V1.md`. D2na tych samych chwilach5157,52vsC1 4121,45; zgodność numerycznaC1potwierdzona; brakuje wcześniejszej historii sezonu Wisły/Górnika. Zewnętrzna weryfikacja źródeł i6nowych outcomes nadal zablokowane. Kolejny osobny eksperyment precommitted: `C1_TRAINING_EXPANSION_PRECOMMIT_V1.md`,9→20meczów treningowych przy stałych cechach/parametrach/polityce; tylko przyszły test może wykazać poprawę. Nie kolejne prace nad schedulowaniem poza ochroną zagrożonych okien.
 
 Plan nie gwarantuje 1 200 miejsc. Wyznacza testowalną drogę do tego celu i punkty, w których uczciwy wynik może odrzucić hipotezę. `production_change=false`, `live_adjustment=0`; frozen v8, D2, encoder, P9 i historyczne braki pozostają bez zmian.

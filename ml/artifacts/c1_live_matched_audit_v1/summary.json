@@ -1,0 +1,92 @@
+{
+  "version": "c1-live-matched-audit-v1",
+  "evidence_kind": "exposed_retrospective_diagnostic_not_new_prospective",
+  "independent_events": 11,
+  "event_ids": [
+    5,
+    10,
+    11,
+    15,
+    16,
+    18,
+    19,
+    20,
+    21,
+    22,
+    23
+  ],
+  "latest_row_mae": {
+    "c1_prior_mae": 4314.722244020924,
+    "c1_live_mae": 7127.992601564541,
+    "c1_policy_mae": 4121.454325879479,
+    "d2_frozen_v2_mae": 4754.014805040714,
+    "d2_p2_mae": 5157.515189768734
+  },
+  "d2_event_balanced_window_mae": 4921.8655229674505,
+  "top4_error_share": 0.834495976020736,
+  "outcome_aware_selector_mae_DIAGNOSTIC_ONLY": 4103.050642958588,
+  "c1_selection_counts": {
+    "PRIOR": 10,
+    "LIVE": 1
+  },
+  "top4_actual_exceeds_capacity_count": 0,
+  "external_outcome_source_independently_reverified": false,
+  "historical_attendance_publication_times_independently_verified": false,
+  "frozen_training_feature_cells_verified": 900,
+  "max_c1_reconstruction_difference": 3.637978807091713e-12,
+  "frozen_d2_development_reproduced": true,
+  "original_event5_reproduced_at_original_timing": true,
+  "heldout_outcomes_used_for_training": false,
+  "frozen_training_reconstructed_in_memory": true,
+  "parameters_selected": false,
+  "serving_artifacts_changed": false,
+  "production_change": false,
+  "live_adjustment": 0,
+  "source_exported_at": "2026-11-04T12:17:04.736622+00:00",
+  "source_pack_atomic_database_snapshot": false,
+  "seat_map_feature_support": {
+    "event_ids": [
+      13,
+      15,
+      16,
+      17,
+      19,
+      20
+    ],
+    "original_training_events": [
+      13,
+      17
+    ],
+    "note": "Observed map geometry/availability, not confirmed paid sales or attendance; original C1 compact model omits these fields."
+  },
+  "private_full_report_sha256": "781b85ca48951c0ba2cda4f2bdcbebf40274b04f5354f0dac7d203f80c1d4651",
+  "source_hashes": {
+    "events.json": "97b44ae6bffbc66ca6b37c1a8ab3f4c8dd559edea8aee92473f3ad4630163caf",
+    "attendance.json": "01343214645b94f2496503e1819f07eb085346345d801843d57435f1e44117a2",
+    "sporting.json": "26d4b2caea8f5c2a91b5593c84032d33f59097b36b276f3893537ac1676b81fc",
+    "aliases.json": "1518f740bf08a9c838514d6a4d2ac23fa429c0af28668e80dd42f6605f2f15f6",
+    "final24.json": "425100be8bed0d9984ba7d05a332623e6c97571c273a881460f77febbc6e3b71",
+    "matched-final24.json": "b338bd2b65f29f4b671e602c3ddb55430723b6c898675c28d28433bf4312b057",
+    "c1-events.json": "3a9077fa6987e1c2985853221cc8eeac573f22cf9d2d6580bf8fdb676a3fb280",
+    "resolved-priors.json": "2813900e1c5dd4a1beea6aa89edd3301c21a5db572f529f43b966fc9a9ebdf8a",
+    "outcomes.json": "0a4168f0e79900cc54ceda4c5b04a7f7e562837b9efbb83b303274dbc0330af2",
+    "readiness.json": "060d9a2c6dac1b9be2d93aacd2157f7615556a9ec2cbc6c559a5e8fffb2ece24",
+    "export-manifest.json": "a8286a2e7d1d11f4fbd65866ba0d700d37502223c42fbe23da9101222976d082"
+  },
+  "frozen_hashes": {
+    "ml/artifacts/c1_shadow_v8/c1_v2_live_expert_v1.joblib": "df31af5effcda2d2f1e58265c7e954cc04edf0e90b48501403eb4e4afd94edf2",
+    "ml/artifacts/c1_shadow_v8/manifest.json": "c5347aaef7f9f12737f72dd14ce8871e17f41d94168afa96b4b1eb6b28ed40d8",
+    "ml/artifacts/c1_shadow_v8/training_contract_v1.json": "0a3edde223d8b6e64652f3fc8f79228998ac0d93a90fdaa9fc48311f98dee304",
+    "ml/artifacts/d2_prospective_capacity_audit_v1.json": "5dcbead0abb434927a2c4e7173731c0f82ba770e8e27b79a91459db4a2d5a293",
+    "ml/artifacts/d2_stage0_capacity_audit_v1.json": "684b4341433ad860fce49294689f3cfdb437da791c6cd60ca86fa65cef96fb99",
+    "ml/artifacts/d2_stage2_p2_observation_maturity_v1/manifest.json": "8d04defd1400ca9aadd19abba8b4ba8a0f3ed8c2bad56d8c0b88c5aa79cf7083",
+    "ml/artifacts/pre_live_v2_historical_candidate_v1/manifest.json": "8f11f201aa6eff39de02c489ceac6d00ca9d3e161f295ea3c41119ce4f5d74f4",
+    "ml/artifacts/structural_prior_runtime_v1/historical_runtime_v1.csv.gz": "3c6b35142c6bd20a484f2aa758cd41284fd6f4c6db1353b138f81cf321161569",
+    "ml/artifacts/structural_prior_runtime_v1/manifest.json": "251f377b9791209e380d287d37c28dd8f93e0973f17bfa3912e6c3b930378ba5",
+    "ml/artifacts/structural_prior_runtime_v1/structural_prior_t14_v1.joblib": "8d2dbb6ce48ae48fe2e5b7f4340c9e2dfadd38c6e23cc7b123c6f1d2303cdc20",
+    "ml/artifacts/structural_prior_runtime_v1/structural_prior_t1_v1.joblib": "f67ee9bf6853a01245de5406861b59e491b86a01a8120023868ad54b19f0ebfa",
+    "ml/artifacts/structural_prior_runtime_v1/structural_prior_t30_v1.joblib": "33e32a8b2f0c617c5adde5cdba592151bb25651ef00fc60aa2e5c090adb51da7",
+    "ml/artifacts/structural_prior_runtime_v1/structural_prior_t3_v1.joblib": "33f83899a86b8ebbc61ff5cfb2a3ccb2f09d708d41730136f136bda31d374f30",
+    "ml/artifacts/structural_prior_runtime_v1/structural_prior_t7_v1.joblib": "97e712245d6539396030e88ea450809f4265bd7538aa90b29e234420231ac927"
+  }
+}
