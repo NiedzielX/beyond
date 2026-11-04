@@ -7,6 +7,10 @@ on:
         description: 'Fetch fixed public attendance-source pages without model or database operations'
         type: boolean
         default: false
+      blocked_outcome_source_audit:
+        description: 'Read fixed official club pages for the blocked outcome445; no label imports'
+        type: boolean
+        default: false
       p9_failure_diagnostic:
         description: 'Read the fixed existing failed P9 job log, without prediction or DB operations'
         type: boolean
@@ -30,7 +34,7 @@ permissions:
 
 jobs:
   public-source-audit:
-    if: github.event_name == 'workflow_dispatch' && (inputs.public_source_audit || inputs.p9_failure_diagnostic)
+    if: github.event_name == 'workflow_dispatch' && (inputs.public_source_audit || inputs.p9_failure_diagnostic || inputs.blocked_outcome_source_audit)
     runs-on: ubuntu-latest
     timeout-minutes: 8
     permissions:
@@ -54,12 +58,21 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ github.token }}
         run: python -m ml.p9_failed_job_log_audit_v1
+      - name: Verify and retrieve official sources for blocked outcome445
+        if: inputs.blocked_outcome_source_audit
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          python -m unittest ml.test_blocked_outcome_source_audit_v1 -v
+          python -m ml.blocked_outcome_source_audit_v1 --output-dir "$RUNNER_TEMP/blocked-outcome445-sources"
       - name: Preserve raw public-source receipts for review
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: public-attendance-source-audit-${{ github.run_id }}
-          path: ${{ runner.temp }}/public-attendance-sources
+          path: |
+            ${{ runner.temp }}/public-attendance-sources
+            ${{ runner.temp }}/blocked-outcome445-sources
           retention-days: 14
           if-no-files-found: ignore
   validate-contract:
