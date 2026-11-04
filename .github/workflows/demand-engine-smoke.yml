@@ -36,6 +36,7 @@ on:
       - 'ml/*public_attendance_source_audit*v1.py'
       - 'ml/*verified_attendance_source_rows*v1.py'
       - 'ml/*attendance_knowledge_time_guard*v1.py'
+      - 'ml/*structural_known_at*v1.py'
       - 'ml/artifacts/c1_seat_median_v1/**'
       - 'ml/artifacts/c1_training_expansion_v1/**'
       - 'ml/DAILY_INVENTORY_DRIFT_COMPARATOR_PRECOMMIT_V1.md'
@@ -80,6 +81,7 @@ on:
       - 'ml/*public_attendance_source_audit*v1.py'
       - 'ml/*verified_attendance_source_rows*v1.py'
       - 'ml/*attendance_knowledge_time_guard*v1.py'
+      - 'ml/*structural_known_at*v1.py'
       - 'ml/artifacts/c1_seat_median_v1/**'
       - 'ml/artifacts/c1_training_expansion_v1/**'
       - 'ml/DAILY_INVENTORY_DRIFT_COMPARATOR_PRECOMMIT_V1.md'
@@ -166,6 +168,9 @@ jobs:
 
       - name: Verify source availability before structural attendance cutoffs
         run: python -m unittest ml.test_attendance_knowledge_time_guard_v1 -v
+
+      - name: Verify exact source exports and separate frozen predictor integration
+        run: python -m unittest ml.test_structural_known_at_inputs_v1 ml.test_archive_structural_known_at_inputs_v1 -v
 
       - name: Verify seat-median freeze when present without fitting
         run: |
