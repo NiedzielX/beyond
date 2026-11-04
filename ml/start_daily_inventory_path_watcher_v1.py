@@ -26,7 +26,19 @@ def process_alive(pid: int) -> bool:
         os.kill(pid, 0)
     except ProcessLookupError:
         return False
-    return True
+    # kill(pid,0) also succeeds for an unreaped exited child (state Z).
+    # Refuse an ambiguous inspection instead of declaring it stopped and duplicating it.
+    try:
+        inspected = subprocess.run(['ps', '-p', str(pid), '-o', 'stat='],
+                                   capture_output=True, text=True, timeout=5)
+    except (OSError, subprocess.TimeoutExpired):
+        raise ValueError('Cannot verify worker process state') from None
+    state = inspected.stdout.strip()
+    if inspected.returncode == 1 and not state:
+        return False  # Process exited between kill(0) and ps.
+    if inspected.returncode != 0 or len(state.split()) != 1 or state[0] not in 'RSDTtWXxZI':
+        raise ValueError('Cannot verify worker process state')
+    return state[0] not in 'ZXx'
 
 
 @contextmanager

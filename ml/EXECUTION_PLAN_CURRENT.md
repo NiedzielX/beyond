@@ -522,7 +522,7 @@ Do not use narrative memory as the experiment registry.
 6. Keep frozen SSP encoder, frozen trajectory head and frozen P9 policies unchanged while their prospective evidence accumulates.
 7. Fix collection only when genuine source semantics are preserved.
 8. Score frozen prospective rows only after genuine confirmed attendance outcomes.
-9. Outside imminent evidence protection, retain MAE-03 as DATA_BOUND after its completed audit; continue genuine collection and isolated daily-path SQL validation; follow the v6 MAE programme.
+9. Outside imminent evidence protection, retain MAE-03 as DATA_BOUND after its completed audit; continue genuine collection; isolated daily-path SQL/feature validation is now complete. Protect new v1/drift evidence and follow the v6 MAE programme.
 10. Do not reactively retune frozen candidates against the first future scores.
 11. Do not lower or optimize toward the 550-seat business scale after seeing outcomes.
 12. Production remains separately review-gated and OFF.

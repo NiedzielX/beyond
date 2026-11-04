@@ -67,3 +67,9 @@ Coefficient-audit source356bfc6passed hosted Demand Engine41817308245and full SQ
 ## Real drift freeze and bounded no-due execution
 
 Source3039e494passed hosted Demand Engine41818376777(309unit checks plus original reproductions). Final precommit wording published inbd7da661before freeze. Rule frozen at11:06:27UTC,SHA332f6fd37bc2a09ce665668ef3c9c23d8d34ec3613f18435ec729d95d3bb43cf. First actual cycle completed with0new attempts/points, nullMAEand byte-verified private backup; sourcev1ledger/artifact hashes unchanged. No pre-freeze forecast reconstructed. DetachedPID154243started11:07UTC,300second interval,Nov5 09:30UTCdeadline. Its first scores require tomorrow's new genuine targets and may need later bounded-worker renewal; no perpetual-coding/scheduler claim.
+
+## Detached launch correction and real health proof
+
+Initial driftPID154243failed DNS because the manually filtered environment omitted the cloud proxy. The prior manual no-due cycle remains valid; the detached launch was not cycle-verified and is retained as failed. Replaced only after confirming the exited/zombie state, inheriting the working environment. PID154636completed11:09:54UTCcycle after its new launch with private read-back verified. No rule/artifact change or new freeze.
+
+The observation exposed kill(0)'s zombie false positive. Shared v1launcher now checks actual process state and fails closed on inspection errors. Three new real live/unreaped-child/error checks plus six prior lifecycle checks pass locally. Existing v1worker still reportsHEALTHY; it was not restarted. Hosted proof of the new operational guard pending.

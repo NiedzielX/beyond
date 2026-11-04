@@ -8,4 +8,6 @@ Read after the canonical ML state files and before implementation. Add or update
 - [Output shape is not accuracy](lessons/2026-11-04-output-shape-is-not-accuracy.md): actual near-flat prefixes can produce steep frozen forecasts; compare future errors honestly and preserve the issued baseline and difficult cases.
 - [Feature capability is not learned signal](lessons/2026-11-04-feature-capability-is-not-learned-signal.md): all relative-value history coefficients in daily v1 are zero; exact decomposition explains the decline without proving error or authorizing a frozen-model repair.
 
+- [Cloud proxy and exited workers](lessons/2026-11-04-cloud-proxy-and-exited-workers.md): preserve the working cloud environment; zombies answer kill(0), so require actual process state and a verified cycle after launch.
+
 This index is durable memory, not a substitute for the authoritative execution plan or current handoff. No secrets or private source exports belong here.

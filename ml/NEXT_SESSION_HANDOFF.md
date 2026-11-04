@@ -2,13 +2,22 @@
 
 Last updated: **2026-11-04**
 
-Status: **DAILY-PATH MVP + LIVE EVIDENCE PROTECTION; MAE-01 FOR ATTENDANCE R&D**
+Status: **FROZEN DAILY PATH + DRIFT COLLECTING; GENUINE SCORES PENDING; MANAGED DEPLOYMENT BLOCKED**
 
 Canonical MAE strategy: `ml/MAE_RESEARCH_ROADMAP_V6.md`
 
 Canonical execution contracts: `ml/EXECUTION_PLAN_CURRENT.md`
 
 ---
+
+## Current action — 2026-11-04 11:10 UTC
+
+- Protect Korona603 P-3 at **11:15 UTC /12:15 Warsaw**. Guardian last successful check11:08UTCfound no due checkpoint; its next legal-window dispatch/Actions/DB chain still requires actual proof. Hidden inventory is an input blocker, not a reason to relax gates.
+- v1worker remains healthy:57future points /0scores, verified private backups. First existing targets mature **17:00 UTC /18:00 Warsaw** today.
+- Separate genuine24-hour drift rule froze11:06:27UTC; no old predictions were reconstructed. Corrected detached worker **PID154636** completed a post-launch cycle11:09:54UTCwith private backup;0new attempts/points before the next legal issue. Runtime`/workspace/ops-runtime/2026-11-04-drift-comparator/`. InitialPID154243exited because its environment omitted the cloud proxy; that failed launch is retained, not counted as success.
+- All three host-dependent inference/guardian processes stop by **Nov5 09:30UTC /10:30Warsaw**. New drift labels mature tomorrow after its first new issue; a later session must verify/renew bounded workers or complete managed deployment. These processes do not keep coding autonomously.
+- Isolated SQL→features/panel/Deno and309Pythonchecks have passed. No more SQL validation is needed absent a new change/failure. Project migration/admin binding and live new feed remain blocked; no SQL/Edge deployment or production activation.
+- Next R&D action:collect new paired drift/persistence targets, inspect the fixedv1errors honestly when they mature, preserve all frozen versions and the attendance550-seat gate. Full-prefix representation did not imply retained trajectory-value weights; read the coefficient audit before making that claim.
 
 ## User-requested daily-path MVP — 2026-11-03 update
 
@@ -38,7 +47,7 @@ If an immutable legal cutoff is currently due or at risk, protect it first.
 
 Otherwise the default next research task is:
 
-> **MAE-03 audit is complete and DATA_BOUND; validate prepared daily-path SQL in an isolated DB while genuine collection continues.**
+> **MAE-03 remains DATA_BOUND; isolated daily-path SQL/feature validation is complete. Protect imminent legal windows and collect new frozen v1/drift predictions and genuine targets.**
 
 Do not spend the session maintaining infrastructure when no evidence window is actually at risk.
 
@@ -310,6 +319,6 @@ Frozen at11:06:27UTCafter publishing sourcebd7da6617bcca6bd1941f08cf28005eb1ffe1
 
 Actual first cycle11:06UTCcompleted with0new attempts/points/scores and nullMAE; private content-addressed backup read-back verified. Originalv1ledger and artifact bytes were independently identical before/after. This is a successful no-due cycle, not proof of a positive due capture. The Nov3predictions were correctly excluded as pre-freeze.
 
-Separate detached processPID154243, runtime`/workspace/ops-runtime/2026-11-04-drift-comparator/`, polls every300seconds; deadlineNov5 09:30UTCshared with its source watcher. It reads the v1ledger only; own append-only ledger/backup use separate identities and the`drift-v1/`Storage namespace, leaving original latest-manifest recovery intact. Score only from the exact matching immutablev1target, recomputing drift errors. The process is inference/scoring, host-dependent, not an autonomous coding service.
+Separate detached processPID154636(current replacement), runtime`/workspace/ops-runtime/2026-11-04-drift-comparator/`, polls every300seconds; deadlineNov5 09:30UTCshared with its source watcher. It reads the v1ledger only; own append-only ledger/backup use separate identities and the`drift-v1/`Storage namespace, leaving original latest-manifest recovery intact. Score only from the exact matching immutablev1target, recomputing drift errors. The process is inference/scoring, host-dependent, not an autonomous coding service.
 
 First drift targets will mature at least24hours after its first eligible new issue; they cannot be scored against today's already-issuedNov3targets. The current process deadline may precede them. A later session must verify/renew stopped bounded workers or finish the separately blocked managed deployment; never claim perpetual operation. First research review requires genuine+1labels from8independent events and5clubs, with no automatic promotion. Primary v1metrics, attendance lanes and550-seat gate remain unchanged.
