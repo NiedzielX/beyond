@@ -108,6 +108,9 @@ Cały plan zakłada brak partnerskiego feedu sprzedażowego. Gdy nowy path chall
 
 ## 6. Najtańsza konkretna hipoteza ML: zgodność celu z MAE w osobach
 
+**Aktualizacja wykonania2026-11-04:** poniższy pierwotny pomysł structural capacity-weighting został już wykonany i odrzucony w `MAE02_SEAT_WEIGHTED_MEDIAN_RESULT_V1.md`; nie traktować go jako nadal nieuruchomionego zadania. Nowe zaakceptowane uzupełnienie: `C1_MAE_LITERATURE_EXECUTION_SUPPLEMENT_V1.md`. Bieżący target-free audyt dotyczy ekspertaC1Ridge, a nie powtórzenia structuralweightingu: `C1_OBJECTIVE_GEOMETRY_AUDIT_RESULT_V1.md`.
+
+
 To **proponowany ograniczony audit/ablation celu**, nie nowa informacja trajectory, nie precommit i nie zgoda na modyfikację frozen runtime. Priorytet trajectory z roadmap v6 pozostaje bez zmian.
 
 W [structural_prior_runtime.py](demand_engine/structural_prior_runtime.py) trening używa:

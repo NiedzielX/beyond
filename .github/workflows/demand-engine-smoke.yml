@@ -30,6 +30,7 @@ on:
       - 'ml/test_daily_path_coefficient_audit_v1.py'
       - 'ml/*drift*v1.py'
       - 'ml/*c1*matched*audit*v1.py'
+      - 'ml/*c1*objective*audit*v1.py'
       - 'ml/*c1_training_expansion*v1.py'
       - 'ml/artifacts/c1_training_expansion_v1/**'
       - 'ml/DAILY_INVENTORY_DRIFT_COMPARATOR_PRECOMMIT_V1.md'
@@ -68,6 +69,7 @@ on:
       - 'ml/test_daily_path_coefficient_audit_v1.py'
       - 'ml/*drift*v1.py'
       - 'ml/*c1*matched*audit*v1.py'
+      - 'ml/*c1*objective*audit*v1.py'
       - 'ml/*c1_training_expansion*v1.py'
       - 'ml/artifacts/c1_training_expansion_v1/**'
       - 'ml/DAILY_INVENTORY_DRIFT_COMPARATOR_PRECOMMIT_V1.md'
@@ -136,6 +138,9 @@ jobs:
 
       - name: Verify C1 matched forecast times, truth reconciliation and input gaps
         run: python -m unittest ml.test_c1_live_matched_audit_v1 -v
+
+      - name: Verify target-free C1 loss geometry and equal event mass
+        run: python -m unittest ml.test_c1_objective_geometry_audit_v1 -v
 
       - name: Verify separately versioned C1 expansion capture and immutable timing guards
         run: python -m unittest ml.test_c1_training_expansion_v1 ml.test_watch_c1_training_expansion_v1 ml.test_score_c1_training_expansion_v1 ml.test_collect_c1_training_expansion_v1 -v

@@ -2,6 +2,8 @@
 
 Data: 2026-11-04. Status: plan R&D, bez zmiany modelu, parametrów i produkcji. Uzupełnia `MAE_RESEARCH_ROADMAP_V6.md` i `EXECUTION_PLAN_CURRENT.md`. C1 v8 pozostaje zamrożonym benchmarkiem; nowy challenger otrzyma osobną wersję i precommit przed treningiem.
 
+Zaakceptowane uzupełnienie wykonawcze po ocenie literatury: [`C1_MAE_LITERATURE_EXECUTION_SUPPLEMENT_V1.md`](C1_MAE_LITERATURE_EXECUTION_SUPPLEMENT_V1.md). Kolejność: kompletność bazy → audyt celu MAE eksperta live → osobny test informacji z dynamiki → przyszłe porównanie. Zamrożone kolektory działają równolegle.
+
 ## Cel i punkt wyjścia
 
 Cel użytkownika: zbliżyć MAE prognozy końcowej frekwencji z danych live do **1 200 miejsc**, zachowując użyteczną dynamikę prognozy. To wymaga około **70,9% redukcji** wobec obecnego latest-row MAE 4 121,45. To cel badawczy, nie obietnica wyniku ani gwarancja błędu pojedynczego meczu. MAE przyszłej dostępności miejsc jest osobnym targetem.

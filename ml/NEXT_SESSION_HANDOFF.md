@@ -1,6 +1,6 @@
 # Beyond — operational handoff
 
-Updated **2026-11-04 12:40 UTC**. Production remains **OFF**: `production_change=false`, `live_adjustment=0`.
+Updated **2026-11-04 13:25 UTC**. Production remains **OFF**: `production_change=false`, `live_adjustment=0`.
 
 Read strategy and state first: `MAE_RESEARCH_ROADMAP_V6.md` → `EXECUTION_PLAN_CURRENT.md` → `PROGRESS_TRACKING.md` → `TRAJECTORY_FORECASTING_PLAN_V1.md` → this handoff. This file supplies operational state; it does not define a competing MAE strategy.
 
@@ -44,7 +44,7 @@ Details and private proof hash: `FROZEN_WINDOW_GUARDIAN_EVIDENCE_2026-11-04.md`.
 
 ## Cloud runtimes
 
-All are bounded until **2026-11-05T09:30Z**, perform inference/scoring or window protection, and are **not an autonomous coding service**. Read current PID/launch files instead of trusting historical tool-session IDs.
+The three original processes below are bounded until **2026-11-05T09:30Z**, perform inference/scoring or window protection, and are **not an autonomous coding service**. Read current PID/launch files instead of trusting historical tool-session IDs.
 
 | Process | Runtime directory under`/workspace/ops-runtime/` | Latest verified state |
 |---|---|---|
@@ -88,10 +88,6 @@ Existing attendance/P9/SSP/Form5 policies, models and550-seat comparison remain 
 
 MAE-01 diagnostic and MAE-02 weighting rejection are complete; MAE-03 context audit remainsDATA_BOUND. Follow the execution plan for new research. Do not repeat closed/exposed searches, and do not spend another session rerunning unchanged isolated checks. Next evidence is a genuine new forecast/outcome pair, not a more persuasive picture.
 
-## Latest user research priority: C1 live MAE toward1,200
-
-Read `C1_LIVE_MAE_1200_PLAN_V1.md`. Current C1policyMAE4121.45on11scored events;4events account for83.45%of error. Even an outcome-aware selector between current prior/live forecasts yields4103.05, not1200. Basic ranking/oracle diagnostic complete; underlying causes are not established. Next research task:matched-cohort audit of actual bad-event inputs/labels/anchor contracts and existing D2, then one separately precommitted challenger. No old-model retuning, cosmeticv3T1replacement, subgroup deletion or paid-sales claim.
-
 ## C1 MAE1200 execution — current at12:40UTC
 
 - Matched audit completed: `C1_LIVE_MATCHED_AUDIT_RESULT_V1.md`. All11events/44genuine C1-time representatives; C1policyMAE4121.45vsD2P2 5157.52. C1numerical parity/900original training cells verified. No D2promotion. Wisła/Górnikzero season-home-history confirmed; its causal MAEbenefit remains unproven. External sites unreachable,18history checks+6outcomes remain null/unverified.
@@ -101,3 +97,9 @@ Read `C1_LIVE_MAE_1200_PLAN_V1.md`. Current C1policyMAE4121.45on11scored events;
 - First upcoming final24windows: **Motor5091 Nov5 17:00UTC**, Wisła448 Nov5 19:30UTC. Existing workers stopNov5 09:30UTC; theirdeadlinewasnotchanged. Newcollector survivesonlywhilethishostsurvives. Check launch/PID/source-lock/recentcycle/backup before renewal; don'tduplicateorbackfill.
 - Raw positive input follows the actual SQLschema: `collect_c1_training_expansion_v1` resolves omitted prior.target_as_of_at and verifies identicalpriorID/values/times, then calls unchangedfrozencapture. Scorer accepts onlylaterconfirmedoutcomes, neverinventorylabels. Firstreview30newscored events/8clubs withpaireduncertainty; firstreviewimmutable. Earlyresultsdescriptive.
 - Review: draft [PR210](https://github.com/NiedzielX/beyond/pull/210), stacked on209. Local354unitchecks passed; source4fe12fc hosted DemandEngine41830872028passed includingnewartifactintegrity, collection/scoringguards and priorreproductions. No merge/main/production/gatewaywrites. Source verification, relational/managed deployment and actual future positive-capture/scoring evidence remainpending.
+
+## Latest authorized continuation and panel status —13:25UTC
+
+Savedacceptedresearchsupplement:`C1_MAE_LITERATURE_EXECUTION_SUPPLEMENT_V1.md`. Target-freeobjectiveauditcomplete:`C1_OBJECTIVE_GEOMETRY_AUDIT_RESULT_V1.md`;20/74privateframehashverified, equal-eventmasscorrect, capacitylossgeometryquantified, nofit/inference/targetparsing/trainingMAE. Sixnewtests/backend360checks pass. C1L1treesalreadytested; structuralweightingalreadyrejected. Next:newexactmedian-linearobjectiveprecommitbeforefit, notcosmeticrepeat; existing20eventcandidate/collectorunchanged.
+
+PanelPR8source dbc71a39 passedTypeScript/build41837200916andactualcomponentChromium41837200785. NewC1cardreadsexistingpublicview, realbrowserroleGETvalidated11scored/MAE4121.454326. VercelPreview7547081765SUCCESS at13:20:39UTC: https://beyond-ticketing-panel-2no5gkfi3-n-b334.vercel.app/. LatestProduction/mainstill67a2082f,Oct28deployment; noProductionpromotion. Newdaily-pathpermanentfeedstillundeployed/adminbindingblocked; directsiteURLunreachablefromhost,noDOMinspectionclaim. Evidence:`PANEL_PREVIEW_STATUS_2026-11-04.md`. DistinguishsuccessfulfrontendPreviewfromstillmissingmanagedbackendfeed.
