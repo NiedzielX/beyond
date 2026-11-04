@@ -7,3 +7,5 @@ Implement one9→20event expansion with exact old30features/Ridge10/preprocessin
 Acceptance includes a reviewable frozen package and tested prospective capture path. Actual future forecasts and30event/8clubreview remain separate operational/evidence gates; keep this spec active while collection/deployment or source verification is pending. Do not imply the model reaches1200without future evidence.
 
 Executed:precommit/sourcepublishedbeforeonefit; newpackagefrozen12:26:39UTC, all900oldcellsverified, privatebackupread-backverified. Actualcurrentno-dueCLI0eligible/0predictions. Fifteencandidate+twocollectorchecks pass;341totalunitchecks. Candidatecollectionandfutureevaluationpending; specstaysactive. See `ml/C1_TRAINING_EXPANSION_RESULT_V1.md`.
+
+Current12:40UTC: hostedfinalsource4fe12fc DemandEngine41830872028passed;354localchecks. BoundedcollectorPID169529actuallystarted12:37:36UTC, post-launchcycle12:37:41UTCcompleteandprivatebackupverified.0eligible/0forecasts/0scores; MAEnull. Sourcehelperslocked; deadlineNov6 20:30UTC. Keepactiveuntilpositivefuturecapture/outcome/review/deployment requirements are separatelyresolved.
