@@ -4,7 +4,9 @@ on:
   push:
     paths:
       - 'supabase/sql/daily_inventory_path_shadow_v1.sql'
+      - 'supabase/sql/daily_inventory_source_state_as_known_v2.sql'
       - 'tests/postgres/test_daily_inventory_path_contract_v1.py'
+      - 'tests/postgres/test_daily_inventory_source_state_v2.py'
       - 'supabase/functions/daily_inventory_path_gateway_v1/**'
       - 'ml/start_daily_inventory_path_watcher_v1.py'
       - 'ml/test_start_daily_inventory_path_watcher_v1.py'
@@ -13,7 +15,9 @@ on:
   pull_request:
     paths:
       - 'supabase/sql/daily_inventory_path_shadow_v1.sql'
+      - 'supabase/sql/daily_inventory_source_state_as_known_v2.sql'
       - 'tests/postgres/test_daily_inventory_path_contract_v1.py'
+      - 'tests/postgres/test_daily_inventory_source_state_v2.py'
       - 'supabase/functions/daily_inventory_path_gateway_v1/**'
       - 'ml/start_daily_inventory_path_watcher_v1.py'
       - 'ml/test_start_daily_inventory_path_watcher_v1.py'
@@ -59,7 +63,7 @@ jobs:
           import sys
           result = subprocess.run([
               sys.executable, '-m', 'unittest', 'discover', '-s', 'tests/postgres',
-              '-p', 'test_daily_inventory_path_contract_v1.py', '-v',
+              '-p', 'test_daily_inventory_*v*.py', '-v',
           ], stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
           print(result.stdout, flush=True)
           if result.returncode:
