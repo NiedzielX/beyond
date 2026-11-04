@@ -1,3 +1,5 @@
+Implemented2026-11-04. Evidence: `ml/OUTCOME445_COMPOSITE_VERIFICATION_RESULT_V1.md`; all six tracked outcomes are now present, old records unchanged.
+
 # Verified public attendance history import
 
 Public-source hosted run41840960556successfully retrieved fixedsourcepages and structured receipts. User authorized continuing priority1ofMAEplan. Before any DBwrite, stage exact current-season fixture rows from source text, verify home/away aliases, competition, date/time withEurope/WarsawDST, positive attendance and source/hash/receipt integrity. Compare against canonical completed fixtures and existing history/outcomes; any ambiguity/conflicting label/exact-kickoff mismatch remains blocked. Do not guess or shift kickoff to force a match. One observed Zagłębie445source-time discrepancy18:10vsDB18:00requiresseparateverification.

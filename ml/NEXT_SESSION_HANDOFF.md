@@ -1,8 +1,28 @@
 # Beyond — operational handoff
 
-Updated **2026-11-04 17:36 UTC**. Production remains **OFF**: `production_change=false`, `live_adjustment=0`.
+Updated **2026-11-04 18:32 UTC**. Production remains **OFF**: `production_change=false`, `live_adjustment=0`.
 
 Read strategy and state first: `MAE_RESEARCH_ROADMAP_V6.md` → `EXECUTION_PLAN_CURRENT.md` → `PROGRESS_TRACKING.md` → `TRAJECTORY_FORECASTING_PLAN_V1.md` → this handoff. This file supplies operational state; it does not define a competing MAE strategy.
+
+## Last tracked outcome resolved — 2026-11-04 18:32 UTC
+
+All six tracked Oct30–Nov2 outcomes are now present. Event445 is supported by an exact independent official fixture schedule/date/result and the matching primary provider attendance3396. The primary18:10display is retained as a discrepancy; its cause and independent official attendance corroboration remain unverified. No canonical time was changed or generalized tolerance introduced. Actual append-only history/outcome write18:29UTC; old outcomes, forecasts and frozen hashes unchanged. Across the two source tasks:16new history records and6genuine outcomes. Evidence: `OUTCOME445_COMPOSITE_VERIFICATION_RESULT_V1.md`.
+
+Fresh C1v8 status: **101rows /17forecast events /17scored, latest policyMAE3248.807865, prior3131.157876, raw6241.964642; window policy3913.558409**. Older4121.45/11 and3428.29/16 remain dated scopes; no model improvement is inferred from cohort growth. Encoder now4scores/4clubs, MAE1623.917287vs1051.043479; P9v2 unchanged1984.717101vs1248.354372on2events. Keep all frozen review gates and no promotion. Both newer C1challengers still0future scores/nullMAE.
+
+The source archive, as-of reader and frozen-predictor boundary in PR213 are implemented/tested; the bounded archive is collecting. Managed serving still needs its guarded release, and P9PR212stillneeds the actual corrected hosted chain. Protect genuine19:15/19:30UTCcheckpoints; never backfill missed observations. `production_change=false`, `live_adjustment=0`.
+
+## Input-contract continuation — 2026-11-04 18:10 UTC
+
+The separate raw-source export → per-event knowledge/revision guard → unchanged frozen predictor implementation is complete in draft [PR213](https://github.com/NiedzielX/beyond/pull/213), initially published asdf4fc02. Actual source counts:43history /26outcomes /38ticket events /135sporting fixtures /20aliases; one due target is not ready, so actual inspection produced0forecasts. Synthetic integration matches the original predictor's complete output for already known data; no fit. Managed serving is still unchanged: this output is explicitly non-persistable and activates no new prospective lane.
+
+Private source snapshots are now actually collecting: PID209974, runtime `/workspace/ops-runtime/2026-11-04-known-at-source-archive/`, every900seconds until **Nov6 20:30UTC**. Published source/dependency hashes and exclusive lifetime/runtime locks are enforced. Post-launch18:08:50UTCcycle captured, privately uploaded, read-back and restored;12,105bytes, SHA9a47abe50d656453128815da5e22e58a86be3c37d03af09b2a451a22acbd713e. This collector never predicts or writes official forecast/outcome rows. It depends on this cloud host.
+
+A separate read-only as-of reader now selects the latest verified snapshot at/before an elapsed cutoff, within60minutes, and verifies source/recovery identity. Actual18:10lookup selects the18:08:49capture;16:30lookup honestly returns no pre-cutoff archive. Five tests include later source revisions and corruption; no backfilled history or forecast. The archive/predictor sources are unchanged after their collection hash lock.
+
+Actual old managed process created Górnik449/T-3prior74at17:55:18UTC, with canonical16:30cutoff andseason_home_n=6, confirming the consumer gap. Newly verified source history was not known at16:30. Preserve the record and actual generated_at; do not use it as evidence available at the earlier cutoff. This lane did not write that prior. Release of guarded managed serving remains a separate task; no old priors/forecasts are overwritten.
+
+Fresh18:10C1read remains101rows /17events /16scored, policyMAE3428.29vsprior3303.29. All five earlier workers remain live; their deadlines and frozen gates are unchanged. PR211headc058e93nowhas all non-skipped hosted checksSUCCESS; new PR213 validation is separate. Evidence and commands: `STRUCTURAL_KNOWN_AT_INPUT_INTEGRATION_V1.md`.
 
 ## Current execution snapshot — 2026-11-04 17:36 UTC
 

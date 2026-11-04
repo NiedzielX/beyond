@@ -4,17 +4,19 @@ Data: 2026-11-04. Status: plan R&D, bez zmiany modelu, parametrów i produkcji. 
 
 Zaakceptowane uzupełnienie wykonawcze po ocenie literatury: [`C1_MAE_LITERATURE_EXECUTION_SUPPLEMENT_V1.md`](C1_MAE_LITERATURE_EXECUTION_SUPPLEMENT_V1.md). Kolejność: kompletność bazy → audyt celu MAE eksperta live → osobny test informacji z dynamiki → przyszłe porównanie. Zamrożone kolektory działają równolegle.
 
-## Aktualizacja wykonania — 2026-11-04 17:36 UTC
+## Aktualizacja wykonania — 2026-11-04 18:32 UTC
 
-Pierwotny punkt wyjścia poniżej opisuje 11 meczów. Po dołączeniu pięciu prawdziwych wyników stary C1 ma MAE **3428,29 na 16 meczach**, a baza 3303,29. To zmiana zakresu oceny, nie poprawa modelu. Nowych pięć: baza 1078,13, polityka 1903,33; Raków447 pokazuje kolejną szkodliwą decyzję LIVE. Nie stroimy progów po tych wynikach.
+Stary C1 ma teraz **MAE 3248,81 na wszystkich 17 już prognozowanych meczach**, wobec 3131,16 dla bazy. Uzupełniono sześć prawdziwych wyników Oct30–Nov2 i 16 rekordów historii. Wcześniejsze 4121,45 na11 i3428,29 na16 pozostają wynikami dawnych zakresów oceny; model się nie zmienił.
 
-Uzupełniono 15 rekordów historii; event445 pozostaje zablokowany przez rozbieżność kickoffu. Ridge20 i osobna mediana w osobach zostały zamrożone i zbierają wyłącznie przyszłe dowody, obecnie bez ocen. Pierwsze dzienne inventory MAE 258,94 vs 326,50 na dwóch meczach nie jest wynikiem frekwencji. Szczegóły: `VERIFIED_ATTENDANCE_IMPORT_RESULT_2026-11-04.md`, `C1_SEAT_MEDIAN_RESULT_V1.md`.
+Ostatni event445 ma liczbę3396 z Frekwencyjny oraz tożsamość meczu potwierdzoną dokładnym oficjalnym terminarzem i raportem. Rozbieżne godziny zapisano osobno bez zgadywania opóźnienia i bez zmiany terminarza w bazie. Szczegóły: `OUTCOME445_COMPOSITE_VERIFICATION_RESULT_V1.md`.
 
-Najbliższa praca nad wejściami: wersjonowany eksport czasu wiedzy → kontrola dostępności danych na cutoff → niezmieniony predictor. Istniejący eksport gubi te timestampy. Osobna kontrola ma już testy integracyjne z zamrożonym builderem, lecz nie jest wdrożona do serving. Dowód: `ATTENDANCE_KNOWLEDGE_TIME_AUDIT_V1.md`. Nie regenerować dawnych priory ani nie mylić 900 zgodnych wartości treningowych z pełnym dowodem PIT. Chronić rzeczywiste przyszłe okna i kontynuować zamrożony benchmark dynamiki.
+Ridge20 i osobna mediana w osobach pozostają zamrożone, oba bez nowych przyszłych ocen. Wyłącznie przyszłe pary prognoza→wynik mogą potwierdzić ich poprawę. Dane starych17meczów nie są świeżym testem tych modeli.
+
+Podłączenie wersjonowanego eksportu czasu wiedzy do niezmienionego predyktora jest zaimplementowane i przetestowane. Prywatne archiwum wejść działa w chmurze, a odczyt as-of zachowuje rzeczywiście wcześniejsze wersje danych. Wdrożenie kontroli do starego managed serving nadal jest osobnym zadaniem. Dowody: `STRUCTURAL_KNOWN_AT_INPUT_INTEGRATION_V1.md`. Nie regenerować dawnych priory ani missed observations; chronić nadchodzące rzeczywiste okna i utrzymać przeglądy przyszłych kohort.
 
 ## Cel i punkt wyjścia
 
-Cel użytkownika: zbliżyć MAE prognozy końcowej frekwencji z danych live do **1 200 miejsc**, zachowując użyteczną dynamikę prognozy. To wymaga około **70,9% redukcji** wobec obecnego latest-row MAE 4 121,45. To cel badawczy, nie obietnica wyniku ani gwarancja błędu pojedynczego meczu. MAE przyszłej dostępności miejsc jest osobnym targetem.
+Cel użytkownika: zbliżyć MAE prognozy końcowej frekwencji z danych live do **1 200 miejsc**, zachowując użyteczną dynamikę prognozy. To wymaga około **70,9% redukcji** wobec wyjściowego latest-row MAE 4 121,45 na11meczach. To cel badawczy, nie obietnica wyniku ani gwarancja błędu pojedynczego meczu. MAE przyszłej dostępności miejsc jest osobnym targetem.
 
 Źródło: odczyt `dashboard_c1_shadow_v8_events_v1` i `dashboard_c1_shadow_v8_status_v1`, 11 ocenionych meczów, pakiet `c1-shadow-v8-frozen-2026-10-16-n9`. Oficjalny latest-row MAE: baza 4 314,72, surowy live 7 127,99, polityka 4 121,45. Window MAE polityki: 4 971,62. Ostatnie zapisane oceny: 2026-10-25.
 
@@ -77,3 +79,7 @@ Pierwszym sukcesem jest powtarzalna poprawa względem obu właściwych benchmark
 **Audyt matched-cohort wykonany, źródła częściowo uzupełnione, dwa challengery zamrożone.** Aktualny krok: domknąć wersjonowany kontrakt czasu wiedzy i jego testy integracyjne; zachować osobne przyszłe strumienie Ridge20/mediany/persistence/drift. Nowe pary oceniać dopiero po rzeczywistych wynikach. Nie ponawiać historycznego turnieju ani naprawiać dawnych missed observations. Wydanie poprawki P9PR212i podłączenie nowego livefeed panelu pozostają osobnymi zadaniami wdrożeniowymi.
 
 Plan nie gwarantuje 1 200 miejsc. Wyznacza testowalną drogę do tego celu i punkty, w których uczciwy wynik może odrzucić hipotezę. `production_change=false`, `live_adjustment=0`; frozen v8, D2, encoder, P9 i historyczne braki pozostają bez zmian.
+
+## Update18:32UTC
+
+The remaining445fixture identity is now resolved by the exact official18:00Warsaw schedule/date/result plus unique canonical match and primary attendance3396. Both source clocks/provenance retained; no claimed cause of the10minute difference or independent official attendance count. One append-only history/outcome write completes16historyrecords/6trackedoutcomes. Current unchanged C1v8policyMAE3248.81on17eventsvsprior3131.16; cohort growth, not improved model. Encoder4events now1623.92vs1051.04. New challengers still unscored; future paired evidence and managed source-guard release remain next. See`OUTCOME445_COMPOSITE_VERIFICATION_RESULT_V1.md`. Earlier blocked statuses above are dated snapshots.

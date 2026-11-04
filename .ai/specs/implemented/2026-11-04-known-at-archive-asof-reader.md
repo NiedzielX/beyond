@@ -1,0 +1,7 @@
+Implemented2026-11-04. Five tests and actual18:10/16:30archive lookups verified; no forecast or serving change. Evidence: `ml/STRUCTURAL_KNOWN_AT_INPUT_INTEGRATION_V1.md`.
+
+# Read-only as-of archive selection v1
+
+Follow-up to the implemented source archive, not a model or collector change. Build a separate reader selecting the latest completed and successfully restored immutable source capture at/before an explicit elapsed cutoff. Fixed freshness bound60minutes; no future-cutoff queries or post-cutoff snapshots. Verify envelope/receipt hashes and recovery identity; a missing pre-cutoff snapshot stays missing. The reader returns raw source history for a future reviewed adapter; it does not issue, backfill or score forecasts and does not rewire frozen lanes.
+
+Tests: latest pre-cutoff selection, future/stale/missing coverage, corruption/conflicting identity failure, exclusive archive namespace and retaining an old value after a later source-row revision. Execute actual read-only lookup at a genuine elapsed current timestamp and show the earlier16:30checkpoint has no archive; never fabricate a capture before archive activation. Preserve code/test/evidence records and leave serving integration inactive.

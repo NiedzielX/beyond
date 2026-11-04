@@ -41,6 +41,10 @@ The separate public-inventory lane now predicts every remaining day from the gen
 
 The [pre-outcome coefficient audit](ml/DAILY_PATH_COEFFICIENT_AUDIT_2026-11-04.md) found that this fit retained no relative-value-history weights: receiving a full prefix does not prove the model learned its changes. Its issued predictions stay frozen. A separate [genuine 24-hour drift comparator](ml/DAILY_INVENTORY_DRIFT_COMPARATOR_PRECOMMIT_V1.md) now tests whether recent observed change beats persistence, using new immutable forecasts and future matched targets. It has no fitted parameters or demonstrated MAE advantage yet. Managed deployment and the live new panel feed remain blocked on project admin binding.
 
+## Attendance input knowledge-time integration
+
+[Separate source export, guarded frozen inference and private archive](ml/STRUCTURAL_KNOWN_AT_INPUT_INTEGRATION_V1.md) retain actual source and row-revision times. The bounded cloud archive captures immutable raw inputs with verified private recovery; a read-only as-of lookup refuses missing pre-cutoff history. This does not activate a model or repair the old managed serving path, which still needs its reviewed release. No new attendance-MAE result is claimed.
+
 ## Current state in one minute
 
 The structural model remains the attendance incumbent.
