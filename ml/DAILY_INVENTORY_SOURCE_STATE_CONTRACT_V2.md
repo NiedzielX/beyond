@@ -26,6 +26,8 @@ The public snapshot export drops original source active/visible metadata and rec
 
 The 48-hour summaries select the latest genuine capture/id per UTC hour without interpolation. Fractions describe selected observations, not continuous time coverage. Malformed hours reduce the active-knowledge fraction, and latest invalid state never falls back to an older usable count. Parser versions, selected source identities and a response hash remain provenance. These fields do not establish actual on-sale duration or paid demand and do not authorize a model fit.
 
+The adapter accepts only declared source fields; joined outcome/score columns fail closed. Its output is a separate object. Never append v2numeric columns to a frozen incumbent fitting frame:the generic Structural Prior selector discovers numeric columns dynamically, as the earlier C2baseline-isolation fix demonstrated. A future challenger must predeclare its feature list and leave the baseline input frame unchanged.
+
 ## Boundaries
 
 Do not join today's audit flags onto old snapshots. Do not remove historical inactive zeros from frozen v1 or reinterpret Widzew's literal zero as missing. Any use in a new dataset requires its own version, input contract and evaluation. This RPC reconstructs only already persisted source information; it does not create observations or missed forecasts. No old prediction, score, source record or model is rewritten.

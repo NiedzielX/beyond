@@ -100,5 +100,11 @@ class SourceStateFeatureTests(unittest.TestCase):
         self.assertEqual(build_features(data)['provenance']['source_response_sha256'],build_features(data)['provenance']['source_response_sha256'])
         self.assertEqual(data,before)
 
+    def test_outcome_or_other_undeclared_columns_cannot_enter_source_features(self):
+        data=payload();data['actual_attendance']=12345
+        with self.assertRaisesRegex(ValueError,'Unexpected source-state fields'):build_features(data)
+        data=payload();data['observations'][0]['target_available_total']=0
+        with self.assertRaisesRegex(ValueError,'outcome columns'):build_features(data)
+
 
 if __name__=='__main__':unittest.main()

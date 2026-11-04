@@ -13,6 +13,12 @@ VERSION = "daily-inventory-source-state-features-v2"
 SOURCE_VERSION = "daily-inventory-source-state-as-known-v2"
 KNOWN_STATES = {"VISIBLE_ACTIVE", "VISIBLE_LEGACY_STAGE_UNKNOWN", "HIDDEN_SOURCE", "INACTIVE_STAGE",
                 "INVALID_SOURCE_METADATA", "VISIBLE_COUNT_MISSING"}
+TOP_FIELDS = {"version","ticket_event_id","as_of_at","status","observations","production_change",
+              "live_adjustment","target_values_used","raw_table_immutability_independently_proven",
+              "historical_event_revisions_independently_proven"}
+ROW_FIELDS = {"raw_observation_id","captured_at","raw_created_at","known_at","source_version",
+              "source_active","source_visible","raw_available_total","available_total","status",
+              "public_snapshot_id","promotion_known_at"}
 
 
 def count(value, name: str, *, nullable=False):
@@ -25,6 +31,8 @@ def count(value, name: str, *, nullable=False):
 
 
 def build_features(payload: dict) -> dict:
+    if not isinstance(payload,dict) or set(payload)-TOP_FIELDS:
+        raise ValueError("Unexpected source-state fields; only declared observed inputs are allowed")
     if (payload.get("version") != SOURCE_VERSION or payload.get("production_change") is not False
             or payload.get("live_adjustment") != 0 or payload.get("target_values_used") is not False):
         raise ValueError("Unexpected source-state contract")
@@ -42,6 +50,8 @@ def build_features(payload: dict) -> dict:
         raise ValueError("Unavailable event/source cannot carry model observations")
     clean, seen = [], set()
     for row in observations:
+        if not isinstance(row,dict) or set(row)-ROW_FIELDS:
+            raise ValueError("Unexpected observation fields; outcome columns are not source features")
         identifier = row.get("raw_observation_id")
         if not isinstance(identifier,int) or isinstance(identifier,bool) or identifier <= 0 or identifier in seen:
             raise ValueError("Invalid or duplicate raw observation identity")
