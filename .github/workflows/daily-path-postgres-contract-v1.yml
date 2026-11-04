@@ -55,8 +55,9 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - name: Install isolated DB test driver
-        run: python -m pip install 'psycopg[binary]==3.2.13'
+      - name: Install isolated DB and feature adapter dependencies
+        # Importing the existing demand_engine package also loads calibration (NumPy).
+        run: python -m pip install 'psycopg[binary]==3.2.13' numpy==2.3.5
       - name: Apply actual migration and test synthetic contracts
         env:
           DAILY_PATH_TEST_DSN: postgresql://postgres:postgres@127.0.0.1:5432/daily_path_contract
@@ -80,8 +81,25 @@ jobs:
         env:
           DAILY_PATH_TEST_FEED_DIR: ${{ runner.temp }}/daily-path-feeds
         run: |
-          python -m unittest ml.test_daily_inventory_source_state_features_v2 -v
-          python -m ml.daily_inventory_source_state_features_v2 --input "$DAILY_PATH_TEST_FEED_DIR/source-state.json" --output "$DAILY_PATH_TEST_FEED_DIR/source-state-features.json"
+          python - <<'PY'
+          import os
+          from pathlib import Path
+          import subprocess
+          import sys
+          directory = Path(os.environ['DAILY_PATH_TEST_FEED_DIR'])
+          commands = [
+              [sys.executable, '-m', 'unittest', 'ml.test_daily_inventory_source_state_features_v2', '-v'],
+              [sys.executable, '-m', 'ml.daily_inventory_source_state_features_v2',
+               '--input', str(directory/'source-state.json'), '--output', str(directory/'source-state-features.json')],
+          ]
+          for command in commands:
+              result = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
+              print(result.stdout, flush=True)
+              if result.returncode:
+                  detail = result.stdout[-16000:].replace('%', '%25').replace('\r', '%0D').replace('\n', '%0A')
+                  print('::error title=Source-state feature integration failed::' + detail, flush=True)
+                  raise SystemExit(result.returncode)
+          PY
       - name: Checkout exact companion panel parser
         uses: actions/checkout@v4
         with:
