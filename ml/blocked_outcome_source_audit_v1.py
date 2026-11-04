@@ -22,6 +22,16 @@ def normalized(value):
     return ''.join(c for c in unicodedata.normalize('NFKD',value.lower()) if not unicodedata.combining(c)).replace('ł','l')
 
 
+def prioritized(links):
+    def priority(link):
+        value=normalized(link['url']+' '+link['text'])
+        match='koron' in value and 'zagle' in value
+        article='/aktualnosci/' in value
+        media=any(word in value for word in ['foto','galeri','konferenc','zapowiedz','przed meczem'])
+        return (not (match and article and not media),not match,not article)
+    return sorted(links,key=priority)
+
+
 class Links(HTMLParser):
     def __init__(self,base):super().__init__();self.base=base;self.links=[];self.href=None;self.parts=[]
     def handle_starttag(self,tag,attrs):
@@ -56,7 +66,7 @@ def fetch(url,folder,index):
         (folder/f'source-{index}.html').write_bytes(raw);links=Links(result['final_url']);links.feed(raw.decode('utf-8',errors='replace'))
         text=extract(raw);text['text_truncated']=text['text_truncated'] or len(text['text'])>18000
         text['text']=text['text'][:18000]
-        result.update(bytes=len(raw),sha256=hashlib.sha256(raw).hexdigest(),links=links.links[:24],**text)
+        result.update(bytes=len(raw),sha256=hashlib.sha256(raw).hexdigest(),links=prioritized(links.links)[:24],**text)
     except Exception as exc:result.update(error_type=type(exc).__name__,http_status=getattr(exc,'code',result.get('http_status')))
     return result
 
