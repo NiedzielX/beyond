@@ -18,6 +18,19 @@ on:
       - 'ml/test_mae02_seat_weighted_median_v1.py'
       - 'ml/mae03_context_evidence_audit_v1.py'
       - 'ml/test_mae03_context_evidence_audit_v1.py'
+      - 'ml/start_daily_inventory_path_watcher_v1.py'
+      - 'ml/test_start_daily_inventory_path_watcher_v1.py'
+      - 'ml/frozen_window_guardian_v1.py'
+      - 'ml/test_frozen_window_guardian_v1.py'
+      - 'ml/daily_inventory_source_state_features_v2.py'
+      - 'ml/test_daily_inventory_source_state_features_v2.py'
+      - 'ml/daily_path_prefix_diagnostics_v1.py'
+      - 'ml/test_daily_path_prefix_diagnostics_v1.py'
+      - 'ml/daily_path_coefficient_audit_v1.py'
+      - 'ml/test_daily_path_coefficient_audit_v1.py'
+      - 'ml/*drift*v1.py'
+      - 'ml/DAILY_INVENTORY_DRIFT_COMPARATOR_PRECOMMIT_V1.md'
+      - 'ml/artifacts/daily_inventory_drift_comparator_v1.json'
       - 'ml/recovered/v17/**'
       - 'ml/live_benchmark_v02.py'
       - 'ml/live_benchmark_v03.py'
@@ -40,6 +53,19 @@ on:
       - 'ml/test_mae02_seat_weighted_median_v1.py'
       - 'ml/mae03_context_evidence_audit_v1.py'
       - 'ml/test_mae03_context_evidence_audit_v1.py'
+      - 'ml/start_daily_inventory_path_watcher_v1.py'
+      - 'ml/test_start_daily_inventory_path_watcher_v1.py'
+      - 'ml/frozen_window_guardian_v1.py'
+      - 'ml/test_frozen_window_guardian_v1.py'
+      - 'ml/daily_inventory_source_state_features_v2.py'
+      - 'ml/test_daily_inventory_source_state_features_v2.py'
+      - 'ml/daily_path_prefix_diagnostics_v1.py'
+      - 'ml/test_daily_path_prefix_diagnostics_v1.py'
+      - 'ml/daily_path_coefficient_audit_v1.py'
+      - 'ml/test_daily_path_coefficient_audit_v1.py'
+      - 'ml/*drift*v1.py'
+      - 'ml/DAILY_INVENTORY_DRIFT_COMPARATOR_PRECOMMIT_V1.md'
+      - 'ml/artifacts/daily_inventory_drift_comparator_v1.json'
       - 'ml/recovered/v17/**'
       - 'ml/live_benchmark_v02.py'
       - 'ml/live_benchmark_v03.py'
@@ -83,6 +109,34 @@ jobs:
 
       - name: Verify context evidence timing, source isolation and grouped variance
         run: python -m unittest ml.test_mae03_context_evidence_audit_v1 -v
+
+      - name: Verify bounded detached worker lifecycle and health
+        run: python -m unittest ml.test_start_daily_inventory_path_watcher_v1 -v
+
+      - name: Verify legal-window guardian and no-backfill routing
+        run: python -m unittest ml.test_frozen_window_guardian_v1 -v
+
+      - name: Verify independent source-state feature masks and receipt time
+        run: python -m unittest ml.test_daily_inventory_source_state_features_v2 -v
+
+      - name: Verify descriptive prefix groups preserve primary event-balanced MAE
+        run: python -m unittest ml.test_daily_path_prefix_diagnostics_v1 -v
+
+      - name: Verify exact frozen path coefficient decomposition without refitting
+        run: python -m unittest ml.test_daily_path_coefficient_audit_v1 -v
+
+      - name: Verify isolated fixed-drift rule, immutable capture and paired target scoring
+        run: python -m unittest ml.test_daily_inventory_drift_v1 -v
+
+      - name: Verify persisted drift freeze matches unchanged rule and precommit
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          from ml.daily_inventory_drift_comparator_v1 import validate_artifact
+          validate_artifact(json.loads(Path('ml/artifacts/daily_inventory_drift_comparator_v1.json').read_text()))
+          print('Frozen drift artifact, rule implementation and precommit hashes agree; no fit performed.')
+          PY
 
       - name: Verify recovered v1.7 strict benchmark evidence
         run: python ml/recovered/v17/verify_recovered_bundle.py

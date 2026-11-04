@@ -2,6 +2,7 @@
 // Requires verify_jwt=false: GitHub OIDC is validated explicitly below.
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createRemoteJWKSet, jwtVerify } from "npm:jose@5.9.6";
+import { assertWorkflowClaims, databaseHeaders } from "./policy.ts";
 
 const MODEL_VERSION = "daily-inventory-direct-median-v1";
 const MODEL_HASH = "1137e257494583374f768622feca343f2dd7d634ef2446198703f8c27fbd9525";
@@ -16,12 +17,10 @@ async function authorize(req: Request) {
   const { payload } = await jwtVerify(auth.slice(7), JWKS, {
     issuer: "https://token.actions.githubusercontent.com",
     audience: "beyond-daily-inventory-path-v1",
+    algorithms: ["RS256"],
+    requiredClaims: ["exp", "iat", "nbf", "repository", "ref", "workflow_ref", "sha"],
   });
-  if (payload.repository !== "NiedzielX/beyond" || payload.ref !== "refs/heads/main"
-    || payload.workflow_ref !== "NiedzielX/beyond/.github/workflows/daily-inventory-path-shadow-v1.yml@refs/heads/main"
-    || typeof payload.sha !== "string" || !/^[0-9a-f]{40}$/.test(payload.sha)) {
-    throw new Error("repository/ref/sha not allowed");
-  }
+  assertWorkflowClaims(payload);
   return payload;
 }
 
@@ -29,7 +28,7 @@ function credentials() {
   const url = Deno.env.get("SUPABASE_URL");
   const key = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
   if (!url || !key) throw new Error("service environment missing");
-  return { url, headers: { apikey: key, Authorization: `Bearer ${key}`, "Content-Type": "application/json" } };
+  return { url, headers: databaseHeaders(key) };
 }
 
 async function rpc(name: string, body = {}) {

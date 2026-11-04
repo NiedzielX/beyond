@@ -169,3 +169,30 @@ This section uses **future public inventory**, not attendance. Never pool its MA
 - Existing stored snapshots121;70prospective-window-valid,51retrospective excluded.62baseline-timed rows;11distinct paired events across checkpoints.37isolated feature/source/baseline/checkpoint groups;35insufficient event support,1constant,1insufficient grouped variance.
 - NGrams media attentionT-24h:10events /10clubs /1distinct value(0). NGrams accelerationT-24h:4events /4clubs /3values. T-6hmedia has only1nonzero event and cannot supply every held-out event/club training fold; no checkpoint rescue.
 - Decision:NO_NEW_CONTEXT_FIT. Existing Hype gates reconfirmed; no new MAE or model promotion claim. Existing P4a9-event gate unchanged(current5). Continue genuine collection and separate daily-path SQL validation.
+
+## Daily-path preparation / diagnostic registry —2026-11-04
+
+These are not new MAE challenger results.
+
+- Prefix-regime diagnosticv1:8hosted tests passed(run41816697000). Full eligible primary evaluator unchanged; zero-only, constant-positive and varying groups are descriptive, with reconciled primary contributions and overlapping-vintage event warning. Actual0scores means allMAEsnull.
+- Exact coefficient auditv1:57issued points reconstructed within9.10e-13places; all120relative-value-history weights0. No target values, refit or accuracy evaluation. See`DAILY_PATH_COEFFICIENT_AUDIT_2026-11-04.md`. Decision:retain frozenv1evidence, explicitly qualify its learned-mechanism limitation; next separately precommit a restrained genuine-prefix-change comparator rather than tunev1.
+- Source-stateinformationv2:isolatedSQL→featurecontract passed(run41816696989;20SQL+13adaptertests); seven fixed fields/masks, known-at guards, zero/hidden separation and exact input whitelist. No learner orMAE, no live deployment. Decision:PREPARED_INFORMATION_CONTRACT; admin deployment binding remains the blocker.
+
+## daily-inventory-genuine-24h-drift-v1
+
+Separate public-inventory research comparator. Precommit:`DAILY_INVENTORY_DRIFT_COMPARATOR_PRECOMMIT_V1.md`. Hypothesis:actual recent daily inventory change adds signal beyond persistence; fixed rule, no fit/search. Originalv1relative-value coefficients were0, as diagnosed before first outcomes.
+
+- Frozen2026-11-04T11:06:27Z; artifactSHA332f6fd37bc2a09ce665668ef3c9c23d8d34ec3613f18435ec729d95d3bb43cf. Predictor source and precommit hashes remain fixed.
+- Thirteen hosted tests passed(run41818376777,total309Pythonchecks). Rule/lifecycle correctness only; synthetic fixture errors are not model accuracy.
+- Actual first no-due cycle completed, original source/model bytes unchanged and private read-back verified.0attempts/points/scores at freeze; no eligible post-freeze source issue yet. These counts are not a failed prospective window.
+- Independent scored events/clubs0; prediction/error coverage and baseline/challengerMAE,Delta,improvement,median/tail/bias/per-lead errors pending genuine future targets. No accuracy claim.
+- PIT/source limitations inherited from actualv1public prefix; active/visible metadata absent, no independent raw immutability certification. OldNov3points cannot become new drift evidence.
+- Decision:FROZEN_RULE / BOUNDED_LOCAL_COLLECTING. First review after8independent genuine+1events/5clubs; separate primary same-target event-balanced metrics against persistence. No production promotion, attendance change or modelv1repair.
+
+Drift operational update11:20UTC:first legal new issue captured automatically11:19:58UTC,1attempt/0points/0scores,INSUFFICIENT_PREFIX_SPAN,privatebackupverified. This is genuine coverage evidence, not a forecast/MAE. Originalv1now8attempts/57points/0scores; no metric cohort changed. READYdrift forecast and new target labels remain pending.
+
+## Existing persisted live evaluations —2026-11-04T11:42UTC
+
+Do not describe every live model as unscored just because the newer prospective summary has0scores. The deployed public view`dashboard_c1_shadow_v8_status_v1`returns C1v8package`c1-shadow-v8-frozen-2026-10-16-n9`:101prediction rows,17events,11scored events,last score2026-10-25. Latest-row priorMAE4314.722244,raw live7127.992602,policy4121.454326; representative-window policyMAE4971.620552(vs prior4314.722244). These are actual persisted live-shadow scores, not Pre-Live historical validation.
+
+Main-panel`forecast_observations`latest version`beyond-demand-engine-v1-structural-prior-shadow`:latest-per-event panel-ruleMAE4314.727273,11scored events,24forecast events,1313rows,alllive_adjustment0. Latest evaluated forecasts pass kickoff/confirmation-time checks. Two manually seeded D2Long72rows appear in the raw table but are excluded by the official Long72quality contract; do not present their panel aggregate as official prospective scoring. Other older tiny version cohorts must not be pooled or compared as identical validation.

@@ -1,0 +1,13 @@
+{
+  "anchor_tolerance_hours": 6,
+  "fit_performed": false,
+  "frozen_at": "2026-11-04T11:06:27.334045+00:00",
+  "implementation_sha256": "ec069af8950f3c497317719c69e9ad855071e021af58e8edc2fce4f6adb424d1",
+  "live_adjustment": 0,
+  "lookback_hours": 24,
+  "model_sha256": "332f6fd37bc2a09ce665668ef3c9c23d8d34ec3613f18435ec729d95d3bb43cf",
+  "model_version": "daily-inventory-genuine-24h-drift-v1",
+  "precommit_sha256": "fc0425c2bef7b31c0abae8093459b0600cbff02ba938c517565442cc69362e32",
+  "production_change": false,
+  "training_event_ids": []
+}

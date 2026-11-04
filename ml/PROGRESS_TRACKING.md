@@ -1,6 +1,6 @@
 # Beyond Ticketing — ML Progress Tracking
 
-Last updated: **2026-11-03**
+Last updated: **2026-11-04**
 
 Status: **CANONICAL TRACKING SNAPSHOT**
 
@@ -20,7 +20,7 @@ The latest user instruction requires **genuine observed prefix → predictions f
 
 Implementation: [`DAILY_INVENTORY_PATH_IMPLEMENTATION_V1.md`](DAILY_INVENTORY_PATH_IMPLEMENTATION_V1.md). Deployment/recovery: [`DAILY_INVENTORY_PATH_DEPLOYMENT_V1.md`](DAILY_INVENTORY_PATH_DEPLOYMENT_V1.md). Formal lane precommit: [`DAILY_INVENTORY_PATH_PRECOMMIT_V1.md`](DAILY_INVENTORY_PATH_PRECOMMIT_V1.md).
 
-Recorded at 20:01 UTC: 7 local immutable attempts / 57 future-day points / 0 scores, plus verified private Supabase Storage backup and full restore. A bounded host-dependent watcher runs through2026-11-04T17:15Z; its status is `/workspace/ops-runtime/2026-11-03-daily-path/latest-cycle.json`. Inspect it and `watcher.pid` before starting another process. First targets mature2026-11-04T17:00Z. Local/cloud inference is verified; new SQL/gateway/GitHub schedule remain prepared but not deployed/enabled. Panel parser/geometry are verified; full TypeScript check and production build passed in GitHub Actions on the companion panel PR. Local npm access remains blocked. Missing network/management-token requirements are saved as an environment draft, not applied. No private transaction access, production activation or old-model retuning is required.
+Current operational counters, watcher health and deadlines belong in `NEXT_SESSION_HANDOFF.md` and the live runtime status command. Verified milestones:one frozen daily-path model; genuine post-freeze local captures and private backup/restore; hosted panel TypeScript/build; isolated PostgreSQL16persistence and typed panel-feed contract tests(run41810511980). These test milestones do not prove the undeployed SQL/Edge/scheduled workflow in live Supabase. No private partner transactions, production activation or old-model retuning is required.
 
 The attendance history read on2026-11-03 ended at2026-10-25. The six tracked fixtures onOctober30–November2 had no confirmed outcomes in `ticket_event_outcomes`; zero attendance scores are therefore not evidence of zero error. Keep this source-ingestion blocker separate from daily inventory-target scoring.
 
@@ -232,3 +232,13 @@ Human-readable registry:
 8. Follow MAE-02 through MAE-08 in evidence-driven order, skipping/reordering only when the preceding evidence clearly justifies it.
 9. Update `ml/MAE_EXPERIMENT_SCOREBOARD.md` after every serious challenger.
 10. Keep production review-gated and OFF.
+
+## Daily-path diagnostic findings before first outcomes —2026-11-04
+
+Exact coefficient audit:`DAILY_PATH_COEFFICIENT_AUDIT_2026-11-04.md`. All120relative-value-history coefficients are0;57issued points reconcile exactly to latest level/scale plus negative global/observation-pattern terms and clipping. No future accuracy claim, v1retuning or new learner. Separately versioned research should test a restrained genuine-prefix-change mechanism against persistence after its own precommit.
+
+Prefix-regime diagnostics passed8hosted tests(run41816697000), preserve the full-cohort primary denominator and do not drop all-zero cases. Prepared source-statev2passed actualSQL→features integration(run41816696989),20SQL+13adaptercases; project deployment remains blocked.
+
+The separately precommitted fixed24-hour drift comparator was implemented/frozen at11:06:27UTC(SHA332f6fd37bc2a09ce665668ef3c9c23d8d34ec3613f18435ec729d95d3bb43cf). Thirteen tests passed in hosted309-check run41818376777. Actual no-due cycle:0new attempts/points, nullMAE, verified private backup and byte-identical originalv1inputs. Bounded sidecar collecting only new legal post-freeze issues; no old-prediction backfill or fitted-model replacement. That first snapshot preceded a legal issue. First fail-closed drift capture is now proven in `FROZEN_WINDOW_GUARDIAN_EVIDENCE_2026-11-04.md`; READYforecasts and genuine drift labels remain pending.
+
+At11:20UTCthe full guardian→encoderworkflow→success→expected DBattempt chain was proven for Korona603/P-3(run41819915267,DBattempt11:19:48UTC,MODEL_INPUT_INSUFFICIENT). Encoder9/5/0; P9v1 6/0/0,P9v2 5/3/0. Source contracts and historical misses unchanged. Separate localv1captured its8thattempt; drift watcher captured its1stlegal fail-closed attempt with verified backup. No READYdrift forecast/score yet. Evidence:`FROZEN_WINDOW_GUARDIAN_EVIDENCE_2026-11-04.md`.

@@ -1,6 +1,6 @@
 # Daily inventory path — deployment and recovery boundary
 
-Updated **2026-11-03**. Existing attendance lanes remain frozen; production_change=false and live_adjustment=0.
+Updated **2026-11-04**. Existing attendance lanes remain frozen; production_change=false and live_adjustment=0.
 
 ## Verified now
 
@@ -13,8 +13,8 @@ Updated **2026-11-03**. Existing attendance lanes remain frozen; production_chan
 
 | Artifact | Status / scope |
 |---|---|
-| `supabase/sql/daily_inventory_path_shadow_v1.sql` | Migration prepared. Not applied or tested against PostgreSQL. New private model registry, attempts, future-day points, immutable scores; controlled capture/score/feed RPCs, service_role only. It reads public source rows but does not mutate existing attendance evidence. |
-| `supabase/functions/daily_inventory_path_gateway_v1/index.ts` | Source prepared; Node TypeScript syntax check passed, not a Deno typecheck or deployed request. Requires explicit GitHub OIDC validation for this repository, main ref, exact workflow_ref and audience. |
+| `supabase/sql/daily_inventory_path_shadow_v1.sql` | Migration prepared; actual isolated PostgreSQL16contract tests passed in run41811081476. Not applied to the project database. New private model registry, attempts, future-day points, immutable scores; controlled capture/score/feed RPCs, service_role only. It reads public source rows but does not mutate existing attendance evidence. |
+| `supabase/functions/daily_inventory_path_gateway_v1/index.ts` | Source prepared; actual Deno typecheck, scoped-policy/key-transport tests and isolated real-entry-point405/401checks passed in run41811081476. No deployed request or valid live signed OIDC chain is claimed. Requires explicit GitHub OIDC validation for this repository, main ref, exact workflow_ref and audience. |
 | `ml/run_daily_inventory_path_gateway_v1.py` | OIDC-only scheduled runner. No service-role secret in GitHub. New legal attempts are validated by the pinned Python model/ledger before publication; SQL independently checks source identity and cutoff. Unacknowledged writes are retried only inside their original legal window. |
 | `.github/workflows/daily-inventory-path-shadow-v1.yml` | YAML parsed. Job is gated by repository variable `DAILY_INVENTORY_PATH_ENABLED == 'true'`; published to a draft PR branch, not merged to main, enabled or executed. A checked-in file is not scheduled execution. |
 | Panel | Parser/geometry tests pass, actual exported payload validated. Full React typecheck and production build passed in GitHub Actions (run41709931291); local dependency installation remains blocked by npm registry HTTP403. Vercel preview deployed; no browser interaction/E2E validation claimed. |
@@ -30,7 +30,7 @@ The tool returned `status=saved`, `requires_publish=true`. Draft persistence doe
 After the settings become effective:
 
 1. Restore local panel dependency access for interactive development. Hosted GitHub Actions already passed real typecheck/build after a parser literal-type fix; preserve those checks.
-2. Validate/apply the new SQL migration with project migration privileges, preserving the transaction and no old-table mutation boundary. Check that anon/authenticated have no execute or direct private-table access.
+2. Apply the already isolated-tested SQL migration with project migration privileges, preserving the transaction and no old-table mutation boundary. Check that anon/authenticated have no execute or direct private-table access.
 3. Deploy only the new `daily_inventory_path_gateway_v1`. Disable the platform's legacy JWT verification for this function so its own scoped GitHub OIDC verification can run; do not disable the code's issuer/audience/repository/ref/workflow checks.
 4. Keep the repository enable variable unset until deployment and authorization denial tests pass. Review the concrete changes before merging/publishing; no production attendance activation is part of this work.
 5. After enabling the new shadow job, verify a full legal chain: actual workflow run → actual gateway request → successful controlled DB RPC → expected immutable points → DB feed → later genuine observations and scores. A successful no-target run does not prove this chain.
@@ -59,3 +59,9 @@ The panel can overlay later genuine target observations on the unchanged issued 
 Backend draft PR: https://github.com/NiedzielX/beyond/pull/205. Panel draft PR: https://github.com/NiedzielX/BeyondTicketingPanel/pull/8. No merge or production activation was performed. Backend Demand Engine Smoke passed in Actions run41709480252; panel TypeScript and production build passed in run41709931291.
 
 At2026-11-03T20:01:46Z the watcher added Jagiellonia's daily issue: the local stream contains7attempts,4events with predictions,57future-day points,0scores. The verified training manifest contains lead times through28days; longer outputs are explicitly marked as extrapolation, without changing weights or predictions. The served JSON includes model-bound support metadata and genuine-score overlays when outcomes mature.
+
+## 2026-11-04 validation and host recovery
+
+Canonical validation/recovery note:`DAILY_PATH_CLOUD_VALIDATION_2026-11-04.md`. Actual cloud tests cover the migration, synthetic DB→pinned panel parser, Deno types/policy and real local denial paths. The original foreground worker stopped afterNov3 20:54; a detached bounded replacement passedNov4 09:44and09:59cycles with verified backup. Use the reusable launcher/status CLI, not a historical exec-session ID. This remains host-dependent.
+
+The existing frozen encoder main workflow passed a manual health check in run41811629783at10:03UTC, while no checkpoint was open. A separate legal-window guardian is collecting operational state for today's genuine cutoffs. Neither this no-due success nor isolated tests prove the still-pending due-window DB chain. No P9heartbeat DONE claim follows.

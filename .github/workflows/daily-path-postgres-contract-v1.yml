@@ -1,0 +1,142 @@
+name: Daily Path PostgreSQL Contract
+
+on:
+  push:
+    paths:
+      - 'supabase/sql/daily_inventory_path_shadow_v1.sql'
+      - 'supabase/sql/daily_inventory_source_state_as_known_v2.sql'
+      - 'tests/postgres/test_daily_inventory_path_contract_v1.py'
+      - 'tests/postgres/test_daily_inventory_source_state_v2.py'
+      - 'ml/daily_inventory_source_state_features_v2.py'
+      - 'ml/test_daily_inventory_source_state_features_v2.py'
+      - 'supabase/functions/daily_inventory_path_gateway_v1/**'
+      - 'ml/start_daily_inventory_path_watcher_v1.py'
+      - 'ml/test_start_daily_inventory_path_watcher_v1.py'
+      - 'ml/artifacts/daily_inventory_path_v1.json'
+      - '.github/workflows/daily-path-postgres-contract-v1.yml'
+  pull_request:
+    paths:
+      - 'supabase/sql/daily_inventory_path_shadow_v1.sql'
+      - 'supabase/sql/daily_inventory_source_state_as_known_v2.sql'
+      - 'tests/postgres/test_daily_inventory_path_contract_v1.py'
+      - 'tests/postgres/test_daily_inventory_source_state_v2.py'
+      - 'ml/daily_inventory_source_state_features_v2.py'
+      - 'ml/test_daily_inventory_source_state_features_v2.py'
+      - 'supabase/functions/daily_inventory_path_gateway_v1/**'
+      - 'ml/start_daily_inventory_path_watcher_v1.py'
+      - 'ml/test_start_daily_inventory_path_watcher_v1.py'
+      - 'ml/artifacts/daily_inventory_path_v1.json'
+      - '.github/workflows/daily-path-postgres-contract-v1.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  isolated-postgres:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: daily_path_contract
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d daily_path_contract"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install isolated DB and feature adapter dependencies
+        # Importing the existing demand_engine package also loads calibration (NumPy).
+        run: python -m pip install 'psycopg[binary]==3.2.13' numpy==2.3.5
+      - name: Apply actual migration and test synthetic contracts
+        env:
+          DAILY_PATH_TEST_DSN: postgresql://postgres:postgres@127.0.0.1:5432/daily_path_contract
+          DAILY_PATH_TEST_FEED_DIR: ${{ runner.temp }}/daily-path-feeds
+        run: |
+          python - <<'PY'
+          import subprocess
+          import sys
+          result = subprocess.run([
+              sys.executable, '-m', 'unittest', 'discover', '-s', 'tests/postgres',
+              '-p', 'test_daily_inventory_*v*.py', '-v',
+          ], stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
+          print(result.stdout, flush=True)
+          if result.returncode:
+              # Only synthetic fixture diagnostics; also visible through the Checks API.
+              detail = result.stdout[-16000:].replace('%', '%25').replace('\r', '%0D').replace('\n', '%0A')
+              print('::error title=Isolated PostgreSQL contract failed::' + detail, flush=True)
+          raise SystemExit(result.returncode)
+          PY
+      - name: Validate source-state features and actual SQL response
+        env:
+          DAILY_PATH_TEST_FEED_DIR: ${{ runner.temp }}/daily-path-feeds
+        run: |
+          python - <<'PY'
+          import os
+          from pathlib import Path
+          import subprocess
+          import sys
+          directory = Path(os.environ['DAILY_PATH_TEST_FEED_DIR'])
+          commands = [
+              [sys.executable, '-m', 'unittest', 'ml.test_daily_inventory_source_state_features_v2', '-v'],
+              [sys.executable, '-m', 'ml.daily_inventory_source_state_features_v2',
+               '--input', str(directory/'source-state.json'), '--output', str(directory/'source-state-features.json')],
+          ]
+          for command in commands:
+              result = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
+              print(result.stdout, flush=True)
+              if result.returncode:
+                  detail = result.stdout[-16000:].replace('%', '%25').replace('\r', '%0D').replace('\n', '%0A')
+                  print('::error title=Source-state feature integration failed::' + detail, flush=True)
+                  raise SystemExit(result.returncode)
+          PY
+      - name: Checkout exact companion panel parser
+        uses: actions/checkout@v4
+        with:
+          repository: NiedzielX/BeyondTicketingPanel
+          ref: 3983c10403c32892d66e7c51b62107b1e2272f4f
+          path: panel-contract
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Parse actual synthetic DB feeds with the panel contract
+        env:
+          DAILY_PATH_TEST_FEED_DIR: ${{ runner.temp }}/daily-path-feeds
+        run: |
+          node --experimental-strip-types --input-type=module <<'JS'
+          import assert from 'node:assert/strict';
+          import { readFileSync } from 'node:fs';
+          import { parseDailyInventoryPathFeed } from './panel-contract/src/services/dailyInventoryPathService.ts';
+          const read = (name) => parseDailyInventoryPathFeed(JSON.parse(readFileSync(`${process.env.DAILY_PATH_TEST_FEED_DIR}/${name}`, 'utf8')));
+          const ready = read('ready.json');
+          assert.equal(ready.events[0].points.length, 2);
+          assert.ok(ready.events[0].points.every((point) => point.score == null));
+          const scored = read('scored.json');
+          assert.equal(scored.events[0].observations.length, 4);
+          assert.equal(scored.events[0].points[0].score.target_available_total, 0);
+          assert.equal(scored.events[0].points[0].score.candidate_abs_error, 20);
+          assert.equal(scored.events[0].points[0].score.baseline_abs_error, 50);
+          console.log('Actual synthetic PostgreSQL ready/scored feeds satisfy the pinned panel parser.');
+          JS
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+      - name: Typecheck prepared Edge gateway without deploying
+        run: deno check supabase/functions/daily_inventory_path_gateway_v1/index.ts
+      - name: Verify scoped gateway policy and Supabase key transport
+        run: deno test supabase/functions/daily_inventory_path_gateway_v1/policy_test.ts
+      - name: Verify real gateway rejects unauthorized local HTTP requests
+        run: >-
+          deno test --allow-run --allow-env=HOME,DENO_DIR --allow-net=127.0.0.1:8000
+          supabase/functions/daily_inventory_path_gateway_v1/http_test.ts

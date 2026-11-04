@@ -1,6 +1,6 @@
 # Beyond Ticketing — Current MAE Execution Plan
 
-Last updated: **2026-11-03**
+Last updated: **2026-11-04**
 
 Status: **CURRENT SOURCE OF TRUTH FOR EXECUTION CONTRACTS**
 
@@ -18,7 +18,7 @@ The latest user instruction requires **genuine observed prefix → predictions f
 
 Implementation: [`DAILY_INVENTORY_PATH_IMPLEMENTATION_V1.md`](DAILY_INVENTORY_PATH_IMPLEMENTATION_V1.md). Deployment/recovery: [`DAILY_INVENTORY_PATH_DEPLOYMENT_V1.md`](DAILY_INVENTORY_PATH_DEPLOYMENT_V1.md). Formal lane precommit: [`DAILY_INVENTORY_PATH_PRECOMMIT_V1.md`](DAILY_INVENTORY_PATH_PRECOMMIT_V1.md).
 
-Recorded at 20:01 UTC: 7 local immutable attempts / 57 future-day points / 0 scores, plus verified private Supabase Storage backup and full restore. A bounded host-dependent watcher runs through2026-11-04T17:15Z; its status is `/workspace/ops-runtime/2026-11-03-daily-path/latest-cycle.json`. Inspect it and `watcher.pid` before starting another process. First targets mature2026-11-04T17:00Z. Local/cloud inference is verified; new SQL/gateway/GitHub schedule remain prepared but not deployed/enabled. Panel parser/geometry are verified; full TypeScript check and production build passed in GitHub Actions on the companion panel PR. Local npm access remains blocked. Missing network/management-token requirements are saved as an environment draft, not applied. No private transaction access, production activation or old-model retuning is required.
+Current operational counters, watcher health and deadlines belong in `NEXT_SESSION_HANDOFF.md` and the live runtime status command. Verified milestones:one frozen daily-path model; genuine post-freeze local captures and private backup/restore; hosted panel TypeScript/build; isolated PostgreSQL16persistence and typed panel-feed contract tests(run41810511980). These test milestones do not prove the undeployed SQL/Edge/scheduled workflow in live Supabase. No private partner transactions, production activation or old-model retuning is required.
 
 The attendance history read on2026-11-03 ended at2026-10-25. The six tracked fixtures onOctober30–November2 had no confirmed outcomes in `ticket_event_outcomes`; zero attendance scores are therefore not evidence of zero error. Keep this source-ingestion blocker separate from daily inventory-target scoring.
 
@@ -455,6 +455,8 @@ This creates a new research baseline version; it does not rewrite the frozen pro
 
 ## MAE-03 — Context residual model
 
+Separate new-information preparation for the public-inventory lane: `DAILY_INVENTORY_SOURCE_STATE_CONTRACT_V2.md`. A read-only source receipt/active/visible-state RPC has passed isolated PostgreSQL tests; its fixed feature adapter and actual SQL→feature-row conversion passed hosted run41816696989(20SQL+13adaptertests). It is not wired to frozen v1 and does not authorize a fit. Any benefit needs a separate experimental precommit and genuine future evidence after project deployment.
+
 2026-11-03 audit complete:121stored snapshots,70prospective-window-valid,11distinct events with outcome presence; all37numeric source/baseline/checkpoint groups fail support or grouped-variance screening. No attendance values requested, no model fit. Result:`MAE03_CONTEXT_EVIDENCE_AUDIT_RESULT_V1.md`. Existing Hype gates and P4a9-event gate remain unchanged. Continue forward collection; use independent time to validate prepared daily-path SQL in a disposable database.
 
 Predict `actual - structural forecast` using separately tested PIT-safe context families such as standings/form, opponent strength, future-fixture context and odds. Do not add squad/absence features without a trustworthy timestamped source.
@@ -520,7 +522,7 @@ Do not use narrative memory as the experiment registry.
 6. Keep frozen SSP encoder, frozen trajectory head and frozen P9 policies unchanged while their prospective evidence accumulates.
 7. Fix collection only when genuine source semantics are preserved.
 8. Score frozen prospective rows only after genuine confirmed attendance outcomes.
-9. Outside imminent evidence protection, retain MAE-03 as DATA_BOUND after its completed audit; continue genuine collection and isolated daily-path SQL validation; follow the v6 MAE programme.
+9. Outside imminent evidence protection, retain MAE-03 as DATA_BOUND after its completed audit; continue genuine collection; isolated daily-path SQL/feature validation is now complete. Protect new v1/drift evidence and follow the v6 MAE programme.
 10. Do not reactively retune frozen candidates against the first future scores.
 11. Do not lower or optimize toward the 550-seat business scale after seeing outcomes.
 12. Production remains separately review-gated and OFF.
@@ -544,3 +546,15 @@ Question:
 > **Which current error segment contributes most to MAE, and what is the smallest new PIT-safe hypothesis that can reduce that error on the same independent events?**
 
 This work starts/continues now in separately versioned research lanes. It does not wait for the frozen prospective candidate to finish collecting.
+
+## Daily-path research refinement —2026-11-04, before first targets
+
+`DAILY_PATH_COEFFICIENT_AUDIT_2026-11-04.md`shows that the frozen artifact has0nonzero relative-value-history terms despite receiving full prefixes. The issued forecasts reconstruct exactly from latest/scale and negative global/collection-pattern terms. This is an identified capability limitation, not measured forecast error. Keep frozenv1and the existing persistence evaluation.
+
+The next separate daily-path mechanism question may proceed under a new precommit:does a restrained comparator using genuine prefix changes beat persistence on new targets, without treating collection density as demand? Define an explicit anchor/freshness rule, immutable prospective persistence, paired event-balanced/per-lead scoring and future review cohort before fitting/issuing. Do not select an alpha/curve from current pictures or claim the old16training events became fresh evidence. Source-statev2is a separate prepared information contract, still undeployed; no frozen-frame rewiring. Attendance MAE-04queue and frozen550-seat contract remain separate.
+
+Execution update11:06UTC:the authorized separate mechanism question is now implemented as a parameter-free24-hour drift comparator. See`DAILY_INVENTORY_DRIFT_COMPARATOR_PRECOMMIT_V1.md`and frozen`artifacts/daily_inventory_drift_comparator_v1.json`(SHA332f6fd37bc2a09ce665668ef3c9c23d8d34ec3613f18435ec729d95d3bb43cf). Thirteen contract/lifecycle tests passed in hosted run41818376777. Actual no-due cycle and private backup verified; new prospective collection is bounded/host-dependent. No old issue was reconstructed, no learner fitted, noMAEimprovement established. Protect both existing lanes and the new frozen rule while collecting future paired evidence.
+
+## User priority: existing C1 live toward1,200MAE —2026-11-04
+
+Specific plan:`C1_LIVE_MAE_1200_PLAN_V1.md`. The existing11scored C1events have latest policyMAE4121.45; four events contribute83.45%of total error. An outcome-aware ideal selection between current prior/raw predictions would still have4103.05MAE, so gate tuning alone cannot resolve these cases. Next authorized research task:matched-cohort input/label/anchor audit and comparison against the existing frozen D2 residual/P2, before choosing one new-information challenger. Preservev8and all old evidence; the11events are exposed diagnostics. No new model/parameter selection is authorized under an old frozen version. The1,200goal and suggested30event/8clubnew-candidate review are research-plan proposals, not changes to any existing production/business gate or evidence threshold.

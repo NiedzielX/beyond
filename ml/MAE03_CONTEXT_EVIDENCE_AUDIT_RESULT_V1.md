@@ -1,6 +1,6 @@
 # MAE-03 — stored context evidence audit
 
-Date:2026-11-03. Runner:`python -m ml.mae03_context_evidence_audit_v1 --output /private/runtime/new-directory`. Specification:`.ai/specs/2026-11-03-context-evidence-audit.md`.
+Date:2026-11-03. Runner:`python -m ml.mae03_context_evidence_audit_v1 --output /private/runtime/new-directory`. Specification:`.ai/specs/implemented/2026-11-03-context-evidence-audit.md`.
 
 ## Current evidence
 
