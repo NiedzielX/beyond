@@ -1,8 +1,8 @@
 # Public-inventory source state as known v2
 
-Date: 2026-11-04. Status: prepared; RPC isolated validation passed, feature integration pending. This is new source-information infrastructure, not a new forecast or a change to frozen daily/attendance lanes.
+Date: 2026-11-04. Status: prepared; isolated RPC→feature integration passed; project deployment blocked. This is new source-information infrastructure, not a new forecast or a change to frozen daily/attendance lanes.
 
-The RPC alone passed 11 new isolated PostgreSQL tests alongside 9 existing persistence contracts in run 41814622537. The separate Python feature adapter and actual SQL→feature-row integration are now being validated; no live function has been applied.
+The RPC alone passed 11 new isolated PostgreSQL tests alongside 9 existing persistence contracts in run 41814622537. The complete chain passed in hosted run41816696989:20PostgreSQLcontracts,13feature-adaptertests, actual SQL→feature-row conversion, pinned DB→panel parser, Deno typecheck/policy/HTTPchecks. No live function has been applied. Earlier adapter integration failed due to absent NumPy in the isolated job; the existing pinned dependency was added, with no SQL/model semantic change.
 
 ## Why
 

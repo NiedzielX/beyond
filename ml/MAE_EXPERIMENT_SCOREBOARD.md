@@ -169,3 +169,11 @@ This section uses **future public inventory**, not attendance. Never pool its MA
 - Existing stored snapshots121;70prospective-window-valid,51retrospective excluded.62baseline-timed rows;11distinct paired events across checkpoints.37isolated feature/source/baseline/checkpoint groups;35insufficient event support,1constant,1insufficient grouped variance.
 - NGrams media attentionT-24h:10events /10clubs /1distinct value(0). NGrams accelerationT-24h:4events /4clubs /3values. T-6hmedia has only1nonzero event and cannot supply every held-out event/club training fold; no checkpoint rescue.
 - Decision:NO_NEW_CONTEXT_FIT. Existing Hype gates reconfirmed; no new MAE or model promotion claim. Existing P4a9-event gate unchanged(current5). Continue genuine collection and separate daily-path SQL validation.
+
+## Daily-path preparation / diagnostic registry —2026-11-04
+
+These are not new MAE challenger results.
+
+- Prefix-regime diagnosticv1:8hosted tests passed(run41816697000). Full eligible primary evaluator unchanged; zero-only, constant-positive and varying groups are descriptive, with reconciled primary contributions and overlapping-vintage event warning. Actual0scores means allMAEsnull.
+- Exact coefficient auditv1:57issued points reconstructed within9.10e-13places; all120relative-value-history weights0. No target values, refit or accuracy evaluation. See`DAILY_PATH_COEFFICIENT_AUDIT_2026-11-04.md`. Decision:retain frozenv1evidence, explicitly qualify its learned-mechanism limitation; next separately precommit a restrained genuine-prefix-change comparator rather than tunev1.
+- Source-stateinformationv2:isolatedSQL→featurecontract passed(run41816696989;20SQL+13adaptertests); seven fixed fields/masks, known-at guards, zero/hidden separation and exact input whitelist. No learner orMAE, no live deployment. Decision:PREPARED_INFORMATION_CONTRACT; admin deployment binding remains the blocker.

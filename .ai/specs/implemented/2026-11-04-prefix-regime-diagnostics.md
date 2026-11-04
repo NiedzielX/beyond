@@ -1,5 +1,7 @@
 # Descriptive daily-path prefix diagnostics
 
+Status:complete. Eight tests passed locally and in hosted Demand Engine run41816697000. Actual private10:44UTCread-only report retains57predictions /0scored events and null primary/conditional MAE. No prediction or metric gate changed.
+
 Define before future target labels mature. Current Widzew prefixes are all0while other source prefixes vary; a low aggregate error on zero-only paths must not be mistaken for forecasting skill.
 
 Add a separate read-only diagnostic over existing immutable attempts/points/scores. Keep the original evaluator and full eligible cohort as primary. Partition issued prefixes into all-zero, constant-positive and varying groups without changing any prediction, target, support or promotion gate. Missing/failed input is not zero. Show mature/pending/unscored coverage, conditional metrics and contributions that reconcile to the unchanged full event-balanced MAE. One event may cross groups across vintages; counts must not be added as independent events.

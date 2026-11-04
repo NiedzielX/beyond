@@ -6,5 +6,6 @@ Read after the canonical ML state files and before implementation. Add or update
 - [Capacity weighting rejected](lessons/2026-11-03-seat-weighting-rejected.md): mathematically aligned training loss can generalize worse; preserve the rejection, Pre-Live v3 anchor and earlier context results.
 - [Context variance and lineage](lessons/2026-11-03-context-variance-and-lineage.md): large record counts can still contain no usable signal; preserve grouped variance, source identity and actual ingestion-time limitations.
 - [Output shape is not accuracy](lessons/2026-11-04-output-shape-is-not-accuracy.md): actual near-flat prefixes can produce steep frozen forecasts; compare future errors honestly and preserve the issued baseline and difficult cases.
+- [Feature capability is not learned signal](lessons/2026-11-04-feature-capability-is-not-learned-signal.md): all relative-value history coefficients in daily v1 are zero; exact decomposition explains the decline without proving error or authorizing a frozen-model repair.
 
 This index is durable memory, not a substitute for the authoritative execution plan or current handoff. No secrets or private source exports belong here.

@@ -455,7 +455,7 @@ This creates a new research baseline version; it does not rewrite the frozen pro
 
 ## MAE-03 — Context residual model
 
-Separate new-information preparation for the public-inventory lane: `DAILY_INVENTORY_SOURCE_STATE_CONTRACT_V2.md`. A read-only source receipt/active/visible-state RPC has passed isolated PostgreSQL tests; its fixed feature adapter is being integrated/tested. It is not wired to frozen v1 and does not authorize a fit. Any benefit needs a separate experimental precommit and genuine future evidence after project deployment.
+Separate new-information preparation for the public-inventory lane: `DAILY_INVENTORY_SOURCE_STATE_CONTRACT_V2.md`. A read-only source receipt/active/visible-state RPC has passed isolated PostgreSQL tests; its fixed feature adapter and actual SQL→feature-row conversion passed hosted run41816696989(20SQL+13adaptertests). It is not wired to frozen v1 and does not authorize a fit. Any benefit needs a separate experimental precommit and genuine future evidence after project deployment.
 
 2026-11-03 audit complete:121stored snapshots,70prospective-window-valid,11distinct events with outcome presence; all37numeric source/baseline/checkpoint groups fail support or grouped-variance screening. No attendance values requested, no model fit. Result:`MAE03_CONTEXT_EVIDENCE_AUDIT_RESULT_V1.md`. Existing Hype gates and P4a9-event gate remain unchanged. Continue forward collection; use independent time to validate prepared daily-path SQL in a disposable database.
 
@@ -546,3 +546,9 @@ Question:
 > **Which current error segment contributes most to MAE, and what is the smallest new PIT-safe hypothesis that can reduce that error on the same independent events?**
 
 This work starts/continues now in separately versioned research lanes. It does not wait for the frozen prospective candidate to finish collecting.
+
+## Daily-path research refinement —2026-11-04, before first targets
+
+`DAILY_PATH_COEFFICIENT_AUDIT_2026-11-04.md`shows that the frozen artifact has0nonzero relative-value-history terms despite receiving full prefixes. The issued forecasts reconstruct exactly from latest/scale and negative global/collection-pattern terms. This is an identified capability limitation, not measured forecast error. Keep frozenv1and the existing persistence evaluation.
+
+The next separate daily-path mechanism question may proceed under a new precommit:does a restrained comparator using genuine prefix changes beat persistence on new targets, without treating collection density as demand? Define an explicit anchor/freshness rule, immutable prospective persistence, paired event-balanced/per-lead scoring and future review cohort before fitting/issuing. Do not select an alpha/curve from current pictures or claim the old16training events became fresh evidence. Source-statev2is a separate prepared information contract, still undeployed; no frozen-frame rewiring. Attendance MAE-04queue and frozen550-seat contract remain separate.
