@@ -2,6 +2,8 @@
 
 Actual read: **2026-11-05 10:57 UTC**. Package `c1-shadow-v8-frozen-2026-10-16-n9`. All17forecast events are scored; no pending attendance label in this existing cohort. Read-only diagnostic of already exposed outcomes, no model replay/fit or parameter selection. All six aggregate latest/window MAEs reconcile to the current persisted status; canonical event identities, source provenance, confirmation chronology, selected outputs and stored absolute errors are checked.
 
+Chronology checks use the persisted source`latest_as_of_at`; the public event view does not expose the original forecast insertion time. This report does not independently re-establish issue-before-outcome evidence or historical input publication times. It diagnoses the stored score cohort and does not turn it into new prospective validation.
+
 | Persisted expert | Latest event MAE | Event-balanced window MAE | Signed bias | P90 AE |
 |---|---:|---:|---:|---:|
 | Structural prior |3131.16|3131.16|−1487.37|7364.00|

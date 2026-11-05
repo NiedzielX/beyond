@@ -17,3 +17,9 @@ Further operation and verification evidence will be appended as executed.
 Verification:263registered root workflow tests passed across29modules; existing median/Ridge/original frozen artifact and source checks pass. Dedicated bounded processPID312343will inspect actual Korona603T48at11:15UTCand dispatch the existing main heartbeat only if still unrecorded, with an11:30hard dispatch deadline. A dispatch receipt alone is not workflow or DB proof; PR212remains unmerged.
 
 Private diagnostic recovery verified:6source/report files,30885compressed bytes, SHA279434057bf5c02b2a411e6bcda0a6037f99fa8c6167c7619c841bd4dff16bd6, namespace`nov5-ml-diagnostics-v1/`. Actual private upload/read-back and decompression hashes verified. No raw DB rows enterGit.
+
+Publishedaffe871as draft[PR215](https://github.com/NiedzielX/beyond/pull/215), stacked onPR214. Hosted validation/contracts and one test job succeeded; remaining test job was still running11:08UTC. Private read-only paired monitorPID313213has an actual11:06:36verified cycle, source/artifact hash lock,300secondinterval andNov6 10:30UTCdeadline. It writes reports only, never either source ledger or DB; this is bounded inference reporting, not autonomous coding.
+
+11:06:35UTCbrowser-publishable-roleHTTP200confirms the panel's existingC1scoreendpointreturns17/MAE3248.807865/prior3131.157876. Production deployment unchanged. Direct primary/Previewsite retrieval still fails at the host network boundary, so no current renderedDOMclaim. PR8previousPreview remains distinct from the undeployed new dailyfeed.
+
+Scope clarification: current C1source view exposes latest_as_of_at, not actual original insertion time. The new report explicitly retains persisted_issue_time_independently_verified=false; it diagnoses old scores and does not certify new prospective evidence.

@@ -156,6 +156,7 @@ def decompose(events, status, outcomes, metadata, checked_at):
             'under_10000' if r['actual_attendance'] < 10000 else '10000_to_19999' if r['actual_attendance'] < 20000 else '20000_plus'),
         'by_exposed_cohort': group(lambda r: 'earlier_11' if r['ticket_event_id'] in COHORT else 'subsequently_scored'),
         'ranked_events_PRIVATE': ranked, 'models_fitted': 0, 'parameters_selected': False,
+        'persisted_issue_time_independently_verified': False,
         'historical_source_publication_times_reverified': False,
         'new_accuracy_improvement_claimed': False, 'production_change': False, 'live_adjustment': 0}
 
