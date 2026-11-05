@@ -1,0 +1,11 @@
+{
+  "current/events.json": "bb34ef2749453001d0128aded42998d6e7f4cb6d9b1763dc070c57e4a3f258d0",
+  "current/outcomes.json": "44f7a4bffb79ebc481d9594da3a5c834b7b954a77fc5bd4b4b50e0ce86e86d4d",
+  "matched/matched-final24.json": "b338bd2b65f29f4b671e602c3ddb55430723b6c898675c28d28433bf4312b057",
+  "matched/resolved-priors.json": "2813900e1c5dd4a1beea6aa89edd3301c21a5db572f529f43b966fc9a9ebdf8a",
+  "training/canonical-fixtures.json": "a02bb607a074d566e18247fe8d4be6010f3b518d2e4ed58c256948022ae509db",
+  "training/final-validation-receipt.json": "63238c38aa64f47c5a15de32e2a82e7813b687872f6376d06fcdb1e783da953f",
+  "training/manifest.json": "426bcceedb871adf1044160c13cfc956e83008bb6f201f3e80c2c75519cc7ae4",
+  "training/sources.json": "29f878368408f1852cbfe2fb25173461184a9fac83fc7cda371813fe9f0c822b",
+  "training/training.csv": "0b8eb22c767d16e07b84b59eaa73aeff5ca55b11a220f4939dbb2ae2aaa9d778"
+}

@@ -23,3 +23,5 @@ This index is durable memory, not a substitute for the authoritative execution p
 - [Current cohorts and paired daily vintages](lessons/2026-11-05-current-cohorts-and-paired-paths.md):17-event C1reconciliation retains earlier failure concentration; different daily issue cohorts cannot supply a paired drift comparison, and expired workers require verified renewal.
 
 - [Training expansion and retry proof](lessons/2026-11-05-training-expansion-and-retry-proof.md): support26 keeps old events exposed, exact input/model replay detects substituted forecasts, and an idempotent hosted retry does not create fresh DB evidence.
+
+- [Fold preprocessing and dashboard clocks](lessons/2026-11-05-fold-preprocessing-and-dashboard-time.md): training-only fold representation and actual label availability; exposed sparse-context policy gains; fresh projections can retain elapsed unresolved candidates.

@@ -1,5 +1,23 @@
 # Beyond — operational handoff
 
+## Panel monitoring correction deployed — November5 15:52UTC verification
+
+Narrow frontendPR9normallymerged to panelmaincfb3d675d7fbb2cd4c6fc008f73c019ab33beb40; VercelProduction7578292659SUCCESS15:50:46UTC. Final-head and main TypeScript/build/Chromium checks succeeded. This release contains only ingestionmonitoring/test changes, not PR8daily-feed/C1cardwork. Exact reviewed tree/integrity verified. Current browser-role133rows classified by shipped code as24current/2elapsedunresolved, preserving all source data. Direct productionDOMwas not inspected fromthishost(networkblocked); successful productionartifactdeployment and actual component tests are independently recorded.
+
+Root cause:DBprojectionfreshbutcandidatebranchesretainoldstatuses; UIpreviouslyfilteredonlyCOMPLETED_TRACKEDandfetchedonce. Newcurrent/historypartition, minute/focus/manualrefresh, lastgooddata/errorwarning and separateprojection/observationtimescorrect presentationwithoutsourcepromotion/backfill. Evidence:`PANEL_INGESTION_FRESHNESS_RESULT_2026-11-05.md`;31fileprivatebackup135051bytes/SHAad77322aa3e78d3b9d9b975cb41a2e75c64332baa5e3842460d843654eb0eb48independentlyrestored.
+
+HistoricalrecipebacktestiscompleteinPR219withno demonstratedgain; exact frozen26futureMAEstillnull. ActualC1v8read15:52retains17/3248.807865/adjustment0; support26collector, pairedmonitor andP9guardianlivewithsuccessfulrecentcycles. NextfreshP9proof449/T48opens16:30UTC(17:30Warsaw); firstnewC1final24/sharedinventorytargets17:00UTC(18:00Warsaw). Preserve gates, no historicalmissbackfill. Manageddailyfeed/known-atservingstillundeployed/admin-bound; its blocker did not apply to this independentread-onlyUIrelease.
+
+## Historical replay executed — November5 15:36UTC
+
+User-requested fixed experiment complete:`C1_HISTORICAL_REPLAY_RESULT_V1.md`. All17actual scored fixtures/50prefixes, whole-fixture exclusion and fresh fold preprocessing. Chronological training9–20earlier label-known fixtures:rawmedian4558.29, median-policy3107.62, prior3131.16, persistedC1policy3248.81. PolicyDelta−141.19CI[−728.12,304.54]; first11policy4278.34worse than4121.45, later6single-prefixcontextfalls back toprior961.29. No full-history live-gain claim. New6labels were not known before any old cutoff, so expanded/base20chronological fits are identical.
+
+Explicit non-temporal leave-one-fixture-out rawmedian-expanded3318.41versusbase20restricted2887.33,Delta+431.08CI[−416.74,1431.68]. All outcomes exposed; inherited historical publication-time limits remain. No demonstrated gain,1200unproven,no tuning/promotion. Actual frozen26was neither refitted nor scored on training fixtures; future collector unchanged.311registeredroot+189DemandEnginechecks pass; full discovery's7unrelatedCatBoostimporterrorsremain documented. Verified private independent recovery16files/185950bytes. Earlier before-fit section is dated history.
+
+## Authorized historical recipe replay — November5, before execution
+
+The user requested historical testing of the new median method. Separate precommit:`C1_HISTORICAL_REPLAY_PRECOMMIT_V1.md`. Evaluate17already-exposed scored C1fixtures/50actual-time reconstructed prefixes, with fresh fold-local preprocessing and whole-fixture exclusion. Fixed chronological training uses actual label knowledge and earlier fixtures; separate leave-one-fixture-out allows later data only as an explicitly non-temporal diagnostic. All26frozen training events remain exposed; no frozen26in-sample score or live model/source/gate change. No parameter search, retrospective prospective write, or production activation. SDD/run:`.ai/specs/implemented/2026-11-05-c1-historical-replay.md` /`.ai/runs/2026-11-05-c1-historical-replay.md`. At that before-run checkpoint, results were pending. The completed execution section above supersedes that status.
+
 Updated **2026-11-05 12:28 UTC**. Production remains **OFF**: `production_change=false`, `live_adjustment=0`.
 
 Read strategy and state first: `MAE_RESEARCH_ROADMAP_V6.md` → `EXECUTION_PLAN_CURRENT.md` → `PROGRESS_TRACKING.md` → `TRAJECTORY_FORECASTING_PLAN_V1.md` → this handoff. This file supplies operational state; it does not define a competing MAE strategy.

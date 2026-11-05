@@ -231,3 +231,7 @@ Input integrity work, not a new learner/MAE result: exact-count raw export, per-
 ## Outcome coverage completed —18:32UTC
 
 Current originalC1v8:17scored of17forecast events,101rows; priorMAE3131.157876, policy3248.807865, raw6241.964642, window policy3913.558409. New17thlabel3396is composite-verified against exact official fixture identity and primary attendance; no schedule shift. Old11/16event metrics are preserved; this is cohort growth, not model improvement. Frozen encoder now4events,1623.917287vs1051.043479; P9v2 unchanged2events,1984.717101vs1248.354372. No gates opened or model/parameter changes. Full evidence:`OUTCOME445_COMPOSITE_VERIFICATION_RESULT_V1.md`.
+
+## C1 historical recipe replay v1 —2026-11-05
+
+Exposed diagnostic17fixtures/12clubs,50prefixes; fresh fold preprocessing, chronological labelknowledge and separate non-temporalLOEO. Chronologicalmedian-policy3107.62vsprior3131.16,Delta−23.54; versusC1policy3248.81,Delta−141.19CI[−728.12,304.54]. Rawmedian4558.29; non-temporalrawexpanded3318.41vsrestricted2887.33,Delta+431.08CI[−416.74,1431.68]. No new6training information was historically available. Sparse later6policy context and unverified historical source publication times prevent a live26gainclaim. **DIAGNOSTIC_COMPLETE_NO_DEMONSTRATED_GAIN_NO_PROMOTION**. Full guardrails:`C1_HISTORICAL_REPLAY_RESULT_V1.md`. Existingfrozen26futurestreamunchanged.

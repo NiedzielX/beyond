@@ -206,6 +206,9 @@ jobs:
       - name: Verify exact source exports and separate frozen predictor integration
         run: python -m unittest ml.test_structural_known_at_inputs_v1 ml.test_archive_structural_known_at_inputs_v1 ml.test_select_structural_known_at_snapshot_v1 -v
 
+      - name: Verify historical recipe fold isolation and chronological label knowledge
+        run: python -m unittest ml.test_c1_historical_replay_v1 -v
+
       - name: Verify seat-median freeze when present without fitting
         run: |
           python - <<'PY'
