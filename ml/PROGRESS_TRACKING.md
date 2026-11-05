@@ -1,5 +1,9 @@
 # Beyond Ticketing — ML Progress Tracking
 
+## Authorized historical recipe replay — November5, before execution
+
+The user requested historical testing of the new median method. Separate precommit:`C1_HISTORICAL_REPLAY_PRECOMMIT_V1.md`. Evaluate17already-exposed scored C1fixtures/50actual-time reconstructed prefixes, with fresh fold-local preprocessing and whole-fixture exclusion. Fixed chronological training uses actual label knowledge and earlier fixtures; separate leave-one-fixture-out allows later data only as an explicitly non-temporal diagnostic. All26frozen training events remain exposed; no frozen26in-sample score or live model/source/gate change. No parameter search, retrospective prospective write, or production activation. SDD/run:`.ai/specs/2026-11-05-c1-historical-replay.md` /`.ai/runs/2026-11-05-c1-historical-replay.md`. Source publication precedes real fitting; results pending.
+
 Last updated: **2026-11-05**
 
 Status: **CANONICAL TRACKING SNAPSHOT**

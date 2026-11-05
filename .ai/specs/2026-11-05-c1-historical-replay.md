@@ -1,0 +1,7 @@
+# Historical C1 recipe replay, separate from frozen support26
+
+User requested a historical backtest after being told that all26frozen training fixtures are exposed. Authorization is for a separate diagnostic, not fitting/scoring the frozen26artifact on its training set. Canonical strategy:`ml/MAE_RESEARCH_ROADMAP_V6.md`; frozen contract:`ml/C1_SUPPORT26_PRECOMMIT_V1.md` remains unchanged.
+
+Before any outcome-dependent run, save `ml/C1_HISTORICAL_REPLAY_PRECOMMIT_V1.md` and source hashes. Evaluate historical persisted C1times on17scored fixtures with whole-fixture exclusion and separately chronological training/actual label knowledge. Refit preprocessing inside every fold. Fixed learner/settings only; no search, no favorable subset selection, no production/DB forecast writes. Preserve historical reconstruction limitations and actual missing prefixes.
+
+DONE: checked input identities and original raw numerical parity; isolated folds and leakage tests; completed fixed historical replay with same-cohort prior/persisted C1baselines, event-balanced latest/window metrics, uncertainty, horizon/club/sample-coverage reporting; explicit distinction from current frozen26accuracy and genuine live scores. Private evidence backup/independent restore; canonical plan/progress/handoff/scoreboard and lessons updated. Keep0/falseproduction defaults, old model/source hashes, streams, gates and misses unchanged.

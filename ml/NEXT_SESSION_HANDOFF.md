@@ -1,5 +1,9 @@
 # Beyond — operational handoff
 
+## Authorized historical recipe replay — November5, before execution
+
+The user requested historical testing of the new median method. Separate precommit:`C1_HISTORICAL_REPLAY_PRECOMMIT_V1.md`. Evaluate17already-exposed scored C1fixtures/50actual-time reconstructed prefixes, with fresh fold-local preprocessing and whole-fixture exclusion. Fixed chronological training uses actual label knowledge and earlier fixtures; separate leave-one-fixture-out allows later data only as an explicitly non-temporal diagnostic. All26frozen training events remain exposed; no frozen26in-sample score or live model/source/gate change. No parameter search, retrospective prospective write, or production activation. SDD/run:`.ai/specs/2026-11-05-c1-historical-replay.md` /`.ai/runs/2026-11-05-c1-historical-replay.md`. Source publication precedes real fitting; results pending.
+
 Updated **2026-11-05 12:28 UTC**. Production remains **OFF**: `production_change=false`, `live_adjustment=0`.
 
 Read strategy and state first: `MAE_RESEARCH_ROADMAP_V6.md` → `EXECUTION_PLAN_CURRENT.md` → `PROGRESS_TRACKING.md` → `TRAJECTORY_FORECASTING_PLAN_V1.md` → this handoff. This file supplies operational state; it does not define a competing MAE strategy.
