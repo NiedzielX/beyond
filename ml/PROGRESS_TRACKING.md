@@ -12,6 +12,12 @@ Production: `live_adjustment = 0`
 
 Important: operational counters below are dated snapshots unless explicitly refreshed from live DB.
 
+## Support26 median frozen — November5 11:58UTC
+
+User-authorized data-only20→26support comparison implemented and fitted once after source/precommit publication1bdfc8f. Same frozen median20 preprocessor,30features, learner parameters, weights and policy. Estimator29839c647277d91b333d5a23d7f337250dae4c11d36cc3692b78af668ece57d3; existing artifacts/source hashes unchanged. Actual11:59current no-due cycle and independent private model+training restore verified;0futureforecasts/0scores/nullMAE.293root checks,23new tests and two hosted pre-fit jobs pass. Artifact publication/bounded launch next; first possible source window today17:00UTC.30new-event/8-club review unchanged. Report:`C1_SUPPORT26_RESULT_V1.md`. Dataset26is now training for this separate package, never validation.
+
+Collector activation verified12:06UTC:artifact08dc634published, PID320703alive, successful actual cycle/private recovery, every900suntilNov6 20:30UTC. All non-skipped artifact checks pass. New score remainsnull; no predictive improvement or promotion established.
+
 ## November5 continuation —11:04UTC
 
 Later11:20update: actual603T48heartbeat42017429991SUCCESS→P9child42017444883FAILURE; genuine v1attempt and separate local zero-prediction v2attempt confirmed11:16UTC. DBcounts8/0/0and7/3/3respectively; v2still2independent scored events. No hosted-chainDONEor new accuracy. Corrected helper remainsPR212/unmerged. New bounded main-heartbeat guardian has7unit tests and awaits publication/launch; it changes no model/DBevidence contract. `P9_HEARTBEAT_GUARDIAN_2026-11-05.md`.

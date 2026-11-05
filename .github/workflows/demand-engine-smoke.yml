@@ -113,7 +113,7 @@ jobs:
       - name: Install test dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install numpy==2.3.5 pandas==2.2.3 scikit-learn==1.8.0 joblib
+          pip install numpy==2.3.5 pandas==2.2.3 scikit-learn==1.8.0 joblib==1.5.3 scipy==1.17.0
 
       - name: Run Demand Engine unit tests
         run: python -m unittest discover -s ml/demand_engine -p 'test_*.py' -v
@@ -183,6 +183,22 @@ jobs:
 
       - name: Protect genuine P9 heartbeat windows without model or DB writes
         run: python -m unittest ml.test_p9_heartbeat_window_guardian_v1 -v
+
+      - name: Verify separate support26 median training and prospective evidence contracts
+        run: python -m unittest ml.test_c1_support26_v1 -v
+
+      - name: Verify support26 freeze when present without fitting
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          from ml.c1_support26_v1 import load_models
+          path = Path('ml/artifacts/c1_support26_v1')
+          if (path / 'manifest.json').exists():
+              load_models(path)
+              print('Support26 and all frozen paired benchmarks verified; no fit performed.')
+          else:
+              print('Before-fit support26 contract checks only; no freeze claimed.')
+          PY
 
       - name: Verify source availability before structural attendance cutoffs
         run: python -m unittest ml.test_attendance_knowledge_time_guard_v1 -v

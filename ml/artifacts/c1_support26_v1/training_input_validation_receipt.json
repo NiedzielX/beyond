@@ -1,0 +1,18 @@
+{
+  "checked_at": "2026-11-05T11:56:46.661100+00:00",
+  "status": "ALL26_IMMUTABLE_TARGETS_AGREE_WITH_CURRENT_CONFIRMED_LABELS",
+  "source_sha256": "8b23618cae65e3f7e7a63b88c3071dc080bf44604f7201e8618f615590293150",
+  "events": 26,
+  "rows": 80,
+  "features": 30,
+  "independent_fixtures": 26,
+  "training_clubs": 12,
+  "models_fitted": 0,
+  "libraries": {
+    "numpy": "2.3.5",
+    "pandas": "2.2.3",
+    "scikit_learn": "1.8.0",
+    "joblib": "1.5.3",
+    "scipy": "1.17.0"
+  }
+}
