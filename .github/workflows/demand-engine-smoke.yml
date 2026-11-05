@@ -175,6 +175,12 @@ jobs:
       - name: Verify exposed training support preserves frozen data and serving parity
         run: python -m unittest ml.test_prepare_c1_training_data26_v1 -v
 
+      - name: Reconcile current persisted C1 error decomposition without model operations
+        run: python -m unittest ml.test_c1_current_error_decomposition_v1 -v
+
+      - name: Compare frozen daily paths on identical immutable target labels
+        run: python -m unittest ml.test_daily_path_paired_comparison_v1 -v
+
       - name: Verify source availability before structural attendance cutoffs
         run: python -m unittest ml.test_attendance_knowledge_time_guard_v1 -v
 

@@ -1,8 +1,20 @@
 # Beyond — operational handoff
 
-Updated **2026-11-04 18:32 UTC**. Production remains **OFF**: `production_change=false`, `live_adjustment=0`.
+Updated **2026-11-05 11:04 UTC**. Production remains **OFF**: `production_change=false`, `live_adjustment=0`.
 
 Read strategy and state first: `MAE_RESEARCH_ROADMAP_V6.md` → `EXECUTION_PLAN_CURRENT.md` → `PROGRESS_TRACKING.md` → `TRAJECTORY_FORECASTING_PLAN_V1.md` → this handoff. This file supplies operational state; it does not define a competing MAE strategy.
+
+## November5 operational continuation
+
+Today's firstP9window:Korona603/T48 **11:15UTC(12:15Warsaw)**. Bounded existing-main-heartbeat dispatch helperPID312343at `/workspace/ops-runtime/2026-11-05-cloud-continuation/` checks fresh DB then dispatches once only if unrecorded, deadline11:30UTC. Inspect its process, receipt, actual child conclusion and fresh DB; never infer success from dispatch acceptance. Mainstillbc17f48; hotfixPR212unmerged, corrected hosted chainNOTDONE. Widzew7372/P3was genuinely captured Nov4 19:16:53UTC, fail-closed, hosted41895306584SUCCESS; Wisła448/P9T48was missed and stays missing.
+
+Expired daily/drift/encoder workers were renewed10:52UTCwithout model/source changes. New PIDs311636/311637/311638, until **Nov6 10:30UTC**. All actual post-launch cycles verified; daily statusHEALTHYand collector backups read-back verified. Earlier launch files retained. Ridge20PID169529,median20PID200395,source archivePID209974survived and have fresh verified cycles, existing deadlineNov6 20:30UTC. They remain host-dependent; inspect actual process state and recent successful cycles. Both C1newlanes still0forecasts/0scores/nullMAE, firstpossiblefinal24today **17:00UTC(18:00Warsaw)**. Encoder guardian also protectsLegia450/P3today16:30UTCandLech451/P3today19:15UTC; no gate changes.
+
+Current C1v8has17/17scored, MAE3248.81vsprior3131.16,raw6241.96. Full persisted diagnostic reconciles all latest/window metrics and shows outcome-aware oracle2949.38is insufficient to achieve1200by gate selection alone. `C1_CURRENT_ERROR_DECOMPOSITION_RESULT_V1.md`. Prepared26event/80rowtraining snapshot is published draftPR214at23e33c1; no26eventmodelorvalidation. Preserve the two frozen20eventexperiments and future30event/8clubreview.
+
+New read-only identical-target report:`DAILY_PATH_PAIRED_COMPARISON_V1.md`;53future shared points/0scores/nullpairedMAE. Existing full daily primary188.98vs persistence163.25on4events/4points; no demonstrated advantage. First shared labels mature today17:00UTC,19:15UTCand20:00UTC. Run the report after actual existing-worker scoring; preserve both full cohorts.263registered root checks pass and old frozen model/source identities verify. Managed known-at release and new panel livefeed remain undeployed; no main merge or production activation. Earlier sections below are dated history.
+
+Reviewable code:[PR215](https://github.com/NiedzielX/beyond/pull/215), initiallyaffe871, stacked on214. Additional read-only paired monitorPID313213at`/workspace/ops-runtime/2026-11-05-paired-path-monitor/`, source/artifactlocked,300s, untilNov6 10:30UTC; actualpost-launch11:06:36cycleverified. It does not write forecasts/scores or either source ledger. Browser-roleC1endpointHTTP200at11:06UTCconfirms17/3248.81; directsiteDOMinspection remains host-networkblocked, Productionunchanged. Current C1diagnostic checks source-as-of chronology; actual original forecast insertion times are not projected and are explicitly not independently recertified.
 
 ## Last tracked outcome resolved — 2026-11-04 18:32 UTC
 

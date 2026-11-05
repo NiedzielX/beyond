@@ -1,6 +1,6 @@
 # Beyond Ticketing — MAE Experiment Scoreboard
 
-Last updated: **2026-11-04**
+Last updated: **2026-11-05**
 
 Status: **CANONICAL HUMAN-READABLE MAE EXPERIMENT REGISTRY**
 
@@ -19,6 +19,8 @@ Do not overwrite a failed experiment. Record the result and decision.
 ---
 
 # 2. Headline scoreboard
+
+Current persisted C1 diagnostic (Nov5): `C1_CURRENT_ERROR_DECOMPOSITION_RESULT_V1.md`.17scored events, policyMAE3248.81vsprior3131.16, raw6241.96;15PRIOR/2LIVEchoices. Same four largest failures contribute68.50%; outcome-aware prior/raw oracle2949.38is a non-deployable diagnostic. No new model/validation or accuracy-improvement claim. The6subsequently scored events have prior961.29vs policy1648.96; cohort expansion explains the changed overall score. Preserve both frozen20-event challengers and future review gates.
 
 | Experiment ID | Hypothesis | Incumbent | Events | Clubs | Coverage | Incumbent MAE | Challenger MAE | Delta MAE | Improvement rate | Median Delta AE | P90 / worst degradation | Signed bias | PIT audit | Decision |
 |---|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---|---|

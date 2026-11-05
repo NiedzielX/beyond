@@ -1,6 +1,6 @@
 # Beyond Ticketing — Current MAE Execution Plan
 
-Last updated: **2026-11-04**
+Last updated: **2026-11-05**
 
 Status: **CURRENT SOURCE OF TRUTH FOR EXECUTION CONTRACTS**
 
@@ -9,6 +9,18 @@ Production: `live_adjustment = 0`
 Canonical strategy: `ml/MAE_RESEARCH_ROADMAP_V6.md`
 
 Important: operational counters and cutoff lists below are dated snapshots. Query live machine state before acting.
+
+## November5 continuation — current at11:04UTC
+
+Read-only full C1error decomposition reconciles all17persisted scored events: policy3248.81vsprior3131.16andraw6241.96. Same four large failures contribute68.50%; even the non-deployable outcome-aware prior/raw oracle is2949.38. The6subsequently scored events alone have prior961.29vs policy1648.96. Keep these as exposed diagnostics, never a gate-tuning or new-validation cohort. Report:`C1_CURRENT_ERROR_DECOMPOSITION_RESULT_V1.md`. Both20eventchallengers still have0futureforecasts/0scores, nullMAE; preserve their frozen source/artifact/review contracts.
+
+Prepared26-event/80-row/12-clubtraining data is verified/published in draftPR214, CSV0b8eb22c767d16e07b84b59eaa73aeff5ca55b11a220f4939dbb2ae2aaa9d778. All26are exposed training; no26eventmodelwasfitted. Extra support alone is not a new accuracy result. A successor requires its exact separate precommit before fit.
+
+Daily/drift/encoder guardians expired09:30UTCand were genuinely renewed10:52UTCwith unchanged artifacts, untilNov6 10:30UTC. All three actual post-launch cycles verified; private backups verified for collectors. Existing Ridge20/median20/raw-source archive survived and have recent verified cycles, untilNov6 20:30UTC. Widzew7372/P-3was captured Nov4 19:16:53UTC(MODEL_INPUT_INSUFFICIENT); Wisła448/P9T48remainsMISSED_WINDOW. Do not backfill it.
+
+Read-only three-way daily comparison is implemented/tested and actually executed:53identical future points shared by daily model/drift/persistence,0pairedscores/nullMAEs. Original full daily score is188.98vs persistence163.25on4events/4points; keep that distinct from drift and attendance. First shared targets mature today17:00UTC, with genuine label/score requirements unchanged. See`DAILY_PATH_PAIRED_COMPARISON_V1.md`.
+
+Immediate windows:Korona603/P9T48at11:15UTC, Górnik449/P9T48andLegia450/encoderP3at16:30UTC, Motor5091/P9T24+encoderP1+firstC1final24at17:00UTC, Widzew7372/P9T48andLech451/encoderP3at19:15UTC, Wisła448/P9T24+encoderP1at19:30UTC. Query current DB before acting. P9PR212is still unmerged and its corrected hosted heartbeat→childSUCCESS→DBchain remainsNOTDONE. Managed known-at integration and new panel dailyfeed remain undeployed; production flagsfalse/0.
 
 ---
 

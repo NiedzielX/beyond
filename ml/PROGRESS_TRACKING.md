@@ -1,6 +1,6 @@
 # Beyond Ticketing — ML Progress Tracking
 
-Last updated: **2026-11-04**
+Last updated: **2026-11-05**
 
 Status: **CANONICAL TRACKING SNAPSHOT**
 
@@ -11,6 +11,14 @@ Canonical execution plan: `ml/EXECUTION_PLAN_CURRENT.md`
 Production: `live_adjustment = 0`
 
 Important: operational counters below are dated snapshots unless explicitly refreshed from live DB.
+
+## November5 continuation —11:04UTC
+
+- Current persisted C1diagnostic complete:17/17scored, policy3248.81vsprior3131.16andraw6241.96; four largest failures68.50%, outcome-aware oracle2949.38DIAGNOSTIC_ONLY. Six new tests, nofit/thresholdchange. `C1_CURRENT_ERROR_DECOMPOSITION_RESULT_V1.md`.
+- Published dataset26is prepared training only:26fixtures/12clubs/80rows, original74rowsbyte-preserved, no successor fitted. Existing Ridge20/median20remain0newforecasts/0scores; future review30events/8clubsunchanged. `C1_TRAINING_DATA26_SNAPSHOT_V1.md`.
+- Daily/drift/encoder guardians renewed after genuine09:30expiry; actual10:52post-launch cycles verified, untilNov6 10:30UTC. Existing C1/raw-source workers survived, with recent verified private backups. No missing issue fabricated.
+- Widzew7372encoderP3captured Nov4 19:16:53UTCfail-closed; Wisła448P9T48remainsMISSED_WINDOW. P9corrected hosted chain and managed source/feed release still pending.
+- Identical-target daily-model/drift/persistencecomparison implemented:53paired future points,0scores/nullMAE; original daily188.98vs163.25on4eventsis a different scope. Seven new tests, byte-unchanged ledgers. `DAILY_PATH_PAIRED_COMPARISON_V1.md`.263registered root tests pass; existing frozen models/source hashes verified unchanged.
 
 ---
 
