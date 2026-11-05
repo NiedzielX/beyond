@@ -216,7 +216,7 @@ jobs:
         run: |
           python - <<'PYCODE'
           from pathlib import Path
-          from ml.c1_history_residual_v1 import load_models
+          from ml.c1_history_residual_v1 import ResidualRuntime, load_models
           path = Path('ml/artifacts/c1_history_residual_v1')
           if (path / 'manifest.json').exists():
               load_models(path)

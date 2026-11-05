@@ -1,5 +1,11 @@
 # Beyond — operational handoff
 
+## New history residual pair frozen — November5 16:37UTC
+
+User-authorized fixed ablation is fitted exactly twice after source/precommit5d774451publication:one6featurecontrol/one9featurehistoryhead, same26/80/12exposed training. Freeze16:34:30UTC, control213bbe6f88ba98529606c9a5ddc640876649c3c4c89cddcd005ec9a9ff86e437/historyc11f0d9943bb33588140d8f0371db765bf2c222bbb204d59ad64260f89018e5f. No new-head training/old-holdoutMAE; futureMAEstillnull. Explicit recent-home level gap and actual6hchange have nonzero coefficients;24hvalue iszero(its missingness indicator isactive). This is mechanism metadata, not accuracy.
+
+BuildCLIserialized__main__.ResidualRuntime; initial directinternal-sidecarinvocationfailedbeforeforecast. Use compatibilityentry`python -m ml.launch_c1_history_residual_v1 ...`or inlinebind`ResidualRuntime`beforeload_models. It preservesallfrozen source/artifactbytes, and80target-freeprobesprovebitwiseidenticaloutputs/0refits. Actual16:37:52compatibilitycycleverifiesmodels/currentreads/scorer/privatebackup,0forecasts/0scores/nullMAE. Initialfullprivatebackup28files/146043bytes/SHA0b306bed573faeae5a27a82a9eba10d79d0136bb80f17432480fb5fe882cc378independentlyrestored. Publishartifact/launcherbeforeboundedwatcheractivation; actualPID/launchproofwillfollow. Report:`C1_HISTORY_SUPPORT_RESIDUAL_RESULT_V1.md`.
+
 ## Authorized next MAE experiment — history-support residual ablation, before fit
 
 User requested immediate continuation after the MAE plan. Source-consumption audit and target-free preparation are implemented. Exact separate protocol:`C1_HISTORY_SUPPORT_RESIDUAL_PRECOMMIT_V1.md`. Fixed6featurecontrol versus9featurehistory-augmented direct-person residual median, same26/80exposed training and fixed settings. Three new explicit history features use actual known-at/revision/season/canonical rules; new16imports are excluded from all old training observations. This tests a representation difference, not a new algorithm or historical improvement. No candidate fitted yet. Publish tested implementation/protocol before the two declared fits; genuine future source archives and unchanged30new-event/8-club review are required. Frozen models/gates/defaults remain unchanged.

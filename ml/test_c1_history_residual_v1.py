@@ -135,6 +135,14 @@ class ResidualLaneTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as d,self.assertRaisesRegex(ValueError,'fresh canonical'):
             core.fit_once(Path(d),Path(d)/'source',Path(d)/'publication',Path(d)/'newname')
 
+    @unittest.skipUnless((core.ARTIFACT_DIR/'manifest.json').exists(),'Before artifact publication')
+    def test_frozen_pair_loads_in_a_separate_inference_process_without_refit(self):
+        import subprocess,sys
+        code='from ml.c1_history_residual_v1 import ResidualRuntime, load_models; m, models, _ = load_models(); assert set(models) == {"control", "history"}; print(m["package_version"])'
+        result=subprocess.run([sys.executable,'-c',code],cwd=core.ROOT,capture_output=True,text=True,timeout=30)
+        self.assertEqual(result.returncode,0,result.stderr)
+        self.assertIn(core.PACKAGE,result.stdout)
+
     def test_blob_keys_and_recovery_namespaces_cannot_cross_experiments(self):
         with tempfile.TemporaryDirectory() as d,self.assertRaisesRegex(ValueError,'blob key'):
             lane.get_blob(Path(d),'sources','../other')
