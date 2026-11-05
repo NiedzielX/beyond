@@ -1,12 +1,14 @@
 # Beyond — operational handoff
 
-Updated **2026-11-05 11:20 UTC**. Production remains **OFF**: `production_change=false`, `live_adjustment=0`.
+Updated **2026-11-05 11:24 UTC**. Production remains **OFF**: `production_change=false`, `live_adjustment=0`.
 
 Read strategy and state first: `MAE_RESEARCH_ROADMAP_V6.md` → `EXECUTION_PLAN_CURRENT.md` → `PROGRESS_TRACKING.md` → `TRAJECTORY_FORECASTING_PLAN_V1.md` → this handoff. This file supplies operational state; it does not define a competing MAE strategy.
 
 ## November5 operational continuation
 
 **Superseding11:20UTCwindow update:** one-shot helper completed:heartbeat42017429991SUCCESS→P9child42017444883FAILUREatbuild/persist. V1genuine attempt captured; corrected published helper794f74arecorded one genuine zero-prediction v2attempt11:16:24UTC. DB8/0/0v1,7/3/3v2(2scored events), encoder11/6/4. PR212stillunmerged; successful hosted chainNOTDONE. Source capture completed11:14:57was genuinely selected before11:15cutoff, not reconstructed. New generic bounded main-heartbeat guardian is implemented with7tests; publish before launch, then record actual cycle/PID/deadline. Report:`P9_HEARTBEAT_GUARDIAN_2026-11-05.md`. Older planned one-shot paragraph below is retained as dated context.
+
+**Guardian actually launched11:23UTC:** source328f533published[draftPR216](https://github.com/NiedzielX/beyond/pull/216)before launch. PID315508, `/workspace/ops-runtime/2026-11-05-p9-heartbeat-guardian/`, interval60s, deadline**Nov6 11:20UTC**. Actual process live and11:23:14freshDBcycle=`NO_LEGAL_UNRECORDED_WINDOW`, no dispatch, no hosted-chainDONE. It protects later genuine windows by dispatching the existing mainheartbeat only; never builds or writes forecasts/labels. Per-window retry budget and pre-request durable intent survive ambiguous HTTPtimeouts.270root tests pass. Private P9proof recovery SHAe24dabab6c97bfcd81ef24b1867e2163285fa9e45e52d497c751351d109eac79verified. Check later actual heartbeat→child result→DB, and preserve failures; PR212stillneeds reviewed release. Renew daily/drift/encoder/paired workers **beforeNov6 10:30UTC**, independently of this P9guardian's later deadline.
 
 Today's firstP9window:Korona603/T48 **11:15UTC(12:15Warsaw)**. Bounded existing-main-heartbeat dispatch helperPID312343at `/workspace/ops-runtime/2026-11-05-cloud-continuation/` checks fresh DB then dispatches once only if unrecorded, deadline11:30UTC. Inspect its process, receipt, actual child conclusion and fresh DB; never infer success from dispatch acceptance. Mainstillbc17f48; hotfixPR212unmerged, corrected hosted chainNOTDONE. Widzew7372/P3was genuinely captured Nov4 19:16:53UTC, fail-closed, hosted41895306584SUCCESS; Wisła448/P9T48was missed and stays missing.
 
