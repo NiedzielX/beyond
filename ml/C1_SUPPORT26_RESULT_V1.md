@@ -33,3 +33,9 @@ Each eligible new capture computes median26, median20, Ridge20, original C1v8 an
 The first possible new final24window is Motor5091today17:00UTC(18:00Warsaw), subject to genuine source/anchor readiness. Wisła448follows19:30UTCbut currently lacks snapshots; do not force coverage. First fixed review remains30new scored fixtures/8clubs, paired event uncertainty, separate raw-support and all-four-benchmark product gates. Existing20eventstreams remain independent and unchanged. C1v8officialMAE3248.81on17is not validation of this new model; MAE1200remains unproven.
 
 293registered root tests passed, including23new support26cases. Both hosted pre-fit source test jobs succeeded. Actual artifact identity and independent restore checks pass; artifact-aware hosted checks and bounded collector activation are verified separately after publication. No main merge, managed deployment or production activation. `production_change=false`, `live_adjustment=0`.
+
+### Actual bounded collector activation
+
+Artifact commit`08dc63410248420209f312bb07ac6b8d3a923ac0`was published before starting collectorPID**320703**at12:06:27UTC. It runs every900seconds until **Nov6 20:30UTC**, in the marked private runtime above. The actual process is alive; its12:06:30post-launch collector→scorer→private backup/restore cycle is verified:0candidates/0forecasts/0scores/nullMAE. The new nine-file backup is14081bytes, SHA`01a06ce3fc2384636ad82d79a2baca85a4bbcae49224be2f69ecec75fb480f5d`. This is bounded, host-dependent inference/scoring; first positive capture and future outcomes remain pending.
+
+All non-skipped hosted artifact checks on08dc634succeeded, including Demand Engine Smoke with the new artifact's loader/identity check. Skipped live-anchor/main-audit jobs are not claimed as executed. The old20eventcollectors and all other frozen lanes remain unchanged. No source/precommit/dependency under the new freeze was edited after fitting.
