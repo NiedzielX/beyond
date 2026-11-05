@@ -1,0 +1,5 @@
+# Current home-history append continuation
+
+The targeted public read found27previously absent current-season home fixtures across four actual coverage gaps. All27match unique independently completed sporting date/result identities; raw-source bytes and extraction have been independently recovered. User's ongoing instruction authorizes new information work; this separate SDDprecedes any write. No model/search/parameter/policy/old forecast changes. Run original900feature preflight and strict append/clock/source checks before any DBmutation; stop if parity fails.
+
+Actualpreflight passes900current/900planned originalcells,27strictabsentfixture/sourcechecks. Verification17:24:52UTC,oneappendPOST/durableintent. Readback71history/27outcomes;old44rows/38priorresolutions/C1predictionsunchanged. Actualpost-export900cellsreproduce, allnewrecords excludedat80oldtrainingobservations. Source archive completed17:25:47UTCwith71historyandverifiedrestore. Next:verifyactual later prefix consumesnewarchive;do not change older17:03source/forecasts orclaimMAE.
