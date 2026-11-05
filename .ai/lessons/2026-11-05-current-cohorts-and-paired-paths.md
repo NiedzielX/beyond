@@ -1,0 +1,7 @@
+# Current cohorts and identical daily vintages
+
+November5actual diagnostic reconciles17C1events, policyMAE3248.81. Earlier11stillhave4121.45; subsequently scored6have1648.96versusprior961.29. Cohort growth changes the aggregate without changing a model. The four largest earlier failures still dominate68.50%of total error. Even an outcome-aware choice of persisted prior/raw has2949.38MAE; gate tuning alone cannot attain1200on this cohort. This oracle is diagnostic, never a valid inference rule or fresh validation.
+
+Daily-model and drift comparisons must share event, issue vintage, target, prefix, measurement and exact immutable label. The first actual overlap contained53futurepoints/0scores while the older daily cohort already had4scores. Comparing those different cohorts would invent a drift advantage/disadvantage. Preserve all original primary denominators, distinguish pending from mature missing labels and retain nullMAEuntil actual paired labels exist. Average within each event before averaging events.
+
+References:`ml/C1_CURRENT_ERROR_DECOMPOSITION_RESULT_V1.md`,`ml/DAILY_PATH_PAIRED_COMPARISON_V1.md`. Thirteen new tests and actual read-only ledger validation; old models/source hashes unchanged. Workers surviving a session boundary and workers ending at their explicit deadline are separate facts: inspect actual processes and post-launch receipts, preserve previous launch history, renew only expired processes without refits/backfill.
