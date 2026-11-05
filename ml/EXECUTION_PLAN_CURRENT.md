@@ -10,7 +10,11 @@ Canonical strategy: `ml/MAE_RESEARCH_ROADMAP_V6.md`
 
 Important: operational counters and cutoff lists below are dated snapshots. Query live machine state before acting.
 
-## November5 continuation — current at11:04UTC
+## November5 continuation — current at11:20UTC
+
+Korona603/T48was actually protected:11:15mainheartbeat42017429991SUCCESS→child42017444883FAILUREatbuild/persist. V1recorded its genuine insufficient-support attempt; a fresh unchanged corrected PR212helper recorded the legitimate zero-prediction v2attempt11:16:24UTCinside the legal window. FreshDBv1**8/0/0**,v2**7/3/3**; v2scoresare2independent events. This does not satisfy successful hosted redundancy. Exact job-log download is blocked; do not invent a retrieved stacktrace. See`P9_HEARTBEAT_GUARDIAN_2026-11-05.md`. A bounded source-locked guardian for the existing mainheartbeat is implemented/tested for remaining current windows; launch must follow source publication. No new forecast/model/DBwriter.
+
+11:23UTCexecution:source328f533published in draftPR216before launching guardianPID315508,60s, untilNov6 11:20UTC. Actual post-launch DBcycle succeeds with no legal unrecorded window/no dispatch; full hosted chain still false.270registered root tests pass. Private P9evidence upload/read-back/restoration verified. See report for exact runtime/recovery identity.
 
 Read-only full C1error decomposition reconciles all17persisted scored events: policy3248.81vsprior3131.16andraw6241.96. Same four large failures contribute68.50%; even the non-deployable outcome-aware prior/raw oracle is2949.38. The6subsequently scored events alone have prior961.29vs policy1648.96. Keep these as exposed diagnostics, never a gate-tuning or new-validation cohort. Report:`C1_CURRENT_ERROR_DECOMPOSITION_RESULT_V1.md`. Both20eventchallengers still have0futureforecasts/0scores, nullMAE; preserve their frozen source/artifact/review contracts.
 
