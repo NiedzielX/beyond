@@ -1,5 +1,11 @@
 # Beyond Ticketing — ML Progress Tracking
 
+## Historical replay executed — November5 15:36UTC
+
+User-requested fixed experiment complete:`C1_HISTORICAL_REPLAY_RESULT_V1.md`. All17actual scored fixtures/50prefixes, whole-fixture exclusion and fresh fold preprocessing. Chronological training9–20earlier label-known fixtures:rawmedian4558.29, median-policy3107.62, prior3131.16, persistedC1policy3248.81. PolicyDelta−141.19CI[−728.12,304.54]; first11policy4278.34worse than4121.45, later6single-prefixcontextfalls back toprior961.29. No full-history live-gain claim. New6labels were not known before any old cutoff, so expanded/base20chronological fits are identical.
+
+Explicit non-temporal leave-one-fixture-out rawmedian-expanded3318.41versusbase20restricted2887.33,Delta+431.08CI[−416.74,1431.68]. All outcomes exposed; inherited historical publication-time limits remain. No demonstrated gain,1200unproven,no tuning/promotion. Actual frozen26was neither refitted nor scored on training fixtures; future collector unchanged.311registeredroot+189DemandEnginechecks pass; full discovery's7unrelatedCatBoostimporterrorsremain documented. Verified private independent recovery16files/185950bytes. Earlier before-fit section is dated history.
+
 ## Authorized historical recipe replay — November5, before execution
 
 The user requested historical testing of the new median method. Separate precommit:`C1_HISTORICAL_REPLAY_PRECOMMIT_V1.md`. Evaluate17already-exposed scored C1fixtures/50actual-time reconstructed prefixes, with fresh fold-local preprocessing and whole-fixture exclusion. Fixed chronological training uses actual label knowledge and earlier fixtures; separate leave-one-fixture-out allows later data only as an explicitly non-temporal diagnostic. All26frozen training events remain exposed; no frozen26in-sample score or live model/source/gate change. No parameter search, retrospective prospective write, or production activation. SDD/run:`.ai/specs/2026-11-05-c1-historical-replay.md` /`.ai/runs/2026-11-05-c1-historical-replay.md`. Source publication precedes real fitting; results pending.
