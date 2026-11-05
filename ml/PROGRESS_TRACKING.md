@@ -1,5 +1,13 @@
 # Beyond Ticketing — ML Progress Tracking
 
+## Current execution — November5 16:45UTC
+
+New history-support residual ablation is actually frozen and collecting privately. Artifact/launcher commitc3b37fdb22bb9df80b4f386a42dcaffea4e5fd40was published before watcherPID354725launched16:45:09UTC,300sinterval, untilNov6 20:30UTC. ActualprocessSsl and16:45:13post-launchcycleverified:0newforecasts/0scores/nullMAE,6fileprivatebackup3990bytes/SHA c6279daa611e7ba3a890db44890549336a8671ae9475015e8941d7b0ae07a930, read-back/decompressionverified. Use`python -m ml.launch_c1_history_residual_v1`, preserving the compatibility binding; frozen estimator/core/precommit bytes unchanged.348registeredrootchecks and hosted source/artifactDemandEnginechecks succeeded. Report:`C1_HISTORY_SUPPORT_RESIDUAL_RESULT_V1.md`. First new legal final24inputs begin17:00UTC, subject to original source/prior and genuine archive readiness. No new MAE claim;30newfixtures/8clubs review unchanged.
+
+StrictP9freshchainisnow**PROVEN**:guardian16:31:03→heartbeat42065252556SUCCESS→child42065268900SUCCESS→Górnik449/T48newv1attempt16:31:47andfirstprediction16:31:48insidebuild/persiststep. DBv1now9attempts/1prediction/0scores;v2now8attempts/3predictions/3score rows(2events),newV1_COVEREDattempt. No localwriter/backfill. This satisfies full-chain operational acceptance, not accuracy or a new negative fallback-path test. Old603retry/failures/misses retain their scopes. Report:`P9_FRESH_HEARTBEAT_CHAIN_RESULT_2026-11-05.md`, private11file32243bytebackupindependentlyverified.
+
+Existing median26/Ridge20/median20, sourcearchive, daily/drift, pairedmonitor and encoder/P9guardians remain unchanged. Next actual checkpoints:Motor5091/T24+encoderP1+firstC1final24at17:00UTC;Widzew7372/T48andLech451/encoderP3at19:15;Wisła448/T24+encoderP1at19:30(currentlynoinventory). Inspect live state before acting. Newworker/support26/sourcearchiveallstopNov6 20:30; other worker deadlines remain in their launchfiles. No production model changes, defaultsfalse/0.
+
 ## New history residual pair frozen — November5 16:37UTC
 
 User-authorized fixed ablation is fitted exactly twice after source/precommit5d774451publication:one6featurecontrol/one9featurehistoryhead, same26/80/12exposed training. Freeze16:34:30UTC, control213bbe6f88ba98529606c9a5ddc640876649c3c4c89cddcd005ec9a9ff86e437/historyc11f0d9943bb33588140d8f0371db765bf2c222bbb204d59ad64260f89018e5f. No new-head training/old-holdoutMAE; futureMAEstillnull. Explicit recent-home level gap and actual6hchange have nonzero coefficients;24hvalue iszero(its missingness indicator isactive). This is mechanism metadata, not accuracy.
