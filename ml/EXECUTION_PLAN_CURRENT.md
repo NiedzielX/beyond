@@ -10,6 +10,12 @@ Canonical strategy: `ml/MAE_RESEARCH_ROADMAP_V6.md`
 
 Important: operational counters and cutoff lists below are dated snapshots. Query live machine state before acting.
 
+## P9 operational release — November5 12:22UTC
+
+The accepted deployment continuation released only reviewed PR212:remote maine04033fb2e01622cf393da398eead16a2d1c4831, exact builder bytes matching794f74a. Existing frozen prediction outputs, support gates, source semantics, SQL and production flags unchanged. Actual main-push run42025734609SUCCESS; independent heartbeat42026225277SUCCESS→P9child42026240780SUCCESS, including build/persist, inside603's legal window.
+
+Fresh DBverification retains v1=8/0/0,v2=7/3/3(2scored events);603's earlier11:16local attempt is unchanged. Deployed fix/hosted success/idempotency are proven, **fresh hosted insertion is not**. Keep strict heartbeat redundancy acceptance open until a later unrecorded genuine window and expected new DBrow, next449T48at16:30UTC. Never reinterpret old local evidence as that new insertion. `P9_NONREADY_RELEASE_RESULT_2026-11-05.md`. Old unmerged notes below are dated history; new C1packages remain separate/unpromoted.
+
 ## Support26 experiment — frozen November 5 at11:58UTC
 
 The user authorized the announced 20-to-26-event extension. Exact protocol: `C1_SUPPORT26_PRECOMMIT_V1.md`. Fit one separately versioned direct-person median head on the immutable 26-event/80-row/12-club snapshot, preserving the frozen median20 preprocessor, 30 features, quantile0.5/alpha0.1/HiGHS configuration, equal-event weights, clipping and C1v8 policy. Publish tested source/precommit before fit. Existing median20/Ridge20/C1v8 and all prospective contracts remain unchanged.

@@ -1,5 +1,7 @@
 # P9 non-ready fallback input incident and isolated correction
 
+Release follow-upNovember5: the accepted deployment continuation merged PR212as remote maine04033f. Main-push and independent heartbeat/P9child executions now succeed; the current603DBretry is idempotent against the earlier local row. Fresh hosted-row proof remains pending the next unrecorded genuine window. See`P9_NONREADY_RELEASE_RESULT_2026-11-05.md`. Earlier unmerged statements below describe November4preparation.
+
 Motor5091 T-48 cutoff **Nov4 17:00 UTC**. Independent heartbeat dispatch17:00:53.467428UTC → [heartbeat41873299368](https://github.com/NiedzielX/beyond/actions/runs/41873299368) SUCCESS → [P9 child41873320229](https://github.com/NiedzielX/beyond/actions/runs/41873320229) FAILURE. v1 recorded `PIT_SUPPORT_INSUFFICIENT`; v2 crashed `unexpected frozen neighbor count event=5091` on a legitimately non-ready P9a zero-neighbor freeze. Read-only hosted failed-job diagnostic verified the exact exception, not an inferred network/schema issue.
 
 Focused main-based [draft PR212](https://github.com/NiedzielX/beyond/pull/212), commit `794f74a7a6ab8cdbd4d68015ba2e659b2a243ae4`: explicit freeze_ready=false/reference_ready=false with0–4neighbors emits existing `FALLBACK_SUPPORT_INSUFFICIENT` diagnostic and **no prediction**. Unknown/contradictory metadata and oversized sets stay rejected. Original valid five-neighbor output remains byte-identical to four synthetic before-edit goldens. Hosted contract check SUCCESS. No model, minimum support, neighbor ranking, SQL or readiness-gate changes.

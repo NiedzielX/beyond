@@ -12,6 +12,10 @@ Production: `live_adjustment = 0`
 
 Important: operational counters below are dated snapshots unless explicitly refreshed from live DB.
 
+## P9 correction released — November5 12:22UTC
+
+PR212merged normally; remote maine04033fcontains only its reviewed correction/contract files. Main-push P9workflowSUCCESS, independent heartbeat42026225277→child42026240780bothSUCCESS. Expected existing DBstate and original11:16attempt time unchanged, no duplicates. **Fresh heartbeat-created DBrow remains pending**; next eligible449T48at16:30UTCis protected by the guardian. No frozen model/parameter/eligibility change or C1promotion. Report:`P9_NONREADY_RELEASE_RESULT_2026-11-05.md`.
+
 ## Support26 median frozen — November5 11:58UTC
 
 User-authorized data-only20→26support comparison implemented and fitted once after source/precommit publication1bdfc8f. Same frozen median20 preprocessor,30features, learner parameters, weights and policy. Estimator29839c647277d91b333d5a23d7f337250dae4c11d36cc3692b78af668ece57d3; existing artifacts/source hashes unchanged. Actual11:59current no-due cycle and independent private model+training restore verified;0futureforecasts/0scores/nullMAE.293root checks,23new tests and two hosted pre-fit jobs pass. Artifact publication/bounded launch next; first possible source window today17:00UTC.30new-event/8-club review unchanged. Report:`C1_SUPPORT26_RESULT_V1.md`. Dataset26is now training for this separate package, never validation.

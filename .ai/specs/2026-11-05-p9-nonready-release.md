@@ -9,3 +9,5 @@ Mark this exact draft ready and merge through normal GitHub enforcement with the
 Within Korona603/T48's still-open11:15–12:45UTCwindow, verify the automatic main-push run and an actual independent-heartbeat child. Preserve earlier failures and existing attempts. The603DBattempt already exists, so a successful idempotent retry cannot be reported as a newly inserted DBrecord or fresh end-to-end evidence. Require a later genuine unrecorded window (next449/T48at16:30UTC) for clean heartbeat→successful child→new expected DBrecord proof. Never backfill historical misses or rewrite github_sha/timestamps on existing evidence.
 
 Record configured/deployed, hosted success, idempotent DBverification and fresh-row proof separately. `production_change=false`, `live_adjustment=0`; no model activation.
+
+Executed: PR212normally merged as maine04033f12:16UTC; main-push run42025734609and independent heartbeat42026225277→child42026240780allSUCCESS. Existing DBcounts/603attempt time unchanged. Release and idempotency validated; keep this specification active until fresh next-window DBproof is actually checked. Report`ml/P9_NONREADY_RELEASE_RESULT_2026-11-05.md`.
