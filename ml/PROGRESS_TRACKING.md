@@ -1,5 +1,14 @@
 # Beyond Ticketing — ML Progress Tracking
 
+## Positive C1 capture and first paired path scores — November5 17:11UTC
+
+Main materializer42070393174SUCCESS→DBMotor5091prior76actualgenerated17:01:57→real snapshot35663at17:03:01→support26immutable17:07:25→new history residual pair17:08:03. Newpair1captured/0scored/nullMAE, genuine pre-observation source archive and private recoveryverified. Motor verified-home count0; no fake history. MainC1workflow42071837843alsoSUCCESS→new Motor predictionindependentlyconfirmed inDB. ExistingC1scoreboard102predictionrows/18events/17scored, latestpolicyMAE3248.807865unchanged. Newpairisprivate, notDBserving. Report:`STRUCTURAL_PRIOR_WINDOW_GUARDIAN_RESULT_2026-11-05.md`.
+
+New bounded dependency guardianPID358963publishedbeforelaunch(d906be4), actual17:07:06successfulno-duecycle,300sintervaluntilNov6 20:30UTC,hostdependent.12focused/360registeredrootchecks pass. Frozenmodels/defaultsunchanged; exact17:00cutoff availability is not claimed, no missed encoder/P9repair.
+
+First matched daily inventory +1scores now2targets/2events/2clubs:driftMAE23.424246,dailymodel278.069754,persistence351.50. Descriptive only;8event/5clubreview remainsclosed. Originaldailycohortseparately8scores/4events,model238.338245versus226.00persistence;do not replace itwithmatchedmetrics. Report:`DAILY_PATH_PAIRED_COMPARISON_V1.md`. Actualcurrenthistorycoveragehas0acceptedcurrent-seasonhomefixturesforMotor/Korona/Widzew/Piast, versus5–7forother6futureclubs; new public-source coverage is the next targeted data question, not an excuse to backdate features.
+
+
 ## Genuine T1 dependency restored — November5 17:05UTC
 
 The actual structural-prior workflow history had no visible run after11:35UTC despite configured15minute cron. At the genuine17:00opening a bounded/no-active/no-expired-ready preflight dispatched existing main materializer. Run42070393174SUCCESS; independent DB read confirms Motor5091/T-1 prior76, actualgenerated17:01:57UTC, canonicalcutoff17:00. Preserve its actual late generation and existing backfilled_pit_forecast metadata; never claim availability at17:00 or repair exact-cutoff misses. This enables later eligible C1 observations only. Frozen new residual models remain unchanged, future MAEstillnull. Separate structural-prior dispatch guardian implemented/tested(12focused,360registeredroot checks), publication/launch stillpending. Report:`STRUCTURAL_PRIOR_WINDOW_GUARDIAN_RESULT_2026-11-05.md`.

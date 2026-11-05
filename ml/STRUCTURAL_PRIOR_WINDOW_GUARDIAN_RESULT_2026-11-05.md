@@ -11,3 +11,15 @@ A separate bounded guardian now implements dispatch protection for current missi
 Twelve focused guard tests and all360 registered root smoke checks pass. Configuration and tested implementation do not establish a running watcher; publish before launch, then record its PID, deadline and a successful post-launch cycle. Actual forecast capture by the new residual experiment must be independently verified. New-head MAE remains null until genuine later attendance labels. Frozen sources/artifacts/gates are unchanged; `production_change=false`, `live_adjustment=0`.
 
 Private receipts: `/workspace/ops-runtime/2026-11-05-first-c1-t1/`. No private inputs or credentials are committed.
+
+## Genuine downstream forecast proof — 17:11 UTC
+
+Published guardian source `d906be4da2fa598a10775ba206a6f9a9f3a3b0fd` before launch. PID358963 started17:07:05UTC, five-minute interval, explicit deadlineNovember6 20:30UTC. Actual post-launch17:07:06cycle succeeded with no missing ready prior and no redundant dispatch. This bounded worker depends on the current host.
+
+Motor snapshot35663 was genuinely observed17:03:01.536UTC, after prior76's actual17:01:57generation. Support26 stored an immutable paired forecast17:07:25.558UTC. The new history residual pair independently issued17:08:03.698UTC, preserving that same snapshot/anchor and earlier benchmark issue time. It used the original source archive completed17:01:32UTC, before the observation. All source/feature/benchmark replay and private recovery checks passed. New pair:one captured fixture, zero scored fixtures, MAEnull. Motor has no accepted verified current-season home-history records in that archive; explicit missingness was preserved. This first capture proves the data flow, not the benefit of the history feature.
+
+Original main C1 inference also had no actual run after11:38UTC despite configured cron. A fresh forward-only/no-active/pinned-main/source-clock preflight requested the existing workflow at17:09:36UTC. [Run42071837843](https://github.com/NiedzielX/beyond/actions/runs/42071837843) succeeded; persist17:10:33–34UTC. Independent dashboard DB view confirms Motor's new original-v8 prediction from snapshot35663, with no attendance/outcome/score. This is actual existing-model DB persistence. The new research pair stays in its separate private ledger/Storage, not relational serving DB.
+
+Current original C1 DB scoreboard:102prediction rows/18prospective fixtures/17scored; latest-row policyMAE3248.8078650750144, prior3131.157875743254, raw6241.964642421351, adjustment0. The new unscored fixture changes coverage, not MAE. Frozen models and gates remain unchanged.
+
+Initial independent recovery contains62files/119883compressed bytes, SHA`e03542028b9e3816222f4aa9766f8c8631aa89fd5c2c8483e757f1fb9b6c9b22`; remote read/decompression and every file hash verified, including both first forecast records. Later fresh receipts may extend this recovery without rewriting the original private object.

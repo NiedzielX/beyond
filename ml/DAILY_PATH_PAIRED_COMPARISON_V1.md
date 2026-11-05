@@ -18,3 +18,11 @@ python -m ml.daily_path_paired_comparison_v1 \
 ```
 
 Both SQLite connections use read-only mode and their own snapshot transactions; read drift before daily because the former is derived from the latter. Concurrent inconsistent evidence fails closed. Seven tests cover actual frozen prediction/ledger validation on synthetic prefixes, byte-unchanged source files, event balancing, missing/pending/lagging scores, duplicate or different vintages, changed artifacts/lineage, label identity, chronology and error arithmetic. This establishes comparison correctness, not predictive accuracy. `production_change=false`, `live_adjustment=0`.
+
+## First paired target scores —November5 17:09UTC
+
+Existing immutable Nov4 forecasts matured normally; no new retrospective issues were created. Original daily ledger now has8scored points/4events, model238.338245versus persistence226.00 across its full cohort. Keep this original primary result separate from the narrower matched comparison.
+
+The identical-target overlap has67issued points,2scored +1points/2events/2clubs(Motor andPiast),65pending,0mature missing labels. On those exact same2targets, event-balanced MAE:fixed24h drift23.424246, frozen daily model278.069754, persistence351.50. Drift improves both events in this small descriptive snapshot; paired differences−254.645508against model/−328.075754against persistence. These are public available-place errors, not paid-sales or attendance MAE.
+
+The8event/5club review gate is not met. No demonstrated general advantage, retuning, promotion or changed gate. Preserve the next genuine outcomes regardless of direction. Private report:`/workspace/ops-runtime/2026-11-05-first-paired-path-scores/paired-report.json`; the existing original/drift backups and independently verified62file first-window recovery preserve evidence. Original scorers, frozen rules and productionfalse/0are unchanged.
