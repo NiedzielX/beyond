@@ -1,8 +1,16 @@
 # Beyond — operational handoff
 
-Updated **2026-11-05 12:10 UTC**. Production remains **OFF**: `production_change=false`, `live_adjustment=0`.
+Updated **2026-11-05 12:28 UTC**. Production remains **OFF**: `production_change=false`, `live_adjustment=0`.
 
 Read strategy and state first: `MAE_RESEARCH_ROADMAP_V6.md` → `EXECUTION_PLAN_CURRENT.md` → `PROGRESS_TRACKING.md` → `TRAJECTORY_FORECASTING_PLAN_V1.md` → this handoff. This file supplies operational state; it does not define a competing MAE strategy.
+
+## P9 correction is now deployed — supersedes earlier unmerged notes
+
+PR212was merged12:16UTCafter the user continued the deployment plan. **Remote main is nowe04033fb2e01622cf393da398eead16a2d1c4831**, with builder bytes matching reviewed794f74a. No model/support/ranking/SQL change or other PR merge. Main-push P9run42025734609SUCCESS; independent heartbeat42026225277SUCCESS→P9child42026240780SUCCESS at12:20UTC, including build/persist.
+
+DBverified12:22UTC: v1=8/0/0; v2=7/3/3across2scored events. Existing603negative attempt remains11:16:24UTC, not rewritten. This is deployed+hosted-success+idempotent verification, **not a new hosted DBrow**. Strict fresh full-chain redundancy remains pending the next genuine unrecorded window:449/T48at16:30UTC(17:30Warsaw). The existing P9guardianPID315508continues to dispatch only genuine unrecorded windows; inspect actual accepted dispatch→child conclusion→new expected DBrecord. Preserve old failures/misses. Report:`P9_NONREADY_RELEASE_RESULT_2026-11-05.md`; private proofs`2026-11-05-p9-release/`, recoverySHAf85aa7340d7da24deae380d21502706e8710890ea6cefa5ae3bb23743a9eb75f.
+
+Research checkout remains a stacked branch; do not infer deployed P9content from its older local ancestor. `origin/main`was independently verified/imported. Future branch publication must expect current remote main, not oldbc17f48. C1research models/weights remain separate; this operational release did not promote any candidate. Panel/backend-feed administrator binding remains absent.
 
 ## New support26 median actually frozen
 
