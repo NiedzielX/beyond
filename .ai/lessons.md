@@ -27,3 +27,5 @@ This index is durable memory, not a substitute for the authoritative execution p
 - [Fold preprocessing and dashboard clocks](lessons/2026-11-05-fold-preprocessing-and-dashboard-time.md): training-only fold representation and actual label availability; exposed sparse-context policy gains; fresh projections can retain elapsed unresolved candidates.
 
 - [Residual runtime recovery and history support](lessons/2026-11-05-residual-runtime-and-history-support.md): cross-process pickle binding, byte-identical no-refit recovery, source presence versus consumption, exact value/missingness coefficient names, and fresh positive P9 chain scope.
+
+- [Cron execution and prior clocks](lessons/2026-11-05-cron-execution-and-prior-clocks.md): scheduled YAML versus actual runs, broad due-set guards, durable dispatch accounting and later availability versus canonical cutoff.

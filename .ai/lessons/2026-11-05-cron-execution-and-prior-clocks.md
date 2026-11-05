@@ -1,0 +1,5 @@
+# Scheduled configuration and actual prior availability
+
+A15-minute cron did not imply15-minute actual workflow execution onNovember5. Query actual runs and independent DB records before assuming future forecasts have their anchors. The17:01manual request yielded successful mainrun42070393174and a real Motor T-1prior generated17:01:57. The canonical17:00cutoff and actual later generation remain distinct. A later prefix may use an already available prior when its frozen contract permits; an exact-cutoff miss stays missing. Existing backfilled_pit_forecast metadata is not evidence of original cutoff availability.
+
+A broad materializer can include other ready events. A guard must inspect the whole actual due set and refuse dispatch if any ready input is outside its genuine bounded window; do not inspect only the desired event. Persist intent before uncertain HTTP so failures cannot reset retry budgets. A successful workflow, actual DB anchor, downstream model forecast and eventual MAE are four separate pieces of evidence.

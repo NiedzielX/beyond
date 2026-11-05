@@ -1,5 +1,10 @@
 # Beyond Ticketing — ML Progress Tracking
 
+## Genuine T1 dependency restored — November5 17:05UTC
+
+The actual structural-prior workflow history had no visible run after11:35UTC despite configured15minute cron. At the genuine17:00opening a bounded/no-active/no-expired-ready preflight dispatched existing main materializer. Run42070393174SUCCESS; independent DB read confirms Motor5091/T-1 prior76, actualgenerated17:01:57UTC, canonicalcutoff17:00. Preserve its actual late generation and existing backfilled_pit_forecast metadata; never claim availability at17:00 or repair exact-cutoff misses. This enables later eligible C1 observations only. Frozen new residual models remain unchanged, future MAEstillnull. Separate structural-prior dispatch guardian implemented/tested(12focused,360registeredroot checks), publication/launch stillpending. Report:`STRUCTURAL_PRIOR_WINDOW_GUARDIAN_RESULT_2026-11-05.md`.
+
+
 ## Current execution — November5 16:45UTC
 
 New history-support residual ablation is actually frozen and collecting privately. Artifact/launcher commitc3b37fdb22bb9df80b4f386a42dcaffea4e5fd40was published before watcherPID354725launched16:45:09UTC,300sinterval, untilNov6 20:30UTC. ActualprocessSsl and16:45:13post-launchcycleverified:0newforecasts/0scores/nullMAE,6fileprivatebackup3990bytes/SHA c6279daa611e7ba3a890db44890549336a8671ae9475015e8941d7b0ae07a930, read-back/decompressionverified. Use`python -m ml.launch_c1_history_residual_v1`, preserving the compatibility binding; frozen estimator/core/precommit bytes unchanged.348registeredrootchecks and hosted source/artifactDemandEnginechecks succeeded. Report:`C1_HISTORY_SUPPORT_RESIDUAL_RESULT_V1.md`. First new legal final24inputs begin17:00UTC, subject to original source/prior and genuine archive readiness. No new MAE claim;30newfixtures/8clubs review unchanged.
