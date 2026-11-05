@@ -157,6 +157,25 @@ def build_fallback_predictions(
         # when that frozen path would fail support.
         v1_target_inc = choose_incumbent(frozen_target_candidates, target_as_of)
         selected_neighbors = [int(v) for v in target.get("lineage", {}).get("selected_neighbor_event_ids") or []]
+        # A genuine non-ready P9a representation can have fewer than five
+        # neighbors. Record fail-closed coverage; never relax the prediction gate.
+        # Missing/contradictory readiness metadata remains an invalid contract.
+        if (len(selected_neighbors) < 5 and target.get("freeze_ready") is False
+                and target.get("reference_ready") is False):
+            diagnostics.append({
+                "ticket_event_id": target_id,
+                "cutoff_hours": cutoff,
+                "status": "FALLBACK_SUPPORT_INSUFFICIENT",
+                "reason": "P9A_NONREADY_NEIGHBOR_SET",
+                "v1_target_incumbent_source_family": None if v1_target_inc is None else str(v1_target_inc["source"]),
+                "v1_residual_reference_count": 0,
+                "fallback_residual_reference_count": 0,
+                "selected_neighbor_event_ids": selected_neighbors,
+                "support_manifest_sha256": sha({"p9a_manifest_sha256": p9a["manifest_sha256"],
+                    "target_id": target_id, "selected_neighbors": selected_neighbors,
+                    "reason": "P9A_NONREADY_NEIGHBOR_SET"}),
+            })
+            continue
         require(len(selected_neighbors) == 5, f"unexpected frozen neighbor count event={target_id}")
 
         if v1_target_inc is None:
