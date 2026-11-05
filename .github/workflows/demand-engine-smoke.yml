@@ -20,6 +20,8 @@ on:
       - 'ml/test_mae03_context_evidence_audit_v1.py'
       - 'ml/start_daily_inventory_path_watcher_v1.py'
       - 'ml/test_start_daily_inventory_path_watcher_v1.py'
+      - 'ml/structural_prior_window_guardian_v1.py'
+      - 'ml/test_structural_prior_window_guardian_v1.py'
       - 'ml/frozen_window_guardian_v1.py'
       - 'ml/test_frozen_window_guardian_v1.py'
       - 'ml/daily_inventory_source_state_features_v2.py'
@@ -68,6 +70,8 @@ on:
       - 'ml/test_mae03_context_evidence_audit_v1.py'
       - 'ml/start_daily_inventory_path_watcher_v1.py'
       - 'ml/test_start_daily_inventory_path_watcher_v1.py'
+      - 'ml/structural_prior_window_guardian_v1.py'
+      - 'ml/test_structural_prior_window_guardian_v1.py'
       - 'ml/frozen_window_guardian_v1.py'
       - 'ml/test_frozen_window_guardian_v1.py'
       - 'ml/daily_inventory_source_state_features_v2.py'
@@ -141,6 +145,9 @@ jobs:
 
       - name: Verify legal-window guardian and no-backfill routing
         run: python -m unittest ml.test_frozen_window_guardian_v1 -v
+
+      - name: Verify structural prior dependency dispatch guards
+        run: python -m unittest ml.test_structural_prior_window_guardian_v1 -v
 
       - name: Verify independent source-state feature masks and receipt time
         run: python -m unittest ml.test_daily_inventory_source_state_features_v2 -v

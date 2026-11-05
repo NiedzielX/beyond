@@ -44,3 +44,9 @@ Bounded watcher activation follows artifact/launcher publication and must record
 ### Actual bounded activation
 
 Afterartifact/launcherc3b37fdbpublication,watcherPID354725started16:45:09UTCwith300sintervalanddeadlineNov6 20:30UTC. ActualSslprocessand16:45:13post-launchcycleverified,0predictions/0scores/nullMAE. Newprivate6filebackup3990bytes/SHA c6279daa611e7ba3a890db44890549336a8671ae9475015e8941d7b0ae07a930read-back/decompressionverified.348registeredrootchecks pass and hosted source/artifactDemandEnginechecks succeed. First positive forecast is still future/source-dependent; no E2Eprediction or accuracy claim is inferred from this no-due cycle.
+
+## First genuine prospective forecast —17:08UTC
+
+Motor5091/snapshot35663 observed17:03:01.536UTC; genuine prior76 generated17:01:57UTC. Support26benchmark issued17:07:25.558UTC; this pair issued17:08:03.698UTC, its own actual issue. Source archive completed17:01:32UTC before the observation, all bytes preserved. Actual positive cycle verifies full frozen replay/private recovery:one captured event,0scores/nullMAE. Ten-file backup34902bytes/SHA342ecff8212dd69ea63da997e530c3923caa2acf34160478c93fd13eca790a7cread/decompressionverified. Later17:10watcher cycle correctly adds0duplicates.
+
+Raw control11646.60/history11340.79; both unchanged policies select shared prior12920.27. These are forecasts, not errors or proven improvement. Motor's current-season verified-home source count is0; gap/age stay missing, never zero attendance. This proves genuine pipeline capture but does not yet test benefit on a prefix with observed home history. First30new-fixture/8-club review remains unchanged. OriginalmainC1separately persisted its same-source prediction inDB via successful run42071837843; the research pair remains private, not served or production-active. See`STRUCTURAL_PRIOR_WINDOW_GUARDIAN_RESULT_2026-11-05.md`.
