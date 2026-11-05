@@ -1,0 +1,18 @@
+{
+  "status": "TARGET_FREE_HISTORY_FEATURES_PREPARED",
+  "rows": 80,
+  "features": 9,
+  "target_column_parsed": false,
+  "model_fit_performed": false,
+  "history_present_rows": 34,
+  "history_present_events": 13,
+  "history_present_clubs": 9,
+  "history_distinct_values": {
+    "verified_home_n_log": 6,
+    "verified_home_recent_gap": 13,
+    "verified_home_age_days": 34
+  },
+  "historical_source_capture_independently_verified": false,
+  "production_change": false,
+  "live_adjustment": 0
+}

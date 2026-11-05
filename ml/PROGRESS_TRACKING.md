@@ -1,5 +1,9 @@
 # Beyond Ticketing — ML Progress Tracking
 
+## Authorized next MAE experiment — history-support residual ablation, before fit
+
+User requested immediate continuation after the MAE plan. Source-consumption audit and target-free preparation are implemented. Exact separate protocol:`C1_HISTORY_SUPPORT_RESIDUAL_PRECOMMIT_V1.md`. Fixed6featurecontrol versus9featurehistory-augmented direct-person residual median, same26/80exposed training and fixed settings. Three new explicit history features use actual known-at/revision/season/canonical rules; new16imports are excluded from all old training observations. This tests a representation difference, not a new algorithm or historical improvement. No candidate fitted yet. Publish tested implementation/protocol before the two declared fits; genuine future source archives and unchanged30new-event/8-club review are required. Frozen models/gates/defaults remain unchanged.
+
 ## Panel monitoring correction deployed — November5 15:52UTC verification
 
 Narrow frontendPR9normallymerged to panelmaincfb3d675d7fbb2cd4c6fc008f73c019ab33beb40; VercelProduction7578292659SUCCESS15:50:46UTC. Final-head and main TypeScript/build/Chromium checks succeeded. This release contains only ingestionmonitoring/test changes, not PR8daily-feed/C1cardwork. Exact reviewed tree/integrity verified. Current browser-role133rows classified by shipped code as24current/2elapsedunresolved, preserving all source data. Direct productionDOMwas not inspected fromthishost(networkblocked); successful productionartifactdeployment and actual component tests are independently recorded.
