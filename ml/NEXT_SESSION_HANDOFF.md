@@ -1,10 +1,14 @@
 # Beyond — operational handoff
 
-Updated **2026-11-05 11:24 UTC**. Production remains **OFF**: `production_change=false`, `live_adjustment=0`.
+Updated **2026-11-05 11:27 UTC**. Production remains **OFF**: `production_change=false`, `live_adjustment=0`.
 
 Read strategy and state first: `MAE_RESEARCH_ROADMAP_V6.md` → `EXECUTION_PLAN_CURRENT.md` → `PROGRESS_TRACKING.md` → `TRAJECTORY_FORECASTING_PLAN_V1.md` → this handoff. This file supplies operational state; it does not define a competing MAE strategy.
 
 ## November5 operational continuation
+
+Latest verification: P9 guardian, paired-path monitor and both C1 collectors are alive with successful recent cycles. Source commit328f533 passed both hosted Demand Engine Smoke runs42018554329/42018474259 and the P4a/P7 contracts;270 registered root tests passed locally. No existing model was fitted or changed. PR215 contains the C1/daily comparisons; PR216 contains the bounded P9 guardian and operational evidence.
+
+Deployment access was checked again today: this runtime has no Supabase management token, database administrator binding or Vercel token. GitHub repository-secret metadata returned403, so the presence of inaccessible repository secrets is **unknown**, not proven absent. Available cloud tools edit a configuration draft; they do not supply a callable Supabase administrator. The existing data-role and browser-role reads work. The new managed daily feed therefore remains undeployed; do not claim the preview or a saved draft proves its deployment, and do not request secret values in chat.
 
 **Superseding11:20UTCwindow update:** one-shot helper completed:heartbeat42017429991SUCCESS→P9child42017444883FAILUREatbuild/persist. V1genuine attempt captured; corrected published helper794f74arecorded one genuine zero-prediction v2attempt11:16:24UTC. DB8/0/0v1,7/3/3v2(2scored events), encoder11/6/4. PR212stillunmerged; successful hosted chainNOTDONE. Source capture completed11:14:57was genuinely selected before11:15cutoff, not reconstructed. New generic bounded main-heartbeat guardian is implemented with7tests; publish before launch, then record actual cycle/PID/deadline. Report:`P9_HEARTBEAT_GUARDIAN_2026-11-05.md`. Older planned one-shot paragraph below is retained as dated context.
 
