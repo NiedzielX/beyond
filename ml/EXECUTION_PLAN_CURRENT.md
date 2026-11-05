@@ -10,6 +10,12 @@ Canonical strategy: `ml/MAE_RESEARCH_ROADMAP_V6.md`
 
 Important: operational counters and cutoff lists below are dated snapshots. Query live machine state before acting.
 
+## Authorized support26 experiment — November 5, before fit
+
+The user authorized the announced 20-to-26-event extension. Exact protocol: `C1_SUPPORT26_PRECOMMIT_V1.md`. Fit one separately versioned direct-person median head on the immutable 26-event/80-row/12-club snapshot, preserving the frozen median20 preprocessor, 30 features, quantile0.5/alpha0.1/HiGHS configuration, equal-event weights, clipping and C1v8 policy. Publish tested source/precommit before fit. Existing median20/Ridge20/C1v8 and all prospective contracts remain unchanged.
+
+Compare median26 against median20, Ridge20, original C1v8 and shared prior on identical genuine future inputs. All26 training events are excluded; no reuse of old17 as validation or historical missed-window backfill. Primary support question is raw median26 versus raw median20; product improvement separately requires beating all four declared product benchmarks. First fixed review30new independently scored canonical fixtures/8clubs, with paired event bootstrap uncertainty. No training-MAE claim or automatic production activation. Current stage: protocol/implementation and input validation, **no fit yet**. `.ai/specs/2026-11-05-c1-support26-median.md` and `.ai/runs/2026-11-05-c1-support26.md` track execution.
+
 ## November5 continuation — current at11:20UTC
 
 Korona603/T48was actually protected:11:15mainheartbeat42017429991SUCCESS→child42017444883FAILUREatbuild/persist. V1recorded its genuine insufficient-support attempt; a fresh unchanged corrected PR212helper recorded the legitimate zero-prediction v2attempt11:16:24UTCinside the legal window. FreshDBv1**8/0/0**,v2**7/3/3**; v2scoresare2independent events. This does not satisfy successful hosted redundancy. Exact job-log download is blocked; do not invent a retrieved stacktrace. See`P9_HEARTBEAT_GUARDIAN_2026-11-05.md`. A bounded source-locked guardian for the existing mainheartbeat is implemented/tested for remaining current windows; launch must follow source publication. No new forecast/model/DBwriter.

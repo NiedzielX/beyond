@@ -20,6 +20,8 @@ Do not overwrite a failed experiment. Record the result and decision.
 
 # 2. Headline scoreboard
 
+New authorized experiment, before fit: `c1-live-seat-median-support26-v1-frozen-2026-11-05-n26`. Exact protocol`C1_SUPPORT26_PRECOMMIT_V1.md`: new training information only,26events/80rows/12clubs, same frozen median20 representation/learner/policy. All26exposed training,0fresh validation. Future raw-support comparison versusmedian20 and separate governed comparison versusmedian20/Ridge20/originalv8/prior;30new-event/8-club first review. Current MAE and DeltaMAE are null; no existing lane changed.
+
 Current persisted C1 diagnostic (Nov5): `C1_CURRENT_ERROR_DECOMPOSITION_RESULT_V1.md`.17scored events, policyMAE3248.81vsprior3131.16, raw6241.96;15PRIOR/2LIVEchoices. Same four largest failures contribute68.50%; outcome-aware prior/raw oracle2949.38is a non-deployable diagnostic. No new model/validation or accuracy-improvement claim. The6subsequently scored events have prior961.29vs policy1648.96; cohort expansion explains the changed overall score. Preserve both frozen20-event challengers and future review gates.
 
 Daily inventory snapshotNov5 11:01UTC: existing full v1cohort17attempts/110points,4scored targets/4events/4clubs; model188.977408vs persistence163.25, Delta+25.727408, event improvement25%. Fixed drift10attempts/53futurepoints/0scores/nullMAE. The new identical-target three-way report has53shared future points and0pairedscores/nullMAEs;57older v1points remain outside this overlap but inside original primary coverage. Do not compare different cohorts or retune either frozen predictor. `DAILY_PATH_PAIRED_COMPARISON_V1.md`; first drift review8genuine+1events/5clubsunchanged.
