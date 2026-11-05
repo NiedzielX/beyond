@@ -1,0 +1,11 @@
+{
+  "canonical_class": "ml.c1_history_residual_v1.ResidualRuntime",
+  "frozen_weights_or_sources_changed": false,
+  "launcher": "ml/launch_c1_history_residual_v1.py",
+  "launcher_sha256": "a85c66d8a72df0cd88785c090c1ca56737d3f32b138ddf6854b4cb0905e9fa46",
+  "live_adjustment": 0,
+  "package_version": "c1-history-support-residual-v1-frozen-2026-11-05-n26",
+  "production_change": false,
+  "refit_performed": false,
+  "serialized_symbol": "__main__.ResidualRuntime"
+}

@@ -30,3 +30,7 @@ Korona's legitimate v2row had already been created locally at11:16UTCafter the o
 Private proof directory:`/workspace/ops-runtime/2026-11-05-p9-release/`. Twenty release/run/job/before-after DBreceipts were privately backed up:69196compressed bytes, SHA256`f85aa7340d7da24deae380d21502706e8710890ea6cefa5ae3bb23743a9eb75f`, namespace`p9-release-evidence-v1/`. Exact remote read-back, independent decompression and every file checksum verified.
 
 The research checkout is a stacked branch; remote main's newly released P9 file is verified independently. Do not mistake its older local ancestor for the deployed main implementation. Existing frozen collectors remain alive with their own source locks. New panel feed deployment still requires its separate project administrator binding. `production_change=false`, `live_adjustment=0`.
+
+## Fresh full-chain acceptance —16:34UTC
+
+The later449/T48window provides the missing fresh proof:guardian→heartbeat42065252556SUCCESS→child42065268900SUCCESS→newv1attempt16:31:47/newfirstprediction16:31:48plusv2V1_COVEREDattempt. Full-chain redundancy acceptance is nowDONEfor this positive window; it is not a new negativefallback-branch test. No localwriter, oldrecordoverwrite or historicalbackfill. Detailed evidence/recovery:`P9_FRESH_HEARTBEAT_CHAIN_RESULT_2026-11-05.md`. Earlier pending/603idempotent paragraphs remain dated history.

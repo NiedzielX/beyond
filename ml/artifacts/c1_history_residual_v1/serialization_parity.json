@@ -1,0 +1,21 @@
+{
+  "artifact_bytes_unchanged": true,
+  "models": {
+    "control": {
+      "max_prediction_difference_persons": 0.0,
+      "output_sha256": "55a72699dc747acbee78b798302f0d1f7a4e746a513bad0f25ba9b57a5b39467",
+      "predictions_bitwise_equal": true,
+      "probe_rows": 80
+    },
+    "history": {
+      "max_prediction_difference_persons": 0.0,
+      "output_sha256": "68cbf1e0471483d3afe302e201e4a49158ab856bbd37085f4adee1d53e011e5c",
+      "predictions_bitwise_equal": true,
+      "probe_rows": 80
+    }
+  },
+  "new_fits": 0,
+  "package_version": "c1-history-support-residual-v1-frozen-2026-11-05-n26",
+  "purpose": "serialization compatibility, not predictive accuracy",
+  "target_column_parsed": false
+}

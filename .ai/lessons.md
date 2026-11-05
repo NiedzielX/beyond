@@ -25,3 +25,5 @@ This index is durable memory, not a substitute for the authoritative execution p
 - [Training expansion and retry proof](lessons/2026-11-05-training-expansion-and-retry-proof.md): support26 keeps old events exposed, exact input/model replay detects substituted forecasts, and an idempotent hosted retry does not create fresh DB evidence.
 
 - [Fold preprocessing and dashboard clocks](lessons/2026-11-05-fold-preprocessing-and-dashboard-time.md): training-only fold representation and actual label availability; exposed sparse-context policy gains; fresh projections can retain elapsed unresolved candidates.
+
+- [Residual runtime recovery and history support](lessons/2026-11-05-residual-runtime-and-history-support.md): cross-process pickle binding, byte-identical no-refit recovery, source presence versus consumption, exact value/missingness coefficient names, and fresh positive P9 chain scope.

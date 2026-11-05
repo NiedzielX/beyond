@@ -1,0 +1,43 @@
+{
+  "attendance_accuracy_measured": false,
+  "diagnostic_only": true,
+  "models": {
+    "control": {
+      "history_age_coefficient_nonzero": false,
+      "history_count_coefficient_nonzero": false,
+      "history_recent_gap_coefficient_nonzero": false,
+      "learned_coefficients_modified": false,
+      "nonzero_count": 4,
+      "nonzero_terms": [
+        "num__available_share",
+        "num__removed_6h_share",
+        "num__observed_span_days",
+        "num__missingindicator_removed_24h_share"
+      ],
+      "uses_24h_missingness": true,
+      "uses_24h_value": false,
+      "uses_6h_value": true,
+      "uses_history_family": false
+    },
+    "history": {
+      "history_age_coefficient_nonzero": false,
+      "history_count_coefficient_nonzero": false,
+      "history_recent_gap_coefficient_nonzero": true,
+      "learned_coefficients_modified": false,
+      "nonzero_count": 6,
+      "nonzero_terms": [
+        "num__prior_occupancy",
+        "num__available_share",
+        "num__removed_6h_share",
+        "num__observed_span_days",
+        "num__verified_home_recent_gap",
+        "num__missingindicator_removed_24h_share"
+      ],
+      "uses_24h_missingness": true,
+      "uses_24h_value": false,
+      "uses_6h_value": true,
+      "uses_history_family": true
+    }
+  },
+  "package_version": "c1-history-support-residual-v1-frozen-2026-11-05-n26"
+}

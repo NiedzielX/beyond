@@ -1,0 +1,31 @@
+{
+  "attendance_accuracy_measured": false,
+  "checked_at": "2026-11-05T16:15:20.707476+00:00",
+  "evidence_counts": {
+    "HOME_METADATA_DIFFERS_CURRENT_RECONSTRUCTION": 2,
+    "HOME_METADATA_MATCHES_WITHOUT_IMPORTS": 5,
+    "HOME_METADATA_MATCHES_WITH_IMPORTS": 1,
+    "IMPORTS_NOT_DISTINGUISHABLE_IN_HOME_METADATA": 12
+  },
+  "exact_source_row_consumption_proven": false,
+  "forecast_created": false,
+  "implementation_sha256": "5eba618e9d8ea20186e847a7cf4ca1750d5b9ef1e0c6da5d3ffe90146e36dbf8",
+  "limits": [
+    "prior RPC exposes aggregates, not original per-source rows or feature hash",
+    "current revised sporting/history values do not independently prove original serving inputs",
+    "import presence and metadata matches are not an MAE improvement"
+  ],
+  "live_adjustment": 0,
+  "missing_or_incomplete_priors": 8,
+  "model_fit_performed": false,
+  "prior_view_capture_sha256": "801687d44307f2ac8bab90e8b026e1a5d23446d5c918c20faca649a59ae0d929",
+  "production_change": false,
+  "queried_event_horizons": 28,
+  "serving_view_rows": 62,
+  "source_export_sha256": "ad1fc737f607297f20ea171e0ea99d4d3398fccccb959a6980339bceb6d67afa",
+  "stored_prior_rows_audited": 20,
+  "stored_rows_matching_knowledge_safe_home_metadata": 17,
+  "verified_import_rows": 16,
+  "verified_imports_present_in_serving_view": 16,
+  "version": "verified-history-consumption-audit-v1"
+}
