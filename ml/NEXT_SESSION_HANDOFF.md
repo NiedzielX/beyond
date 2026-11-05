@@ -1,5 +1,12 @@
 # Beyond — operational handoff
 
+## New information actually appended — November5 17:26UTC
+
+Targeted public audit/source recovery complete:27previously absent current-season home fixtures, Motor7/Korona6/Widzew7/Piast7; all match unique completed sporting home/away/date/result identities. Exact independent kickoff-hour proof remains unavailable; public reported clocks and historical publication limits preserved. Hosted source runs42073004397/42073601199and latestDemandEnginechecksSUCCESS,rawhashes/extractionindependentlyreproduced.
+
+Appendverified at17:24:52UTC:history44→71,allold44rows/27outcomes/38same-timepriorresolutions/existingC1predictionsunchanged. Original900featurecellsreproduceoncurrent/planned/actualpostexports;allnewrecordsareexcludedat80oldtrainingobservations. No fits/oldpriorregeneration/outcomesync/backfill. Actual source archive71rowscompleted17:25:47UTCandprivatelyrestored. Remaining acceptance:later genuine prefix→newarchive→nonmissing residual homehistory, preserving the17:03forecast/sourcebytes and zero-historymanifest. MAEstillnullfornewpair;productionfalse/0unchanged. Report:`CURRENT_HOME_HISTORY_SOURCE_COVERAGE_RESULT_V1.md`. Separate appendSDDremainsactiveuntilactualconsumptionproof.
+
+
 ## Positive C1 capture and first paired path scores — November5 17:11UTC
 
 Main materializer42070393174SUCCESS→DBMotor5091prior76actualgenerated17:01:57→real snapshot35663at17:03:01→support26immutable17:07:25→new history residual pair17:08:03. Newpair1captured/0scored/nullMAE, genuine pre-observation source archive and private recoveryverified. Motor verified-home count0; no fake history. MainC1workflow42071837843alsoSUCCESS→new Motor predictionindependentlyconfirmed inDB. ExistingC1scoreboard102predictionrows/18events/17scored, latestpolicyMAE3248.807865unchanged. Newpairisprivate, notDBserving. Report:`STRUCTURAL_PRIOR_WINDOW_GUARDIAN_RESULT_2026-11-05.md`.

@@ -1,0 +1,17 @@
+# Current home-history public-source coverage audit
+
+Actual current canonical-source read has no accepted current-season verified home fixtures for Motor, Korona, Widzew or Piast, four of ten future fixtures. The newly frozen history residual pair's first Motor prefix therefore has missing home level/age. Audit this specific new coverage gap; do not repeat old rejected model searches or change source/model contracts.
+
+Perform read-only bounded retrieval of exactly four public pages under the already-used frekwencyjny.pl club source: motor-lublin, korona-kielce, widzew-lodz, piast-gliwice. Each response at most2MiB/20seconds; preserve exact raw bytes, SHA, actual receipt times, extraction and HTTP failures outside Git. No authenticated user endpoints or automatic label imports. Extracted numeric text is not a verified source row: require exact home/away/date/competition/attendance identity and provenance before any future proposal to ingest. If unavailable, retain failure/unknown status. No reconstruction of a missed source archive, no backdating newly obtained facts into prior observations. Existing first17:03Motor forecast/source bytes stay immutable.
+
+DONE for this audit is a reproducible safe coverage/result report, explicit verified-versus-unverified distinction and concrete next action. Actual new DB imports, source-contract changes, model fits, parameter changes, forecast reissues or production activation are outside this read-only audit. Production false/0unchanged.
+
+## Hosted fallback after actual local read failure
+
+All four local bounded reads returned URLError; this does not establish source absence. Extend the existing optional read-only source-audit job with a separately named four-page module/input. Publish it on a research branch before explicit workflow dispatch. No main merge, schedule or DB/OIDC secret binding. Existing contents-read/checks-write job permissions suffice to retrieve public pages and expose bounded public-only evidence; raw pages retained14days as the existing source audit artifact. Reject redirects outside the HTTPS public host before following them. Test URL/redirect/size/failure guards and byte/timestamp preservation. Inspect actual hosted result and source text, not YAML alone, before concluding coverage.
+
+Actual hosted run42073004397SUCCESS fetched all four pages HTTP200, untruncated, revealing27current-season home rows. The raw GitHub artifact exists, but its blob-host download is blocked from this workspace. Preserve that distinction. Extend only this new read-only publisher to transfer compressed public source bytes in bounded checks, with source SHA, chunk ordering/count and size guards, so the workspace can independently reproduce raw-page hashes and extraction. Re-run the source audit on published source, retain each run's actual receipt time, and never call an earlier observation enriched by later retrieval. No DB import is part of this audit.
+
+## Audit acceptance
+
+Runs42073004397and42073601199SUCCESS,all four pagesHTTP200/untruncated. Independent recovery reproduces all raw hashes/extraction.27source rows match completed sporting home/away/date/result identities; independent exact-hour proof remains explicitly unavailable. Ninefocusedguards and hosted currentDemandEnginesmokes passed. Sourceauditcomplete;separateappendwork has its ownSDDandreceipts. No import occurred within the read-only audit job. Report:`ml/CURRENT_HOME_HISTORY_SOURCE_COVERAGE_RESULT_V1.md`.

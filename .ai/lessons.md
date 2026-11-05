@@ -29,3 +29,5 @@ This index is durable memory, not a substitute for the authoritative execution p
 - [Residual runtime recovery and history support](lessons/2026-11-05-residual-runtime-and-history-support.md): cross-process pickle binding, byte-identical no-refit recovery, source presence versus consumption, exact value/missingness coefficient names, and fresh positive P9 chain scope.
 
 - [Cron execution and prior clocks](lessons/2026-11-05-cron-execution-and-prior-clocks.md): scheduled YAML versus actual runs, broad due-set guards, durable dispatch accounting and later availability versus canonical cutoff.
+
+- [Public source coverage and receipts](lessons/2026-11-05-public-source-coverage-and-receipts.md): actual missing club history, hosted public-byte recovery, source-run identity, future-only source knowledge and parity before/after append.

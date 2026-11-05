@@ -7,6 +7,10 @@ on:
         description: 'Fetch fixed public attendance-source pages without model or database operations'
         type: boolean
         default: false
+      current_home_history_source_audit:
+        description: 'Read four fixed public club pages for missing current home history; no imports'
+        type: boolean
+        default: false
       blocked_outcome_source_audit:
         description: 'Read fixed official club pages for the blocked outcome445; no label imports'
         type: boolean
@@ -34,7 +38,7 @@ permissions:
 
 jobs:
   public-source-audit:
-    if: github.event_name == 'workflow_dispatch' && (inputs.public_source_audit || inputs.p9_failure_diagnostic || inputs.blocked_outcome_source_audit)
+    if: github.event_name == 'workflow_dispatch' && (inputs.public_source_audit || inputs.p9_failure_diagnostic || inputs.blocked_outcome_source_audit || inputs.current_home_history_source_audit)
     runs-on: ubuntu-latest
     timeout-minutes: 8
     permissions:
@@ -53,6 +57,13 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ github.token }}
         run: python -m ml.public_attendance_source_audit_v1 --output-dir "$RUNNER_TEMP/public-attendance-sources" --publish-checks
+      - name: Audit four missing current home-history public sources
+        if: inputs.current_home_history_source_audit
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          python -m unittest ml.test_current_home_history_source_audit_v1 -v
+          python -m ml.current_home_history_source_audit_v1 --output-dir "$RUNNER_TEMP/current-home-history-sources" --publish-checks
       - name: Read the fixed existing failed P9 job log without model operations
         if: inputs.p9_failure_diagnostic
         env:
@@ -73,6 +84,7 @@ jobs:
           path: |
             ${{ runner.temp }}/public-attendance-sources
             ${{ runner.temp }}/blocked-outcome445-sources
+            ${{ runner.temp }}/current-home-history-sources
           retention-days: 14
           if-no-files-found: ignore
   validate-contract:
