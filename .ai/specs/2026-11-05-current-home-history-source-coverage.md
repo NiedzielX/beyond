@@ -1,0 +1,11 @@
+# Current home-history public-source coverage audit
+
+Actual current canonical-source read has no accepted current-season verified home fixtures for Motor, Korona, Widzew or Piast, four of ten future fixtures. The newly frozen history residual pair's first Motor prefix therefore has missing home level/age. Audit this specific new coverage gap; do not repeat old rejected model searches or change source/model contracts.
+
+Perform read-only bounded retrieval of exactly four public pages under the already-used frekwencyjny.pl club source: motor-lublin, korona-kielce, widzew-lodz, piast-gliwice. Each response at most2MiB/20seconds; preserve exact raw bytes, SHA, actual receipt times, extraction and HTTP failures outside Git. No authenticated user endpoints or automatic label imports. Extracted numeric text is not a verified source row: require exact home/away/date/competition/attendance identity and provenance before any future proposal to ingest. If unavailable, retain failure/unknown status. No reconstruction of a missed source archive, no backdating newly obtained facts into prior observations. Existing first17:03Motor forecast/source bytes stay immutable.
+
+DONE for this audit is a reproducible safe coverage/result report, explicit verified-versus-unverified distinction and concrete next action. Actual new DB imports, source-contract changes, model fits, parameter changes, forecast reissues or production activation are outside this read-only audit. Production false/0unchanged.
+
+## Hosted fallback after actual local read failure
+
+All four local bounded reads returned URLError; this does not establish source absence. Extend the existing optional read-only source-audit job with a separately named four-page module/input. Publish it on a research branch before explicit workflow dispatch. No main merge, schedule or DB/OIDC secret binding. Existing contents-read/checks-write job permissions suffice to retrieve public pages and expose bounded public-only evidence; raw pages retained14days as the existing source audit artifact. Reject redirects outside the HTTPS public host before following them. Test URL/redirect/size/failure guards and byte/timestamp preservation. Inspect actual hosted result and source text, not YAML alone, before concluding coverage.
