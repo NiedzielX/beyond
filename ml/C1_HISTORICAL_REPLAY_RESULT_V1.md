@@ -1,6 +1,6 @@
 # Historical C1 recipe replay v1 — exposed diagnostic
 
-Completed **2026-11-05 15:36:57UTC**. Protocol:`C1_HISTORICAL_REPLAY_PRECOMMIT_V1.md`; implementation/publication`f7706419e33b461f3d39559e47a9fcf697c7b77b`verified remotely before fitting. This tests separately refitted fixed recipes, **not the actual frozen26artifact**. All17target fixtures/50source-time prefixes were previously exposed. No tuning, training-MAE claim, production write or prospective backfill.
+Completed **2026-11-05 15:36:57UTC**. Review:[PR219](https://github.com/NiedzielX/beyond/pull/219). Protocol:`C1_HISTORICAL_REPLAY_PRECOMMIT_V1.md`; implementation/publication`f7706419e33b461f3d39559e47a9fcf697c7b77b`verified remotely before fitting. This tests separately refitted fixed recipes, **not the actual frozen26artifact**. All17target fixtures/50source-time prefixes were previously exposed. No tuning, training-MAE claim, production write or prospective backfill.
 
 ## Same17fixtures, latest-row attendance MAE in persons
 
@@ -31,7 +31,7 @@ Original C1rawlatest forecasts match all17stored outputs to7.28e-12. Training da
 
 Aggregate JSON:`artifacts/c1_historical_replay_v1_summary.json`. Private result includes exact fold IDs/cutoffs/training sizes, all50predictions per design, paired errors, event-balanced latest/window MAE, bias, improvement rates, P90/worst degradation, horizon/club and first11/later6groups. Stored C1policy has no fabricated window baseline. Bootstrap10000paired-eventresamples/seed42is descriptive only. Source hashes are predeclared in`artifacts/c1_historical_replay_v1_source_hashes.json`.
 
-18newfold/chronology/metric/immutability tests pass;311registered root checks and189DemandEnginechecks pass. Broad root discovery ran637checks but had7import errors solely because unrelated olderCatBoostmodules lack their optional dependency; do not claim that broader suite passed or change the pinned live environment to repair it. Frozen26loader/identitycheck passes and the complete frozen artifact/source map is identical before/after both designs.
+18newfold/chronology/metric/immutability tests pass;311registered root checks and189DemandEnginechecks pass. Broad root discovery ran637checks but had7import errors solely because unrelated olderCatBoostmodules lack their optional dependency; do not claim that broader suite passed or change the pinned live environment to repair it. Hosted source/result DemandEngine42058255308and other non-skipped checks succeed; skipped live-anchor/main-audit jobs are not claimed as executed. Frozen26loader/identitycheck passes and the complete frozen artifact/source map is identical before/after both designs.
 
 Private evidence16files/185950compressed bytes,SHA**5171496708f387152274f44298662ec02f8472ebb3117173af090090cf4240ce**, namespace`c1-historical-replay-v1/`. Independent remote read/decompression/file hashes and complete input reload/numerical parity verified after restoration,0refits. Runtime:`/workspace/ops-runtime/2026-11-05-c1-historical-replay-v1/`. Raw rows remain outsideGit.
 
