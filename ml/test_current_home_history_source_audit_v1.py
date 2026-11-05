@@ -1,4 +1,6 @@
 import hashlib
+import base64
+import zlib
 import tempfile
 from pathlib import Path
 import unittest
@@ -6,7 +8,7 @@ from unittest.mock import Mock
 import urllib.error
 import urllib.request
 
-from ml.current_home_history_source_audit_v1 import fetch, SOURCES, PublicRedirect, allowed_redirect, MAX_BYTES
+from ml.current_home_history_source_audit_v1 import fetch, SOURCES, PublicRedirect, allowed_redirect, MAX_BYTES, raw_chunks
 
 
 class SourceAuditTests(unittest.TestCase):
@@ -63,6 +65,25 @@ class SourceAuditTests(unittest.TestCase):
             self.assertEqual(result['error_type'], 'URLError')
             self.assertFalse(result['fixture_identity_verified']); self.assertNotIn('actual_attendance', result)
             self.assertFalse(list(Path(temp).iterdir()))
+
+    def test_public_raw_transport_reproduces_original_bytes_and_digest(self):
+        raw = b'<html>public source</html>' * 100
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp); result = fetch(SOURCES[0], root, 0, self.response(raw))
+            chunks = raw_chunks(root, 0, result)
+            restored = zlib.decompress(base64.b64decode(''.join(p['payload'] for p in chunks)))
+            self.assertEqual(restored, raw)
+            self.assertTrue(all(p['source_sha256'] == hashlib.sha256(raw).hexdigest() for p in chunks))
+            self.assertFalse(chunks[0]['automatic_label_import'])
+
+    def test_changed_saved_raw_source_cannot_be_transported_under_old_receipt(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp); result = fetch(SOURCES[0], root, 0, self.response(b'original'))
+            (root / 'source-0.html').write_bytes(b'changed')
+            with self.assertRaises(ValueError): raw_chunks(root, 0, result)
+
+    def test_failed_source_never_publishes_a_raw_payload(self):
+        self.assertEqual(raw_chunks(Path('/nonexistent'), 0, {'http_status': 404}), [])
 
 
 if __name__ == '__main__': unittest.main()

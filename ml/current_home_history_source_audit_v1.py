@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import argparse
+import base64
 from datetime import datetime, timezone
 import hashlib
 import json
@@ -9,6 +10,7 @@ import os
 from pathlib import Path
 import urllib.parse
 import urllib.request
+import zlib
 
 from ml.public_attendance_source_audit_v1 import extract, MAX_BYTES
 
@@ -60,25 +62,46 @@ def fetch(url, directory, index, opener=None):
     return result
 
 
-def publish(results):
+def raw_chunks(directory, index, source):
+    if source.get('error_type') or source.get('http_status') != 200:
+        return []
+    raw = (directory / f'source-{index}.html').read_bytes()
+    if len(raw) > MAX_BYTES or hashlib.sha256(raw).hexdigest() != source['sha256']:
+        raise ValueError('Saved raw source differs from its receipt')
+    packed = base64.b64encode(zlib.compress(raw)).decode()
+    size = 40000
+    chunks = [packed[i:i+size] for i in range(0, len(packed), size)]
+    if not 1 <= len(chunks) <= 8:
+        raise ValueError('Compressed raw source exceeds bounded check transport')
+    return [{'version': VERSION, 'source_index': index, 'source_sha256': source['sha256'],
+             'encoding': 'zlib+base64', 'part': i, 'parts': len(chunks), 'payload': value,
+             'raw_bytes': len(raw), 'automatic_label_import': False}
+            for i, value in enumerate(chunks)]
+
+
+def publish(results, directory):
     if os.environ.get('GITHUB_REPOSITORY') != 'NiedzielX/beyond':
         raise ValueError('Authorized repository required')
+    entries = []
     for index, result in enumerate(results):
+        entries.append((f'current-home-history-source-{index}', result))
+        entries.extend((f'current-home-history-raw-{index}-{chunk["part"]}', chunk)
+                       for chunk in raw_chunks(directory, index, result))
+    for name, result in entries:
         text = json.dumps(result, ensure_ascii=False)
         if len(text.encode()) > 60000:
             raise ValueError('Public evidence exceeds the check output bound')
-        body = {'name': f'current-home-history-source-{index}', 'head_sha': os.environ['GITHUB_SHA'],
+        body = {'name': name, 'head_sha': os.environ['GITHUB_SHA'],
                 'status': 'completed', 'conclusion': 'neutral', 'output': {
                     'title': 'Read-only public home-history coverage audit',
-                    'summary': 'Retrieval only; no verified fixture, database write or model operation.',
+                    'summary': 'Public retrieval only; no verified fixture, database or model operation.',
                     'text': text}}
         request = urllib.request.Request('https://api.github.com/repos/NiedzielX/beyond/check-runs',
             data=json.dumps(body).encode(), headers={'Authorization': 'Bearer ' + os.environ['GITHUB_TOKEN'],
                 'Accept': 'application/vnd.github+json', 'Content-Type': 'application/json'}, method='POST')
         with urllib.request.urlopen(request, timeout=25) as response:
             saved = json.load(response)
-        print(json.dumps({'check_id': saved['id'], 'source_index': index,
-                          'http_status': result.get('http_status'), 'labels_imported': 0}), flush=True)
+        print(json.dumps({'check_id': saved['id'], 'evidence_name': name, 'labels_imported': 0}), flush=True)
 
 
 def main():
@@ -92,7 +115,7 @@ def main():
         'version': VERSION, 'sources': results, 'labels_imported': 0,
         'production_change': False, 'live_adjustment': 0}, indent=2, ensure_ascii=False) + '\n')
     if args.publish_checks:
-        publish(results)
+        publish(results, args.output_dir)
     print(json.dumps({'retrievals_attempted': len(results), 'labels_imported': 0,
                       'production_change': False, 'live_adjustment': 0}))
 
