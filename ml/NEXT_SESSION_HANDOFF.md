@@ -1,8 +1,14 @@
 # Beyond — operational handoff
 
-Updated **2026-11-05 11:27 UTC**. Production remains **OFF**: `production_change=false`, `live_adjustment=0`.
+Updated **2026-11-05 12:03 UTC**. Production remains **OFF**: `production_change=false`, `live_adjustment=0`.
 
 Read strategy and state first: `MAE_RESEARCH_ROADMAP_V6.md` → `EXECUTION_PLAN_CURRENT.md` → `PROGRESS_TRACKING.md` → `TRAJECTORY_FORECASTING_PLAN_V1.md` → this handoff. This file supplies operational state; it does not define a competing MAE strategy.
+
+## New support26 median actually frozen
+
+User authorized the announced20→26training-support experiment. Exact frozen protocol`C1_SUPPORT26_PRECOMMIT_V1.md`, report`C1_SUPPORT26_RESULT_V1.md`, draft[PR217](https://github.com/NiedzielX/beyond/pull/217). Source1bdfc8fwas published/remotely verified11:58:08UTCbefore one fit, frozen11:58:10UTC. Estimator29839c647277d91b333d5a23d7f337250dae4c11d36cc3692b78af668ece57d3, manifestb04ebf041c3170320c04b84c83bac11178cd014c350a9ed8ae6716954d193685. Same frozen median20 representation/learner/policy; old20/9artifacts and helpers untouched. All26events are now training/exposed for this package, including old17; no historical validation or trainingMAE.
+
+Actual11:59:13current cycle succeeds with0eligible candidates/0forecasts/0scores/nullMAE. Runtime`/workspace/ops-runtime/2026-11-05-c1-support26-collector/`; proof folder`2026-11-05-c1-support26/`. Full private model/runtime/training backup SHA91a812c97a754f5e62947088a4043df4f04589bfd00b61e490644dfd807360bcwas independently fetched/restored, all11files and80rows/30features validated without fit.293root checks and both hosted pre-fit jobs pass. Publish artifact before bounded watcher launch; record its actual PID/deadline/post-launch cycle. Never edit this newly frozen module/precommit/dependencies under the same version. First possible final24window today17:00UTC; source/anchor must qualify. Raw-support and governed-product questions remain separate, review30new fixtures/8clubs.
 
 ## November5 operational continuation
 
