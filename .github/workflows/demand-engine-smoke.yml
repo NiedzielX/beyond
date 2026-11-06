@@ -45,6 +45,9 @@ on:
       - 'ml/*verified_attendance_source_rows*v1.py'
       - 'ml/*attendance_knowledge_time_guard*v1.py'
       - 'ml/*structural_known_at*v1.py'
+      - 'ml/*structural_history_refresh*v1.py'
+      - 'ml/STRUCTURAL_HISTORY_REFRESH_PRECOMMIT_V1.md'
+      - 'ml/artifacts/structural_history_refresh_v1/**'
       - 'ml/*prepare_c1_training_data26*v1.py'
       - 'ml/*blocked_outcome_source_audit*v1.py'
       - 'ml/*verify_blocked_outcome445_composite*v1.py'
@@ -101,6 +104,9 @@ on:
       - 'ml/*verified_attendance_source_rows*v1.py'
       - 'ml/*attendance_knowledge_time_guard*v1.py'
       - 'ml/*structural_known_at*v1.py'
+      - 'ml/*structural_history_refresh*v1.py'
+      - 'ml/STRUCTURAL_HISTORY_REFRESH_PRECOMMIT_V1.md'
+      - 'ml/artifacts/structural_history_refresh_v1/**'
       - 'ml/*prepare_c1_training_data26*v1.py'
       - 'ml/*blocked_outcome_source_audit*v1.py'
       - 'ml/*verify_blocked_outcome445_composite*v1.py'
@@ -163,6 +169,9 @@ jobs:
 
       - name: Verify local outcome hints never restart expensive source collection
         run: python -m unittest ml.test_c1_outcome_scoring_bridge_v1 -v
+
+      - name: Verify structural history refresh clocks, immutable replay and paired MAE
+        run: python -m unittest ml.test_structural_history_refresh_v1 -v
 
       - name: Verify structural prior dependency dispatch guards
         run: python -m unittest ml.test_structural_prior_window_guardian_v1 -v

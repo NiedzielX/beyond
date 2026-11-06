@@ -1,0 +1,5 @@
+# Structural history-refresh MAE preflight
+
+User asks to continue MAEwork. Canonical documents and frozen residual precommit read. Current2futureeventcohort has no genuine outcomes yet. No labels or scores fabricated; old models remain fixed. New-information hypothesis targets the unchanged structural anchor's zero current-season home support, using the27verified facts genuinely acquired later. Check exact original-anchor reconstruction before considering any new private prospective comparison. Pure offline first step; no IO-heavy DBpolling or fits.
+
+Exact original Motor prior replay succeeded: 12920.269297843897. Adding genuinely later 27 facts changes it to 11928.239260475439; guarded source has 86 records and 7 new Motor home records. This is not an MAE gain. Implemented separately versioned actual-knowledge shadow protocol, source-locked no-fit core, private immutable collector/scorer/backup and 22 integrity tests. All 424 registered root checks pass. Actual saved candidate/source replay also passes. Source publication and activation remain next; existing frozen streams unchanged.
