@@ -39,6 +39,7 @@ on:
       - 'ml/*c1*objective*audit*v1.py'
       - 'ml/*c1_training_expansion*v1.py'
       - 'ml/*c1_seat_median*v1.py'
+      - 'ml/*current_home_history_staging*v1.py'
       - 'ml/*current_home_history_source_audit*v1.py'
       - 'ml/*public_attendance_source_audit*v1.py'
       - 'ml/*verified_attendance_source_rows*v1.py'
@@ -94,6 +95,7 @@ on:
       - 'ml/*c1*objective*audit*v1.py'
       - 'ml/*c1_training_expansion*v1.py'
       - 'ml/*c1_seat_median*v1.py'
+      - 'ml/*current_home_history_staging*v1.py'
       - 'ml/*current_home_history_source_audit*v1.py'
       - 'ml/*public_attendance_source_audit*v1.py'
       - 'ml/*verified_attendance_source_rows*v1.py'
@@ -194,6 +196,9 @@ jobs:
 
       - name: Verify bounded current home-history source reads
         run: python -m unittest ml.test_current_home_history_source_audit_v1 -v
+
+      - name: Verify current home-history source staging and actual run provenance
+        run: python -m unittest ml.test_current_home_history_staging_v1 -v
 
       - name: Verify source fixture identity and append-only knowledge timestamps
         run: python -m unittest ml.test_verified_attendance_source_rows_v1 -v
