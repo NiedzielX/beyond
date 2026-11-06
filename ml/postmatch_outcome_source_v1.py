@@ -92,7 +92,11 @@ def recover(checks, head_sha, run_id, run_attempt):
         if not check['name'].startswith('postmatch-outcome-'):continue
         value=json.loads(check['output']['text'])
         if value.get('workflow_run_id')!=run_id or value.get('workflow_run_attempt')!=run_attempt:continue
-        if (check.get('details_url')!=f'https://github.com/NiedzielX/beyond/actions/runs/{run_id}'
+        # The GitHub Actions app normalizes details_url to its own check-run URL.
+        # Run identity therefore comes from the explicit external/payload fields.
+        links={f'https://github.com/NiedzielX/beyond/actions/runs/{run_id}'}
+        if type(check.get('id'))is int:links.add(f'https://github.com/NiedzielX/beyond/runs/{check["id"]}')
+        if (check.get('details_url') not in links or check.get('app',{}).get('slug')!='github-actions'
                 or check.get('external_id')!=f'postmatch:{run_id}:{run_attempt}:{check["name"]}'):
             raise ValueError('Custom check run/attempt linkage differs')
         relevant.append(check)
