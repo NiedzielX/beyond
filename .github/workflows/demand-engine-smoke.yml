@@ -176,7 +176,7 @@ jobs:
         run: python -m unittest ml.test_postmatch_outcome_source_v1 ml.test_run_postmatch_outcome_closure_v1 -v
 
       - name: Verify structural history refresh clocks, immutable replay and paired MAE
-        run: python -m unittest ml.test_structural_history_refresh_v1 -v
+        run: python -m unittest ml.test_structural_history_refresh_v1 ml.test_watch_structural_history_refresh_v1 -v
 
       - name: Verify structural prior dependency dispatch guards
         run: python -m unittest ml.test_structural_prior_window_guardian_v1 -v
