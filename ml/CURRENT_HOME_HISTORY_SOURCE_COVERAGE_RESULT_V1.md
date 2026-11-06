@@ -32,3 +32,7 @@ Private evidence:`/workspace/ops-runtime/2026-11-05-current-home-history-source-
 ## Genuine consumption verified November6 from preserved evidence
 
 First actual later Motor prefix:snapshot35680observedNov5 17:33:01.899UTC,ownimmutableforecast17:40:44.122UTC,verified_home_n7withsourcearchivecompletedbeforeobservation. This is actual rawarchive→featuremanifest→frozenpairforecast evidence, not database presence alone. Earlier35663/17:03zero-history forecast SHA563242ef8504fc945e52eadd485fa897ad49f90ad58659cabcdf4089e24b7fe3remainsbyte-identical. Appendedfactsareactuallyconsumedwithoutrefit/backdating. FutureattendanceMAEstillnull;thepuregenericstagingadapterisaseparateunfinishedimplementation,notevidenceofanotherimport. Receipt:`2026-11-06-supabase-io-mitigation/history-consumption-proof.json`inprivateopsruntime.
+
+## Reusable staging finished —November6
+
+The separatepureadapter`ml/current_home_history_staging_v1.py`isnowcomplete,with15source-integritytestsand402registeredrootcheckspassing. It reproducesall27actualappendpayloadrecordsexactlyfromindependentlyrecoveredrawpagesandtheoriginalsourcearchive,includingcorrectnewrunID/actualverificationtime. No networkcall,DBwriteornewfit. This supersedes the earlier dated unfinished-adapter note. Sourceappend/realconsumption/reusable-stagingSDDisnowimplemented;futureMAEstaysaseparatependingquestion.
