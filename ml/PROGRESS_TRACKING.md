@@ -1,5 +1,14 @@
 # Beyond Ticketing — ML Progress Tracking
 
+## Supabase disk IO incident — November6 11:54UTC
+
+User supplied actual provider warning. Paused redundant standaloneRidge20PID169529/median20PID200395;all72/67oldforecastsbyte-preserved. Support26continuesbothbenchmarks;do notclaimthepausedindependentstreamscontinued. HistorysidecarPID474192andpriorguardianPID473151actuallyrestartedtousing900seconds(not300),source/modelbytesunchanged,actualpostlaunchcyclesverified. DeadlinesremainNov6 20:30UTC. LocalfeatureRPCschedule12→4/hour;notameasurementofserverIO. Sourcearchive/support26stay900seconds.
+
+Olddailyfullhistoryexportwas28019rows/7.57MBpercycle;workerexpired10:30UTC. DriftpreviouslyfailedStorageHTTP544at06:12. Newtestedlocalcutoffschedulerandoutcomescoringbridgeareimplemented,notyetpublished/launched.387registeredrootchecks pass. ActualscheduledGitHubhistoryhas36runs/24h,notquarter-hourYAMLcounts. Admin/Managementmetricsbindingabsent;read-onlydiagnosticSQLpreparedbutnotexecuted. Report:`SUPABASE_DISK_IO_MITIGATION_RESULT_2026-11-06.md`. No paidupgrade/indexDDL/cleanup/modelchange.
+
+Newhistoryconsumptionfinallyprovenfromexistingimmutableevidence:Motor35680atNov5 17:33,ownissue17:40:44,home_n7,archivepre-observation. Old17:03zero-historybytesunchanged.27rowappenddataacceptancecomplete;purestagingadapterremainsuncommittedWIPandoutsideIOrelease. Newpair2capturedevents/0scored/nullMAE,no gainclaim. Defaultsfalse/0.
+
+
 ## New information actually appended — November5 17:26UTC
 
 Targeted public audit/source recovery complete:27previously absent current-season home fixtures, Motor7/Korona6/Widzew7/Piast7; all match unique completed sporting home/away/date/result identities. Exact independent kickoff-hour proof remains unavailable; public reported clocks and historical publication limits preserved. Hosted source runs42073004397/42073601199and latestDemandEnginechecksSUCCESS,rawhashes/extractionindependentlyreproduced.

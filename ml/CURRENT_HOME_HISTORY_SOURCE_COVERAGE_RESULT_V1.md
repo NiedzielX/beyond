@@ -28,3 +28,7 @@ All27absent records are now in`ml_match_history`:44→71, independently read bac
 The unchanged source archive collector captured all71history records at17:25:47UTC, exportSHA`5c97705a9518efea67c243029a96a9615a301c85c706f302146bb6e8c027800c`, independently uploaded/read/restored. Only later genuinely observed prefixes may select this archive. Earlier17:03Motor source/forecasts keep their original zero-history manifests. Genuine later residual consumption is the remaining end-to-end check; database presence alone is not that proof. New attendance-head MAEstillnull; productionfalse/0unchanged.
 
 Private evidence:`/workspace/ops-runtime/2026-11-05-current-home-history-source-coverage/`and`/workspace/ops-runtime/2026-11-05-current-home-history-append/`. Raw sources, rows, verification and recovery stay outside Git.
+
+## Genuine consumption verified November6 from preserved evidence
+
+First actual later Motor prefix:snapshot35680observedNov5 17:33:01.899UTC,ownimmutableforecast17:40:44.122UTC,verified_home_n7withsourcearchivecompletedbeforeobservation. This is actual rawarchive→featuremanifest→frozenpairforecast evidence, not database presence alone. Earlier35663/17:03zero-history forecast SHA563242ef8504fc945e52eadd485fa897ad49f90ad58659cabcdf4089e24b7fe3remainsbyte-identical. Appendedfactsareactuallyconsumedwithoutrefit/backdating. FutureattendanceMAEstillnull;thepuregenericstagingadapterisaseparateunfinishedimplementation,notevidenceofanotherimport. Receipt:`2026-11-06-supabase-io-mitigation/history-consumption-proof.json`inprivateopsruntime.
