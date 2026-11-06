@@ -17,15 +17,15 @@ SELECT datname, stats_reset, blks_read, blks_hit, temp_files, temp_bytes,
 FROM pg_stat_database WHERE datname = current_database();
 
 SELECT schemaname, relname, seq_scan, seq_tup_read, idx_scan,
-       n_live_tup, n_dead_tup, n_mod_since_analyze,
+       n_live_tup, n_dead_tup, n_mod_since_analyze, n_tup_ins, n_tup_upd, n_tup_del,
        last_autovacuum, last_autoanalyze
 FROM pg_stat_user_tables
-WHERE schemaname IN ('public', 'private', 'storage')
+WHERE schemaname IN ('public', 'private', 'storage', 'auth')
 ORDER BY seq_tup_read DESC LIMIT 25;
 
 SELECT schemaname, relname, indexrelname, idx_scan, idx_tup_read, idx_tup_fetch
 FROM pg_stat_user_indexes
-WHERE schemaname IN ('public', 'private', 'storage')
+WHERE schemaname IN ('public', 'private', 'storage', 'auth')
 ORDER BY idx_tup_read DESC LIMIT 25;
 
 SELECT schemaname, tablename, indexname, indexdef
