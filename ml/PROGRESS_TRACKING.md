@@ -1,5 +1,25 @@
 # Beyond Ticketing — ML Progress Tracking
 
+## IO mitigation active — November6 12:05UTC
+
+[PR223](https://github.com/NiedzielX/beyond/pull/223),source0f9a43fbpublishedbeforeactivation. OldRidge20/median20capturePIDs169529/200395paused;72/67forecastsbyte-verified,pairedbenchmarkscontinueinsupport26. History474192/priorguardian473151now900secondswithrealpostlaunchsuccess. Outcome-onlylocalbridge475181healthy(0truth→0remotechecks). Dailycutoffrunner475182completedactual11:15Koronaslotat11:57UTCincludingunchangeddaily/drift/privatebackup;laterminutechecksperformnofullexports. Allfrozenmodels/parameters/sources/gatesfalse/0unchanged,387root+hostedsmokesSUCCESS.
+
+Measured1359P9+222encoderchecks/dated24h,1211P9no-window. Originalguardiansnowscheduledonlyknownphasesviahostdependentparents475523/475524:currentthrough12:45UTC,16:35–18:00and19:20–20:45,900secondpolling. Futurephasesnotyetexecuted. Currentencoderworkflow42214205780SUCCESS→fresh603/P1MODEL_INPUT_INSUFFICIENTDBattempt11:59:44UTC;no falseforecast/backfill,oldP7misskept. Mostcollectors/bridgesexpire20:30UTC,lastguardianphase20:45;do notpromisepermanentmanagedexecution.
+
+DiskIOphysicalrecovery/rootqueryattributionunproven:admin/Managementbindingabsent,readonlydiagnosticSQLpreparednotrun. No mainworkflow/source-ingestion shutdown,DDL,paidupgradeorcleanup. Private56file582103bytebackupccd64824f4c0952c2cad74c7e944adf3741463b09a7d7e47e07b3dcf42e6533cindependentlyrestored. Report:`SUPABASE_DISK_IO_MITIGATION_RESULT_2026-11-06.md`. Rawhistoryfullprefixexportnowonlyatrealdailywindows(currently~6clocktimes/day),not96polls/day;thisisrequestworkloadreduction,notmeasuredserverIOpercentage.
+
+New27recordconsumptionprovedMotor35680/Nov5 17:33→17:40forecast,home_n7;old17:03n0bytesunchanged. Newattendancepair2events/0labels/nullMAE. Dailyidentical-target4eventdescriptivedrift11.945442/model198.484646/persistence176.00stillbelow8event/5clubreview;notattendanceMAE. Reusablestagingadapterfrompriorworkremainsuncommitted/outsideIOrelease;append/coreconsumptionitselfdone.
+
+
+## Supabase disk IO incident — November6 11:54UTC
+
+User supplied actual provider warning. Paused redundant standaloneRidge20PID169529/median20PID200395;all72/67oldforecastsbyte-preserved. Support26continuesbothbenchmarks;do notclaimthepausedindependentstreamscontinued. HistorysidecarPID474192andpriorguardianPID473151actuallyrestartedtousing900seconds(not300),source/modelbytesunchanged,actualpostlaunchcyclesverified. DeadlinesremainNov6 20:30UTC. LocalfeatureRPCschedule12→4/hour;notameasurementofserverIO. Sourcearchive/support26stay900seconds.
+
+Olddailyfullhistoryexportwas28019rows/7.57MBpercycle;workerexpired10:30UTC. DriftpreviouslyfailedStorageHTTP544at06:12. Newtestedlocalcutoffschedulerandoutcomescoringbridgeareimplemented,notyetpublished/launched.387registeredrootchecks pass. ActualscheduledGitHubhistoryhas36runs/24h,notquarter-hourYAMLcounts. Admin/Managementmetricsbindingabsent;read-onlydiagnosticSQLpreparedbutnotexecuted. Report:`SUPABASE_DISK_IO_MITIGATION_RESULT_2026-11-06.md`. No paidupgrade/indexDDL/cleanup/modelchange.
+
+Newhistoryconsumptionfinallyprovenfromexistingimmutableevidence:Motor35680atNov5 17:33,ownissue17:40:44,home_n7,archivepre-observation. Old17:03zero-historybytesunchanged.27rowappenddataacceptancecomplete;purestagingadapterremainsuncommittedWIPandoutsideIOrelease. Newpair2capturedevents/0scored/nullMAE,no gainclaim. Defaultsfalse/0.
+
+
 ## New information actually appended — November5 17:26UTC
 
 Targeted public audit/source recovery complete:27previously absent current-season home fixtures, Motor7/Korona6/Widzew7/Piast7; all match unique completed sporting home/away/date/result identities. Exact independent kickoff-hour proof remains unavailable; public reported clocks and historical publication limits preserved. Hosted source runs42073004397/42073601199and latestDemandEnginechecksSUCCESS,rawhashes/extractionindependentlyreproduced.

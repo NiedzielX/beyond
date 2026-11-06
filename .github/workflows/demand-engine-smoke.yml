@@ -20,6 +20,10 @@ on:
       - 'ml/test_mae03_context_evidence_audit_v1.py'
       - 'ml/start_daily_inventory_path_watcher_v1.py'
       - 'ml/test_start_daily_inventory_path_watcher_v1.py'
+      - 'ml/daily_path_window_runner_v1.py'
+      - 'ml/test_daily_path_window_runner_v1.py'
+      - 'ml/c1_outcome_scoring_bridge_v1.py'
+      - 'ml/test_c1_outcome_scoring_bridge_v1.py'
       - 'ml/structural_prior_window_guardian_v1.py'
       - 'ml/test_structural_prior_window_guardian_v1.py'
       - 'ml/frozen_window_guardian_v1.py'
@@ -71,6 +75,10 @@ on:
       - 'ml/test_mae03_context_evidence_audit_v1.py'
       - 'ml/start_daily_inventory_path_watcher_v1.py'
       - 'ml/test_start_daily_inventory_path_watcher_v1.py'
+      - 'ml/daily_path_window_runner_v1.py'
+      - 'ml/test_daily_path_window_runner_v1.py'
+      - 'ml/c1_outcome_scoring_bridge_v1.py'
+      - 'ml/test_c1_outcome_scoring_bridge_v1.py'
       - 'ml/structural_prior_window_guardian_v1.py'
       - 'ml/test_structural_prior_window_guardian_v1.py'
       - 'ml/frozen_window_guardian_v1.py'
@@ -147,6 +155,12 @@ jobs:
 
       - name: Verify legal-window guardian and no-backfill routing
         run: python -m unittest ml.test_frozen_window_guardian_v1 -v
+
+      - name: Verify off-window daily collectors never export full history
+        run: python -m unittest ml.test_daily_path_window_runner_v1 -v
+
+      - name: Verify local outcome hints never restart expensive source collection
+        run: python -m unittest ml.test_c1_outcome_scoring_bridge_v1 -v
 
       - name: Verify structural prior dependency dispatch guards
         run: python -m unittest ml.test_structural_prior_window_guardian_v1 -v

@@ -1,0 +1,7 @@
+# Poll only when the action can matter
+
+A guard protects a future window; polling a global operational summary everyminuteoutsideallwindows creates avoidable load. ActualNov6dated24hreceipts:1359P9checks,1211no-window;222encoderchecks. Separate database resource warning and actualStorageHTTP544supported reducing redundant work, but these counts do not measure physicaldiskIOor prove its dominant source. Compare real workflow executions, not just scheduledYAML.
+
+Support26already emits all frozen older experts on the same prefix. Pause redundant standalone capture with honest coverage/immutablehash receipts; preserve old cohorts and score outstanding predictions only on real new outcomes. Do not silently merge contracts. Interval changes through already validatedCLIsettings preserve model/sourcebytes;phase historysidecar after upstream so original15minuteinput-age guard stays valid.
+
+A daily forecast does not require a full-history RESTexport every15minutes all day. Reuse an already verified private archive for local scheduling, then invoke the unchanged full collector only in its genuine dailywindow. Keep full prefix/oldmodelsemantics;do not truncateinputscropdatato saveIO. Source/backup failure consumes bounded retry intent;no retrospective repair. Current failedHTTP544and oldmisses stay inhistory. A successful later backup only proves that request worked,not that budget recovered. Server attribution needs bounded realpg_stat/Supabase metrics,not index guesses or a paidupgrade assumption.
