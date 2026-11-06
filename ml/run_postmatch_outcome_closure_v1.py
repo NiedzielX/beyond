@@ -43,7 +43,7 @@ def api(path,body=None):
 
 
 def contract(branch,commit):
-    return {'version':'postmatch-outcome-closure-v1','branch':branch,'commit':commit,
+    return {'version':'postmatch-outcome-closure-v2','branch':branch,'commit':commit,
         'slots':list(SLOTS),'until':UNTIL,'source_hashes':{p:hashlib.sha256((ROOT/p).read_bytes()).hexdigest() for p in SOURCE_FILES},
         'production_change':False,'live_adjustment':0}
 
@@ -76,9 +76,9 @@ def find_run(entry,github=api):
     if not runs or runs[0]['status']!='completed':return None
     run=runs[0]
     if run['conclusion']!='success':raise ValueError('Source workflow failed; no import')
-    checks=github('/check-suites/'+str(run['check_suite_id'])+'/check-runs?per_page=100')
-    if checks['total_count']>100:raise ValueError('Source check-suite expanded')
-    sources,raw=recover(checks['check_runs'],entry['commit'])
+    checks=github('/commits/'+entry['commit']+'/check-runs?per_page=100&filter=all')
+    if checks['total_count']>100:raise ValueError('Bounded source check collection expanded')
+    sources,raw=recover(checks['check_runs'],entry['commit'],run['id'],run['run_attempt'])
     return run,sources,raw
 
 
@@ -147,14 +147,14 @@ def backup_sources(runtime):
     class Storage(PrivateResearchStorage):
         @staticmethod
         def _key(key):
-            if not re.fullmatch(r'postmatch-outcome-closure-v1/[0-9a-f]{64}\.json',key):raise ValueError('Wrong private source namespace')
+            if not re.fullmatch(r'postmatch-outcome-closure-v2/[0-9a-f]{64}\.json',key):raise ValueError('Wrong private source namespace')
             return key
     files=[p for p in sorted(runtime.iterdir()) if p.is_file() and p.name!='private-backup.json']
     if len(files)>25:raise ValueError('Bounded postmatch audit expanded')
     body=encode({'files':[{'name':p.name,'sha256':digest(p.read_bytes()),'base64':base64.b64encode(p.read_bytes()).decode()} for p in files]})
     if len(body)>10*1024*1024:raise ValueError('Bounded source recovery expanded')
     raw=encode({'encoding':'zlib+base64','payload_sha256':digest(body),'payload':base64.b64encode(zlib.compress(body)).decode()})
-    storage=Storage();storage.ensure_private_bucket();receipt=storage.put_verified('postmatch-outcome-closure-v1/'+digest(raw)+'.json',raw,'application/json')
+    storage=Storage();storage.ensure_private_bucket();receipt=storage.put_verified('postmatch-outcome-closure-v2/'+digest(raw)+'.json',raw,'application/json')
     remote=storage.read(receipt['key'])
     if remote!=raw:raise ValueError('Private source recovery bytes changed')
     restored=zlib.decompress(base64.b64decode(json.loads(remote)['payload']))

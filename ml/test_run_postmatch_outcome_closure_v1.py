@@ -5,7 +5,7 @@ import tempfile
 import unittest
 from unittest.mock import Mock,patch
 
-from ml.run_postmatch_outcome_closure_v1 import due_slot,dispatch,tick,SLOTS,stamp,find_run,apply_verified,score_support_only
+from ml.run_postmatch_outcome_closure_v1 import due_slot,dispatch,tick,SLOTS,stamp,find_run,apply_verified,score_support_only,backup_sources
 from ml.test_postmatch_outcome_source_v1 import inputs,staged,NOW
 
 
@@ -44,6 +44,15 @@ class ClosureScheduleTests(unittest.TestCase):
             state={'dispatches':{SLOTS[0]:{'status':'DISPATCH_ACCEPTED','intent_at':SLOTS[0]}}};github=Mock()
             tick(Path(temp),state,{'branch':'research','commit':'a'*40},stamp(SLOTS[0])+timedelta(minutes=41),github)
             github.assert_not_called();self.assertEqual(state['dispatches'][SLOTS[0]]['status'],'RUN_NOT_PROVEN_WITHIN_BUDGET')
+
+    def test_custom_checks_are_bound_to_run_attempt_even_when_suite_differs(self):
+        entry={'branch':'research','commit':'a'*40,'intent_at':SLOTS[0]}
+        run={'id':123,'run_attempt':2,'check_suite_id':111,'head_sha':'a'*40,'created_at':SLOTS[0],'status':'completed','conclusion':'success'}
+        github=Mock(side_effect=[{'workflow_runs':[run]},{'total_count':1,'check_runs':[{'check_suite':{'id':999}}]}])
+        with patch('ml.run_postmatch_outcome_closure_v1.recover',return_value=([],{})) as recovered:
+            self.assertEqual(find_run(entry,github),(run,[],{}))
+            recovered.assert_called_once_with([{'check_suite':{'id':999}}],'a'*40,123,2)
+            self.assertIn('/commits/',''.join(str(c) for c in github.call_args_list))
 
 
 class ClosureApplyTests(unittest.TestCase):
@@ -91,6 +100,16 @@ class ClosureApplyTests(unittest.TestCase):
                 with patch('ml.export_c1_matched_audit_inputs_v1.Reader') as reader:
                     result=score_support_only(runtime)
                     self.assertEqual(result['status'],'DELEGATED_TO_ACTIVE_FROZEN_COLLECTOR');reader.assert_not_called()
+
+    def test_source_backup_is_independently_read_decompressed_and_hash_checked(self):
+        class Storage:
+            def ensure_private_bucket(self):pass
+            def put_verified(self,key,raw,mime):self.raw=raw;return {'key':key,'read_back_verified':True}
+            def read(self,key):return self.raw
+        with tempfile.TemporaryDirectory() as temp,patch('ml.demand_engine.daily_inventory_path_storage_v1.PrivateResearchStorage',Storage):
+            root=Path(temp);(root/'source-0.html').write_text('original public bytes');(root/'run.json').write_text('{"id":123}')
+            receipt=backup_sources(root);self.assertEqual(receipt['files'],2)
+            self.assertTrue(receipt['independent_remote_decompression_verified']);self.assertIn('closure-v2/',receipt['key'])
 
 
 if __name__=='__main__':unittest.main()

@@ -97,11 +97,20 @@ class PostmatchRetrievalTests(unittest.TestCase):
                 self.assertFalse(result['fixture_identity_verified']);self.assertFalse(result['automatic_label_import'])
                 entries=[(f'postmatch-outcome-source-{i}',result)]
                 entries += [(f'postmatch-outcome-raw-{i}-{c["part"]}',c) for c in chunks(Path(temp),i,result)]
-                checks += [{'name':name,'head_sha':'a'*40,'status':'completed','output':{'text':json.dumps(value)}} for name,value in entries]
-            _,restored=recover(checks,'a'*40);self.assertEqual(restored,raw)
-            with self.assertRaises(ValueError):recover(checks,'b'*40)
-            with self.assertRaises(ValueError):recover(checks+checks[:1],'a'*40)
-            with self.assertRaises(ValueError):recover(checks[:-1],'a'*40)
+                checks += [{'name':name,'head_sha':'a'*40,'status':'completed',
+                            'details_url':'https://github.com/NiedzielX/beyond/actions/runs/123',
+                            'external_id':f'postmatch:123:1:{name}',
+                            'check_suite':{'id':999},
+                            'output':{'text':json.dumps({**value,'workflow_run_id':123,'workflow_run_attempt':1})}} for name,value in entries]
+            _,restored=recover(checks,'a'*40,123,1);self.assertEqual(restored,raw)
+            # The custom suite intentionally differs from the workflow suite.
+            with self.assertRaises(ValueError):recover(checks,'b'*40,123,1)
+            with self.assertRaises(ValueError):recover(checks+checks[:1],'a'*40,123,1)
+            with self.assertRaises(ValueError):recover(checks[:-1],'a'*40,123,1)
+            with self.assertRaises(KeyError):recover(checks,'a'*40,124,1)
+            with self.assertRaises(KeyError):recover(checks,'a'*40,123,2)
+            wrong=deepcopy(checks);wrong[0]['external_id']='other'
+            with self.assertRaises(ValueError):recover(wrong,'a'*40,123,1)
 
     def test_unlisted_page_index_or_redirect_never_yields_source(self):
         with tempfile.TemporaryDirectory() as temp:

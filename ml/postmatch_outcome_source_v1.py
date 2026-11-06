@@ -15,7 +15,7 @@ from ml.current_home_history_source_audit_v1 import PublicRedirect, allowed_redi
 from ml.public_attendance_source_audit_v1 import MAX_BYTES, extract
 from ml.verified_attendance_source_rows_v1 import prepare_import_rows, TEAMS as TEAMS_V1
 
-VERSION = 'postmatch-outcome-source-v1'
+VERSION = 'postmatch-outcome-source-v2'
 ROW = re.compile(r'^(?P<home>.+?) (?P<hs>\d+):(?P<as>\d+) (?P<away>.+?) '
                  r'(?P<attendance>\d[\d ]*) 2026/2027 • Ekstraklasa • '
                  r'(?P<date>\d{2}\.\d{2}\.\d{4}) (?P<time>\d{2}:\d{2})$')
@@ -71,9 +71,13 @@ def publish(results, directory):
         entries.append((f'postmatch-outcome-source-{index}',result))
         entries.extend((f'postmatch-outcome-raw-{index}-{part["part"]}',part) for part in chunks(directory,index,result))
     for name,value in entries:
+        run_id=int(os.environ['GITHUB_RUN_ID']);attempt=int(os.environ['GITHUB_RUN_ATTEMPT'])
+        value={**value,'workflow_run_id':run_id,'workflow_run_attempt':attempt}
         text=json.dumps(value,ensure_ascii=False)
         if len(text.encode())>60000: raise ValueError('Public check exceeds bound')
         body={'name':name,'head_sha':os.environ['GITHUB_SHA'],'status':'completed','conclusion':'neutral',
+              'external_id':f'postmatch:{run_id}:{attempt}:{name}',
+              'details_url':f'https://github.com/NiedzielX/beyond/actions/runs/{run_id}',
               'output':{'title':'Public postmatch source retrieval', 'summary':'Raw retrieval only; no label verification or database access.', 'text':text}}
         req=urllib.request.Request('https://api.github.com/repos/NiedzielX/beyond/check-runs',data=json.dumps(body).encode(),
             headers={'Authorization':'Bearer '+os.environ['GITHUB_TOKEN'],'Accept':'application/vnd.github+json','Content-Type':'application/json'},method='POST')
@@ -81,9 +85,17 @@ def publish(results, directory):
         print(json.dumps({'check_id':saved['id'],'name':name,'labels_imported':0}),flush=True)
 
 
-def recover(checks, head_sha):
-    """Caller obtains checks from the successful run's exact check suite."""
-    relevant=[c for c in checks if c['name'].startswith('postmatch-outcome-')]
+def recover(checks, head_sha, run_id, run_attempt):
+    """Custom checks can attach to another suite: bind actual run/attempt explicitly."""
+    relevant=[]
+    for check in checks:
+        if not check['name'].startswith('postmatch-outcome-'):continue
+        value=json.loads(check['output']['text'])
+        if value.get('workflow_run_id')!=run_id or value.get('workflow_run_attempt')!=run_attempt:continue
+        if (check.get('details_url')!=f'https://github.com/NiedzielX/beyond/actions/runs/{run_id}'
+                or check.get('external_id')!=f'postmatch:{run_id}:{run_attempt}:{check["name"]}'):
+            raise ValueError('Custom check run/attempt linkage differs')
+        relevant.append(check)
     if len({c['name'] for c in relevant})!=len(relevant): raise ValueError('Duplicate source check identity')
     if any(c['head_sha']!=head_sha or c['status']!='completed' for c in relevant): raise ValueError('Source checks from wrong run/source')
     values={c['name']:json.loads(c['output']['text']) for c in relevant};sources=[];raw={}
