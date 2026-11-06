@@ -1,6 +1,8 @@
 # Beyond — operational handoff
 
-## Active MAE work — 2026-11-06 13:40 UTC
+## Active MAE work — 2026-11-06 13:51 UTC
+
+Latest real background cycle **13:51:37 UTC SUCCESS** captured another genuine Motor prefix (snapshot36364, observation2026-11-06T13:43:02.861000+00:00, own issue2026-11-06T13:51:34.727782+00:00) and exercised the exact one-time unchanged later-clock retry. Both original issue hashes preserved; **2 prefixes /1 independent event /0 scored /null MAE**. New6-file82723-byte backup **bcad4af3a40387f8d48f5a4fcc64ca71623ed62844e82b93b56d9b6d5440ac43** remotely read/decompressed/hashed. This proves the operational retry in the actual background worker, beyond YAML or unit tests. No frozen code/model/clock changes.
 
 **New information now has a genuine prospective test.** The unchanged frozen structural model has a separate history-refresh shadow: [protocol](STRUCTURAL_HISTORY_REFRESH_PRECOMMIT_V1.md), [evidence](STRUCTURAL_HISTORY_REFRESH_RESULT_2026-11-06.md), [PR225](https://github.com/NiedzielX/beyond/pull/225). Motor5091 observation13:23:02.260 / own issue13:32:22.997610 UTC / snapshot36354: fresh P50 **11,928.239260475439** versus actual stored prior **12,920.269297843897**, using7 genuinely later-known Motor home facts (86 guarded source records). This is a forecast change, not an MAE improvement. New lane: **1 captured event / 0 scored / null MAE**. Existing history-residual lane: **2 captured / 0 scored / null MAE**. Wisła's stale source remains missing in the new lane; do not backfill or relax freshness.
 

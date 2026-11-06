@@ -17,3 +17,5 @@ The first actual Motor forecast was immutably issued at 13:32:22.997610 UTC from
 ## Implementation acceptance
 
 Implemented: exact controlled replay, published/frozen no-fit contract, genuine post-activation Motor forecast, complete original-input/model replay, private independent restore, guarded scoring tests and actual verified bounded watcher. See`ml/STRUCTURAL_HISTORY_REFRESH_RESULT_2026-11-06.md`. This closes implementation acceptance only: actual attendance MAE and30-event/8-clubscientificreviewremainpending;postmatchdata-closureSDDstaysactive.
+
+Latest real background cycle **13:51:37 UTC SUCCESS** captured another genuine Motor prefix (snapshot36364, observation2026-11-06T13:43:02.861000+00:00, own issue2026-11-06T13:51:34.727782+00:00) and exercised the exact one-time unchanged later-clock retry. Both original issue hashes preserved; **2 prefixes /1 independent event /0 scored /null MAE**. New6-file82723-byte backup **bcad4af3a40387f8d48f5a4fcc64ca71623ed62844e82b93b56d9b6d5440ac43** remotely read/decompressed/hashed. This proves the operational retry in the actual background worker, beyond YAML or unit tests. No frozen code/model/clock changes.
