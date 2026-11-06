@@ -1,0 +1,5 @@
+# Postmatch outcome closure
+
+The new source-refresh stream is activated with source/model identities fixed. Investigate the next MAE blocker: two real future fixtures have no possible genuine outcomes yet. Existing SQL only copies already-present verified history. Implement bounded acquisition/validation/scoring closure without extra full-history feature RPCs or changing frozen models. SDD written first.
+
+Implemented the fixed two-page credential-free hosted source option, original-byte/check recovery, pure exact-target/result/capacity/knowledge-time staging, durable three-opportunity scheduler, append-only/readback operator, private source recovery and unchanged outcome-only scoring. No extra full-prefix feature RPC; support26 lock is respected. All 446 registered root tests pass, including 22 new source/closure tests. Before-game synthetic dry run proves no write/sync; future acquisition and actual label scoring remain unexecuted. Publish source before activation, run actual hosted pregame retrieval/recovery, then pin its source-only runtime branch.

@@ -46,6 +46,7 @@ on:
       - 'ml/*attendance_knowledge_time_guard*v1.py'
       - 'ml/*structural_known_at*v1.py'
       - 'ml/*structural_history_refresh*v1.py'
+      - 'ml/*postmatch_outcome*v1.py'
       - 'ml/STRUCTURAL_HISTORY_REFRESH_PRECOMMIT_V1.md'
       - 'ml/artifacts/structural_history_refresh_v1/**'
       - 'ml/*prepare_c1_training_data26*v1.py'
@@ -105,6 +106,7 @@ on:
       - 'ml/*attendance_knowledge_time_guard*v1.py'
       - 'ml/*structural_known_at*v1.py'
       - 'ml/*structural_history_refresh*v1.py'
+      - 'ml/*postmatch_outcome*v1.py'
       - 'ml/STRUCTURAL_HISTORY_REFRESH_PRECOMMIT_V1.md'
       - 'ml/artifacts/structural_history_refresh_v1/**'
       - 'ml/*prepare_c1_training_data26*v1.py'
@@ -169,6 +171,9 @@ jobs:
 
       - name: Verify local outcome hints never restart expensive source collection
         run: python -m unittest ml.test_c1_outcome_scoring_bridge_v1 -v
+
+      - name: Verify bounded postmatch source recovery and append-only label guards
+        run: python -m unittest ml.test_postmatch_outcome_source_v1 ml.test_run_postmatch_outcome_closure_v1 -v
 
       - name: Verify structural history refresh clocks, immutable replay and paired MAE
         run: python -m unittest ml.test_structural_history_refresh_v1 -v
