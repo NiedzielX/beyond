@@ -33,3 +33,5 @@ This index is durable memory, not a substitute for the authoritative execution p
 - [Public source coverage and receipts](lessons/2026-11-05-public-source-coverage-and-receipts.md): actual missing club history, hosted public-byte recovery, source-run identity, future-only source knowledge and parity before/after append.
 
 - [Supabase polling and disk IO](lessons/2026-11-06-supabase-polling-and-io.md): measured redundant global checks, shared frozen benchmarks, local cutoff scheduling, honest pauses and server-metric limits.
+
+- [Fresh history and postmatch lineage](lessons/2026-11-06-fresh-history-and-postmatch-lineage.md): exact no-fit source-effect replay, genuinely new knowledge/issue clocks, immutable later-clock validation, actual GitHub run/attempt identity and source-to-outcome proof.

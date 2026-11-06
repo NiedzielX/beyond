@@ -3,6 +3,10 @@ name: ML Research Readiness Contract v1
 on:
   workflow_dispatch:
     inputs:
+      postmatch_outcome_source_audit:
+        description: 'Retrieve two fixed public postmatch pages; no database credentials or imports'
+        type: boolean
+        default: false
       public_source_audit:
         description: 'Fetch fixed public attendance-source pages without model or database operations'
         type: boolean
@@ -38,7 +42,7 @@ permissions:
 
 jobs:
   public-source-audit:
-    if: github.event_name == 'workflow_dispatch' && (inputs.public_source_audit || inputs.p9_failure_diagnostic || inputs.blocked_outcome_source_audit || inputs.current_home_history_source_audit)
+    if: github.event_name == 'workflow_dispatch' && (inputs.public_source_audit || inputs.p9_failure_diagnostic || inputs.blocked_outcome_source_audit || inputs.current_home_history_source_audit || inputs.postmatch_outcome_source_audit)
     runs-on: ubuntu-latest
     timeout-minutes: 8
     permissions:
@@ -57,6 +61,13 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ github.token }}
         run: python -m ml.public_attendance_source_audit_v1 --output-dir "$RUNNER_TEMP/public-attendance-sources" --publish-checks
+      - name: Retrieve two fixed postmatch sources without database access
+        if: inputs.postmatch_outcome_source_audit
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          python -m unittest ml.test_postmatch_outcome_source_v1 -v
+          python -m ml.postmatch_outcome_source_v1 --output-dir "$RUNNER_TEMP/postmatch-outcome-sources" --publish-checks
       - name: Audit four missing current home-history public sources
         if: inputs.current_home_history_source_audit
         env:
@@ -85,6 +96,7 @@ jobs:
             ${{ runner.temp }}/public-attendance-sources
             ${{ runner.temp }}/blocked-outcome445-sources
             ${{ runner.temp }}/current-home-history-sources
+            ${{ runner.temp }}/postmatch-outcome-sources
           retention-days: 14
           if-no-files-found: ignore
   validate-contract:
