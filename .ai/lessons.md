@@ -35,3 +35,5 @@ This index is durable memory, not a substitute for the authoritative execution p
 - [Supabase polling and disk IO](lessons/2026-11-06-supabase-polling-and-io.md): measured redundant global checks, shared frozen benchmarks, local cutoff scheduling, honest pauses and server-metric limits.
 
 - [Fresh history and postmatch lineage](lessons/2026-11-06-fresh-history-and-postmatch-lineage.md): exact no-fit source-effect replay, genuinely new knowledge/issue clocks, immutable later-clock validation, actual GitHub run/attempt identity and source-to-outcome proof.
+
+- [Positive scoring and timestamp transport](lessons/2026-11-07-positive-score-path-and-time-transport.md): real positive-cycle persistence, immutable partial-score recovery, same-instant ISO transport, hosted→DB release proof,19versus2event cohorts, horizon support and future-only bounded renewal.
