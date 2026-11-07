@@ -1,0 +1,3 @@
+# Genuine score recovery
+
+Actual12:03UTC resume: prior workers allZ/expired; V2slot08:20 ran42355072143, appended2verified history records and actual2outcomes08:22:42UTC, then failed inside original history score persistence. Original malformed`.../history-residual-collector/scores`SHA2032417e9943d0c0363fe98a79582be935b07b110213d85debf62be17ce6226dcontains a genuine Wisła score for snapshot35997; preserve it. Freshstructural actually scored2events/17prefixes, latestMAE3536.609250 versus prior4032.624269; pairedmedian26policy1878.052008. No promotion/retuning. Yesterday's adapter/readiness remainsuncommitted; finish publication/recovery now, never claim deployed yesterday.
