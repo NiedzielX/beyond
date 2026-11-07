@@ -10,6 +10,8 @@ on:
     paths:
       - "ml/demand_engine/c1_shadow_runtime_v8.py"
       - "ml/demand_engine/run_c1_shadow_v8.py"
+      - "ml/c1_shadow_timestamp_transport_v1.py"
+      - "ml/test_c1_shadow_timestamp_transport_v1.py"
       - "supabase/sql/c1_shadow_v8_prospective_evidence_v1.sql"
       - "supabase/sql/c1_shadow_v8_scoring_v1.sql"
       - "supabase/functions/c1_shadow_v8_gateway_v1/**"
@@ -18,6 +20,8 @@ on:
     paths:
       - "ml/demand_engine/c1_shadow_runtime_v8.py"
       - "ml/demand_engine/run_c1_shadow_v8.py"
+      - "ml/c1_shadow_timestamp_transport_v1.py"
+      - "ml/test_c1_shadow_timestamp_transport_v1.py"
       - "supabase/sql/c1_shadow_v8_prospective_evidence_v1.sql"
       - "supabase/sql/c1_shadow_v8_scoring_v1.sql"
       - "supabase/functions/c1_shadow_v8_gateway_v1/**"
@@ -53,6 +57,7 @@ jobs:
           set -euo pipefail
           python -m py_compile ml/demand_engine/run_c1_shadow_v8.py
           python -m unittest ml.demand_engine.test_c1_shadow_runtime_v8
+          python -m unittest ml.test_c1_shadow_timestamp_transport_v1 -v
           deno check supabase/functions/c1_shadow_v8_gateway_v1/index.ts
           if grep -nE '\.fit\(' ml/demand_engine/run_c1_shadow_v8.py; then
             echo 'Scheduled C1 shadow inference must not fit models.' >&2
@@ -96,10 +101,16 @@ jobs:
             /tmp/c1-shadow-input.json >/dev/null
           jq '{requested_at,candidate_count,package_version,candidates:[.candidates[]?|{ticket_event_id,home_team,away_team,kickoff_at,prior_horizon:.prior.horizon,representatives:(.representatives|length)}]}' \
             /tmp/c1-shadow-input.json
+      - name: Preserve source input and losslessly encode mixed ISO timestamp vectors
+        run: |
+          python -m ml.c1_shadow_timestamp_transport_v1 \
+            --input /tmp/c1-shadow-input.json \
+            --output /tmp/c1-shadow-input-normalized.json \
+            --receipt /tmp/c1-shadow-timestamp-receipt.json
       - name: Run frozen load-only shadow inference
         run: |
           python -m ml.demand_engine.run_c1_shadow_v8 \
-            --input /tmp/c1-shadow-input.json \
+            --input /tmp/c1-shadow-input-normalized.json \
             --artifact-dir ml/artifacts/c1_shadow_v8 \
             --output /tmp/c1-shadow-predictions.json
       - name: Persist pre-outcome evidence
