@@ -48,6 +48,8 @@ on:
       - 'ml/*structural_history_refresh*v1.py'
       - 'ml/*postmatch_outcome*v1.py'
       - 'ml/run_postmatch_outcome_closure_v3.py'
+      - 'ml/*postmatch_outcome*v4.py'
+      - 'ml/artifacts/postmatch_outcome_contracts/**'
       - 'ml/*c1_history_scoring_adapter*v1.py'
       - 'ml/*c1_timestamp_encoding_adapter*v1.py'
       - 'ml/postmatch_scoring_readiness_v1.py'
@@ -112,6 +114,8 @@ on:
       - 'ml/*structural_history_refresh*v1.py'
       - 'ml/*postmatch_outcome*v1.py'
       - 'ml/run_postmatch_outcome_closure_v3.py'
+      - 'ml/*postmatch_outcome*v4.py'
+      - 'ml/artifacts/postmatch_outcome_contracts/**'
       - 'ml/*c1_history_scoring_adapter*v1.py'
       - 'ml/*c1_timestamp_encoding_adapter*v1.py'
       - 'ml/postmatch_scoring_readiness_v1.py'
@@ -179,6 +183,9 @@ jobs:
 
       - name: Verify local outcome hints never restart expensive source collection
         run: python -m unittest ml.test_c1_outcome_scoring_bridge_v1 -v
+
+      - name: Verify versioned forward contracts, source linkage and bounded append-only closure
+        run: python -m unittest ml.test_postmatch_outcome_source_v4 ml.test_run_postmatch_outcome_closure_v4 -v
 
       - name: Verify lossless timestamp transport and original RPC provenance
         run: python -m unittest ml.test_c1_timestamp_encoding_adapter_v1 -v

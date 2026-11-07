@@ -1,0 +1,5 @@
+# Forward outcome closure v4
+
+Continue genuine collection beyond the completed Motor/Wisła pair. Existing fixed source jobs expired; prepare explicit new contract forGórnik449/Widzew7372beforegames, source-only hosted retrieval and bounded corrected scoring. Actual capacities come from frozen verified prior contexts, not guessed stadium sizes. Original model/source/science contracts stay unchanged. SDDwrittenfirst.
+
+Implemented configuration-bound source-v4 and closure-v4 without altering v2fixed contracts. Raw checks bind actualcontractSHA/head/run/attempt; privateverification-input snapshot stored before append, independently backed up before score calls. Corrected history paths and actual-later-clock fresh scoring reused; official C1score-onlyRPC included. Three declared future slots19:45/22:30/08:20UTC. Thirteen focused tests pass: profile/capacity/URL bounds, actualknowledge/sourceintegrity, missing/unfinished cases, original-runrawrecovery, no-window0remote, intentbeforedispatch, no missedcatchup, scoped append/readback, and sourcebackupbeforepotentialscorefailure. No currenttargets imported. Publication/actualhostedpregamerecovery/activationpending.

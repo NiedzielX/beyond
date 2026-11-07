@@ -1,0 +1,45 @@
+{
+  "version": "postmatch-outcome-contract-v4",
+  "id": "2026-11-07-gornik-widzew-v1",
+  "created_at": "2026-11-07T12:42:09.204274+00:00",
+  "fixtures": [
+    {
+      "id": 449,
+      "club_slug": "gornikzabrze",
+      "home_team": "Górnik Zabrze",
+      "away_team": "Wieczysta Kraków",
+      "kickoff_at": "2026-11-07T16:30:00+00:00",
+      "capacity": 28236,
+      "competition": "Ekstraklasa",
+      "source_url": "https://www.frekwencyjny.pl/kluby/gornik-zabrze",
+      "capacity_source_prior_id": 81,
+      "capacity_verification_status": "verified"
+    },
+    {
+      "id": 7372,
+      "club_slug": "widzewlodz",
+      "home_team": "Widzew Łódź",
+      "away_team": "Pogoń Szczecin",
+      "kickoff_at": "2026-11-07T19:15:00+00:00",
+      "capacity": 18018,
+      "competition": "Ekstraklasa",
+      "source_url": "https://www.frekwencyjny.pl/kluby/widzew-lodz",
+      "capacity_source_prior_id": 82,
+      "capacity_verification_status": "verified"
+    }
+  ],
+  "club_aliases": {
+    "gornikzabrze": "gornikzabrze",
+    "gornik_zabrze": "gornikzabrze",
+    "widzewlodz": "widzewlodz",
+    "widzew": "widzewlodz"
+  },
+  "slots": [
+    "2026-11-07T19:45:00Z",
+    "2026-11-07T22:30:00Z",
+    "2026-11-08T08:20:00Z"
+  ],
+  "until": "2026-11-08T10:30:00Z",
+  "production_change": false,
+  "live_adjustment": 0
+}
