@@ -49,6 +49,7 @@ on:
       - 'ml/*postmatch_outcome*v1.py'
       - 'ml/run_postmatch_outcome_closure_v3.py'
       - 'ml/*c1_history_scoring_adapter*v1.py'
+      - 'ml/*c1_timestamp_encoding_adapter*v1.py'
       - 'ml/postmatch_scoring_readiness_v1.py'
       - 'ml/STRUCTURAL_HISTORY_REFRESH_PRECOMMIT_V1.md'
       - 'ml/artifacts/structural_history_refresh_v1/**'
@@ -112,6 +113,7 @@ on:
       - 'ml/*postmatch_outcome*v1.py'
       - 'ml/run_postmatch_outcome_closure_v3.py'
       - 'ml/*c1_history_scoring_adapter*v1.py'
+      - 'ml/*c1_timestamp_encoding_adapter*v1.py'
       - 'ml/postmatch_scoring_readiness_v1.py'
       - 'ml/STRUCTURAL_HISTORY_REFRESH_PRECOMMIT_V1.md'
       - 'ml/artifacts/structural_history_refresh_v1/**'
@@ -177,6 +179,9 @@ jobs:
 
       - name: Verify local outcome hints never restart expensive source collection
         run: python -m unittest ml.test_c1_outcome_scoring_bridge_v1 -v
+
+      - name: Verify lossless timestamp transport and original RPC provenance
+        run: python -m unittest ml.test_c1_timestamp_encoding_adapter_v1 -v
 
       - name: Verify immutable history score paths and versioned closure routing
         run: |
