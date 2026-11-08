@@ -20,6 +20,8 @@ Research loop: `baseline -> new information -> simple challenger -> event-groupe
 
 ## Latest product priority — November 8: 48–72 hours to act
 
+**Literature checkpoint before implementation:** [targeted review](ROLLING_72H_LITERATURE_REVIEW_2026-11-08.md) and [source-access registry](ROLLING_72H_LITERATURE_SOURCES_2026-11-08.json). Keep MAE/P50 aligned, add a separately precommitted conditional booking-curve baseline, audit sector coverage, evaluate advance warning quality, and separate forecast accuracy from causal price/ad revenue effects. No algorithm or1200MAE is guaranteed. Direct publisher access was403blocked; classic booking papersR12/R13remain metadata-only, explicitly not full-text verified. Next is dataset auditA; no new fit, activation, worker renewal or DBwrite occurred in the review.
+
 **Whole sales lifecycle:** rolling +24/+48/+72 h forecasts start with the first genuine observed datum after sales open, including the one-observation case, and are re-issued throughout tracking. At P-50 the targets are P-49/P-48/P-47; at P-15 they are P-14/P-13/P-12. These are future horizons, not a final72h eligibility window or a requirement for24h of prior history. Preserve late-start/missing-history gaps and immutable issue times; existing frozen cold-start gates stay unchanged.
 
 **Accuracy remains a core objective:** minimise genuine prospective event-balanced MAE and continue targeting **about 1200 seats attendance MAE** as a research milestone, with lower better. The rolling24/48/72h product adds forward commercial value; it does not replace the existing accuracy goal. Report each horizon/target/cohort separately and never substitute a low inventory-path score for attendance accuracy. No frozen gates, estimators or parameters change.

@@ -4,6 +4,12 @@ Data: **2026-11-08**. Status: **plan produktu i badań; skuteczność tezy pozos
 
 Cel wynika z bezpośredniej instrukcji użytkownika. Ten dokument rozwija kanoniczny `MAE_RESEARCH_ROADMAP_V6.md` i plan trajectory. Specyfikacja produktu: [rolling72 MVP](../.ai/specs/2026-11-08-rolling-72h-commercial-forecast-mvp.md). Wdrożenia, bieżące liczniki i blokady pozostają w `EXECUTION_PLAN_CURRENT.md` i `NEXT_SESSION_HANDOFF.md`. Nie zmieniamy zamrożonych modeli ani ich wcześniejszych protokołów.
 
+## Weryfikacja bibliograficzna przed wykonaniem
+
+[Przegląd źródeł z 8 listopada](ROLLING_72H_LITERATURE_REVIEW_2026-11-08.md) wspiera konstrukcję rolling origin, prognozy bezpośrednie na różne horyzonty, zgodność P50–MAE i silne proste benchmarki. Nie potwierdza, że konkretny algorytm osiągnie 1200 miejsc. Jawnie rozróżnia pobrane teksty, materiały autorów i metadane; pełne teksty dwóch klasycznych prac booking curves pozostają niedostępne. Poniższy plan jest doprecyzowany tym przeglądem, bez fitu lub aktywacji.
+
+Korekty: dodać warunkową krzywą/pickup jako punkt odniesienia; audytować sektory od początku; oceniać użyteczność ostrzeżeń oprócz MAE; osobno udowodnić efekt ceny/reklamy na przychód. Ścieżka ma opisywać przyszłe zapełnianie/popyt, a końcowa frekwencja pozostaje powiązanym, oddzielnie ocenianym wynikiem. Obecny publiczny proxy musi mieć uczciwą definicję.
+
 ## 1. Teza
 
 **Rzeczywisty przebieg zainteresowania meczem — jego poziom, tempo, przyspieszenie i etap do kickoffu — zawiera informację pozwalającą lepiej przewidywać zmiany w najbliższych 48–72 godzinach niż samo utrzymanie ostatniego odczytu lub proste przedłużenie ostatniego trendu. Wykorzystanie tej informacji może dać klubowi czas na reakcję handlową.**
@@ -84,7 +90,9 @@ Wraz z nowymi obserwacjami dokładamy rzeczywiste zmiany i tempo. Nie wypełniam
 
 ### Minimalny pierwszy kandydat
 
-Jedna nowa wersja medianowej prognozy zmiany, z małym modelem drzewiastym kwantylowym, jest pierwszym uczonym kandydatem. Ma ująć zależność tempa od etapu do meczu i nieliniowe wyhamowanie/przyspieszenie. Nie zaczynamy turnieju architektur. Dokładny zbiór cech, parametry i cutoff zostaną zapisane w precommicie **przed fit**.
+Przed uczonym kandydatem dodajemy osobno precommitted warunkową krzywą/pickup: ostatni rzeczywisty poziom plus historyczna zmiana na porównywalnym etapie i horyzoncie, oparta wyłącznie na treningu. Dla krótkich historii współdzielimy informację między meczami i nie udajemy znanego lokalnego tempa. To hipoteza baseline Beyond, nie reprodukcja niedostępnej publikacji.
+
+Jedna nowa wersja medianowej prognozy zmiany, z małym globalnym modelem drzewiastym kwantylowym, jest pierwszym uczonym kandydatem. Literatura uzasadnia jego porównanie, a nie zakładanie zwycięstwa. Ma ująć zależność tempa od etapu do meczu i nieliniowe wyhamowanie/przyspieszenie. Nie zaczynamy turnieju architektur. Dokładny zbiór cech, parametry i cutoff zostaną zapisane w precommicie **przed fit**.
 
 Pierwsza rodzina informacji: ostatni poziom, rzeczywiste zmiany i nachylenia dla dostępnych okien 6/24/72 h, porównanie krótszego i dłuższego tempa, czas do kickoffu i horyzont przewidywania. Brakujące okno pozostaje brakujące. Pokrycie, wiek, zmiany źródła i liczba odczytów są kontrolą jakości; liczba uruchomień collectora nie może udawać popytu. Ceny, promocje i kolejne rodziny informacji dodajemy tylko, gdy są rzeczywiście dostępne w czasie i wynika z nich oddzielna hipoteza.
 
@@ -94,8 +102,8 @@ Przed freeze sprawdzamy, czy model faktycznie używa zmian historii: przy tym sa
 
 | Etap | Konkretna praca | Warunek przejścia |
 |---|---|---|
-| A. Kontrakt i audyt danych | Jeden target, zakres puli/źródła, prefixy od początku, cele +24/+48/+72; liczba niezależnych meczów, braki i pierwsze odczyty | Wiemy, które przykłady są poprawne i co oznacza ich pomiar; brak przecieku przyszłości |
-| B. Feature store i benchmarki | Wersjonowane, odtwarzalne cechy znane w danej chwili; persistence oraz istniejący drift na jego prawidłowym pokryciu | Ten sam issue i przyszły cel dla porównania; wartości i czasy dają się odtworzyć |
+| A. Kontrakt i audyt danych | Jeden target, zakres puli/źródła, mapowanie i historia sektorów, prefixy od początku, cele +24/+48/+72; liczba niezależnych meczów, braki i pierwsze odczyty | Wiemy, które przykłady są poprawne i co oznacza ich pomiar; brak przecieku przyszłości |
+| B. Feature store i benchmarki | Wersjonowane, odtwarzalne cechy znane w danej chwili; persistence, istniejący drift na jego prawidłowym pokryciu oraz osobna warunkowa krzywa/pickup | Ten sam issue i przyszły cel dla porównania; wartości i czasy dają się odtworzyć |
 | C. Jedna nowa wersja modelu | Precommit, jeden zadeklarowany kandydat, walidacja po meczach i w czasie, audyt reakcji na historię | Uczciwy wynik wobec baseline, zapisane odrzucenia i brak retuningu na odsłoniętych testach |
 | D. Przyszły przebieg i panel | Zapis przed targetem, rzeczywisty prefix oraz przyszłe punkty z tej samej wersji; aktualizacja i zachowanie vintages | Łańcuch rzeczywisty odczyt→prognoza→trwały zapis→panel działa; konfiguracja i test lokalny nie wystarczają |
 | E. Ocena po 24/48/72 h | Dopiero później dopisujemy rzeczywisty wynik, błędy i raport horyzontów | Weryfikowalne pary prognoza–przyszły odczyt; żadnej prognozy stworzonej po wyniku |
@@ -109,7 +117,11 @@ Najbliższe zadanie wykonawcze to **etap A**, w szczególności audyt pokrycia p
 
 Podstawowe porównanie: ten sam mecz, rzeczywisty czas wydania, prefix, miernik puli i przyszły target. Wszystkie prefixy meczu pozostają razem w podziale trening/test. Stare odsłonięte mecze służą development/diagnostyce, a nie nowej niezależnej walidacji.
 
-Mierzymy osobno +24, +48, +72 h; **+72 h jest głównym horyzontem nowego celu produktu**. Najpierw uśredniamy błędy wewnątrz meczu, potem między meczami. Raport zawiera MAE, signed bias, P90/worst error, poprawę względem obu benchmarków, liczbę niezależnych meczów i klubów oraz braki. Wspólny wynik na dostępności nie zastępuje MAE frekwencji.
+Mierzymy osobno +24, +48, +72 h; **+72 h jest głównym horyzontem nowego celu produktu**. Najpierw uśredniamy błędy wewnątrz meczu, potem między meczami. Raport zawiera MAE, signed bias, P90/worst error, poprawę względem zarejestrowanych benchmarków, liczbę niezależnych meczów i klubów oraz braki. Wspólny wynik na dostępności nie zastępuje MAE frekwencji.
+
+Przy rzadkich zmianach niski MAE może wynikać z trafnego przewidywania braku zmiany; nie wolno wymuszać dynamiki dla wyglądu. Równolegle oceniamy wcześniej zdefiniowane ostrzeżenia o przyspieszeniu/zastoju: precision/recall, fałszywe alarmy i rzeczywiste 48–72 h wyprzedzenia. Reguły powstają przed testem; nie usuwamy spokojnych/trudnych dni z głównego MAE. Oceniamy także etap sprzedaży, pierwsze odczyty i pokrycie sektorów.
+
+Przy wynikach per sektor uwzględniamy, że mediana sumy nie musi być sumą median. Spójność agregacji projektujemy i sprawdzamy, a nie uznajemy za darmową poprawę MAE. Bez wiarygodnej historii sektora nie wydajemy pozornej prognozy dla niego. Predykcji niezaspokojonego popytu nie utożsamiamy z obserwacją zerowej dostępności.
 
 Plan pierwszego przyszłego przeglądu nowej wersji: **30 nowych niezależnych meczów z co najmniej 8 klubów**, niezawartych w treningu. To zaplanowany próg nowego protokołu, nie zmiana istniejących frozen gates ani gwarancja mocy statystycznej. Włączamy wszystkie kwalifikujące się wyniki dostępne przy osiągnięciu progu; nie zatrzymujemy się na dogodnym MAE.
 
@@ -124,6 +136,10 @@ Pierwsza wersja działa na obecnych publicznych danych; brak transakcji partners
 Scenariusz produktu brzmi: „przy utrzymaniu obecnych warunków”. Jeśli nie obserwujemy cen/promocji/blokad, stabilność ma status UNKNOWN. Nie udajemy, że brak danych dowodzi braku interwencji. Gdy potwierdzona zmiana warunków nadejdzie, zapisujemy ją i wydajemy nową prognozę, zachowując pierwotną. Nie wykluczamy po wyniku trudnych przypadków ze wskaźników. Osobne przekroje „potwierdzony brak zmiany”, „zmiana”, „nieznane” są diagnostyką z uprzednio zdefiniowaną regułą, a nie sposobem wyboru dobrego wyniku.
 
 Prognoza efektu alternatywnej ceny albo konkretnej promocji wymaga osobnego modelu i odpowiednich danych. Nie obiecujemy jej na podstawie samego modelu dalszego przebiegu.
+
+Od początku przygotowujemy dziennik scenariusza, rekomendacji i rzeczywiście wykonanej interwencji: czas, sektor, cena/promocja, dostępny budżet i zakres puli. Początkowo może to być zapis ręczny; integracja partnera nie jest wymogiem demonstracji. Model może wskazywać ryzyko odchylenia sektora od planu; stwierdzenie, że konkretna reklama/cena zwiększy przychód, wymaga późniejszego badania efektu.
+
+Poza etapami A–F jest osobny etap G: ocena działań cenowych/reklamowych na przyrostowym przychodzie lub marży, z uwzględnieniem kosztu reklamy i przenoszenia popytu między sektorami/w czasie. Potrzebna jest identyfikowalna zmienność działań lub odpowiednio zaprojektowany eksperyment. Nie maksymalizujemy przychodu przez podstawienie samej mediany zamiast wartości oczekiwanej/ryzyka ani nie deklarujemy optymalnej ceny na podstawie korelacji. To nie zmienia głównego celu najmniejszego MAE prognoz.
 
 ## 8. Definicja ukończenia MVP
 

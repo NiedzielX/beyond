@@ -23,3 +23,5 @@ Current MVP acceptance is `ml/ROLLING_72H_COMMERCIAL_FORECAST_PLAN_V1.md`: from 
 Persistent user goal: the lowest honest prospective MAE, still aiming for approximately 1200 seats attendance MAE. Rolling24/48/72h forecasting complements this accuracy goal. Report targets/horizons/cohorts separately; do not claim the 1200 attendance milestone from another target or favorable subset. Existing frozen gates and parameters remain unchanged.
 
 Whole-sales-lifecycle rule: after sales open, the first genuine observation (even one point) starts rolling+24/+48/+72h forecasts. Re-issue throughout the observed sales period, e.g.P-50→P-49/P-48/P-47 andP-15→P-14/P-13/P-12. Do not turn these horizons into a final72h activation window or invent the missed beginning of sales. Preserve existing frozen eligibility contracts; the first-observation route belongs to a new version.
+
+Read `ml/ROLLING_72H_LITERATURE_REVIEW_2026-11-08.md` before rolling72implementation. Preserve its source-access limits and distinguish MAE forecasting, sector-specific early warnings and causal price/ad revenue effects. The review changed no frozen model/gate and confirms no guaranteed1200result.

@@ -45,3 +45,5 @@ This index is durable memory, not a substitute for the authoritative execution p
 - Stały cel potwierdzony przez użytkownika2026-11-08: minimalizować przyszłe MAE i nadal dążyć do około 1200 miejsc MAE frekwencji. [Plan72h](../ml/ROLLING_72H_COMMERCIAL_FORECAST_PLAN_V1.md) dodaje przewagę czasową, zachowując cel dokładności; wyniki różnych targetów/horyzontów i kohort pozostają osobne.
 
 - Doprecyzowanie użytkownika2026-11-08: +24/+48/+72h to ruchome horyzonty przez **całą obserwowaną sprzedaż**, od pierwszej prawdziwej danej po jej uruchomieniu, także przy jednym punkcie. Przykłady i obsługa późnego startu: [plan72h](../ml/ROLLING_72H_COMMERCIAL_FORECAST_PLAN_V1.md). Nie zawężać produktu do końcówki przed kickoffem ani udawać wcześniejszej nieobserwowanej historii.
+
+- [Rolling72: forecasting and intervention](lessons/2026-11-08-forecasting-versus-intervention.md): MAE can reward flat forecasts on intermittent changes, level/delta error equivalence, first-observation information limits, sector medians, honest access scope, and separate evidence for price/ad revenue effects.

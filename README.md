@@ -37,6 +37,8 @@ Production remains:
 
 ## Daily-path MVP and cloud validation
 
+The [November8literature verification](ml/ROLLING_72H_LITERATURE_REVIEW_2026-11-08.md) records evidence, actual reading scope and remaining full-text gaps before implementation. It separates forward demand forecasts, sector warning usefulness and the causal revenue effect of pricing/advertising.
+
 Accuracy remains central: minimise true future MAE and continue toward approximately 1200 seats attendance MAE. Evaluate the new24/48/72h path separately; it complements the accuracy goal rather than replacing it.
 
 Current product goal: forecasts from the first genuine match observation, giving clubs24/48/72hour expectations under stated price/promotion/pool assumptions. [The rolling72 plan](ml/ROLLING_72H_COMMERCIAL_FORECAST_PLAN_V1.md) records the hypothesis, work stages, metrics and actual end-to-end acceptance. A terminal-attendance history chart or final24C1alone is insufficient for this goal.

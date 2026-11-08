@@ -1,0 +1,14 @@
+# Rolling72: MAE, przyszły popyt i efekt działania
+
+Dowody i zakres odczytu: [przegląd bibliograficzny](../../ml/ROLLING_72H_LITERATURE_REVIEW_2026-11-08.md), [rejestr źródeł](../../ml/ROLLING_72H_LITERATURE_SOURCES_2026-11-08.json).
+
+- Prognoza jest ex ante: cechy i etykiety treningowe muszą być faktycznie znane przed cutoffem. Horyzont+72h nie jest informacją dostępną w dniu wydania. Wszystkie prefixy meczu pozostają jedną grupą walidacyjną; czas wydania i późniejszy target są niezmienne.
+- Kotwica ostatniego odczytu pomaga zdefiniować ścieżkę. Samo przejście z poziomu na przyrost nie zmniejsza matematycznie MAE przy tej samej kotwicy. Jakość pochodzi z informacji/uogólniania, nie przesunięcia wykresu.
+- Mediana warunkowa odpowiada stracie absolutnej. Przy rzadkich zmianach płaska prognoza może dobrze wypadać w MAE; M5 Guide omawia ten problem w popycie przerywanym. Nie wymuszamy dynamiki dla wyglądu. Zachowujemy MAE i dokładamy uprzednio zdefiniowaną ocenę ostrzeżeń, fałszywych alarmów i realnego wyprzedzenia48–72h.
+- Pierwszy odczyt nie identyfikuje lokalnego tempa. Początek potrzebuje informacji z innych meczów/etapów i jawnej niepewności. Zero-shot nie oznacza wiarygodnej dynamiki z jednego punktu. Starych wymagań frozen drift/daily nie rozluźniamy; nowa ścieżka wymaga własnego kontraktu.
+- Mediana sumy nie jest ogólnie sumą median sektorów. Nie przenosić gwarancji metod MSE na MAE. Sumy stadionu nie rozbijamy arbitralnie na sektorowe „prognozy”. Brak porównywalnych obserwacji sektora pozostaje brakiem pokrycia.
+- Dostępność0nie oznacza popytu0. Pula, blokady i zwolnienia nie są zakupami. Nie zmieniamy dawnych zer ani frozen scoringu, ale nie przypisujemy proxy znaczenia płatnej sprzedaży lub niezaspokojonego popytu.
+- Dobra prognoza nie jest dowodem dobrej ceny/reklamy. AirbnbKDD2018opisuje także metody, które nie poprawiały przychodu w A/B, oraz problem selektywnego przyjmowania rekomendacji. EconML wymaga założeń identyfikacji i obserwowanych wspólnych przyczyn. Cel działania to przyrostowy przychód/marża i ryzyko, nie sam medianowy błąd prognozy.
+- Logować rekomendację i rzeczywiście podjęte działanie oddzielnie: cena/promocja, sektor, czas i dostępny budżet. Początkowo wystarczy zapis ręczny; brak danych partnerskich nie blokuje prognozy na publicznych danych, ale ogranicza przyczynowe wnioski.
+- Nie udawać pełnego przeglądu: część serwisów wydawców jest blokowana403. Przeczytane materiały autorów, kopie oryginalnychPDF i metadane są różnymi poziomami dostępu. KlasyczneR12/R13booking curves pozostały bez pełnego tekstu. Chronić tę granicę zamiast przypisywać źródłom niezweryfikowane wyniki.
+- Około1200miejsc pozostaje celem badawczym końcowej frekwencji. Wynik dostępności lub innego horyzontu/kohorty nie stanowi dowodu osiągnięcia tego celu;30meczów/8klubów nie jest literaturową gwarancją precyzji ani skuteczności.

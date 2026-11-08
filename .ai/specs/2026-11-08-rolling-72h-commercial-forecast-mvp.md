@@ -47,3 +47,7 @@ Użytkownik zlecił sformułowanie tezy i zapis pełnego planu. Kanoniczne rozwi
 ## Doprecyzowanie użytkownika: minimalne MAE i cel około 1200 miejsc
 
 Plan 48–72 h ma dalej minimalizować rzeczywiste przyszłe MAE; nadal dążymy do około 1200 miejsc MAE końcowej frekwencji. Cel jest kamieniem milowym, a niższe MAE jest pożądane. Nowe metryki24/48/72h mierzymy osobno dla ich targetu, porównując ten sam prefix, zegar i przyszły odczyt; nie zastępują one dowodu dokładności frekwencji. Ładna/dynamiczna ścieżka ani działający pipeline nie wystarczają. Żadnej zmiany frozen modeli, progów lub starych wyników przez to doprecyzowanie.
+
+## Weryfikacja bibliograficzna przed wykonaniem
+
+Raport: ml/ROLLING_72H_LITERATURE_REVIEW_2026-11-08.md; rejestr źródeł: ml/ROLLING_72H_LITERATURE_SOURCES_2026-11-08.json. Doprecyzowano warunkową krzywą/pickup, audyt sektorów, ocenę wyprzedzenia ostrzeżeń obok MAE i osobny etap dowodu przyrostowego efektu ceny/reklamy. Obecny proxy oraz końcowa frekwencja zachowują osobne etykiety. Bibliografia nie jest dowodem1200MAEani gwarancją modelu. Materiały dostępne odczytano, R12/R13domenowo pozostają metadanymi bez pełnego tekstu. Nie wykonano implementacji/fitu/aktywacji.

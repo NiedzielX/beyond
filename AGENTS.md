@@ -35,6 +35,8 @@ A new version name alone does not make previously exposed test events independen
 
 ## Current MVP product acceptance
 
+Before implementing the rolling72 model, read `ml/ROLLING_72H_LITERATURE_REVIEW_2026-11-08.md` and its explicit source-access limits. Preserve the distinction between future demand/attendance forecasting and identifying the revenue effect of a price/ad intervention. MAE remains primary; advance warning/sector coverage need their own declared evaluation, and no cited method guarantees1200MAE.
+
 **Whole sales lifecycle:** rolling +24/+48/+72 h forecasts start with the first genuine observed datum after sales open, including the one-observation case, and are re-issued throughout tracking. At P-50 the targets are P-49/P-48/P-47; at P-15 they are P-14/P-13/P-12. These are future horizons, not a final72h eligibility window or a requirement for24h of prior history. Preserve late-start/missing-history gaps and immutable issue times; existing frozen cold-start gates stay unchanged.
 
 Follow `ml/ROLLING_72H_COMMERCIAL_FORECAST_PLAN_V1.md`: begin with the first genuine observation and forecast the following24/48/72hours from all then-known history. Clubs need48–72hours to act under explicit price/promotion/pool assumptions. Do not narrow this to P-15 or final24C1, treat terminal-attendance history as a future path, or infer causal intervention effects from unavailable data. This product scope complements the separate attendance research objective and preserves all frozen contracts.
