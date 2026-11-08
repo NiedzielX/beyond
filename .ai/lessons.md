@@ -47,3 +47,5 @@ This index is durable memory, not a substitute for the authoritative execution p
 - Doprecyzowanie użytkownika2026-11-08: +24/+48/+72h to ruchome horyzonty przez **całą obserwowaną sprzedaż**, od pierwszej prawdziwej danej po jej uruchomieniu, także przy jednym punkcie. Przykłady i obsługa późnego startu: [plan72h](../ml/ROLLING_72H_COMMERCIAL_FORECAST_PLAN_V1.md). Nie zawężać produktu do końcówki przed kickoffem ani udawać wcześniejszej nieobserwowanej historii.
 
 - [Rolling72: forecasting and intervention](lessons/2026-11-08-forecasting-versus-intervention.md): MAE can reward flat forecasts on intermittent changes, level/delta error equivalence, first-observation information limits, sector medians, honest access scope, and separate evidence for price/ad revenue effects.
+
+- [Rolling72 knowledge and feed contracts](lessons/2026-11-08-rolling72-knowledge-and-feed-contracts.md): maturity×horizon support, genuine known-at, old parser gates and actual sector ownership; input code is distinct from a live forecasting chain.
