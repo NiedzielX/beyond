@@ -47,4 +47,14 @@ ActualCLI14:09:28UTC: oryginalnycacheSHA3a5981ce…→38nowych inputissues/114fe
 
 Dalszy krok: świeży ograniczony odczyt, rzeczywisty dodatni przypadek źródło→store oraz dokładny precommit benchmarków/kandydata przedfit. Dawne unknownclocks pozostają unknown; nie przepisano starych ledgerów.
 
-Bieżący cache ma5przyszłychfixtures:2na8listopada,2na20listopada,1na10grudnia. Trzy dłuższe historie mają source-keychanges, więc sam refresh nie wystarczy do zgodnego prefixu. Następny audyt ma rozstrzygnąć zakres/kompatybilność pomiarów, bez usuwania niezgodnych punktów dla poprawy MAE ani nadpisywania v1.
+Bieżący cache ma5przyszłychfixtures:2na8listopada,2na20listopada,1na10grudnia. Korekta po powiązaniu statusów z konkretnymi datami: tylko jedna z trzech dłuższych historii ma source-keychange, dwie mają zgodny klucz i sąstale. Pozostałe dwa measurementchanged dotyczą meczów8listopada. Sam refresh nie dowodzi zgodności kluczy, ale może dać poprawne wejście dwóm stabilnym seriom. Następny audyt ma rozstrzygnąć zakres/kompatybilność pomiarów, bez usuwania niezgodnych punktów dla poprawy MAE ani nadpisywania v1.
+
+## Pozytywna integracja i publikacja drugiej części
+
+395ef0eab9b01ad6c2eea48802cae7ab76074ce1opublikowano/zweryfikowano. HostedDemandEngineSmoke42488648388/42488642850SUCCESSi cztery inne odczytane kontraktySUCCESS. Main nadalbcec6b0bezmerge.
+
+Zamiast pełnego eksportu wykonano3małeGETSupabase:2metadane event i po1latest snapshot. Actualcapture14:05:03/14:13:02UTC, receipt14:14:04UTC. Metadane tych2eventów identyczne zcache. Nowy kompozyt oryginalnego prefixu+2autentyczne świeże punkty zachowuje hash obu źródeł i jawny brak punktów w luce; nie odtwarza historii ani dawnych forecasts. Receiptkompozycji14:14:57UTCkonserwatywnie wiąże całość znanej kopii.
+
+ActualCLI14:14:57.490UTC→2READYissues/6READYfeature rows→osobnylokalnySQLite.38wcześniejszychfailedissueszachowanych, retry0insert, integrity/FKPASS; utworzono checkpointSQLite. Publiczny proofJSONbezraw: `ml/ROLLING_72H_FEATURE_STORE_PROOF_2026-11-08.json`; pełne receipts/checkpointprywatnie. Nie maforecast/score/fit/MAE, Supabasewrite, paneldeployment ani dowodu stałej puli.
+
+Dalszy krok to dokładny precommit benchmarków/kandydata i eksperymentC. Nie przedstawiać6cechowych wierszy jako6prognoz. Trzeci mecz>72h ze zmianąsourcekeypozostaje osobnym blokiem pokrycia.

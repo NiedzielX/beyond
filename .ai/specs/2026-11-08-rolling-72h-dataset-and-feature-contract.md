@@ -46,3 +46,5 @@ Pure preparation nie tworzy forecastów. LokalnySQLite store zapisuje wyłączni
 Testy: receiptcutoffprzedissue, brakujące/niepoprawne clocks, hash/sourcezmieniony, znany-po-receipt snapshot, jedenpunkt, źródłowyUNKNOWN/zero, późniejsza nowa wersja bez zmiany starej, idempotencja/konflikt/rollback, brak produkcyjnych/nietargetowychwrites. Na starym cache nie udajemy świeżej dodatniej prognozy; spodziewany fail-closedstale/pastkickoff zostaje odnotowany.
 
 Receipt adapter/store również wykonane:13nowychtestówPASS, 256łącznie. Rzeczywisty CLI na starym cache utrwalił38failedissues/114statusrows i zeroforecastów w osobnymSQLite; integralnośćPASS. Odbiór świeżej dodatniej ścieżki i benchmarków nadal otwarty; spec pozostaje aktywne.
+
+Po3małychGETSupabaseuzyskano rzeczywisty dodatni przypadek:14:14:57UTC2READYinputs→6feature rows→immutablelokalnystore, retry0insert,38wcześniejszychfailedinputs zachowanych, checkpoint/integrityPASS. Oryginalne rawreceipts pozaGit; source gaps jawne. Próg źródło→cechy→localstorejest dowiedziony; benchmarki/fit/persistedforecasts/panel/prospectiveMAEnadal otwarte. Spec pozostaje aktywne dla benchmarkówB.

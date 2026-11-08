@@ -62,7 +62,7 @@ python -m ml.rolling72_coverage_audit_v1 \
 
 Skrypt sprawdza hash manifestu i zachowuje SHA256 oryginalnego pliku. Błędy i nieporównywalne prefixy zostają w mianownikach pokrycia. Wszystkie liczniki pierwszego prywatnego audytu odtworzono niezależnie kodem repozytorium. Raw dane pozostają pozaGit; receipt pliku: `3a5981ce558ce0b2b98b1a4082d61b169fb6b1674f68d94792dd153d97d839bd`.
 
-Weryfikacja lokalna po kolejnym kroku: **218 testów Demand Engine oraz38testów audytu/receipt-store/source-state — 256łącznie, wszystkie PASS**. Obejmuje54nowe testy rolling72:17wejść,12etykiet,12audytu i13receipt/store. Zmiana przyszłego payloadu nie zmienia wejścia ani wcześniejszej etykiety; osobne testy rozstrzygają późny known_at, pierwszy punkt/P-50, hidden/zero, zmianę tożsamości, rzeczywiste kotwice oraz granicę kickoffu. YAML testowego workflow parsuje się poprawnie; `git diff --check` przechodzi. Pierwszy opublikowany kodb74b3d0przeszedł też rzeczywisty hostedDemandEngineSmoke42488118781i42488114629; nie są to dowody panel/DB. Późniejszy adapter/store mają dodatkowy lokalny dowód opisany poniżej; ich hostedstatus sprawdzamy odrębnie.
+Weryfikacja lokalna po kolejnym kroku: **218 testów Demand Engine oraz38testów audytu/receipt-store/source-state — 256łącznie, wszystkie PASS**. Obejmuje54nowe testy rolling72:17wejść,12etykiet,12audytu i13receipt/store. Zmiana przyszłego payloadu nie zmienia wejścia ani wcześniejszej etykiety; osobne testy rozstrzygają późny known_at, pierwszy punkt/P-50, hidden/zero, zmianę tożsamości, rzeczywiste kotwice oraz granicę kickoffu. YAML testowego workflow parsuje się poprawnie; `git diff --check` przechodzi. Pierwszy opublikowany kodb74b3d0przeszedł też rzeczywisty hostedDemandEngineSmoke42488118781i42488114629; nie są to dowody panel/DB. Późniejszy adapter/store395ef0eprzeszedł również hostedDemandEngineSmoke42488648388/42488642850oraz sprawdzone pozostałe cztery kontrakty.
 
 ### Wykonany dalszy krok B: receipt-bound feature store
 
@@ -70,13 +70,19 @@ Weryfikacja lokalna po kolejnym kroku: **218 testów Demand Engine oraz38testów
 
 Nowy lokalnySQLite przechowuje receipts, niezmienne wejścia i wiersze cech, bez predykcji/score. Powtórzenie tych samych danych jest idempotentne; konflikt event/issue kończy się rollbackiem, nigdy zastąpieniem starego rekordu. CLI używa prawdziwego czasu wykonania i nie ma opcji backdate. Nie otwiera cudzych/frozen ledgerów.
 
-Rzeczywiste wykonanie na zachowanym eksporcie **8listopada14:09:28UTC** zapisało38issues i114wierszy horyzontów/statusów: **33mecze już po kickoffie,2stare odczyty,3zmiany pomiaru**. W cache trzy mecze z co najmniej72h do kickoffu mają zmianę klucza; dwa pozostałe przyszłe mecze odbywają się8listopada. Świeży odczyt sam nie dowiedzie zgodności wcześniejszych różnych pomiarów; nie łączymy ich bez dowodu. ZeroREADY, zero prognoz. To poprawny fail-closed na starym wejściu, nie działająca nowa prognoza ani świeży odczytSupabase. SQLiteintegrity/foreignkeysPASS; dowód i plik pozostają prywatnie pod `/workspace/ops-runtime/2026-11-08-rolling72-stage-a/receipt-feature-store-proof-v1.json` i `receipt-features-v1.sqlite`.
+Rzeczywiste wykonanie na zachowanym eksporcie **8listopada14:09:28UTC** zapisało38issues i114wierszy horyzontów/statusów: **33mecze już po kickoffie,2stare odczyty,3zmiany pomiaru**. Dokładne powiązanie issue z datami wskazuje: z trzech meczów z co najmniej72h do kickoffu jeden ma zmianę klucza, a dwa sąSTALE_INPUTze zgodnym kluczem; dwa pozostałe przyszłe mecze odbywają się8listopada. Świeży odczyt sam nie dowiedzie zgodności wcześniejszych różnych pomiarów; nie łączymy ich bez dowodu. ZeroREADY, zero prognoz. To poprawny fail-closed na starym wejściu, nie działająca nowa prognoza ani świeży odczytSupabase. SQLiteintegrity/foreignkeysPASS; dowód i plik pozostają prywatnie pod `/workspace/ops-runtime/2026-11-08-rolling72-stage-a/receipt-feature-store-proof-v1.json` i `receipt-features-v1.sqlite`.
 
 ```bash
 python -m ml.rolling72_receipt_store_v1 \
   --input /private/path/original-public-export.json \
   --database /private/path/new-rolling72-features.sqlite
 ```
+
+### Rzeczywisty dodatni przypadek źródło→store
+
+Następnie wykonano **trzy małeGETSupabase**: metadane dwóch stabilnych serii oraz po jednym najnowszym snapshotcie. Odczyty miały capture14:05i14:13UTC. Metadane provider/klub/zespoły/kickoff odpowiadały cache. Połączono je z oryginalnym zachowanym prefixem, z jawnymi hashami obu receipts i statusem `history_complete_between_receipts=false`. Nie pobierano pełnej historii ani nie uzupełniano18godzin luki; wszystkie punkty są rzeczywistymi otrzymanymi rekordami. Konserwatywny receipt kompozycji to14:14:57UTC.
+
+**ActualCLI14:14:57UTC → 2READYissues → 6READYwierszy cech24/48/72 → trwały osobnySQLite**. Powtórny zapis tej samej rzeczywistej wersji dodał0rekordów;38starych nieudanych wejść pozostało. Integralność i FKPASS; wykonano prywatny checkpointSQLite. [Publiczny dowód zakresu](ROLLING_72H_FEATURE_STORE_PROOF_2026-11-08.json). To dodatni przypadek wejść/cech, **zero prognoz, zero score, zero nowego MAE**. Nie poświadczono niezależnie źródłowej niezmienności ani stałej puli.
 
 ## 4. Rzeczywista luka w panelu
 
@@ -88,7 +94,7 @@ W projekcie istnieją sektory/E0. Właściciela ustala łańcuch `sector_invento
 
 ## 5. Co dalej i czego ten etap nie rozstrzyga
 
-1. **DokończyćB:** najpierw rozstrzygnąć zgodność pomiarów trzech przyszłych meczów z różnymi kluczami źródeł, potem wykonać ograniczony świeży odczyt i zweryfikować dodatni przypadek źródło→nowy receipt-bound store; przygotować wspólne benchmarki. Adapter/store są zaimplementowane i mają rzeczywisty negatywny przypadek starego cache, bez świeżegoREADY. Dotychczasowy source-state-v2jest przygotowany i sprawdzony izolowanie, lecz nie wdrożony; zachować jego ograniczenia. Dawne nieznane zegary pozostają nieznane. Na tej podstawie zamknąć reguły kwalifikacji treningu i benchmarków persistence/pickup/nowego odpowiednika driftu na wspólnych issue; starego drift ledgeru nie rozszerzać.
+1. **DokończyćB:** najpierw rozstrzygnąć zgodność pomiarów jednego meczu odległego o ponad72h z różnymi kluczami źródeł, potem wykonać ograniczony świeży odczyt i zweryfikować dodatni przypadek źródło→nowy receipt-bound store; przygotować wspólne benchmarki. Adapter/store mają rzeczywisty negatywny przypadek starego cache oraz dodatni przypadek dwóch świeżych zgodnych serii. Pozostają dokładne benchmarki i uczony kandydat przed fit; trzeci dalszy mecz wymaga dowodu kompatybilności źródeł. Dotychczasowy source-state-v2jest przygotowany i sprawdzony izolowanie, lecz nie wdrożony; zachować jego ograniczenia. Dawne nieznane zegary pozostają nieznane. Na tej podstawie zamknąć reguły kwalifikacji treningu i benchmarków persistence/pickup/nowego odpowiednika driftu na wspólnych issue; starego drift ledgeru nie rozszerzać.
 2. **Przed fitC:** utrwalić jeden dokładny kandydat, cechy, parametry, cutoff, grouping i wszystkie baseline. Odsłonięte mecze pozostają development/diagnostic, bez nowego „czystego” holdoutu przez zmianę nazwy. Macierz pokrycia pokazuje, żeP-50wymaga dalszej rzeczywistej obserwacji; nie blokuje samej obsługi pierwszego punktu przez kontrakt.
 3. **D/E:** nowy immutable ledger i wersja feedu, bezpieczny odczyt dla panelu oraz nowe rzeczywiste issue→przyszłe odczyty→score. Przy30nowych meczach/8klubach przegląd według planu; wcześniej tylko opisowe wyniki.
 

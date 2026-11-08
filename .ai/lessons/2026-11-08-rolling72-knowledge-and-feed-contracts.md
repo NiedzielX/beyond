@@ -12,3 +12,5 @@ Date: 2026-11-08. Evidence: `ml/ROLLING_72H_STAGE_A_RESULT_2026-11-08.md` and ag
 No new model fit, MAE, prospective forecast, deployment or change of frozen experiments follows from these checks.
 
 Conservative adapter exception: an actual retrieved_at receipt can serve as a knowledge **upper bound for subsequent issues**, including all old captures and that exact event-metadata copy. This does not reconstruct old knowledge clocks or independently authenticate source immutability. Actual stale-cache run produced38failedinputissues/114statusrows and zero forecasts; store persistence is proved locally, positive fresh forecasting is not.
+
+A later bounded3GETrefresh of2stable-key fixtures yielded genuine2READYinputs/6feature rows in the localstore; old38failures remained. It proves the positive source/feature persistence path, not forecast accuracy. Match statuses to individual fixture dates before interpreting coverage: only1of3fixtures beyond72h had mixed keys;2were stale, while other mixed-key cases were on today's fixtures.
