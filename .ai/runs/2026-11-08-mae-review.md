@@ -1,0 +1,9 @@
+# Actual MAE and overnight outcome review
+
+User asked what comes next, then clarified whether1873is the present error. Read canonical state in required order, lessons/README and real workflow. Read-only review; no model/parameter/precommit/source-contract change, fit, write to DB, renewal or deployment.
+
+Verified genuine overnight outcomes Górnik27867/Widzew16010, exact hosted42462549531SUCCESS, original append/sync/scorer receipts and actual live public DBdecomposition. Current live21-event policyMAE3653.473506, prior3096.747834; experimental paired median26four-event1873.219024, Ridge201874.323487, median201942.669265, original9/prior2950.505155. Median26primaryraw is worse than median20raw by309.243144; all30newfixture/8club gatesclosed. Median26does not replace live; MAE is an average, not every-match accuracy.
+
+Investigated apparent original9benchmark mismatch across history/support reports: latest clocks differ because the original history archive gaps correctly exclude later prefixes. Exact shared snapshots retain matching benchmark values; no corrupted benchmark or repair. Do not compare lane-level latest summaries as if clocks were identical. Current served Górnik13:20observation/error12776contrasts with private original9at16:20/error3085; model unchanged, available issue time differs. Actual workflow schedule isquarter-hour but runs13:30then18:17; next useful implementation is bounded genuine live refresh with full hosted→DBproof, preserving old miss.
+
+Daily paired16targets/4events/4clubs:drift13.290929,daily259.341810,persistence175.291667, separate target fromattendance and reviewclosed. All sixworkers expired10:30UTC and areZ; no perpetual-service claim. Canonicalcurrentstate/report updated together; v4SDDnowimplementedwith actualsource→DB→scoresproof. Private actualexports/receipts: /workspace/ops-runtime/2026-11-08-mae-review. Existing model/source/DBrows untouched; productionfalse/0.

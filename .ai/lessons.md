@@ -37,3 +37,5 @@ This index is durable memory, not a substitute for the authoritative execution p
 - [Fresh history and postmatch lineage](lessons/2026-11-06-fresh-history-and-postmatch-lineage.md): exact no-fit source-effect replay, genuinely new knowledge/issue clocks, immutable later-clock validation, actual GitHub run/attempt identity and source-to-outcome proof.
 
 - [Positive scoring and timestamp transport](lessons/2026-11-07-positive-score-path-and-time-transport.md): real positive-cycle persistence, immutable partial-score recovery, same-instant ISO transport, hosted→DB release proof,19versus2event cohorts, horizon support and future-only bounded renewal.
+
+- November8follow-up: [actual nightly review](../ml/MAE_REVIEW_2026-11-08.md) distinguishes live21-event3653from shadow4-event1873, different latest-clock support despite identical event IDs, actual cron gaps and completed bounded worker deadlines.
