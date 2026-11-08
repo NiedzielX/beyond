@@ -37,6 +37,8 @@ A new version name alone does not make previously exposed test events independen
 
 Follow `ml/ROLLING_72H_COMMERCIAL_FORECAST_PLAN_V1.md`: begin with the first genuine observation and forecast the following24/48/72hours from all then-known history. Clubs need48–72hours to act under explicit price/promotion/pool assumptions. Do not narrow this to P-15 or final24C1, treat terminal-attendance history as a future path, or infer causal intervention effects from unavailable data. This product scope complements the separate attendance research objective and preserves all frozen contracts.
 
+**Persistent accuracy goal:** minimise genuine prospective event-balanced MAE; continue aiming for **approximately 1200 seats attendance MAE** as a research milestone, with lower better. Evaluate rolling24/48/72h errors separately. A functioning path, attractive plot or low inventory error does not replace this goal or demonstrate attendance accuracy. Preserve exact cohorts, coverage and frozen evidence gates.
+
 ## Core objective
 
 > **Lower true prospective event-balanced attendance MAE, not model complexity.**

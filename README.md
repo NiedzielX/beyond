@@ -37,6 +37,8 @@ Production remains:
 
 ## Daily-path MVP and cloud validation
 
+Accuracy remains central: minimise true future MAE and continue toward approximately 1200 seats attendance MAE. Evaluate the new24/48/72h path separately; it complements the accuracy goal rather than replacing it.
+
 Current product goal: forecasts from the first genuine match observation, giving clubs24/48/72hour expectations under stated price/promotion/pool assumptions. [The rolling72 plan](ml/ROLLING_72H_COMMERCIAL_FORECAST_PLAN_V1.md) records the hypothesis, work stages, metrics and actual end-to-end acceptance. A terminal-attendance history chart or final24C1alone is insufficient for this goal.
 
 The separate public-inventory lane now predicts every remaining day from the genuine observed prefix. It remains a frozen research shadow with production off. See [implementation](ml/DAILY_INVENTORY_PATH_IMPLEMENTATION_V1.md), [deployment/recovery](ml/DAILY_INVENTORY_PATH_DEPLOYMENT_V1.md), and [verified cloud tests and bounded workers](ml/DAILY_PATH_CLOUD_VALIDATION_2026-11-04.md). Inventory-path MAE and attendance MAE are separate targets; no score is zero merely because future outcomes have not matured.

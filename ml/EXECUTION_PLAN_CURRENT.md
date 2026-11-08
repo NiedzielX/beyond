@@ -2,6 +2,8 @@
 
 ## Latest product priority — November 8: 48–72 hours to act
 
+**Accuracy remains a core objective:** minimise genuine prospective event-balanced MAE and continue targeting **about 1200 seats attendance MAE** as a research milestone, with lower better. The rolling24/48/72h product adds forward commercial value; it does not replace the existing accuracy goal. Report each horizon/target/cohort separately and never substitute a low inventory-path score for attendance accuracy. No frozen gates, estimators or parameters change.
+
 Full thesis, staged delivery and evaluation: [rolling72 commercial forecast plan](ROLLING_72H_COMMERCIAL_FORECAST_PLAN_V1.md). The next concrete step is dataset/coverage audit A; model fitting requires its own exact precommit. The next72hours are the MVP decision horizon from the first genuine observation, not a restriction to the final72hours before kickoff.
 
 The user clarified the MVP again: **from the first genuine observation of a tracked match, forecast the next24/48/72hours and update from the full history actually known now**. This applies from early tracking, includingP-50, through kickoff. P-15is an example, not an eligibility cutoff; final24C1alone does not implement this product. Clubs need48–72hours to act on expected demand/sector changes if price/promotion/pool conditions remain as assumed.

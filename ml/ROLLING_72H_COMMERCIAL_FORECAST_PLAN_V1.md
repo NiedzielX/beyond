@@ -14,6 +14,12 @@ To hipoteza do falsyfikacji, a nie stwierdzenie już potwierdzonej dokładności
 - **tezę produktową:** czy klub dostaje prognozę odpowiednio wcześnie i w formie pozwalającej podjąć decyzję;
 - **założenie scenariusza:** przewidywanie dotyczy kontynuacji przy bieżącej cenie, promocji i zasadach udostępniania puli. Efekt zmiany tych warunków nie jest automatycznie efektem przyczynowym wyznaczonym przez ten model.
 
+### Stały cel dokładności: jak najniższe MAE, nadal około 1200 miejsc
+
+**Cel 48–72 godzin przewagi uzupełnia dotychczasowy cel dokładności: minimalizujemy rzeczywiste przyszłe MAE i nadal dążymy do około 1200 miejsc błędu prognozy końcowej frekwencji.** To kamień milowy badawczy, nie obietnica ani granica, poniżej której przestajemy poprawiać wynik. Samo działanie ścieżki, jej zmienność lub dostępność w panelu nie wystarcza do uznania modelu za dobry.
+
+Równolegle minimalizujemy MAE przyszłego przebiegu dla +24/+48/+72 h i weryfikujemy przewagę wobec silnych prostych benchmarków. Te miary raportujemy osobno: niski błąd dostępności za 72 h nie dowodzi osiągnięcia około 1200 miejsc MAE końcowej frekwencji. W każdym raporcie podajemy target, horyzont, niezależne mecze, pokrycie i model. Celem jest lepsza dokładność na przyszłych meczach, bez wybierania korzystnych przykładów, zegarów lub wariantów po wyniku. Dotychczasowe frozen gates pozostają bez zmian.
+
 ## 2. Co dokładnie ma otrzymać klub
 
 Od pierwszego rzeczywistego, poprawnego odczytu meczu — także P-50, jeśli wtedy zaczęliśmy śledzenie — klub otrzymuje przewidywany dalszy przebieg. W każdej aktualizacji widzi:
@@ -115,6 +121,6 @@ MVP realizuje obietnicę funkcjonalną, gdy na rzeczywistym meczu:
 - późniejsze rzeczywiste odczyty tworzą ocenę dla każdego horyzontu;
 - klub widzi oczekiwaną zmianę, założenia scenariusza i granice informacji, z czasem na decyzję.
 
-**Potwierdzenie przewagi prognostycznej jest osobnym wynikiem etapu F.** Nie uznajemy go za osiągniętego przez wygląd wykresu, poprawne uruchomienie workflow, cztery mecze z niskim MAE albo samą końcową prognozę frekwencji. Celu 1200 dla frekwencji nie przenosimy na inny target.
+**Potwierdzenie przewagi prognostycznej jest osobnym wynikiem etapu F.** Nie uznajemy go za osiągniętego przez wygląd wykresu, poprawne uruchomienie workflow, cztery mecze z niskim MAE albo samą końcową prognozę frekwencji. Cel około 1200 miejsc MAE końcowej frekwencji pozostaje obowiązującym celem badawczym; trafność ścieżki 24/48/72 h jest dodatkowo oceniana osobno i nie zastępuje tego wyniku.
 
 Produkcyjne domyślne ustawienia pozostają `production_change=false`, `live_adjustment=0`. Ten zapis dokumentuje plan; nie aktywuje nowego modelu, nie zmienia starych prognoz i nie uruchamia procesu bezterminowego.

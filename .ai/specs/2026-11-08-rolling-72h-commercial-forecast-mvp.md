@@ -39,3 +39,7 @@ Nie uznajemy celu za osiągnięty na podstawie samego C1final24 lub jego MAE. Ni
 ## Plan wykonania
 
 Użytkownik zlecił sformułowanie tezy i zapis pełnego planu. Kanoniczne rozwinięcie: ml/ROLLING_72H_COMMERCIAL_FORECAST_PLAN_V1.md. EtapyA–Fobejmują audyt danych, feature store i baseline, jeden nowy precommitted model zmiany, rzeczywistą publikację do panelu, późniejsze cele24/48/72h i przegląd nowej próby. Hipoteza pozostaje niepotwierdzona; zapisanie planu nie jest ukończeniem MVPani aktywacją modelu.
+
+## Doprecyzowanie użytkownika: minimalne MAE i cel około 1200 miejsc
+
+Plan 48–72 h ma dalej minimalizować rzeczywiste przyszłe MAE; nadal dążymy do około 1200 miejsc MAE końcowej frekwencji. Cel jest kamieniem milowym, a niższe MAE jest pożądane. Nowe metryki24/48/72h mierzymy osobno dla ich targetu, porównując ten sam prefix, zegar i przyszły odczyt; nie zastępują one dowodu dokładności frekwencji. Ładna/dynamiczna ścieżka ani działający pipeline nie wystarczają. Żadnej zmiany frozen modeli, progów lub starych wyników przez to doprecyzowanie.
