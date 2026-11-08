@@ -18,6 +18,12 @@ Research loop: `baseline -> new information -> simple challenger -> event-groupe
 
 ---
 
+## Rolling72 — November 8: exact precommit and NO_FIT gate
+
+[Benchmark/gate result](ROLLING_72H_BENCHMARKS_RESULT_2026-11-08.md), [precommit](ROLLING_72H_BENCHMARKS_AND_CHALLENGER_PRECOMMIT_V1.md) and [actual source-bound training support](ROLLING_72H_REAL_TRAINING_GATE_2026-11-08.json).215original receipts yield534completed labeledrows(315/166/53for24/48/72h) but only2fixturegroups/2clubs. Candidate/pickup correctly returnNO_FIT; minimum5/3 was not reduced. No real challenger fit or new MAE. Receipt-proven labeled data reach onlyP-4.11and have no first-point rows; do not substitute capture-onlyP-50support for this evidence.
+
+New separate persistence/drift/pickup code, immutable forecast/score ledger and source-byte validation are tested. [Baseline freeze](artifacts/rolling72_v1/baseline_freeze.json) at21:14Warsaw pins5sourcefiles plus recipe. Fresh bounded two-event source is ready; actualforecastcapture/private recovery follow publication. No olddaily/C1/P9/frozenartifact or missed observation changes. Currentfixturefuturetargets are operational exposed-cohort evidence, not30freshreviewfixtures. Productionfalse/0; the attendance-MAE1200goal remains separate.
+
 ## Rolling72 — November 8: coverage audited, input/label code prepared
 
 [Stage A result and remaining gates](ROLLING_72H_STAGE_A_RESULT_2026-11-08.md), [reproducible aggregates](ROLLING_72H_COVERAGE_AUDIT_2026-11-08.json). Cached November7source:38fixtures/16clubs/29,063snapshotrows. First-observation+72h has19fixtures/13clubs; earlyP-50support has only1fixture/1club. These are **historical capture-time matches**, not PIT-proven validation, issued forecasts or new MAE. Missing ingestion clocks, stable-pool proof and per-sector histories remain unresolved in this export.

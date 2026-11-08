@@ -49,3 +49,5 @@ This index is durable memory, not a substitute for the authoritative execution p
 - [Rolling72: forecasting and intervention](lessons/2026-11-08-forecasting-versus-intervention.md): MAE can reward flat forecasts on intermittent changes, level/delta error equivalence, first-observation information limits, sector medians, honest access scope, and separate evidence for price/ad revenue effects.
 
 - [Rolling72 knowledge and feed contracts](lessons/2026-11-08-rolling72-knowledge-and-feed-contracts.md): maturity×horizon support, genuine known-at, old parser gates and actual sector ownership; input code is distinct from a live forecasting chain.
+
+- [Receipt support and shadow freeze](lessons/2026-11-08-receipt-support-and-shadow-freeze.md):534rowsstill2fixtures, input-versus-labelcoldstart, source-byte/old-snapshotrevisionguards, genuineissueclockandfirstimmutablelabel.

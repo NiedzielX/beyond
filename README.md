@@ -37,6 +37,8 @@ Production remains:
 
 ## Daily-path MVP and cloud validation
 
+[Rolling72benchmark/precommit result](ml/ROLLING_72H_BENCHMARKS_RESULT_2026-11-08.md):215realreceiptarchives yield534labeledrows but2fixtures/2clubs, so the strict learned candidate returnsNO_FIT. Separate persistence/drift, immutable futureforecastledger and private recovery are prepared; no new MAE or deployedfeed is claimed.
+
 [November8rolling72execution](ml/ROLLING_72H_STAGE_A_RESULT_2026-11-08.md): cached coverage audited; separate first-point input/features and genuine future-label modules prepared and tested. Historical source-known clocks and sector coverage remain open. No new fit, MAE or deployed rolling72feed is claimed. Receipt-bound adapter/local feature store are now implemented; actual old-cache capture correctly produced noREADYissue/forecast. Subsequent bounded source read proved2READYinputs→6feature rows→localstore, without forecasts. Next: exact benchmark/candidate precommit before fitting.
 
 The [November8literature verification](ml/ROLLING_72H_LITERATURE_REVIEW_2026-11-08.md) records evidence, actual reading scope and remaining full-text gaps before implementation. It separates forward demand forecasts, sector warning usefulness and the causal revenue effect of pricing/advertising.

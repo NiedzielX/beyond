@@ -126,8 +126,16 @@ def _json(value) -> str:
     return json.dumps(value, sort_keys=True, ensure_ascii=False, separators=(",", ":"), allow_nan=False)
 
 
-def persist_batch(path: str | Path, batch: dict) -> dict:
-    """Append one canonical batch atomically; never revise an existing issue."""
+def persist_batch(path: str | Path, batch: dict, source_payload: bytes) -> dict:
+    """Append an exact source-derived batch atomically; never revise an issue.
+
+    Original bytes are mandatory: self-consistent issue/batch hashes alone
+    cannot bind their values to the source SHA. Re-derivation also enforces
+    capture<=export cutoff before any database is opened. This verifies the
+    supplied copy, not independent immutability/authenticity of upstream rows.
+    """
+    if not isinstance(source_payload, bytes):
+        raise ValueError("Original source payload bytes required")
     if batch.get("version") != VERSION or batch.get("batch_sha256") != _hash({
             key: value for key, value in batch.items() if key != "batch_sha256"}):
         raise ValueError("Batch version/hash mismatch")
@@ -140,6 +148,8 @@ def persist_batch(path: str | Path, batch: dict) -> dict:
             or receipt.get("knowledge_clock_semantics") != "known_by_receipt_upper_bound_not_original_ingestion"
             or _time(receipt["exported_at"]) > retrieved or _time(batch["issued_at"]) < retrieved):
         raise ValueError("Invalid receipt knowledge bound")
+    if batch != prepare_receipt(source_payload, batch["issued_at"]):
+        raise ValueError("Batch differs from original source payload")
     # Verify every issue and derived feature against its immutable canonical prefix.
     identities = set()
     for record in batch["records"]:
@@ -201,7 +211,7 @@ def main() -> None:
         parser.error("Input and database must be different files")
     payload = args.input.read_bytes()
     issued = datetime.now(timezone.utc)
-    print(json.dumps(persist_batch(args.database, prepare_receipt(payload, issued))))
+    print(json.dumps(persist_batch(args.database, prepare_receipt(payload, issued), payload)))
 
 
 if __name__ == "__main__":

@@ -5,6 +5,7 @@ on:
     paths:
       - 'ml/demand_engine/**'
       - 'ml/*rolling72*v1.py'
+      - 'ml/artifacts/rolling72_v1/**'
       - 'ml/run_trajectory_lane_b_v1.py'
       - 'ml/run_daily_inventory_path_v1.py'
       - 'ml/test_run_daily_inventory_path_v1.py'
@@ -72,6 +73,7 @@ on:
     paths:
       - 'ml/demand_engine/**'
       - 'ml/*rolling72*v1.py'
+      - 'ml/artifacts/rolling72_v1/**'
       - 'ml/run_trajectory_lane_b_v1.py'
       - 'ml/run_daily_inventory_path_v1.py'
       - 'ml/test_run_daily_inventory_path_v1.py'
@@ -157,7 +159,7 @@ jobs:
         run: python -m unittest discover -s ml/demand_engine -p 'test_*.py' -v
 
       - name: Verify rolling72 cached coverage without network or model fitting
-        run: python -m unittest ml.test_rolling72_coverage_audit_v1 ml.test_rolling72_receipt_store_v1 -v
+        run: python -m unittest ml.test_rolling72_coverage_audit_v1 ml.test_rolling72_receipt_store_v1 ml.test_rolling72_receipt_dataset_v1 ml.test_rolling72_shadow_ledger_v1 ml.test_rolling72_backup_v1 ml.test_rolling72_feed_v1 -v
 
       - name: Verify daily inventory path CLI and local ledger lifecycle
         run: python -m unittest ml.test_run_daily_inventory_path_v1 ml.test_run_daily_inventory_path_cycle_v1 -v
