@@ -1,0 +1,120 @@
+# Beyond: plan dojścia do 48–72 godzin przewagi dla klubu
+
+Data: **2026-11-08**. Status: **plan produktu i badań; skuteczność tezy pozostaje do sprawdzenia**.
+
+Cel wynika z bezpośredniej instrukcji użytkownika. Ten dokument rozwija kanoniczny `MAE_RESEARCH_ROADMAP_V6.md` i plan trajectory. Specyfikacja produktu: [rolling72 MVP](../.ai/specs/2026-11-08-rolling-72h-commercial-forecast-mvp.md). Wdrożenia, bieżące liczniki i blokady pozostają w `EXECUTION_PLAN_CURRENT.md` i `NEXT_SESSION_HANDOFF.md`. Nie zmieniamy zamrożonych modeli ani ich wcześniejszych protokołów.
+
+## 1. Teza
+
+**Rzeczywisty przebieg zainteresowania meczem — jego poziom, tempo, przyspieszenie i etap do kickoffu — zawiera informację pozwalającą lepiej przewidywać zmiany w najbliższych 48–72 godzinach niż samo utrzymanie ostatniego odczytu lub proste przedłużenie ostatniego trendu. Wykorzystanie tej informacji może dać klubowi czas na reakcję handlową.**
+
+To hipoteza do falsyfikacji, a nie stwierdzenie już potwierdzonej dokładności. Sprawdzamy osobno:
+
+- **tezę prognostyczną:** czy model zmniejsza błędy przyszłych odczytów +24/+48/+72 h na tych samych nowych meczach i momentach;
+- **tezę produktową:** czy klub dostaje prognozę odpowiednio wcześnie i w formie pozwalającej podjąć decyzję;
+- **założenie scenariusza:** przewidywanie dotyczy kontynuacji przy bieżącej cenie, promocji i zasadach udostępniania puli. Efekt zmiany tych warunków nie jest automatycznie efektem przyczynowym wyznaczonym przez ten model.
+
+## 2. Co dokładnie ma otrzymać klub
+
+Od pierwszego rzeczywistego, poprawnego odczytu meczu — także P-50, jeśli wtedy zaczęliśmy śledzenie — klub otrzymuje przewidywany dalszy przebieg. W każdej aktualizacji widzi:
+
+1. Rzeczywisty przebieg znany do chwili wydania prognozy i datę ostatniego odczytu.
+2. Przewidywany poziom oraz zmianę za 24, 48 i 72 godziny; w dalszym rozwoju także całą pozostałą ścieżkę dzienną do meczu.
+3. Przewidywane przyspieszenie, wyhamowanie lub ryzyko odchylenia od celu klubu, jeżeli cel został wcześniej zapisany.
+4. Jakość pokrycia i niepewność; liczbowy przedział prawdopodobieństwa dopiero po jego kalibracji.
+5. Wersję prognozy i założenia dotyczące warunków. Po nowych odczytach dostaje nową wersję, a poprzednia pozostaje dostępna do oceny.
+
+Gdy do meczu pozostało mniej niż 72 godziny, nie tworzymy pozornych odczytów inventory po jego zakończeniu. Prognozujemy pozostały sensowny okres, a końcową frekwencję oceniamy jako osobny target.
+
+**Kluczowa zmiana celu:** przewidywać to, co ma się wydarzyć w kolejnych dniach, zanim klub to zaobserwuje. Historia prognoz końcowej frekwencji sama nie realizuje tej funkcji.
+
+## 3. Punkt wyjścia i konkretna luka
+
+Zweryfikowany stan z 8 listopada, 12:28 UTC:
+
+| Element | Co mamy | Czego to jeszcze nie dowodzi |
+|---|---|---|
+| Live C1 | MAE 3653,47 na 21 meczach; działa w ostatnich 24 h | Przewagi 48–72 h i prognoz od początku śledzenia |
+| Median 26 shadow | MAE 1873,22 na 4 nowych meczach | Potwierdzonej przewagi lub dokładności modelu live |
+| Daily path v1 | Rzeczywiste prefixy, zapisane przyszłe punkty, scoring | Zamierzonej wyuczonej dynamiki: audyt znalazł 120 zerowych współczynników wartości historii |
+| Stały drift 24 h | Rzeczywista kotwica i zmiana z ostatniej doby; oddzielny frozen eksperyment | Działania przy pierwszym odczycie lub przewagi na szerokiej próbie |
+| Wspólna ocena inventory | 16 celów/4 mecze: drift 13,29; persistence 175,29; daily 259,34 | Takiego samego błędu sprzedaży lub frekwencji; reprezentatywnej walidacji 72 h |
+| Zielona linia w dotychczasowym wykresie | Historia `forecast_observations.final_p50` | Przyszłej ścieżki inventory albo wyników median 26 |
+
+Istniejące modele i ich wyniki zachowujemy jako dowód. Nie poprawiamy dawnych prognoz ani nie wybieramy po wyniku ich najkorzystniejszego momentu. Osobny guardian częstszych aktualizacji C1 pozostaje nieukończonym, nieaktywnym zadaniem pomocniczym; częstotliwość uruchomień nie zastępuje logiki 72 h.
+
+## 4. Jak ma działać model
+
+### Jedna obserwowalna wielkość i prognoza dalszej zmiany
+
+Na MVP używamy dostępnych danych publicznych o miejscach. Dla publicznej dostępności A:
+
+`prognoza_A(t+h) = ostatni_rzeczywisty_odczyt_A(t) + model_zmiany(prefix_do_t, h)`
+
+Model dostaje wyłącznie dane znane w chwili wydania. Horyzont jest wejściem; wyznacza bezpośrednie prognozy +24/+48/+72 h, bez traktowania własnych prognoz pośrednich jako rzeczywistych obserwacji. Dalsze punkty dzienne korzystają z tego samego kontraktu, jeżeli wspiera je zakres treningu.
+
+Ścieżka tej samej wielkości zaczyna się od prawdziwego ostatniego odczytu. Płatnej sprzedaży i frekwencji nie utożsamiamy z dostępnością. Widoczne zajęcie można przedstawiać tylko przy spójnym, opisanym przeliczeniu puli. Frekwencja wymaga osobnego przełożenia i niezależnej oceny.
+
+### Pierwszy odczyt i stopniowo rosnąca historia
+
+Nie czekamy na P-15 ani ostatnich 24 h. Przy pierwszym odczycie znamy poziom i etap do meczu, ale jeszcze nie znamy lokalnego tempa. Nowa wersja ma obsługiwać taki początek, korzystając z informacji z wcześniejszych meczów i oznaczając krótką historię. Gdy tej informacji nie wystarcza, jawny wariant początkowy jest benchmarkiem o ograniczonej informacji, a nie rzekomą znajomością trendu.
+
+Wraz z nowymi obserwacjami dokładamy rzeczywiste zmiany i tempo. Nie wypełniamy brakującej historii wymyślonymi odczytami. Nie obniżamy wymagań istniejącego driftu ani daily v1: nowy początek wymaga nowej wersji kontraktu.
+
+### Minimalny pierwszy kandydat
+
+Jedna nowa wersja medianowej prognozy zmiany, z małym modelem drzewiastym kwantylowym, jest pierwszym uczonym kandydatem. Ma ująć zależność tempa od etapu do meczu i nieliniowe wyhamowanie/przyspieszenie. Nie zaczynamy turnieju architektur. Dokładny zbiór cech, parametry i cutoff zostaną zapisane w precommicie **przed fit**.
+
+Pierwsza rodzina informacji: ostatni poziom, rzeczywiste zmiany i nachylenia dla dostępnych okien 6/24/72 h, porównanie krótszego i dłuższego tempa, czas do kickoffu i horyzont przewidywania. Brakujące okno pozostaje brakujące. Pokrycie, wiek, zmiany źródła i liczba odczytów są kontrolą jakości; liczba uruchomień collectora nie może udawać popytu. Ceny, promocje i kolejne rodziny informacji dodajemy tylko, gdy są rzeczywiście dostępne w czasie i wynika z nich oddzielna hipoteza.
+
+Przed freeze sprawdzamy, czy model faktycznie używa zmian historii: przy tym samym ostatnim poziomie różne przebiegi mogą dać różne przyszłe wyniki. Taki test mechanizmu nie zastępuje oceny błędów. Jeśli model znów wyzeruje sygnał lub przegra z baseline, zapisujemy wynik zamiast ręcznie poprawiać krzywą.
+
+## 5. Etapy wykonania i ich odbiór
+
+| Etap | Konkretna praca | Warunek przejścia |
+|---|---|---|
+| A. Kontrakt i audyt danych | Jeden target, zakres puli/źródła, prefixy od początku, cele +24/+48/+72; liczba niezależnych meczów, braki i pierwsze odczyty | Wiemy, które przykłady są poprawne i co oznacza ich pomiar; brak przecieku przyszłości |
+| B. Feature store i benchmarki | Wersjonowane, odtwarzalne cechy znane w danej chwili; persistence oraz istniejący drift na jego prawidłowym pokryciu | Ten sam issue i przyszły cel dla porównania; wartości i czasy dają się odtworzyć |
+| C. Jedna nowa wersja modelu | Precommit, jeden zadeklarowany kandydat, walidacja po meczach i w czasie, audyt reakcji na historię | Uczciwy wynik wobec baseline, zapisane odrzucenia i brak retuningu na odsłoniętych testach |
+| D. Przyszły przebieg i panel | Zapis przed targetem, rzeczywisty prefix oraz przyszłe punkty z tej samej wersji; aktualizacja i zachowanie vintages | Łańcuch rzeczywisty odczyt→prognoza→trwały zapis→panel działa; konfiguracja i test lokalny nie wystarczają |
+| E. Ocena po 24/48/72 h | Dopiero później dopisujemy rzeczywisty wynik, błędy i raport horyzontów | Weryfikowalne pary prognoza–przyszły odczyt; żadnej prognozy stworzonej po wyniku |
+| F. Przegląd i decyzja | Zamrożony raport na zadeklarowanej nowej próbie; MAE, bias, ogony, kluby, pokrycie i scenariusze | Potwierdzenie/odrzucenie hipotezy; osobny przegląd przed jakąkolwiek aktywacją produkcyjną |
+
+Warstwa danych ma korzystać z przyrostowego odczytu i wspólnego kontraktu cech. Nie wracamy do wielokrotnego pobierania całej historii co kwadrans. Na początek wymagamy codziennych rzeczywistych aktualizacji; później zwiększamy częstotliwość tam, gdzie świeże dane i decyzje klubu to uzasadniają, bez zmiany tożsamości dawnych wydań.
+
+Najbliższe zadanie wykonawcze to **etap A**, w szczególności audyt pokrycia pierwszych odczytów i prawdziwych celów 72 h w obecnym zbiorze. Następnie powstaje konkretny precommit etapu C; ten plan sam nie jest zgodą na dowolny fit lub tuning. Bieżące uprawnienia wdrożeniowe i blokady servingu sprawdzamy przed etapem D. Przygotowany kod/preview pozostaje oznaczony jako niewdrożony, dopóki nie ma dowodu rzeczywistego feedu.
+
+## 6. Jak sprawdzamy tezę
+
+Podstawowe porównanie: ten sam mecz, rzeczywisty czas wydania, prefix, miernik puli i przyszły target. Wszystkie prefixy meczu pozostają razem w podziale trening/test. Stare odsłonięte mecze służą development/diagnostyce, a nie nowej niezależnej walidacji.
+
+Mierzymy osobno +24, +48, +72 h; **+72 h jest głównym horyzontem nowego celu produktu**. Najpierw uśredniamy błędy wewnątrz meczu, potem między meczami. Raport zawiera MAE, signed bias, P90/worst error, poprawę względem obu benchmarków, liczbę niezależnych meczów i klubów oraz braki. Wspólny wynik na dostępności nie zastępuje MAE frekwencji.
+
+Plan pierwszego przyszłego przeglądu nowej wersji: **30 nowych niezależnych meczów z co najmniej 8 klubów**, niezawartych w treningu. To zaplanowany próg nowego protokołu, nie zmiana istniejących frozen gates ani gwarancja mocy statystycznej. Włączamy wszystkie kwalifikujące się wyniki dostępne przy osiągnięciu progu; nie zatrzymujemy się na dogodnym MAE.
+
+Przed pierwszym fit precommit utrwali: pierwotną metrykę 72 h, wszystkie punkty wejścia/targetu, reguły pokrycia, dokładne porównania i guardrails 48/24 h, bias i ogonów. Dowód przewagi wymaga niższego paired event-balanced MAE wobec persistence oraz driftu na jego wspólnym pokryciu, z 95% przedziałem różnicy wyznaczonym bootstrapem po meczach (10000 resampli, seed 42). Wczesne wyniki pozostają opisowe. Wyniki początkowych krótkich historii pokazujemy osobno, zachowując je także w ogólnym rozliczeniu produktu; nie usuwamy ich dla poprawy MAE.
+
+Pierwsze nowe cele 72 h mogą dojrzeć dopiero 72 godziny po rzeczywistym wydaniu prognozy. Działającą demonstrację można uruchomić wcześniej, ale nie przedstawiać jej jako potwierdzonej przewagi modelu. Zebranie 30 meczów zależy od prawdziwego kalendarza i pokrycia; liczba odczytów nie skraca tego wymogu.
+
+## 7. Cena, promocja i zmiana warunków
+
+Pierwsza wersja działa na obecnych publicznych danych; brak transakcji partnerskich nie blokuje samego prognozowania. Ogranicza natomiast wnioski o rzeczywistej sprzedaży i przyczynach zmian.
+
+Scenariusz produktu brzmi: „przy utrzymaniu obecnych warunków”. Jeśli nie obserwujemy cen/promocji/blokad, stabilność ma status UNKNOWN. Nie udajemy, że brak danych dowodzi braku interwencji. Gdy potwierdzona zmiana warunków nadejdzie, zapisujemy ją i wydajemy nową prognozę, zachowując pierwotną. Nie wykluczamy po wyniku trudnych przypadków ze wskaźników. Osobne przekroje „potwierdzony brak zmiany”, „zmiana”, „nieznane” są diagnostyką z uprzednio zdefiniowaną regułą, a nie sposobem wyboru dobrego wyniku.
+
+Prognoza efektu alternatywnej ceny albo konkretnej promocji wymaga osobnego modelu i odpowiednich danych. Nie obiecujemy jej na podstawie samego modelu dalszego przebiegu.
+
+## 8. Definicja ukończenia MVP
+
+MVP realizuje obietnicę funkcjonalną, gdy na rzeczywistym meczu:
+
+- działa od pierwszej poprawnej obserwacji, ze zdefiniowaną obsługą krótkiej historii;
+- wydaje i zapisuje przewidywania +24/+48/+72 h przed ich wynikami;
+- panel pokazuje te same rzeczywiste obserwacje, czas wydania, przyszłe punkty i jakość danych;
+- nowy odczyt aktualizuje dalszą przyszłość bez przepisywania poprzedniej wersji;
+- późniejsze rzeczywiste odczyty tworzą ocenę dla każdego horyzontu;
+- klub widzi oczekiwaną zmianę, założenia scenariusza i granice informacji, z czasem na decyzję.
+
+**Potwierdzenie przewagi prognostycznej jest osobnym wynikiem etapu F.** Nie uznajemy go za osiągniętego przez wygląd wykresu, poprawne uruchomienie workflow, cztery mecze z niskim MAE albo samą końcową prognozę frekwencji. Celu 1200 dla frekwencji nie przenosimy na inny target.
+
+Produkcyjne domyślne ustawienia pozostają `production_change=false`, `live_adjustment=0`. Ten zapis dokumentuje plan; nie aktywuje nowego modelu, nie zmienia starych prognoz i nie uruchamia procesu bezterminowego.

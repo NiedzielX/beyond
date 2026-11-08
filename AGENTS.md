@@ -1,6 +1,6 @@
 # Beyond Agent Instructions
 
-Last updated: **2026-11-03**
+Last updated: **2026-11-08**
 
 ## Read first
 
@@ -32,6 +32,10 @@ Protecting frozen experiments does not stop R&D. The restriction on new model se
 A new version name alone does not make previously exposed test events independent again.
 
 ---
+
+## Current MVP product acceptance
+
+Follow `ml/ROLLING_72H_COMMERCIAL_FORECAST_PLAN_V1.md`: begin with the first genuine observation and forecast the following24/48/72hours from all then-known history. Clubs need48–72hours to act under explicit price/promotion/pool assumptions. Do not narrow this to P-15 or final24C1, treat terminal-attendance history as a future path, or infer causal intervention effects from unavailable data. This product scope complements the separate attendance research objective and preserves all frozen contracts.
 
 ## Core objective
 

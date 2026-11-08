@@ -1,6 +1,6 @@
 # Beyond Ticketing — MAE Research Roadmap v6
 
-Last updated: **2026-11-04**
+Last updated: **2026-11-08**
 
 Status: **CANONICAL MAE RESEARCH STRATEGY**
 
@@ -15,6 +15,18 @@ Detailed trajectory design remains:
 `ml/TRAJECTORY_FORECASTING_PLAN_V1.md`
 
 ---
+
+## Latest product priority — November 8: 48–72 hours to act
+
+Full thesis, staged delivery and evaluation: [rolling72 commercial forecast plan](ROLLING_72H_COMMERCIAL_FORECAST_PLAN_V1.md). The next concrete step is dataset/coverage audit A; model fitting requires its own exact precommit. The next72hours are the MVP decision horizon from the first genuine observation, not a restriction to the final72hours before kickoff.
+
+The user clarified the MVP again: **from the first genuine observation of a tracked match, forecast the next24/48/72hours and update from the full history actually known now**. This applies from early tracking, includingP-50, through kickoff. P-15is an example, not an eligibility cutoff; final24C1alone does not implement this product. Clubs need48–72hours to act on expected demand/sector changes if price/promotion/pool conditions remain as assumed.
+
+Contract and DONE: [.ai rolling72spec](../.ai/specs/2026-11-08-rolling-72h-commercial-forecast-mvp.md). The path of the same measured variable starts from the last real observation; preserve each actual issue, predict future changes, then score against genuine later observations at+24/+48/+72. A first-observation/short-history route needs a separately versioned contract; never weaken old daily/drift/C1gates. Unknown interventions stayUNKNOWN; public availability does not prove paid sales or a causal price effect. Sector claims require actual comparable sector data. Attendance and inventory targets remain separately evaluated.
+
+**Immediate product work:** audit existing dataset/model/serving against that contract, specify one new version before fitting, verify actual use of trajectory information, and prove real observation→persisted future path→panel→later observation→score. The historical final-attendance chart readsforecast_observations.final_p50and is not that path or median26. Existing dailyv1had zero relative-value-history coefficients; neither passing full prefixes nor a decorative plot proves learned dynamics. Keep existing frozen artifacts, exposed cohorts, missed observations and review gates unchanged.
+
+The live-refresh guardian was a supporting operational WIP. It is **untested, unpublished, inactive and deferred**; source preserved privately, SDDremains open. No collectors were renewed or old source slots re-run during this scope clarification. This rolling72product acceptance is the current MVP priority; the existing terminal-attendance objective continues within its own lane. No new model/fit/deployment or measured72hour advantage is claimed. Defaultsfalse/0.
 
 ## User-requested daily-path MVP — 2026-11-03 update
 

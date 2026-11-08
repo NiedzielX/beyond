@@ -37,6 +37,8 @@ Production remains:
 
 ## Daily-path MVP and cloud validation
 
+Current product goal: forecasts from the first genuine match observation, giving clubs24/48/72hour expectations under stated price/promotion/pool assumptions. [The rolling72 plan](ml/ROLLING_72H_COMMERCIAL_FORECAST_PLAN_V1.md) records the hypothesis, work stages, metrics and actual end-to-end acceptance. A terminal-attendance history chart or final24C1alone is insufficient for this goal.
+
 The separate public-inventory lane now predicts every remaining day from the genuine observed prefix. It remains a frozen research shadow with production off. See [implementation](ml/DAILY_INVENTORY_PATH_IMPLEMENTATION_V1.md), [deployment/recovery](ml/DAILY_INVENTORY_PATH_DEPLOYMENT_V1.md), and [verified cloud tests and bounded workers](ml/DAILY_PATH_CLOUD_VALIDATION_2026-11-04.md). Inventory-path MAE and attendance MAE are separate targets; no score is zero merely because future outcomes have not matured.
 
 The [pre-outcome coefficient audit](ml/DAILY_PATH_COEFFICIENT_AUDIT_2026-11-04.md) found that this fit retained no relative-value-history weights: receiving a full prefix does not prove the model learned its changes. Its issued predictions stay frozen. A separate [genuine 24-hour drift comparator](ml/DAILY_INVENTORY_DRIFT_COMPARATOR_PRECOMMIT_V1.md) now tests whether recent observed change beats persistence, using new immutable forecasts and future matched targets. It has no fitted parameters or demonstrated MAE advantage yet. Managed deployment and the live new panel feed remain blocked on project admin binding.

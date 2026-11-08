@@ -39,3 +39,5 @@ This index is durable memory, not a substitute for the authoritative execution p
 - [Positive scoring and timestamp transport](lessons/2026-11-07-positive-score-path-and-time-transport.md): real positive-cycle persistence, immutable partial-score recovery, same-instant ISO transport, hosted→DB release proof,19versus2event cohorts, horizon support and future-only bounded renewal.
 
 - November8follow-up: [actual nightly review](../ml/MAE_REVIEW_2026-11-08.md) distinguishes live21-event3653from shadow4-event1873, different latest-clock support despite identical event IDs, actual cron gaps and completed bounded worker deadlines.
+
+- Product clarification2026-11-08: [rolling24/48/72hMVPcontract](specs/2026-11-08-rolling-72h-commercial-forecast-mvp.md). Start with the first genuine observation; give clubs48–72hours to act. Final-attendance chart/history, final24C1and more frequent execution do not themselves deliver this. Preserve unknown intervention status, original issue vintages and separate inventory/attendance metrics.

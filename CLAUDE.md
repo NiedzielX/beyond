@@ -17,3 +17,5 @@ Read and follow root `AGENTS.md`. The canonical ML read order is:
 - Keep names dated and descriptive. Never store secrets or private source exports in Git. Keep these records and canonical execution status consistent. Documentation requirements do not add an approval gate to authorized work.
 
 Keep existing models, parameters and evidence contracts frozen unless the authoritative plan authorizes a separate experiment. New version names do not make exposed events fresh. No retrospective prospective forecasts. Missing/hidden observations are not zero. Distinguish public inventory, paid sales and attendance. Keep `production_change=false` and `live_adjustment=0`. Claim end-to-end automation only with successful workflow and expected persisted-record evidence.
+
+Current MVP acceptance is `ml/ROLLING_72H_COMMERCIAL_FORECAST_PLAN_V1.md`: from the first genuine observation, forecast the next24/48/72hours and preserve each issue for later real-outcome scoring. Do not substitute final24C1, a terminal-attendance chart or hypothetical price effects for that product. Frozen lanes and their original gates remain unchanged.
