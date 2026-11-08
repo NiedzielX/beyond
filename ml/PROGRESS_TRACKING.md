@@ -6,7 +6,9 @@
 
 Separate `rolling72_features_v1` and `rolling72_labels_v1` implement arbitrary actual issue times, one-point prefixes, declared knowledge clocks, real6/24/72h history features and later genuine24/48/72h label matching. Frozen versions/ledgers remain unchanged. Prepared and tested code is not live ingestion, a fitted challenger, a deployed panel feed or proven prospective improvement. The old panel parser also rejects this new contract; an explicit new feed/version is required.
 
-**Next:** receipt-bound source adapter and versioned feature persistence, then exact benchmark/candidate precommit before fit. Preserve the diagnostic cohort as exposed and the30new-fixture/8-club review rule. Never invent old known_at clocks to turn cached historical rows into PIT evidence. No DBwrite, worker renewal, production activation or1200MAE achievement is claimed; defaultsfalse/0.
+**Local source/store follow-up:** `rolling72_receipt_store_v1` now uses the real retrieval receipt as a conservative knowledge bound and appends immutable inputs/features to a separateSQLite. Actual cached-source capture at14:09UTC created38failed issues/114status rows, zero forecasts:33past-kickoff,2stale,3measurement-changed.256local tests passed. First code revisionb74b3d0also passed hostedDemandEngineSmoke42488118781; the later receipt/store addition has separate local proof, pending hosted verification. This is not a live forecast/feed.
+
+**Next:** audit source/measurement compatibility for the3remaining fixtures beyond72h, fresh bounded source capture, and exact benchmark/candidate precommit before fit; receipt-bound adapter/store are implemented, but no fresh valid forecast issue or fitted challenger has been proven. Preserve the diagnostic cohort as exposed and the30new-fixture/8-club review rule. Never invent old known_at clocks to turn cached historical rows into PIT evidence. No DBwrite, worker renewal, production activation or1200MAE achievement is claimed; defaultsfalse/0.
 
 ## Latest product priority — November 8: 48–72 hours to act
 
@@ -16,7 +18,7 @@ Separate `rolling72_features_v1` and `rolling72_labels_v1` implement arbitrary a
 
 **Accuracy remains a core objective:** minimise genuine prospective event-balanced MAE and continue targeting **about 1200 seats attendance MAE** as a research milestone, with lower better. The rolling24/48/72h product adds forward commercial value; it does not replace the existing accuracy goal. Report each horizon/target/cohort separately and never substitute a low inventory-path score for attendance accuracy. No frozen gates, estimators or parameters change.
 
-Full thesis, staged delivery and evaluation: [rolling72 commercial forecast plan](ROLLING_72H_COMMERCIAL_FORECAST_PLAN_V1.md). Coverage audit A is recorded above; the next step is source-clock integration and exact benchmark/candidate precommit before model fitting. The next72hours are the MVP decision horizon from the first genuine observation, not a restriction to the final72hours before kickoff.
+Full thesis, staged delivery and evaluation: [rolling72 commercial forecast plan](ROLLING_72H_COMMERCIAL_FORECAST_PLAN_V1.md). Coverage audit A is recorded above; the next step is fresh source capture and exact benchmark/candidate precommit before model fitting; the local receipt-bound feature store is recorded above. The next72hours are the MVP decision horizon from the first genuine observation, not a restriction to the final72hours before kickoff.
 
 The user clarified the MVP again: **from the first genuine observation of a tracked match, forecast the next24/48/72hours and update from the full history actually known now**. This applies from early tracking, includingP-50, through kickoff. P-15is an example, not an eligibility cutoff; final24C1alone does not implement this product. Clubs need48–72hours to act on expected demand/sector changes if price/promotion/pool conditions remain as assumed.
 

@@ -10,3 +10,5 @@ Date: 2026-11-08. Evidence: `ml/ROLLING_72H_STAGE_A_RESULT_2026-11-08.md` and ag
 - If parallel agents hit a usage limit, retain their completed audits/files, review and finish centrally; do not describe failed turns as completed implementation.
 
 No new model fit, MAE, prospective forecast, deployment or change of frozen experiments follows from these checks.
+
+Conservative adapter exception: an actual retrieved_at receipt can serve as a knowledge **upper bound for subsequent issues**, including all old captures and that exact event-metadata copy. This does not reconstruct old knowledge clocks or independently authenticate source immutability. Actual stale-cache run produced38failedinputissues/114statusrows and zero forecasts; store persistence is proved locally, positive fresh forecasting is not.

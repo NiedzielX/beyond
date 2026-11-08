@@ -36,3 +36,13 @@ Production_change=false; live_adjustment=0. Żadnego DB write, re-fit, deploy, b
 ## Wynik wykonania
 
 Raport i agregaty: `ml/ROLLING_72H_STAGE_A_RESULT_2026-11-08.md`, `ml/ROLLING_72H_COVERAGE_AUDIT_2026-11-08.json`. Kod audytu odtworzył wszystkie pierwotne macierze z zachowanego eksportu. Wdrożono osobne moduły wejść/cech i etykiet, bez adaptera fikcyjnych historycznych zegarów.243testy lokalnePASS, w tym41nowychrolling72. SDD pozostaje aktywne: brak prawdziwego źródło→versionedfeaturestore połączenia, dopasowania kandydata, nowego ledgeru/feedu, deploy i prospectiveMAE. Nie ma podstaw do oznaczenia całegoB/MVPjakoDONE.
+
+## Kolejny krok B: receipt-bound adapter i lokalny store (przed kodem)
+
+Moduł `ml/rolling72_receipt_store_v1.py` przyjmuje wyłącznie oryginalny, zahashowany public-export-v1 z rzeczywistymi exported_at/retrieved_at. Cały odczyt jest konserwatywnie znany **najpóźniej w retrieved_at**, nie w każdym dawnym capture. Dokładna wersja metadanych meczu również jest znana dopiero z tego receipt. Nie pozwalamy budować issue przed retrieved_at ani wyprowadzać starej wiedzy z dzisiejszego eksportu. Clocks oznaczamy jawnie jako knowledge upper bound. Nie jest to adapter historycznego PIT ani dowód pierwotnego immutable raw. Nie certyfikuje stałej puli ani braku interwencji. Measurement scope to jawnie nazwana publiczna dostępność, nie potwierdzone zakupy.
+
+Pure preparation nie tworzy forecastów. LokalnySQLite store zapisuje wyłącznie receipt lineage, immutableissues i wiersze cech24/48/72 wraz ze statusami. Brakujące/niedostępne horyzonty nie są zero. Idempotentne powtórzenie tych samych bajtów nie dopisuje wierszy. Konflikt tej samej pary event/issue jest błędem, nigdyUPDATE/REPLACE. CLI wystawia tylko actualwall-clockissue; nie ma opcji backdate i nie zapisuje predykcji/scorów. Jedna transakcja albo rollback. Odrębny plik pozaGit; nie otwieramy starych ledgerów. Oryginalny rawexport pozostaje prywatny, store zachowuje hash i jawne ograniczenia.
+
+Testy: receiptcutoffprzedissue, brakujące/niepoprawne clocks, hash/sourcezmieniony, znany-po-receipt snapshot, jedenpunkt, źródłowyUNKNOWN/zero, późniejsza nowa wersja bez zmiany starej, idempotencja/konflikt/rollback, brak produkcyjnych/nietargetowychwrites. Na starym cache nie udajemy świeżej dodatniej prognozy; spodziewany fail-closedstale/pastkickoff zostaje odnotowany.
+
+Receipt adapter/store również wykonane:13nowychtestówPASS, 256łącznie. Rzeczywisty CLI na starym cache utrwalił38failedissues/114statusrows i zeroforecastów w osobnymSQLite; integralnośćPASS. Odbiór świeżej dodatniej ścieżki i benchmarków nadal otwarty; spec pozostaje aktywne.

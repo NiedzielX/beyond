@@ -36,3 +36,15 @@ Przeczytano canonical roadmap/execution/progress/trajectory/handoff, AGENTS, les
 ## Następny krok
 
 Receipt-bound source adapter, wersjonowany zapis cech i dokładny precommit benchmarków/kandydata. Nowe wejścia/etykiety są kodem, nie uruchomionym modelem ani nowymMAE. Odsłonięte dane pozostają diagnostyczne. Pełne B/C/D/E i cel1200MAE nadal otwarte. Publikacja na istniejącej gałęzi badawczej przygotowana; main i produkcja mają pozostać bez zmian.
+
+## Kolejny wykonany krok B
+
+Pierwszy commit b74b3d0e5522d83ce7c6d9fc3b1457724c089c78 opublikowano i zweryfikowano na istniejącej gałęziPR227. HostedDemandEngineSmoke42488118781/42488114629SUCCESS; też cztery inne sprawdzone kontraktoweActionsSUCCESS. Nie są to dowodyDB/panel.
+
+Po dopisaniu kontraktuSDDzaimplementowano `rolling72_receipt_store_v1`: konserwatywny knowledge-upper-boundrzeczywistego receipt, immutablelokalnySQLite, osobne metadane/cechy/statusy, bez forecast/score/fit.13nowych testówPASS. Finalny lokalny zestaw218+38=256PASS;54nowychrolling72testów. Workflow testów uzupełniono o receipt/storetesty.
+
+ActualCLI14:09:28UTC: oryginalnycacheSHA3a5981ce…→38nowych inputissues/114feature-statusrows→33pastkickoff/2stale/3measurementchanged→0READY/0forecasts. Integrity/foreignkeyPASS; proofJSONiSQLite pozaGit. To świadczy o rzeczywistym fail-closedzapisie dla starego wejścia, nie świeżej prognozie aniSupabase/panelchain.
+
+Dalszy krok: świeży ograniczony odczyt, rzeczywisty dodatni przypadek źródło→store oraz dokładny precommit benchmarków/kandydata przedfit. Dawne unknownclocks pozostają unknown; nie przepisano starych ledgerów.
+
+Bieżący cache ma5przyszłychfixtures:2na8listopada,2na20listopada,1na10grudnia. Trzy dłuższe historie mają source-keychanges, więc sam refresh nie wystarczy do zgodnego prefixu. Następny audyt ma rozstrzygnąć zakres/kompatybilność pomiarów, bez usuwania niezgodnych punktów dla poprawy MAE ani nadpisywania v1.
