@@ -8,6 +8,10 @@ Od pierwszego rzeczywistego, poprawnego odczytu meczu Beyond ma prognozować dal
 
 Główna wartość dla klubu: dziś przewidzieć poziom i tempo zmian za24/48/72godziny, żeby mieć48–72godziny na decyzję o cenie, promocji lub sektorze. Prognoza końcowej frekwencji jest dodatkowym wynikiem; sama liczba końcowa ani jej historia na wykresie nie realizują tego wymagania. Szersza dzienna ścieżka pozostaje celem projektu, a najbliższe72godziny są priorytetem operacyjnym MVP.
 
+## Horyzonty obejmują całą obserwowaną sprzedaż
+
+Pierwszy rzeczywisty odczyt po uruchomieniu sprzedaży uruchamia nową ścieżkę prognoz+24/+48/+72h, nawet przy jednym punkcie. Przy każdej kolejnej aktualizacji te horyzonty przesuwają się do przodu od nowego rzeczywistego czasu wydania. P-50→P-49/P-48/P-47 i P-15→P-14/P-13/P-12 to przykłady tej samej logiki przez cały okres sprzedaży, nie oddzielne modele dla końcówki meczu. Luki przed pierwszym pomiarem pozostają lukami; starych prognoz i frozen gates nie uzupełniamy ani nie zmieniamy.
+
 ## Logika prognozy
 
 1. Zapisujemy prawdziwy odczyt i jego czas dostępności, źródło, zakres puli/sektorów oraz dostępne informacje o cenie/promocji. Brak informacji pozostaje brakiem.

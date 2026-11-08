@@ -34,6 +34,21 @@ Gdy do meczu pozostało mniej niż 72 godziny, nie tworzymy pozornych odczytów 
 
 **Kluczowa zmiana celu:** przewidywać to, co ma się wydarzyć w kolejnych dniach, zanim klub to zaobserwuje. Historia prognoz końcowej frekwencji sama nie realizuje tej funkcji.
 
+### Ruchome horyzonty przez cały okres sprzedaży
+
+**+24/+48/+72 h liczymy od każdej bieżącej chwili wydania prognozy, przez cały okres obserwowanej sprzedaży.** Początek to pierwsza prawdziwa obserwacja po uruchomieniu sprzedaży, nawet jeśli jest to jedyny odczyt. Nie oznacza to, że produkt zaczyna działać dopiero72godziny przed kickoffem albo po zebraniu doby historii.
+
+| Chwila aktualizacji — przykład | Cele tej wersji prognozy |
+|---|---|
+| P-50 | P-49 / P-48 / P-47 |
+| P-30 | P-29 / P-28 / P-27 |
+| P-15 | P-14 / P-13 / P-12 |
+| P-4 | P-3 / P-2 / P-1 |
+
+Przykłady pokazują horyzonty upływu24/48/72godzin; nie narzucają stałych dat startu lub wspólnej długości historii. Przy aktualizacji model zna wyłącznie obserwacje dostępne do tej chwili. Poprzednie prognozy zostają zachowane, a ich horyzonty nie przesuwają się po fakcie. Obsługa pierwszego odczytu jest osobną ścieżką nowej wersji, bez zmiany starych wymagań driftu/dailyv1.
+
+Jeśli rozpoczęliśmy śledzenie później niż faktyczny start sprzedaży, zapisujemy tę lukę i zaczynamy od pierwszego realnie dostępnego pomiaru. Nie odtwarzamy brakującego początku jako prawdziwej historii ani dawnych prognoz jako prospective. Raportujemy pokrycie i błędy także według etapu sprzedaży, długości dostępnej historii i czasu do meczu.
+
 ## 3. Punkt wyjścia i konkretna luka
 
 Zweryfikowany stan z 8 listopada, 12:28 UTC:

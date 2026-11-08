@@ -43,3 +43,5 @@ This index is durable memory, not a substitute for the authoritative execution p
 - Product clarification2026-11-08: [rolling24/48/72hMVPcontract](specs/2026-11-08-rolling-72h-commercial-forecast-mvp.md). Start with the first genuine observation; give clubs48–72hours to act. Final-attendance chart/history, final24C1and more frequent execution do not themselves deliver this. Preserve unknown intervention status, original issue vintages and separate inventory/attendance metrics.
 
 - Stały cel potwierdzony przez użytkownika2026-11-08: minimalizować przyszłe MAE i nadal dążyć do około 1200 miejsc MAE frekwencji. [Plan72h](../ml/ROLLING_72H_COMMERCIAL_FORECAST_PLAN_V1.md) dodaje przewagę czasową, zachowując cel dokładności; wyniki różnych targetów/horyzontów i kohort pozostają osobne.
+
+- Doprecyzowanie użytkownika2026-11-08: +24/+48/+72h to ruchome horyzonty przez **całą obserwowaną sprzedaż**, od pierwszej prawdziwej danej po jej uruchomieniu, także przy jednym punkcie. Przykłady i obsługa późnego startu: [plan72h](../ml/ROLLING_72H_COMMERCIAL_FORECAST_PLAN_V1.md). Nie zawężać produktu do końcówki przed kickoffem ani udawać wcześniejszej nieobserwowanej historii.
