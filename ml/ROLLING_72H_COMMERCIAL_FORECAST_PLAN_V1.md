@@ -94,7 +94,7 @@ Przed uczonym kandydatem dodajemy osobno precommitted warunkową krzywą/pickup:
 
 Jedna nowa wersja medianowej prognozy zmiany, z małym globalnym modelem drzewiastym kwantylowym, jest pierwszym uczonym kandydatem. Literatura uzasadnia jego porównanie, a nie zakładanie zwycięstwa. Ma ująć zależność tempa od etapu do meczu i nieliniowe wyhamowanie/przyspieszenie. Nie zaczynamy turnieju architektur. Dokładny zbiór cech, parametry i cutoff zostaną zapisane w precommicie **przed fit**.
 
-Pierwsza rodzina informacji: ostatni poziom, rzeczywiste zmiany i nachylenia dla dostępnych okien 6/24/72 h, porównanie krótszego i dłuższego tempa, czas do kickoffu i horyzont przewidywania. Brakujące okno pozostaje brakujące. Pokrycie, wiek, zmiany źródła i liczba odczytów są kontrolą jakości; liczba uruchomień collectora nie może udawać popytu. Ceny, promocje i kolejne rodziny informacji dodajemy tylko, gdy są rzeczywiście dostępne w czasie i wynika z nich oddzielna hipoteza.
+Pierwsza rodzina informacji: ostatni poziom, obserwowana zmiana i dłuższy profil od początku dostępnego fragmentu, rzeczywiste zmiany i nachylenia dla dostępnych okien 6/24/72 h, porównanie krótszego i dłuższego tempa, czas do kickoffu i horyzont przewidywania. Brakujące okno pozostaje brakujące. Pokrycie, wiek, zmiany źródła i liczba odczytów są kontrolą jakości; liczba uruchomień collectora nie może udawać popytu. Ceny, promocje i kolejne rodziny informacji dodajemy tylko, gdy są rzeczywiście dostępne w czasie i wynika z nich oddzielna hipoteza.
 
 Przed freeze sprawdzamy, czy model faktycznie używa zmian historii: przy tym samym ostatnim poziomie różne przebiegi mogą dać różne przyszłe wyniki. Taki test mechanizmu nie zastępuje oceny błędów. Jeśli model znów wyzeruje sygnał lub przegra z baseline, zapisujemy wynik zamiast ręcznie poprawiać krzywą.
 
@@ -116,6 +116,8 @@ Najbliższe zadanie wykonawcze to **etap A**, w szczególności audyt pokrycia p
 ## 6. Jak sprawdzamy tezę
 
 Podstawowe porównanie: ten sam mecz, rzeczywisty czas wydania, prefix, miernik puli i przyszły target. Wszystkie prefixy meczu pozostają razem w podziale trening/test. Stare odsłonięte mecze służą development/diagnostyce, a nie nowej niezależnej walidacji.
+
+Pokrycie i jakość sprawdzamy w macierzy **czas do meczu × horyzont prognozy**, z osobnym rozliczeniem długości historii i sektorów. P-50/+72h nie staje się zweryfikowane przez wynik P-10/+72h. Pierwszy odczyt nie jest dowodem daty otwarcia sprzedaży; luki wcześniejszego okresu zostają opisane.
 
 Mierzymy osobno +24, +48, +72 h; **+72 h jest głównym horyzontem nowego celu produktu**. Najpierw uśredniamy błędy wewnątrz meczu, potem między meczami. Raport zawiera MAE, signed bias, P90/worst error, poprawę względem zarejestrowanych benchmarków, liczbę niezależnych meczów i klubów oraz braki. Wspólny wynik na dostępności nie zastępuje MAE frekwencji.
 

@@ -44,6 +44,8 @@ W Beyond oznacza to funkcję:
 
 Nie wystarczy osobny stały wynik dla meczu ani prosty model ignorujący etap sprzedaży. P-50 i P-10 mogą mieć inne tempo i inną niepewność. Dokładne przedziały etapów raportowania zapisujemy przed testem; nie wybieramy później najkorzystniejszego horyzontu.
 
+Pokrycie danych badamy w dwóch niezależnych osiach: **czas do meczu × horyzont przyszłości**. Prognoza+72h w P-50 jest innym przypadkiem niż+72h w P-10. Dobry wynik jednej komórki nie potwierdza drugiej. Do tego raportujemy długość rzeczywiście znanej historii i klub/sektor; nie zakładamy wsparcia P-50 tylko dlatego, że model umie wyprodukować liczbę.
+
 Prognozy bezpośrednie dla24/48/72h są rozsądnym pierwszym wariantem. Mogą być oddzielnymi głowami albo jednym modelem z horyzontem jako wejściem. Literatura nie dowodzi, że jedna z tych reprezentacji zawsze wygrywa; wybór dla pierwszego eksperymentu należy zamknąć w precommicie. Nie podajemy modelowi rzeczywistych przyszłych odczytów ani przyszłej zrealizowanej ceny/reklamy.
 
 ### Kotwica, przyrosty i ich ograniczenie
@@ -57,6 +59,12 @@ To dobrze zakotwicza przyszłą ścieżkę w ostatnim rzeczywistym odczycie. **S
 `abs(A(t+h) - [A(t)+delta_hat]) = abs([A(t+h)-A(t)] - delta_hat)`.
 
 To własne przekształcenie algebraiczne, nie wynik nowego eksperymentu. Poprawa musi pochodzić z dodatkowej informacji lub lepszego uogólniania. Nie wystarczy przerysować krzywej lub przesunąć poziomu na wykresie.
+
+### Rzeczywisty prefix i pełny kontekst
+
+Feature store ma zachować cały rzeczywisty prefix i jego czasy. Pierwsza reprezentacja może go kompresować do jawnych cech: ostatni poziom, obserwowana zmiana od początku dostępnego fragmentu, dłuższy profil zmian i niedawne tempa6/24/72h. Przed fit ustalamy dokładne cechy i przeprowadzamy test rzeczywistego użycia historii; samo przekazanie całej sekwencji tego nie dowodzi.
+
+Pierwszy odczyt **nie dowodzi daty rozpoczęcia sprzedaży**. Jeśli śledzenie zaczęło się później, cechy opisują obserwowany fragment, a nie wymyśloną sprzedaż od zera. Czas monitorowania i liczba pomiarów są także informacją o pokryciu, więc nie wolno bez audytu traktować ich jako popytu.
 
 ### Co stosujemy przy pierwszym odczycie
 
