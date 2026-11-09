@@ -1,6 +1,8 @@
 # Beyond Ticketing — Current MAE Execution Plan
 
-## Current execution — November 09, 20:54 Warsaw
+## Current execution — November 09, 21:04 Warsaw
+
+**Immediate user priority: a historical blind24/48/72h backtest.** The user explicitly requested past-match training and withholding future test outcomes until after prediction. This is feasible; missing old ingestion clocks limit historical PIT claims, not all retrospective evaluation. A [new separate precommit](artifacts/rolling72_historical_replay_v1/precommit.json), SHA`4acdfd98…`, fixes chronological whole-fixture exclusion, the same12features/HGBrecipe/supportgates and a separate truth vault. Prepare ALL300eligible origins/900horizon coordinates from31confirmed completed fixtures before label filtering;698matched labels,25stale targets and177postkickoff coordinates remain explicit. Fit only earlier completed otherfixtures; seal predictions before the scorer reads future labels. This tests the fixed recipe on withheld historical matches, not the active v2artifact on its own training data. All old fixtures remain exposed; no prospective/PIT/promotion/attendance-MAE claim. Implementation/real run/MAE are pending; do not invent a result. Existing v1/v2 workers continue unchanged. Source-admission repair is the next supporting task after this backtest.
 
 **The bounded rolling72 cloud worker is running.** Published source `ec393fe` preceded actual launch at 10:19 UTC. PID 931348 has a verified running process and successful local cycles; deadline **November 12, 10:18:45 UTC / 11:18 Warsaw**. It checks locally every minute and reads remote sources only at declared issue/target windows, with a 15-minute retry throttle. It depends on this cloud host; it is not a managed permanent service. Earlier expired collectors remain expired.
 

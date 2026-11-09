@@ -1,0 +1,158 @@
+{
+  "authorisation": "User explicitly requested training on old fixtures with test outcomes withheld until after24/48/72h predictions, November9.",
+  "benchmarks": {
+    "drift": "samefixed observed24h rule: >=4UTC hourlylatestbins, hourlyspan>=24h and valid24hanchor within6h; max(0,last+slope24*h), elseUNAVAILABLE",
+    "maturity_bins_days": [
+      0,
+      3,
+      7,
+      15,
+      30,
+      50
+    ],
+    "persistence": "last real availability",
+    "pickup": "equal totalfixtureweight lowerweightedmedian delta; samefamily+h+maturitycell thensamefamily+h pooled; min5fixtures/3clubs; trainingrows only, no currentfixture"
+  },
+  "candidate": {
+    "estimator": "sklearn.ensemble.HistGradientBoostingRegressor",
+    "id": "rolling72-capture-segment-quantile-tree-v2",
+    "parameters": {
+      "categorical_features": null,
+      "early_stopping": false,
+      "l2_regularization": 1.0,
+      "learning_rate": 0.05,
+      "loss": "quantile",
+      "max_bins": 64,
+      "max_depth": 3,
+      "max_iter": 100,
+      "max_leaf_nodes": 7,
+      "min_samples_leaf": 20,
+      "quantile": 0.5,
+      "random_state": 42
+    },
+    "preprocessing": "fixed12 numeric features, null->NaN, no fitted imputation/scaling",
+    "projection": "max(0,last+delta); no uppercapacity cap/forcedmonotonicity",
+    "selection": "one real fit, no hyperparameter search or historical accuracy-based selection",
+    "sklearn_version": "1.8.0",
+    "synthetic_models_servable": false,
+    "target": "future observed availability-last actual observed availability"
+  },
+  "created_at": "2026-11-09T20:02:06.805048+00:00",
+  "dataset": {
+    "all_feature_origins_before_label_filter": 300,
+    "all_horizon_coordinates": 900,
+    "completed_selected_fixture_catalogue": 31,
+    "counts_are_feasibility_not_accuracy": true,
+    "dataset_file_sha256": "ee9a7f751a990fdd10611533733cac006b2e7454f820c9a81579e690740e5312",
+    "dataset_sha256": "defb1f35bd443977b102540f3b05c841ce3587fb392ad5b56fca518bd2928f21",
+    "known_matched_labels": 698,
+    "known_postkickoff_coordinates": 177,
+    "known_stale_target_coordinates": 25,
+    "source_bindings": {
+      "identity_registry": {
+        "file_sha256": "1b622ee383dc99ce026ffedfa3796cd6c8629d032bb4343e8c2f4357a3a0feb4"
+      },
+      "inventory": {
+        "file_sha256": "3a5981ce558ce0b2b98b1a4082d61b169fb6b1674f68d94792dd153d97d839bd",
+        "manifest_sha256": "12ed9059da03106c9fc43dcf80c5861bcc2469f27cf5b4e1c0184bd15745b6ff",
+        "received_at": "2026-11-07T20:11:06.629479+00:00"
+      },
+      "outcome_archive": {
+        "file_sha256": "6cd8ac4bf85d26e09f8a45fff0c9faab266b1c29517edfaca5f14c76e8544471",
+        "knowledge_bound_at": "2026-11-08T10:18:06.093938+00:00"
+      },
+      "outcomes": {
+        "file_sha256": "8605727462bda718ee2aaaa5cd6c0458ab9f4d5364273c8702a1b2ad91fbcca0",
+        "knowledge_bound_at": "2026-11-08T12:27:42+00:00"
+      }
+    },
+    "train_common_horizons": [
+      24,
+      48,
+      72
+    ]
+  },
+  "evaluation": {
+    "attendance_mae_milestone_seats": 1200,
+    "availability_errors_are_not_attendance_accuracy": true,
+    "bootstrap": {
+      "interval": "percentile2.5/97.5linear",
+      "minimum_groups": 2,
+      "paired_mae_difference": "candidate_minus_baseline",
+      "replicates": 10000,
+      "scope": "descriptive exposed retrospective, not formal promotion",
+      "seed": 42,
+      "unit": "fixturegroup"
+    },
+    "no_postresult_retune_or_promotion": true,
+    "paired": "candidate and eachbenchmark on exactsame(group,origin,h) intersection; per-fixturemean beforeglobalmean",
+    "primary": "event-balanced availability MAE separately24/48/72h on candidate-matched genuine labels",
+    "report": [
+      "bias",
+      "P90pooledpointabsoluteerror_nearestrank",
+      "worst",
+      "allinputstatus/coverage",
+      "missing/staletargets",
+      "no-fit",
+      "perclub",
+      "maturitybins",
+      "historylengthbins",
+      "eventcounts/points"
+    ]
+  },
+  "experiment_id": "rolling72-chronological-event-heldout-replay-v1",
+  "features": [
+    "last_available_total",
+    "observed_delta_since_first",
+    "prefix_span_hours",
+    "latest_staleness_hours",
+    "hours_to_kickoff",
+    "horizon_hours",
+    "delta_6h",
+    "slope_6h",
+    "delta_24h",
+    "slope_24h",
+    "delta_72h",
+    "slope_72h"
+  ],
+  "gate": {
+    "min_clubs_per_horizon": 3,
+    "min_common_clubs": 3,
+    "min_common_fixtures": 5,
+    "min_fixtures_per_horizon": 5,
+    "min_rows": 60,
+    "sample_weight": "N/(E*3*N_rows_event_horizon) on common all-horizon cohort"
+  },
+  "live_adjustment": 0,
+  "outputs": {
+    "forecast_evidence_kind": "retrospective_predictions_not_previously_issued_forecasts",
+    "live_adjustment": 0,
+    "private_run_root": "/workspace/ops-runtime/2026-11-09-rolling72-historical-blind-replay-v1",
+    "production_change": false,
+    "servable": false
+  },
+  "precommit_sha256": "4acdfd98b79b781b8704fcfa56097bc0bf0e114e81357085af5075514c1bfdb4",
+  "production_change": false,
+  "protocol": {
+    "actual_fitted_at": "record actual wallclock now, never historical model freeze",
+    "all_original_fixtures_remain_exposed": true,
+    "existing_v2_artifact_or_frozen_lanes_modified": false,
+    "fit_reuse": "one nonservable diagnostic fit perunique exact eligible priorfixture trainingrow set; max31models; no hyperparametersearch",
+    "formal_review_eligible_new_fixtures": 0,
+    "historical_knowledge_unproven": true,
+    "historical_metadata_versions_proven": false,
+    "kind": "retrospective_capture_clock_only_not_historical_PIT",
+    "origins": "first actual capture perUTCday plus first eachsegment; latestID for samecapture withinsegment; select beforefuturelabels",
+    "partial_failure": "exclusive runmarker, refuse overwrite/refit sameoutput; preserve failurenoretrywithnewparams",
+    "prediction_runner_truth_access": false,
+    "sealing": "exclusive predictionoutput and checksumseal persisted before separate scorer opens truthvault; opaque coordinateIDs neverfeatures",
+    "source_segments": "current contiguous exact supported measurement segment at each origin; retain oldsegments, no candidate/VAO aliases",
+    "test_fixture_whole_group_excluded": true,
+    "test_inputs": "all eligible feature origins from31selected completed confirmed fixtures, all3horizon statuses; never selectonlyMATCHEDlabels",
+    "test_target_values_passed_to_estimator": false,
+    "train_only": "different fixturegroups whose kickoff is strictly before testorigin; all training targets strictly before testorigin; commonall3horizon groups only",
+    "training_cutoff_is_simulation_not_actual_fit_time": true,
+    "training_weights": "N/(E*3*n_event_h) same fixed v2 recipe"
+  },
+  "version": "rolling72-chronological-event-heldout-replay-precommit-v1"
+}
