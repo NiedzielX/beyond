@@ -1,0 +1,24 @@
+{
+  "code_sha256": {
+    "ml/demand_engine/rolling72_benchmarks_v1.py": "42e513b392f1f8e66503a4731bb603becd53518808d4aa3f7f81464e66be3601",
+    "ml/demand_engine/rolling72_features_v1.py": "9baea3df0dbf09f8b144bb599b1aec1d587d6ecb351c6f3dd4ab32b6ff3a4ae3",
+    "ml/demand_engine/rolling72_labels_v1.py": "2d9d8cbe18e2ea9b579723d40477a65c63a3baec303a79c908241c35c73bfb66",
+    "ml/rolling72_offline_challenger_v2.py": "2e61076af96aafe502f7eb545aa913072ec5fa1abae1a0cc26b452107568dc34",
+    "ml/rolling72_offline_dataset_v2.py": "d81c372e29db187a68393e5c241d6bd609e105a6a410905916ed10ab0cc8c15c",
+    "ml/rolling72_paired_shadow_v2.py": "491d3393c6977e2f6bbb9ac1454e9e2ff397551e839f06b69822ccb4778b82a9",
+    "ml/rolling72_receipt_dataset_v1.py": "376a7c3b689878cb2b84ea8e9f16f54d834bb4719f67005b8cdd9a8ebaf3988c",
+    "ml/rolling72_receipt_store_v1.py": "e75ab9f7066daa339a4b447841eb2333124998ca61b378ce29813a3458d2c858",
+    "ml/rolling72_shadow_ledger_v1.py": "a879af29ba6e04051f37ecdc347bb4776a124fc71b9eae4f275793606c233411"
+  },
+  "cohort": "exposed_or_unverified_fixture_not_new_review",
+  "freeze_sha256": "55fe1ca3c96b50b75a96dfdee167f47ce7097cacabca42e8c44ecc1c9db3e485",
+  "frozen_at": "2026-11-09T10:44:14.729292+00:00",
+  "identity_registry_sha256": "1b622ee383dc99ce026ffedfa3796cd6c8629d032bb4343e8c2f4357a3a0feb4",
+  "live_adjustment": 0,
+  "model_file_sha256": "b4707d3e2370dfe9dac2f96e147ce5db96fde3ff55eda3ed545368a1c8201ebe",
+  "model_manifest_sha256": "bfb5235950ccc6809a10de1d4b4db049813b06d4963182bc207c8d14c1b0f3bd",
+  "precommit_sha256": "c48c3c9d8128a518bb6ae2b3f2d459537f3b032adc84b2749f753daaaf8b4371",
+  "production_change": false,
+  "synthetic_test": false,
+  "version": "rolling72-paired-prospective-shadow-v2"
+}

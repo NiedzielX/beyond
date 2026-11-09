@@ -43,3 +43,6 @@ Three parallel agents implement separatev2pairedledger/private recovery/boundedc
 98v2checksPASS: dataset20,trainer22,pairedledger20,recovery15,cycle/worker21. Realistic synthetic integration uses the actual syntheticHGB/SQLite/scoring/backup, injecting only source/network and clocks. Independent review closed the conflictingdomain+URL issue on finalpairedcode491d3393…; actualwriteclock nowcheckedafterdatabaseinsertsbeforecommit withrollbackover90s. No openblocker.
 
 Separatev2operation deadline will be November12 12:00UTC, within96h and long enough for firstnew72h target+10mgrace. This changes no v1deadline. Future issues beyond that coverage remain pending, never backfilled. Newworker distinguishes an aliveprocess withreturnedFAILED_CLOSED from successfulcyclehealth. Allnewcode mustpublishbeforefreeze/actualcapture. No realforecast hasyetbeenissuedbyv2.
+
+
+Pairedshadow source8b02d71 published before actualfreeze 2026-11-09T10:44:14.729292+00:00; freezeSHA 55fe1ca3c96b50b75a96dfdee167f47ce7097cacabca42e8c44ecc1c9db3e485. Publicfreezeartifact tobe publishedbefore actualcapture. Activationinputs preparedprivate, notactivatedyet.
