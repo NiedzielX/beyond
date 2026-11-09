@@ -1,0 +1,15 @@
+# Rolling72 — kontynuacja9listopada
+
+Status:IN_PROGRESS. Actualstart10:11UTC/11:11Warsaw. Użytkownikzleciłdalsząpracęażdolimitu zagentami; niepytamyponownieozgodęnarutynowekroki.
+
+## Zachowanyrezultat
+
+HEADbackend3b40ce03c2edf7a64a40bd624c9f4170f61b289fopublikowany, testyGitHub42519741807/42519735677SUCCESS. Rzeczywiste2issues/12numericforecasts/6targets8listopada21:22Warsaw. Backup72edcd30…610886bytesprivate/readback/independentrestoreverified. ActualJSON→TSparser→geometryPASS2vintages/6futurepoints. First24hdojrzewa9listopada21:22Warsaw. Datasetv1strict534rows2fixtures⇒NOFIT; brakMAEnieoznacza0.
+
+## Rzeczywistystanstartowy
+
+Żadenworkerrolling72niedziała; poprzedni dzieńprzerwałyusage limity i kolejnepauzy interfejsu. Nowycycle+workerfiles sąniescommitowane, testy16+8PASS poprzednio; wymagająpublikacjii rzeczywistegostartu. Nieudajemydziałającejautomatyzacji. V2precommitc48…jestprzygotowanyprzedfitem, alecode/trainingniepowstałyprzedlimitem. Historycznafeasibility23/14/686niemówioMAEaniPITjakościcaptureprefixów.
+
+Panelprimarycheckoutterazmain-basedbranchcodex/rolling72-panel-preview-2026-11-08. StaryresearchUIzachowanolokalnymcommitema763d88, niepublikowanoani niemergowano staregostacku. Nowepliki/widget/actualsnapshot/vercelrewrite/CI wworkingtree. Node20PASS; build/browsernieuruchomionolokalniezpowodubraku dependencies; wymaganehostedCI.
+
+Następnie: sourceworkerpublish/activatebeforetarget, panelisolateddraft/CI, dokończeniev2codezagentami, exactpublishbeforeonefit. Frozen5v1bytehashnadalzgodny, C1/P9/SSP/olddailycontractsniezmienione, productionfalse/live0.

@@ -1,0 +1,173 @@
+{
+  "accuracy_goal": {
+    "attendance_mae_milestone_seats": 1200,
+    "not_guaranteed": true,
+    "path_errors_separate": true
+  },
+  "actual_fit_time": "record actual wallclock separately; never backdate model freeze",
+  "benchmark_recipe": {
+    "drift": {
+      "anchor": "latest genuine row at/before latest_capture-24h, within6h before boundary",
+      "existing_frozen_drift_ledger_modified": false,
+      "fallback": "UNAVAILABLE, never silently persistence",
+      "formula": "max(0,last+slope_24h*(horizon_hours+latest_staleness_hours))",
+      "id": "rolling72-observed-24h-drift-v1",
+      "min_hourly_points": 4,
+      "min_hourly_prefix_span_hours": 24,
+      "sampling": "latest genuine capture/id in each UTC hour"
+    },
+    "offline_pickup_weights": "equal total weight perfixture within sourcefamily/h/maturitycell; same5/3gate",
+    "persistence": {
+      "formula": "last_real_available_total",
+      "id": "rolling72-persistence-v1"
+    },
+    "pickup": {
+      "current_fixture_excluded": true,
+      "id": "rolling72-conditional-pickup-v1",
+      "maturity_bins_days": [
+        0,
+        3,
+        7,
+        15,
+        30,
+        50
+      ],
+      "median": "smallest observed delta with cumulative weight>=0.5 total, no interpolation",
+      "min_clubs": 3,
+      "min_fixtures": 5,
+      "routing": [
+        "same_source_family+horizon+maturity_cell",
+        "same_source_family+horizon pooled over maturity",
+        "UNAVAILABLE"
+      ],
+      "weights": "1/N_rows_event_in_selected_cell"
+    }
+  },
+  "candidate": {
+    "estimator": "sklearn.ensemble.HistGradientBoostingRegressor",
+    "id": "rolling72-capture-segment-quantile-tree-v2",
+    "parameters": {
+      "categorical_features": null,
+      "early_stopping": false,
+      "l2_regularization": 1.0,
+      "learning_rate": 0.05,
+      "loss": "quantile",
+      "max_bins": 64,
+      "max_depth": 3,
+      "max_iter": 100,
+      "max_leaf_nodes": 7,
+      "min_samples_leaf": 20,
+      "quantile": 0.5,
+      "random_state": 42
+    },
+    "preprocessing": "fixed12 numeric features, null->NaN, no fitted imputation/scaling",
+    "projection": "max(0,last+delta); no uppercapacity cap/forcedmonotonicity",
+    "selection": "one real fit, no hyperparameter search or historical accuracy-based selection",
+    "sklearn_version": "1.8.0",
+    "synthetic_models_servable": false,
+    "target": "future observed availability-last actual observed availability"
+  },
+  "created_at": "2026-11-08T20:55:12.839605+00:00",
+  "data_evidence": {
+    "candidate_or_VAO_aliases": false,
+    "completed_confirmation": "identity+confirmation/availability clocks only, never actual attendance values",
+    "evaluation": "only genuinely future immutable forecasts and later original receipts",
+    "exposure": "all old fixtures remain exposed; no fresh holdout claim",
+    "historical_input_known_at": null,
+    "historical_knowledge_unproven": true,
+    "historical_metadata_versions_proven": false,
+    "historical_validation_accuracy_claim_allowed": false,
+    "labels": "latest real capture<=origin+h within6h, afterorigin/beforekickoff, no intervening measurement transition or invalid source state",
+    "ongoing_or_unconfirmed_in_fit": false,
+    "origins": "first actual capture perUTCday plus first actual capture of each segment, selected before labels",
+    "snapshot_revisions": "globalIDowner/materialpayload conflicts fail-closed",
+    "source_families": [
+      "roboticket/roboticket",
+      "stellis/stellis_visible_available"
+    ],
+    "source_scope": "last contiguous exact measurement-key segment at each origin; retain older incompatible segments in catalogue",
+    "training_kind": "historical-capture-prefix-offline-training"
+  },
+  "feature_semantics": {
+    "horizon_hours": "during live inference nominal issue horizon+latest source staleness (actual elapsed from last capture); capture-aligned training age=0",
+    "live_freshness_limit_hours": 1,
+    "missing_windows": "NaN, never invented zero",
+    "raw_observation_count": "quality only, not model feature"
+  },
+  "features": [
+    "last_available_total",
+    "observed_delta_since_first",
+    "prefix_span_hours",
+    "latest_staleness_hours",
+    "hours_to_kickoff",
+    "horizon_hours",
+    "delta_6h",
+    "slope_6h",
+    "delta_24h",
+    "slope_24h",
+    "delta_72h",
+    "slope_72h"
+  ],
+  "gate": {
+    "min_clubs_per_horizon": 3,
+    "min_common_clubs": 3,
+    "min_common_fixtures": 5,
+    "min_fixtures_per_horizon": 5,
+    "min_rows": 60,
+    "sample_weight": "N/(E*3*N_rows_event_horizon) on common all-horizon cohort"
+  },
+  "horizons_hours": [
+    24,
+    48,
+    72
+  ],
+  "live_adjustment": 0,
+  "mechanism_audit": {
+    "not_accuracy": true,
+    "rule": "fixed synthetic rising/flat/falling prefixes with same last level at horizons24/48/72; count value-history feature splits; no retune if degenerate"
+  },
+  "precommit_sha256": "c48c3c9d8128a518bb6ae2b3f2d459537f3b032adc84b2749f753daaaf8b4371",
+  "primary_horizon_hours": 72,
+  "production_change": false,
+  "prospective": {
+    "bootstrap": {
+      "confidence": 0.95,
+      "replicates": 10000,
+      "seed": 42,
+      "unit": "fixture"
+    },
+    "first_comparable_point_allowed": true,
+    "first_label_immutable": true,
+    "formal_review_min_clubs": 8,
+    "formal_review_new_fixtures": 30,
+    "input_clock": "actual original receipt-bound metadata and observations known by actual issue",
+    "live_adjustment": 0,
+    "new_shadow_namespace": true,
+    "no_earlier_prediction_backfill": true,
+    "old_exposed_fixtures_not_new_review": true,
+    "paired_baselines": "same actual issue/input/target and frozen later actual label",
+    "production_change": false,
+    "source_segment_rule": "only current contiguous comparable segment; preserve all older raw segments and scopechange lineage"
+  },
+  "source_bindings": {
+    "identity_registry": {
+      "file_sha256": "1b622ee383dc99ce026ffedfa3796cd6c8629d032bb4343e8c2f4357a3a0feb4"
+    },
+    "inventory": {
+      "file_sha256": "3a5981ce558ce0b2b98b1a4082d61b169fb6b1674f68d94792dd153d97d839bd",
+      "manifest_sha256": "12ed9059da03106c9fc43dcf80c5861bcc2469f27cf5b4e1c0184bd15745b6ff",
+      "received_at": "2026-11-07T20:11:06.629479+00:00"
+    },
+    "outcome_archive": {
+      "file_sha256": "6cd8ac4bf85d26e09f8a45fff0c9faab266b1c29517edfaca5f14c76e8544471",
+      "knowledge_bound_at": "2026-11-08T10:18:06.093938+00:00"
+    },
+    "outcomes": {
+      "file_sha256": "8605727462bda718ee2aaaa5cd6c0458ab9f4d5364273c8702a1b2ad91fbcca0",
+      "knowledge_bound_at": "2026-11-08T12:27:42+00:00"
+    }
+  },
+  "target": "public-displayed-available-total-v1",
+  "training_data_cutoff_at": "2026-11-08T14:28:33.607511+00:00",
+  "version": "rolling72-offline-fit-prospective-shadow-precommit-v2"
+}

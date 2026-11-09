@@ -43,3 +43,17 @@ Agentfeedownsnowepliki backendserializer/test orazpanelservice/geometry+tests; n
 ## Prywatna odtwarzalność nowego ledgeru — przed kodem
 
 Osobny modułbackup używa istniejącego prywatnego Storagebucket, wyłącznie namespace `rolling72-shadow-v1/<contenthash>.json`, bez zmiany starychlatestmanifests. SnapshotSQLiteprzezreadonlybackup+integrity/FK, oryginalnereceipts i freeze/metadata są prywatnymkompresowanymbundle. Rozmiarograniczony, hashewszystkichfiles/manifestu, immutabilityput i readbackverify, niezależnyrestoretownowymfolderze, bez nadpisania staregoDB. Nigdypublicbucket/signedURL/sekretwlogach, żadnegoSQLwrite, modelactivate lubsourcecallback. Kod/testy możeprzygotowaćagent; rzeczywistyStoragewritepodopublikacji/freeze/pierwszymlocalforecast jest kopią odzyskiwania, nieprovenhostedDBforecast.
+
+## Codzienne bounded source/score/forecastcycle — przed kodem
+
+Nowycyclerunner poza5frozenplikami, z własnym kodhashlockiem i deadline≤72h. Nie odnawia starychcollectorów. Wejście: nowybaselineSQLite/ostatnizweryfikowanyexport/oryginalnyregistry/freeze. Źródło:3boundedGET(per2eventmetadata +snapshotincrementalperfixture), tylkoid>lastseen, capture<=actualrequesttime, max500rows/event i failclosedprzycap/truncacji; żadnego globalfullhistorypoll. Verifyprovider/source_domain/club/externalIDwregistry. Nowo pobrane wcześniejsze capture są autentycznymi rowami poznanymi teraz; nie zmieniają prefixów/starych prognoz. Zachować hash/actualsource-receipt, przekazać doscorethenactualcapture.
+
+Localchecksco≤60sbezDBnetwork. Fullcycle dopiero gdy futuretargetdojrzeje+10min albo min24hodostatniegoissue+10min. Żadnychcatchup/backdatedissues; po przerwie eventualnewissue ma actualnow. Missing/failedgatesgenuine, nie0. Przydeclareddeadlinestopz auditlogiem i pendingforecasts; nieobiecuje siębezterminowejusługi. Po każdej pozytywnej zmianie atomowystate/currentfeed i prywatnyverifiedbundle+restore. Zbieraćpathswszystkichźródełwledger.sources. Activeprocesshealth wymaga nieZ oraz actualcycle/audit, nie samegoPID.
+
+Opcjonalnyhostedworkflow_dispatch na osobnym researchrefmoże odtworzyćprivatebundle, wykonaćcycle, backupi sanitizedfeedartifact. Schedule/defaultmainniejestautomatycznieaktywowane; configuredworkflow≠hostedrun≠expectedDBrecord. Wyłącznie nowyprivateSQLite+Storage, brakSQLproductionwrites/modelactivate.
+
+## Panel: rzeczywisty snapshot do przeglądu i oddzielny komponent
+
+Po rzeczywistymcapture12forecastów serializer→parser→geometria przeszły na prawdziwym feedzie2fixtures. Można przygotować nowy komponent Rolling72ForecastChart i odrębnąresearchpreviewpage korzystającą **jawnie z autentycznego zahashowanego snapshotu** serializerJSON. Nie jest to testfixture ani zastępstwo missinglivefeed. Snapshot ma czytelny czas wygenerowania/issue, etykietębadawczą, benchmarknames, brakpaid-sales/MLaccuracyclaim, zachowujevintages i nullstatusy. Sanityzowany derivedfeed nie zawiera sourceURL/secret/rawAPIpayload i nie jest prywatnymźródłowymexportem; prawdziwe rawreceipts pozostają pozaGit.
+
+Komponent normalnegoeventpage używa wyłączniejawniekonfigurowanego nowegoURL; brakURL/feed/error daje jawnąniedostępność, bezpodstawieniastaticsnapshotu. Osobnaroutepreview może jawnieotworzyćplik `public/research/rolling72-shadow-snapshot-v1.json` pochodzącyz rzeczywistegoexportu, nieprzeliczaprognoz. Existingdailyv1/final_p50niezmienione. Mainprodukcyjny pozostaje bezmerge/release; researchpreview/draftPRsą konkretne dooceny. Dalszebuild/typecheck/browserCIweryfikowaneoddzielnieoddeploy/livebackend.

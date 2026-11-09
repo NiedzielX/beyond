@@ -1,5 +1,13 @@
 # Beyond Ticketing — Current MAE Execution Plan
 
+## Current execution — November9,11:12Warsaw
+
+[First real shadow proof](ROLLING_72H_FIRST_SHADOW_PROOF_2026-11-08.json): after published3b40ce0/frozen5codehashes, actualNovember8**21:22:16Warsaw** capture created2issues/6targets/**12numeric persistence+driftforecasts**(18statusrows,pickupUNAVAILABLE). PrivateStorage610,886-byte copy was read back and independently restored with all12forecasts; actualbackendJSON→TSparser→geometry passed2vintages/6driftfuturepoints. This is localcloudSQLite+private recovery, not managedSQL/hostedforecastexecution or deployedpanel. No score/newMAE yet. Targets are **Nov9/10/11 at21:22Warsaw**; first source/score window21:32Warsaw. Newworker/cycle are tested but **not yet activated** asof11:12; priority is publish and boundedactivation beforethe firsttarget. Previous expired collectors stayexpired; no backfill.
+
+Parallel v2 has an [exact separate precommit](ROLLING_72H_OFFLINE_TRAINING_PRECOMMIT_V2.md), c48c3c9d…, and SDD. Feasibility gives23commonconfirmedfixtures/14clubs/686rows from historicalcapture segments. Historicalknowledge/metadata clocks remainUNPROVEN: permitted only as explicitlydeclared offlinefit, never historicalPIT/holdout/prospectiveMAE. No fakeknown_at, no candidate/VAOaliasing, same5/3/60gate and same12feature/HGBrecipe. No v2code/realfit yet after agentusage interruption; do not claimfittedcandidate. V1strictreceiptNOFIT2/2 and allfrozencontracts remain intact. Futurev2evaluation mustuse actualreceipt-safe newissues, not oldvintages.
+
+Panel implementation is isolated on `codex/rolling72-panel-preview-2026-11-08`, directlyfrom actualmaincfb3d675; not merged/deployed. Actualtimestampedsnapshot preview is separatefrom normalunconfiguredfeed;20Nodecontracts passed, fullbuild/browserCI pendingpublication. Productionfalse/0; no1200attendanceMAEachievement claimed.
+
 ## Rolling72 — November 8: exact precommit and NO_FIT gate
 
 [Benchmark/gate result](ROLLING_72H_BENCHMARKS_RESULT_2026-11-08.md), [precommit](ROLLING_72H_BENCHMARKS_AND_CHALLENGER_PRECOMMIT_V1.md) and [actual source-bound training support](ROLLING_72H_REAL_TRAINING_GATE_2026-11-08.json).215original receipts yield534completed labeledrows(315/166/53for24/48/72h) but only2fixturegroups/2clubs. Candidate/pickup correctly returnNO_FIT; minimum5/3 was not reduced. No real challenger fit or new MAE. Receipt-proven labeled data reach onlyP-4.11and have no first-point rows; do not substitute capture-onlyP-50support for this evidence.
