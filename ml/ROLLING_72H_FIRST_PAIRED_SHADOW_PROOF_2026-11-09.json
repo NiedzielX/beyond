@@ -1,0 +1,500 @@
+{
+  "actual_forecast_summary": [
+    {
+      "club_slug": "jagiellonia",
+      "issued_at": "2026-11-09T10:45:31.355823+00:00",
+      "last_available_total": 8439.0,
+      "latest_captured_at": "2026-11-09T10:35:03.622000+00:00",
+      "points": [
+        {
+          "horizon_hours": 24,
+          "model": "candidate",
+          "outside_training_maturity_range": true,
+          "predicted_available_total": 8252.811450442294,
+          "status": "READY"
+        },
+        {
+          "horizon_hours": 24,
+          "model": "drift",
+          "outside_training_maturity_range": null,
+          "predicted_available_total": null,
+          "status": "UNAVAILABLE"
+        },
+        {
+          "horizon_hours": 24,
+          "model": "persistence",
+          "outside_training_maturity_range": null,
+          "predicted_available_total": 8439.0,
+          "status": "READY"
+        },
+        {
+          "horizon_hours": 24,
+          "model": "pickup",
+          "outside_training_maturity_range": null,
+          "predicted_available_total": null,
+          "status": "UNAVAILABLE"
+        },
+        {
+          "horizon_hours": 48,
+          "model": "candidate",
+          "outside_training_maturity_range": true,
+          "predicted_available_total": 8001.293288544257,
+          "status": "READY"
+        },
+        {
+          "horizon_hours": 48,
+          "model": "drift",
+          "outside_training_maturity_range": null,
+          "predicted_available_total": null,
+          "status": "UNAVAILABLE"
+        },
+        {
+          "horizon_hours": 48,
+          "model": "persistence",
+          "outside_training_maturity_range": null,
+          "predicted_available_total": 8439.0,
+          "status": "READY"
+        },
+        {
+          "horizon_hours": 48,
+          "model": "pickup",
+          "outside_training_maturity_range": null,
+          "predicted_available_total": null,
+          "status": "UNAVAILABLE"
+        },
+        {
+          "horizon_hours": 72,
+          "model": "candidate",
+          "outside_training_maturity_range": true,
+          "predicted_available_total": 7816.301290458488,
+          "status": "READY"
+        },
+        {
+          "horizon_hours": 72,
+          "model": "drift",
+          "outside_training_maturity_range": null,
+          "predicted_available_total": null,
+          "status": "UNAVAILABLE"
+        },
+        {
+          "horizon_hours": 72,
+          "model": "persistence",
+          "outside_training_maturity_range": null,
+          "predicted_available_total": 8439.0,
+          "status": "READY"
+        },
+        {
+          "horizon_hours": 72,
+          "model": "pickup",
+          "outside_training_maturity_range": null,
+          "predicted_available_total": null,
+          "status": "UNAVAILABLE"
+        }
+      ],
+      "ticket_event_id": 24
+    },
+    {
+      "club_slug": "piastgliwice",
+      "issued_at": "2026-11-09T10:45:31.355823+00:00",
+      "last_available_total": 4308.0,
+      "latest_captured_at": "2026-11-09T10:43:03.189000+00:00",
+      "points": [
+        {
+          "horizon_hours": 24,
+          "model": "candidate",
+          "outside_training_maturity_range": false,
+          "predicted_available_total": 4163.631314761572,
+          "status": "READY"
+        },
+        {
+          "horizon_hours": 24,
+          "model": "drift",
+          "outside_training_maturity_range": null,
+          "predicted_available_total": null,
+          "status": "UNAVAILABLE"
+        },
+        {
+          "horizon_hours": 24,
+          "model": "persistence",
+          "outside_training_maturity_range": null,
+          "predicted_available_total": 4308.0,
+          "status": "READY"
+        },
+        {
+          "horizon_hours": 24,
+          "model": "pickup",
+          "outside_training_maturity_range": null,
+          "predicted_available_total": null,
+          "status": "UNAVAILABLE"
+        },
+        {
+          "horizon_hours": 48,
+          "model": "candidate",
+          "outside_training_maturity_range": false,
+          "predicted_available_total": 3993.2883015221146,
+          "status": "READY"
+        },
+        {
+          "horizon_hours": 48,
+          "model": "drift",
+          "outside_training_maturity_range": null,
+          "predicted_available_total": null,
+          "status": "UNAVAILABLE"
+        },
+        {
+          "horizon_hours": 48,
+          "model": "persistence",
+          "outside_training_maturity_range": null,
+          "predicted_available_total": 4308.0,
+          "status": "READY"
+        },
+        {
+          "horizon_hours": 48,
+          "model": "pickup",
+          "outside_training_maturity_range": null,
+          "predicted_available_total": null,
+          "status": "UNAVAILABLE"
+        },
+        {
+          "horizon_hours": 72,
+          "model": "candidate",
+          "outside_training_maturity_range": false,
+          "predicted_available_total": 3821.67285175626,
+          "status": "READY"
+        },
+        {
+          "horizon_hours": 72,
+          "model": "drift",
+          "outside_training_maturity_range": null,
+          "predicted_available_total": null,
+          "status": "UNAVAILABLE"
+        },
+        {
+          "horizon_hours": 72,
+          "model": "persistence",
+          "outside_training_maturity_range": null,
+          "predicted_available_total": 4308.0,
+          "status": "READY"
+        },
+        {
+          "horizon_hours": 72,
+          "model": "pickup",
+          "outside_training_maturity_range": null,
+          "predicted_available_total": null,
+          "status": "UNAVAILABLE"
+        }
+      ],
+      "ticket_event_id": 10500
+    }
+  ],
+  "capture": {
+    "input_issue_count": 2,
+    "issued_at": "2026-11-09T10:45:31.355823+00:00",
+    "live_adjustment": 0,
+    "numeric_forecast_count": 12,
+    "prediction_status_rows": 24,
+    "production_change": false,
+    "synthetic_test": false,
+    "version": "rolling72-paired-prospective-shadow-v2",
+    "written_at": "2026-11-09T10:45:32.154176+00:00"
+  },
+  "freeze_sha256": "55fe1ca3c96b50b75a96dfdee167f47ce7097cacabca42e8c44ecc1c9db3e485",
+  "hosted_actions_forecast_execution_proven": false,
+  "hosted_code_ci": {
+    "code_commit": "8b02d71222209fec1d4494bae85474bc4b3dcb74",
+    "code_pr_run": 42603156836,
+    "code_push_run": 42603139826,
+    "conclusion": "success",
+    "forecast_executed_by_these_runs": false,
+    "freeze_commit": "30e1c98c1c616f29f6c18170ff999d120c158127",
+    "freeze_pr_run": 42603310774,
+    "freeze_push_run": 42603267279
+  },
+  "independent_remote_model_replay": {
+    "candidate_replays": [
+      {
+        "horizon_hours": 24,
+        "identical": true,
+        "replayed_available_total": 8252.811450442294,
+        "stored_available_total": 8252.811450442294,
+        "ticket_event_id": 24
+      },
+      {
+        "horizon_hours": 48,
+        "identical": true,
+        "replayed_available_total": 8001.293288544257,
+        "stored_available_total": 8001.293288544257,
+        "ticket_event_id": 24
+      },
+      {
+        "horizon_hours": 72,
+        "identical": true,
+        "replayed_available_total": 7816.301290458488,
+        "stored_available_total": 7816.301290458488,
+        "ticket_event_id": 24
+      },
+      {
+        "horizon_hours": 24,
+        "identical": true,
+        "replayed_available_total": 4163.631314761572,
+        "stored_available_total": 4163.631314761572,
+        "ticket_event_id": 10500
+      },
+      {
+        "horizon_hours": 48,
+        "identical": true,
+        "replayed_available_total": 3993.2883015221146,
+        "stored_available_total": 3993.2883015221146,
+        "ticket_event_id": 10500
+      },
+      {
+        "horizon_hours": 72,
+        "identical": true,
+        "replayed_available_total": 3821.67285175626,
+        "stored_available_total": 3821.67285175626,
+        "ticket_event_id": 10500
+      }
+    ],
+    "model_manifest_sha256": "bfb5235950ccc6809a10de1d4b4db049813b06d4963182bc207c8d14c1b0f3bd",
+    "model_refit_performed": false,
+    "new_prospective_predictions": 0,
+    "original_ledger_modified": false,
+    "private_bucket_verified": true,
+    "trusted_model_load_verified": true,
+    "verified_at": "2026-11-09T19:46:37.878353+00:00"
+  },
+  "ledger": {
+    "cohort": "exposed_or_unverified_fixture_not_new_review",
+    "formal_review_gate": "CLOSED",
+    "issues": 2,
+    "live_adjustment": 0,
+    "matched_targets": 0,
+    "mature_unmatched_targets": 0,
+    "measurement": "public-displayed-available-total-v1",
+    "metrics": {},
+    "numeric_forecasts": 12,
+    "paired_metrics": {
+      "+24h/candidate-vs-drift": {
+        "baseline": {
+          "event_balanced_bias": null,
+          "event_balanced_mae": null,
+          "scored_fixtures": 0,
+          "scored_points": 0
+        },
+        "candidate": {
+          "event_balanced_bias": null,
+          "event_balanced_mae": null,
+          "scored_fixtures": 0,
+          "scored_points": 0
+        },
+        "event_balanced_mae_difference_candidate_minus_baseline": null
+      },
+      "+24h/candidate-vs-persistence": {
+        "baseline": {
+          "event_balanced_bias": null,
+          "event_balanced_mae": null,
+          "scored_fixtures": 0,
+          "scored_points": 0
+        },
+        "candidate": {
+          "event_balanced_bias": null,
+          "event_balanced_mae": null,
+          "scored_fixtures": 0,
+          "scored_points": 0
+        },
+        "event_balanced_mae_difference_candidate_minus_baseline": null
+      },
+      "+24h/candidate-vs-pickup": {
+        "baseline": {
+          "event_balanced_bias": null,
+          "event_balanced_mae": null,
+          "scored_fixtures": 0,
+          "scored_points": 0
+        },
+        "candidate": {
+          "event_balanced_bias": null,
+          "event_balanced_mae": null,
+          "scored_fixtures": 0,
+          "scored_points": 0
+        },
+        "event_balanced_mae_difference_candidate_minus_baseline": null
+      },
+      "+48h/candidate-vs-drift": {
+        "baseline": {
+          "event_balanced_bias": null,
+          "event_balanced_mae": null,
+          "scored_fixtures": 0,
+          "scored_points": 0
+        },
+        "candidate": {
+          "event_balanced_bias": null,
+          "event_balanced_mae": null,
+          "scored_fixtures": 0,
+          "scored_points": 0
+        },
+        "event_balanced_mae_difference_candidate_minus_baseline": null
+      },
+      "+48h/candidate-vs-persistence": {
+        "baseline": {
+          "event_balanced_bias": null,
+          "event_balanced_mae": null,
+          "scored_fixtures": 0,
+          "scored_points": 0
+        },
+        "candidate": {
+          "event_balanced_bias": null,
+          "event_balanced_mae": null,
+          "scored_fixtures": 0,
+          "scored_points": 0
+        },
+        "event_balanced_mae_difference_candidate_minus_baseline": null
+      },
+      "+48h/candidate-vs-pickup": {
+        "baseline": {
+          "event_balanced_bias": null,
+          "event_balanced_mae": null,
+          "scored_fixtures": 0,
+          "scored_points": 0
+        },
+        "candidate": {
+          "event_balanced_bias": null,
+          "event_balanced_mae": null,
+          "scored_fixtures": 0,
+          "scored_points": 0
+        },
+        "event_balanced_mae_difference_candidate_minus_baseline": null
+      },
+      "+72h/candidate-vs-drift": {
+        "baseline": {
+          "event_balanced_bias": null,
+          "event_balanced_mae": null,
+          "scored_fixtures": 0,
+          "scored_points": 0
+        },
+        "candidate": {
+          "event_balanced_bias": null,
+          "event_balanced_mae": null,
+          "scored_fixtures": 0,
+          "scored_points": 0
+        },
+        "event_balanced_mae_difference_candidate_minus_baseline": null
+      },
+      "+72h/candidate-vs-persistence": {
+        "baseline": {
+          "event_balanced_bias": null,
+          "event_balanced_mae": null,
+          "scored_fixtures": 0,
+          "scored_points": 0
+        },
+        "candidate": {
+          "event_balanced_bias": null,
+          "event_balanced_mae": null,
+          "scored_fixtures": 0,
+          "scored_points": 0
+        },
+        "event_balanced_mae_difference_candidate_minus_baseline": null
+      },
+      "+72h/candidate-vs-pickup": {
+        "baseline": {
+          "event_balanced_bias": null,
+          "event_balanced_mae": null,
+          "scored_fixtures": 0,
+          "scored_points": 0
+        },
+        "candidate": {
+          "event_balanced_bias": null,
+          "event_balanced_mae": null,
+          "scored_fixtures": 0,
+          "scored_points": 0
+        },
+        "event_balanced_mae_difference_candidate_minus_baseline": null
+      }
+    },
+    "pending_targets": 6,
+    "prediction_status_rows": 24,
+    "production_change": false,
+    "required_new_clubs": 8,
+    "required_new_fixtures": 30,
+    "review_eligible_new_fixtures": 0,
+    "scores": 0,
+    "synthetic_test": false,
+    "version": "rolling72-paired-prospective-shadow-v2"
+  },
+  "live_adjustment": 0,
+  "live_panel_v2_deployed": false,
+  "managed_sql_forecast_persistence_proven": false,
+  "model_frozen_at": "2026-11-09T10:36:51.982418+00:00",
+  "model_load_verified_again": true,
+  "model_manifest_sha256": "bfb5235950ccc6809a10de1d4b4db049813b06d4963182bc207c8d14c1b0f3bd",
+  "new_mae_or_improvement_proven": false,
+  "private_recovery": {
+    "bucket": "beyond-daily-path-research-v1",
+    "bundle_sha256": "ba0743f24b010faf4d59db916cae9112768b6b1333310670a6bbd88170444eac",
+    "bytes": 793066,
+    "file_count": 10,
+    "file_sha256": {
+      "fit-marker.json": "4985f43ee29e87051b0e28d5edd6fb0c02ddc45b02aa3c1f525a15497eae0861",
+      "freeze.json": "246a3b01153b57a777a26fec3c52811328fc67e241df91f2072da5e749fb07d8",
+      "ledger.sqlite": "328ea912da2a5c0ecd22fe6e98708122837cb455b3940c887a92f1e47485b56e",
+      "manifest.json": "d3619fea1d2561f824b2e3cfc616d9350f161c3fa6fa4f069ca246a4aca7bcaa",
+      "metadata.json": "61d8086384dafcb5c93ff1baa0d667eafe372082fb6248d3711067a2d0bd34b5",
+      "model.joblib": "b4707d3e2370dfe9dac2f96e147ce5db96fde3ff55eda3ed545368a1c8201ebe",
+      "precommit.json": "037ce8827d613dc1a45cc3e1210254408e337a30f5499e4442e77c00d917f731",
+      "registry.json": "1b622ee383dc99ce026ffedfa3796cd6c8629d032bb4343e8c2f4357a3a0feb4",
+      "source-5a1efb9f0848252aa29985e2b480f7026d2a80ada8b8a0111a42b2c893695c17.json": "5a1efb9f0848252aa29985e2b480f7026d2a80ada8b8a0111a42b2c893695c17",
+      "source-5b1a29a755bbdca9fe9d2c38dc5e0c7e06c3591cdcf6d6cb5ba99746edd79122.json": "5b1a29a755bbdca9fe9d2c38dc5e0c7e06c3591cdcf6d6cb5ba99746edd79122"
+    },
+    "independent_restore_verified": true,
+    "issues": 2,
+    "key": "rolling72-shadow-v2/20cb6626877b5a446ed3bb078d3f977b0639f29c87a165a0a753f7fd3370eb56.json",
+    "live_adjustment": 0,
+    "model_bytes_verified_without_loading": true,
+    "numeric_forecasts": 12,
+    "private": true,
+    "production_change": false,
+    "read_back_verified": true,
+    "scores": 0,
+    "sha256": "20cb6626877b5a446ed3bb078d3f977b0639f29c87a165a0a753f7fd3370eb56",
+    "version": "rolling72-shadow-private-backup-v2"
+  },
+  "production_change": false,
+  "published_code_commit": "8b02d71222209fec1d4494bae85474bc4b3dcb74",
+  "published_freeze_commit": "30e1c98c1c616f29f6c18170ff999d120c158127",
+  "real_fit_performed_before_issue": true,
+  "source_refresh": {
+    "checked_at": "2026-11-09T10:45:28.491741+00:00",
+    "completed_at": "2026-11-09T10:45:36.767052+00:00",
+    "incremental_snapshot_count": 5,
+    "network_reads": 3,
+    "source_sha256": "5a1efb9f0848252aa29985e2b480f7026d2a80ada8b8a0111a42b2c893695c17",
+    "status": "SUCCESS"
+  },
+  "verified_at": "2026-11-09T19:45:01.779482+00:00",
+  "version": "rolling72-first-real-paired-shadow-proof-v2",
+  "worker": {
+    "cycle_count": 540,
+    "error_count": 0,
+    "host_dependent": true,
+    "last_checked_at": "2026-11-09T19:45:00.333214+00:00",
+    "last_cycle": {
+      "checked_at": "2026-11-09T19:45:00.293646+00:00",
+      "due": {
+        "capture_event_ids": [],
+        "due": false,
+        "mature_unmatched_targets": [],
+        "next_due_at": "2026-11-10T10:55:31.355823+00:00"
+      },
+      "live_adjustment": 0,
+      "network_reads": 0,
+      "production_change": false,
+      "status": "NOT_DUE",
+      "until": "2026-11-12T12:00:00+00:00",
+      "version": "rolling72-bounded-cycle-v2"
+    },
+    "pid": 936149,
+    "started_at": "2026-11-09T10:45:37.003408+00:00",
+    "status": "RUNNING",
+    "until": "2026-11-12T12:00:00+00:00",
+    "worker_contract_sha256": "d2b20a40492ef0fe41e1cffa84b3aba37a1b6ddc5f31c47da6e20f18656ce64e"
+  }
+}

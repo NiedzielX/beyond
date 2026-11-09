@@ -1,10 +1,10 @@
 # Rolling72 v2: bounded private recovery
 
-Date: 2026-11-09. Status: LOCAL CONTRACT VERIFIED; no remote backup or activation claimed.
+Date: 2026-11-09. Status: IMPLEMENTED — actual remote private backup, independent restore and trusted model replay verified.
 
 This implements recovery for the separate paired-v2 prospective ledger under
-[the exact precommit](../../ml/artifacts/rolling72_v2/precommit.json) and
-[offline-training/paired-shadow SDD](2026-11-08-rolling-72h-offline-training-and-shadow-v2.md).
+[the exact precommit](../../../ml/artifacts/rolling72_v2/precommit.json) and
+[offline-training/paired-shadow SDD](../2026-11-08-rolling-72h-offline-training-and-shadow-v2.md).
 It changes no frozen v1 file, model, old ledger, forecast or assumption.
 
 The bundle contains a consistent read-only SQLite backup, its exact lane freeze,
@@ -36,5 +36,7 @@ Local evidence: `python -m unittest ml.test_rolling72_backup_v2 -q` passes 15
 synthetic-only tests; both new Python files compile and `git diff --check` passes.
 The fake upload performs one privacy check, verified upload read, an independent
 second read and a full independent restore. A patched `joblib.load` that raises
-confirms restore never executes model bytes. Actual private recovery remains a
-parent-owned operational step after genuine v2 capture; keep this spec active.
+confirms restore never executes model bytes. Actual private recovery was completed after genuine v2 capture; evidence follows.
+
+
+Actual completion: published code8b02d71/freeze30e1c98 preceded first forecasts10:45:31UTC. Private10file793066byte bundle20cb6626… was read back and independently restored. A second actual remote retrieval at19:46UTC restored a new private directory, loaded the trusted unchanged artifact and exactly replayed allsix candidate predictions, with no refit/backfill/oldledgerwrite. [Public machine proof](../../../ml/ROLLING_72H_FIRST_PAIRED_SHADOW_PROOF_2026-11-09.json). This completed recovery requirement does not close future accuracy or panel-serving gates.

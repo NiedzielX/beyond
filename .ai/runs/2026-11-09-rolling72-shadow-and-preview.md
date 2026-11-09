@@ -46,3 +46,15 @@ Separatev2operation deadline will be November12 12:00UTC, within96h and long eno
 
 
 Pairedshadow source8b02d71 published before actualfreeze 2026-11-09T10:44:14.729292+00:00; freezeSHA 55fe1ca3c96b50b75a96dfdee167f47ce7097cacabca42e8c44ecc1c9db3e485. Publicfreezeartifact tobe publishedbefore actualcapture. Activationinputs preparedprivate, notactivatedyet.
+
+
+## Actual paired v2 activation and continuation
+
+Published8b02d71, thenfreeze55fe1ca3…at10:44:14UTC andpubliccommit30e1c98 beforeactual11:45Warsawissue. Actualcycle10:45:28–36UTC:3GETs/5new genuine observations,2issues/6candidate+6P0forecasts,24statusrows,0scores. Drift/pickupremainunavailablewithreasons. Private793066byte10filebundle20cb6626…remote readback+independentrestoreverified,includingtrustedmodelbytes/manifest/fitmarker/originalsources. Realpipelineproof, notmanagedSQL/Actionsserving/paneldeployment.
+
+Newv2PID936149actuallystarted10:45:37UTC untilNov12 12:00UTC/13:00Warsaw. Verified Ssl and538cycles/0errors at19:43UTC after sessionquota pause; v1PID931348alsoSsl. Allintermediatechecks were local/no network because no targetdue. AIcodingpausedduringusage-limit interval; cloudcollectioncontinued. Firstv1target9Nov21:22Warsaw/source21:32; firstnewv2target10Nov11:45/source11:55. NoMAEyet, notzero.
+
+Publicv2proof+result/currentdocsupdated withactualstate. Beforequota firstfeedagentfailedwithoutfiles. At19:43UTC userexplicitlyaskedcontinue; delegatedread-onlynewv2feedandisolatedpanelpreviewagain. Frozenmodel/dataset/ledger/workerfilesmustnotchangeafteractivation. No newfit orbackfill. Nextpublishoperationalproof, finishreadonlyv2export/actualsnapshot/parser/browsercontract withoutchangingoldv1feed.
+
+
+19:46UTC independentlyretrievedexistingv2privateobject20cb6626…again, restored10files into newprivate directory, trustedloadedunchangedartifact andexactlyreplayedall6storedcandidatevalues. No fit/newpredictions/sourcewrites. RecoverySDDmovedtoimplementedwithlinks/evidence; accuracy/panelspecsstayactive. Actualcode/freezeCIs42603139826/42603156836/42603267279/42603310774SUCCESS, nothostedforecastclaims.
