@@ -58,3 +58,6 @@ Publicv2proof+result/currentdocsupdated withactualstate. Beforequota firstfeedag
 
 
 19:46UTC independentlyretrievedexistingv2privateobject20cb6626…again, restored10files into newprivate directory, trustedloadedunchangedartifact andexactlyreplayedall6storedcandidatevalues. No fit/newpredictions/sourcewrites. RecoverySDDmovedtoimplementedwithlinks/evidence; accuracy/panelspecsstayactive. Actualcode/freezeCIs42603139826/42603156836/42603267279/42603310774SUCCESS, nothostedforecastclaims.
+
+
+Readonlyv2feed/previewimplementation ready:19backendexporttests and23newfrontendcontractsPASS; old21frontendcontractsremainunchanged. Actualfeedexport1597099bytes/SHA85723554… fromimmutable2vintages, generation19:46:21UTC andactualissue10:45:31UTCdistinct. Exactmodel_freezedateverifiedusinghash-boundoriginalmanifest. Newexplicit /rolling72-ml-preview, noautoproductionwidget/v1parseredit. Source models/worker dependencies hashverifiedunchanged. HostedfullTypeScript/build/Chromium pendingpublication.
