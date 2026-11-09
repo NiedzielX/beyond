@@ -53,3 +53,5 @@ This index is durable memory, not a substitute for the authoritative execution p
 - [Receipt support and shadow freeze](lessons/2026-11-08-receipt-support-and-shadow-freeze.md):534rowsstill2fixtures, input-versus-labelcoldstart, source-byte/old-snapshotrevisionguards, genuineissueclockandfirstimmutablelabel.
 
 - [One fit and mechanism evidence](lessons/2026-11-09-one-fit-and-mechanism-evidence.md): one canonical real output directory, actual history sensitivity versus future MAE, unobserved latency, and explicit typecheck/browser versus deployment proof.
+
+- [Source catalogue and independent support](lessons/2026-11-09-source-catalogue-and-independent-support.md): three future fixtures cannot supply30independent review events; collector freshness differs from admission, and source URL roles require explicit provenance.
