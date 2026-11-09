@@ -37,6 +37,8 @@ Production remains:
 
 ## Daily-path MVP and cloud validation
 
+**November9 continuation:** the bounded rolling72 collector is actually running until November12 10:18UTC; [worker/source/backup proof](ml/ROLLING_72H_WORKER_PROOF_2026-11-09.json). A separate precommitted v2 model was [fitted once on23 fixtures/14clubs](ml/ROLLING_72H_OFFLINE_FIT_RESULT_2026-11-09.md) and demonstrates history sensitivity, with future accuracy still pending. The isolated panel preview passed [actual typecheck/build/Chromium](ml/ROLLING_72H_PANEL_CI_PROOF_2026-11-09.json). Older execution notes below are dated history; consult the current handoff for activation and coverage.
+
 [First real rolling72 shadow proof](ml/ROLLING_72H_FIRST_SHADOW_PROOF_2026-11-08.json):2actualissues/12numericbenchmarkforecasts were persisted onNovember8at21:22Warsaw, privatelybackedup/readback/restored, and passedactualJSON→TSparser→geometry. The first24h targets matureNovember9at21:22Warsaw. No new MAE or deployedlivefeed is claimed. The boundedcollector is the immediate operational priority.
 
 [Rolling72benchmark/precommit result](ml/ROLLING_72H_BENCHMARKS_RESULT_2026-11-08.md):215realreceiptarchives yield534labeledrows but2fixtures/2clubs, so the strict learned candidate returnsNO_FIT. Separate persistence/drift, immutable futureforecastledger and private recovery are prepared; no new MAE or deployedfeed is claimed.

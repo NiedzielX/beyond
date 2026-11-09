@@ -51,3 +51,5 @@ This index is durable memory, not a substitute for the authoritative execution p
 - [Rolling72 knowledge and feed contracts](lessons/2026-11-08-rolling72-knowledge-and-feed-contracts.md): maturity×horizon support, genuine known-at, old parser gates and actual sector ownership; input code is distinct from a live forecasting chain.
 
 - [Receipt support and shadow freeze](lessons/2026-11-08-receipt-support-and-shadow-freeze.md):534rowsstill2fixtures, input-versus-labelcoldstart, source-byte/old-snapshotrevisionguards, genuineissueclockandfirstimmutablelabel.
+
+- [One fit and mechanism evidence](lessons/2026-11-09-one-fit-and-mechanism-evidence.md): one canonical real output directory, actual history sensitivity versus future MAE, unobserved latency, and explicit typecheck/browser versus deployment proof.

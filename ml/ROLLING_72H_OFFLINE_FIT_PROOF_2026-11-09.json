@@ -1,0 +1,184 @@
+{
+  "accuracy_improvement_proven": false,
+  "canonical_one_fit_directory_bound_in_run_log": true,
+  "dataset_sha256": "defb1f35bd443977b102540f3b05c841ce3587fb392ad5b56fca518bd2928f21",
+  "feature_names": [
+    "last_available_total",
+    "observed_delta_since_first",
+    "prefix_span_hours",
+    "latest_staleness_hours",
+    "hours_to_kickoff",
+    "horizon_hours",
+    "delta_6h",
+    "slope_6h",
+    "delta_24h",
+    "slope_24h",
+    "delta_72h",
+    "slope_72h"
+  ],
+  "fit_started_at": "2026-11-09T10:36:50.620007+00:00",
+  "frozen_at": "2026-11-09T10:36:51.982418+00:00",
+  "gate": {
+    "common_clubs": 14,
+    "common_fixtures": 23,
+    "partial_horizon_fixture_groups_excluded": [
+      "11c39a68a98fe14c12f39a992d10f11c9df704023fe6c65187373055e3ab0b8f",
+      "37e239a22cb0ef28e47b85ae3f2148b80859a7c40d6cb9c6b48081cfda013054",
+      "383f7dabe2b781444d76650362156629f39d15d5d790a478815f0aae898fc736",
+      "4bebd79420e08f11dd3fba6cd58027c39ff8530f58c9a9aa8bab4a3d4dc84f6f",
+      "cad10915613aa38fcd8dabf952e17e4871fad1a1128a7d51926cf5b366fd2180",
+      "f88dd05c34888413837ea062470300e4b346a6c115d54897b0fc8a5b711f9cc5"
+    ],
+    "per_horizon": {
+      "24": {
+        "clubs": 14,
+        "fixtures": 23,
+        "rows": 252
+      },
+      "48": {
+        "clubs": 14,
+        "fixtures": 23,
+        "rows": 228
+      },
+      "72": {
+        "clubs": 14,
+        "fixtures": 23,
+        "rows": 206
+      }
+    },
+    "reasons": [],
+    "status": "READY_TO_FIT",
+    "supplied_rows": 698,
+    "training_rows": 686
+  },
+  "historical_knowledge_unproven": true,
+  "historical_validation_accuracy_claim_allowed": false,
+  "hosted_code_ci": {
+    "Demand Engine Smoke PR": 42602062482,
+    "Demand Engine Smoke push": 42602052356,
+    "conclusion": "success",
+    "real_model_fit_in_ci": false
+  },
+  "live_adjustment": 0,
+  "load_after_fit_verified": true,
+  "mae_computed": false,
+  "manifest_sha256": "bfb5235950ccc6809a10de1d4b4db049813b06d4963182bc207c8d14c1b0f3bd",
+  "mechanism_audit": {
+    "feature_split_counts": {
+      "delta_24h": 34,
+      "delta_6h": 99,
+      "delta_72h": 36,
+      "horizon_hours": 67,
+      "hours_to_kickoff": 45,
+      "last_available_total": 164,
+      "observed_delta_since_first": 20,
+      "prefix_span_hours": 30,
+      "slope_24h": 19,
+      "slope_6h": 40,
+      "slope_72h": 15
+    },
+    "kind": "fixed_synthetic_mechanism_not_accuracy",
+    "mae_computed": false,
+    "probes": [
+      {
+        "fixed_last_available_total": 1000.0,
+        "horizon_hours": 24,
+        "probes": [
+          {
+            "historical_slope_places_per_hour": -5.0,
+            "predicted_delta": -159.09836451758852
+          },
+          {
+            "historical_slope_places_per_hour": 0.0,
+            "predicted_delta": -119.37548773104231
+          },
+          {
+            "historical_slope_places_per_hour": 5.0,
+            "predicted_delta": -112.28944094809889
+          }
+        ],
+        "sensitivity_range": 46.808923569489636
+      },
+      {
+        "fixed_last_available_total": 1000.0,
+        "horizon_hours": 48,
+        "probes": [
+          {
+            "historical_slope_places_per_hour": -5.0,
+            "predicted_delta": -256.2923999075649
+          },
+          {
+            "historical_slope_places_per_hour": 0.0,
+            "predicted_delta": -221.84932733325365
+          },
+          {
+            "historical_slope_places_per_hour": 5.0,
+            "predicted_delta": -214.76328055031024
+          }
+        ],
+        "sensitivity_range": 41.52911935725467
+      },
+      {
+        "fixed_last_available_total": 1000.0,
+        "horizon_hours": 72,
+        "probes": [
+          {
+            "historical_slope_places_per_hour": -5.0,
+            "predicted_delta": -291.4253018656471
+          },
+          {
+            "historical_slope_places_per_hour": 0.0,
+            "predicted_delta": -259.2115618016109
+          },
+          {
+            "historical_slope_places_per_hour": 5.0,
+            "predicted_delta": -252.12551501866747
+          }
+        ],
+        "sensitivity_range": 39.29978684697963
+      }
+    ],
+    "retune_permitted": false,
+    "status": "MECHANISM_DEMONSTRATED",
+    "value_history_split_count": 263
+  },
+  "model_file_sha256": "b4707d3e2370dfe9dac2f96e147ce5db96fde3ff55eda3ed545368a1c8201ebe",
+  "parameters": {
+    "categorical_features": null,
+    "early_stopping": false,
+    "l2_regularization": 1.0,
+    "learning_rate": 0.05,
+    "loss": "quantile",
+    "max_bins": 64,
+    "max_depth": 3,
+    "max_iter": 100,
+    "max_leaf_nodes": 7,
+    "min_samples_leaf": 20,
+    "quantile": 0.5,
+    "random_state": 42
+  },
+  "precommit_sha256": "c48c3c9d8128a518bb6ae2b3f2d459537f3b032adc84b2749f753daaaf8b4371",
+  "private_model_weights_not_published": true,
+  "production_change": false,
+  "prospective_predictions_created_by_fit": 0,
+  "published_before_fit_source_commit": "ce8b0e5064fe4d40f7f86f18b62c57fabb291680",
+  "runtime_model_sha256": "40f43b956e25d7aeb171e69e9e95de18a536d23e06c4ad063c72fc754bbeaece",
+  "sklearn_version": "1.8.0",
+  "source_code_sha256": {
+    "ml/demand_engine/rolling72_features_v1.py": "9baea3df0dbf09f8b144bb599b1aec1d587d6ecb351c6f3dd4ab32b6ff3a4ae3",
+    "ml/rolling72_offline_challenger_v2.py": "2e61076af96aafe502f7eb545aa913072ec5fa1abae1a0cc26b452107568dc34",
+    "ml/rolling72_offline_dataset_v2.py": "d81c372e29db187a68393e5c241d6bd609e105a6a410905916ed10ab0cc8c15c",
+    "ml/rolling72_receipt_dataset_v1.py": "376a7c3b689878cb2b84ea8e9f16f54d834bb4719f67005b8cdd9a8ebaf3988c"
+  },
+  "synthetic_test": false,
+  "training_data_cutoff_at": "2026-11-08T14:28:33.607511+00:00",
+  "training_maturity_range_hours": [
+    34.16588,
+    726.4590499797223
+  ],
+  "training_rows_sha256": "27c73529176984375f93d7d1b2809394483c8f9a5db191b219450bc8cc1352ef",
+  "training_weight_sum": 686.0,
+  "training_weights_sha256": "1e7ddc401541454649b75ac48f00e73c77e9aa38076c898e19b6f7026c9f3adf",
+  "verified_at": "2026-11-09T10:39:19.021114+00:00",
+  "version": "rolling72-capture-segment-quantile-tree-v2"
+}
