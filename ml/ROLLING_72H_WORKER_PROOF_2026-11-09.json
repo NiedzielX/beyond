@@ -1,0 +1,71 @@
+{
+  "backup": {
+    "bucket": "beyond-daily-path-research-v1",
+    "bundle_sha256": "bddf5d0a43f829eac44946b93bcf3e3e339e034c1344d771551bd6f6af08ec52",
+    "bytes": 794118,
+    "file_count": 5,
+    "file_sha256": {
+      "freeze.json": "c244dbb6267ba43c5800d1863a1955c2241229c0c1ec0681689044a1131d290b",
+      "ledger.sqlite": "79b790f4be38b434e162ba3e299af2031fe71c1ba46a0576ff8f80826a5c1ccf",
+      "metadata.json": "19176e70bfdac3240e817eff44b846547f2db26ce1e4de7daaf6b7cc93af8994",
+      "source-552f447392ca8f5860d05388da27765aab431b404b99bfaee3f9c17e4587a759.json": "552f447392ca8f5860d05388da27765aab431b404b99bfaee3f9c17e4587a759",
+      "source-5b1a29a755bbdca9fe9d2c38dc5e0c7e06c3591cdcf6d6cb5ba99746edd79122.json": "5b1a29a755bbdca9fe9d2c38dc5e0c7e06c3591cdcf6d6cb5ba99746edd79122"
+    },
+    "independent_restore_verified": true,
+    "issues": 4,
+    "key": "rolling72-shadow-v1/ffe4968a1ae739db113230340612fdaf4e35aa2bcd173e19739bbceb486c0954.json",
+    "live_adjustment": 0,
+    "numeric_forecasts": 18,
+    "private": true,
+    "production_change": false,
+    "read_back_verified": true,
+    "scores": 0,
+    "sha256": "ffe4968a1ae739db113230340612fdaf4e35aa2bcd173e19739bbceb486c0954",
+    "version": "rolling72-shadow-private-backup-v1"
+  },
+  "capture": {
+    "input_issue_count": 2,
+    "issued_at": "2026-11-09T10:19:53.246148+00:00",
+    "live_adjustment": 0,
+    "numeric_forecast_count": 6,
+    "prediction_status_rows": 18,
+    "production_change": false,
+    "version": "rolling72-baseline-shadow-ledger-v1",
+    "written_at": "2026-11-09T10:19:53.698818+00:00"
+  },
+  "checked_at": "2026-11-09T10:19:50.527354+00:00",
+  "completed_at": "2026-11-09T10:19:59.643229+00:00",
+  "drift_unavailable_reason": "Missing required 24h anchor; receipt gaps retained.",
+  "due": {
+    "capture_event_ids": [],
+    "due": false,
+    "mature_unmatched_targets": [],
+    "next_due_at": "2026-11-09T20:32:16.293546+00:00"
+  },
+  "evidence": "actual_cloud_sqlite_capture_and_private_recovery_not_managed_sql_serving",
+  "incremental_snapshot_count": 140,
+  "live_adjustment": 0,
+  "network_reads": 3,
+  "no_mae_before_genuine_targets": true,
+  "production_change": false,
+  "scoring": {
+    "accepted_targets": 0,
+    "added_scores": 0,
+    "live_adjustment": 0,
+    "production_change": false,
+    "scored_at": "2026-11-09T10:19:52.675131+00:00",
+    "version": "rolling72-baseline-shadow-ledger-v1"
+  },
+  "source_sha256": "5b1a29a755bbdca9fe9d2c38dc5e0c7e06c3591cdcf6d6cb5ba99746edd79122",
+  "status": "SUCCESS",
+  "until": "2026-11-12T10:18:45.051057+00:00",
+  "version": "rolling72-bounded-cycle-v1",
+  "worker": {
+    "host_dependent": true,
+    "pid": 931348,
+    "source_revision": "ec393febcb7f8a1bfa4dd5ca2f7e204b39ea0e07",
+    "started_at": "2026-11-09T10:19:15.190188+00:00",
+    "until": "2026-11-12T10:18:45.051057+00:00",
+    "verified_status": "RUNNING"
+  }
+}
