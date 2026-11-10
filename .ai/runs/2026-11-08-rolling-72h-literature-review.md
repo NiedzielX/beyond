@@ -1,0 +1,15 @@
+# Przegląd bibliografii rolling72 przed implementacją
+
+Użytkownik zlecił weryfikację planu na podstawie literatury przed wykonaniem. Cel: od pierwszego rzeczywistego odczytu prognozować zachowanie kolejnych24/48/72h przez całą obserwowaną sprzedaż i wesprzeć decyzje sektor/cena/reklama, minimalizując MAE. Kanoniczny plan i stan przeczytane; brak nowych modeli, danych produkcyjnych, uruchomień lub aktywacji. SDDnapisano przed badaniem.
+
+Start: źródła primary, dostępny pełny tekst lub jawnie oznaczony abstrakt, weryfikacja metadanych i mapowanie na konkretne decyzje Beyond. Weryfikacja wymaga pobrania publicznych publikacji przez sieć; brak narzędzia przeglądarki w bieżącym zestawie narzędzi, używamy odczytu publicznych URLwcloud.
+
+Wykonano celowany przegląd przed realizacją planu. BezpośrednieCrossref/DOI/arXiv/OTexts/OpenReviewodrzuciłproxy403, także po grantnetworki próbieescalated(publicznyodczyt,brakautoreviewrejection). Poszukano rzeczywistych istniejących źródeł w dozwolonymGitHubAPI; nie uruchamiano proxy/workflow do obchodzenia blokad. Prywatny korpus:/workspace/ops-runtime/2026-11-08-rolling72-literature.
+
+Pobrano i odczytano wskazane części materiałówFPP3, scoring/scikit-learn, pełnyPDFM5Guide(analiza danych iEvaluation), pełnePDForyginalnychAirbnbKDD2018/denBoer(przeczytane fragmenty wymienione w raporcie), źródłaEconMLDML/forest, READMEautorówCQR/EnbPI/Chronos i bibliograficzne/abstraktowe kopie prac hotelowych. Korpus zawiera także odrzucone nietrafne wyniki wyszukania; nie są źródłem twierdzeń.32accessreceipts to rachunki dostępu, nie32przeczytane artykuły. Raport15grupreferencji jawnie określa zakres; R12/R13pozostają bezpełnegotekstu iSDDpozostajeaktywne.
+
+Wnioski wprowadzone do planu: bezpośrednie horyzonty i etap sprzedaży; L1/mediana; sama zmiana level→delta nie redukuje matematycznieMAE; baselinewarunkowejkrzywej obokpersistence/drift; firstobservationpooledcontext; MAEintermittencji/ostrzeżenia; porównywalne sektory i nieaddytywnośćmedian; chronologiczne/event-groupedlabel-knowledgecutoffs; kalibracjaniepewności nie poprawia automatycznieMAE; osobnydowód causal/policyefektuceny/reklamyprzychodu. Literatura nie potwierdza1200ani uniwersalnego algorytmu.
+
+Zapisano ml/ROLLING_72H_LITERATURE_REVIEW_2026-11-08.md i rejestrJSON(metadata/url/blobSHA/SHA256, bezpełnychpublikacjiwGit). Zaktualizowano plan, kanonicznąroadmapę/execution/progress/trajectory/handoff, README/AGENTS/CLAUDE i lekcję. Weryfikacja dokumentów i zgodności hashów, bez testów/fitu modelu, DBwrites, nowychprocesów i wdrożeń. Następne zadanie:Aaudyt targetów/firstdatum72h/sektorów z uwzględnieniem wniosków, przed nowym dokładnym precommitem; źródłaR12/R13do dalszego pełnotekstowego uzupełnienia.
+
+Uzupełnienie kontroli zakresu: macierzczas-do-meczu×horyzont jest obowiązkowym rozliczeniem pokrycia/jakości; P-10/+72hnie dowodziP-50/+72h. Reprezentacja ma uwzględniać dłuższy rzeczywisty prefix obok krótkichokien, a data pierwszego monitorowania nie jest dowodem otwarcia sprzedaży. Nie zakładamy rzeczywistego wsparcia danej komórki przed audytem danych.

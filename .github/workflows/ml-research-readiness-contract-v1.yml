@@ -3,6 +3,10 @@ name: ML Research Readiness Contract v1
 on:
   workflow_dispatch:
     inputs:
+      forward_outcome_contract:
+        description: 'Published fixed forward outcome contract path; public read-only retrieval only'
+        type: string
+        default: ''
       postmatch_outcome_source_audit:
         description: 'Retrieve two fixed public postmatch pages; no database credentials or imports'
         type: boolean
@@ -42,7 +46,7 @@ permissions:
 
 jobs:
   public-source-audit:
-    if: github.event_name == 'workflow_dispatch' && (inputs.public_source_audit || inputs.p9_failure_diagnostic || inputs.blocked_outcome_source_audit || inputs.current_home_history_source_audit || inputs.postmatch_outcome_source_audit)
+    if: github.event_name == 'workflow_dispatch' && (inputs.public_source_audit || inputs.p9_failure_diagnostic || inputs.blocked_outcome_source_audit || inputs.current_home_history_source_audit || inputs.postmatch_outcome_source_audit || inputs.forward_outcome_contract != '')
     runs-on: ubuntu-latest
     timeout-minutes: 8
     permissions:
@@ -68,6 +72,14 @@ jobs:
         run: |
           python -m unittest ml.test_postmatch_outcome_source_v1 -v
           python -m ml.postmatch_outcome_source_v1 --output-dir "$RUNNER_TEMP/postmatch-outcome-sources" --publish-checks
+      - name: Retrieve public sources from the published forward outcome contract
+        if: inputs.forward_outcome_contract != ''
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          FORWARD_OUTCOME_CONTRACT: ${{ inputs.forward_outcome_contract }}
+        run: |
+          python -m unittest ml.test_postmatch_outcome_source_v4 -v
+          python -m ml.postmatch_outcome_source_v4 --contract "$FORWARD_OUTCOME_CONTRACT" --output-dir "$RUNNER_TEMP/forward-outcome-sources" --publish-checks
       - name: Audit four missing current home-history public sources
         if: inputs.current_home_history_source_audit
         env:
@@ -97,6 +109,7 @@ jobs:
             ${{ runner.temp }}/blocked-outcome445-sources
             ${{ runner.temp }}/current-home-history-sources
             ${{ runner.temp }}/postmatch-outcome-sources
+            ${{ runner.temp }}/forward-outcome-sources
           retention-days: 14
           if-no-files-found: ignore
   validate-contract:

@@ -1,0 +1,70 @@
+{
+  "draft_pr": 10,
+  "fix_commits": [
+    "982550d2c2ee89ad45dc559856b16c20926e0c10",
+    "495b5393054a8619e2e8c186922e21f7fb22617f"
+  ],
+  "fixed_local_head": "495b5393054a8619e2e8c186922e21f7fb22617f",
+  "initial_head": "1ab4fee236a2893976ccd3d8d1a13f62cb58e7ec",
+  "initial_hosted_runs": [
+    {
+      "conclusion": "failure",
+      "failure": "TypeScript 7 control-flow narrowing after inferred arrow never function",
+      "id": 42600569359,
+      "workflow": "Dashboard CI"
+    },
+    {
+      "browser": "failure",
+      "contract": "success",
+      "failure": "TypeScript step; Chromium not reached",
+      "id": 42600569364,
+      "workflow": "Rolling72 feed contract v1"
+    }
+  ],
+  "initial_preview": {
+    "actual_environment_url": "https://beyond-ticketing-panel-2ks4r2qco-n-b334.vercel.app",
+    "blocker": "Proxy CONNECT403Forbidden; not bypassed",
+    "direct_http_verified": false,
+    "github_deployment_id": 7652173073,
+    "github_status": "success"
+  },
+  "live_forecast_feed_hosting_proven": false,
+  "local_tests": {
+    "diff_check": "pass",
+    "geometry": 6,
+    "passed": 21,
+    "service": 15,
+    "snapshot_sha256": "edbaf032141ea13ef114ae980400ea9b5244c474ce996da2c75bbfd172cf5485"
+  },
+  "model_accuracy_proven": false,
+  "new_hosted_verification": {
+    "browser_artifact": {
+      "blocker": "Signed artifact download host blocked by proxy403; no bypass",
+      "downloaded": false,
+      "id": 13665753854,
+      "name": "genuine-rolling72-browser-contract-42601815488",
+      "size_in_bytes": 223087
+    },
+    "browser_job_id": 129107881912,
+    "dashboard_conclusion": "success",
+    "dashboard_production_build": "success",
+    "dashboard_run": 42601815450,
+    "dashboard_typecheck": "success",
+    "new_head_vercel_status": "no check/status/deployment record yet; existing bot comment belongs to previous head",
+    "published_head": "495b5393054a8619e2e8c186922e21f7fb22617f",
+    "rolling72_browser": "success",
+    "rolling72_contract": "success",
+    "rolling72_pr_conclusion": "success",
+    "rolling72_pr_run": 42601815488,
+    "rolling72_push_conclusion": "success",
+    "rolling72_push_run": 42601809705,
+    "rolling72_typecheck_build": "success"
+  },
+  "repository": "NiedzielX/BeyondTicketingPanel",
+  "verification_scope": {
+    "focus_api_not_keyboard_tab": true,
+    "initial_snapshot_not_live_feed": true,
+    "mobile_no_overflow_not_human_visual_inspection": true,
+    "production_deployment": false
+  }
+}

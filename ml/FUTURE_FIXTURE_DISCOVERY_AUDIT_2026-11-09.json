@@ -1,0 +1,304 @@
+{
+  "active_roboticket_clubs": 13,
+  "active_source_clubs_union": 18,
+  "active_stellis_clubs": 5,
+  "actual_candidate_metadata_discovery_versions": [
+    "roboticket-discovery-v8"
+  ],
+  "cached_record_types": {
+    "candidate": 89,
+    "schedule_gap": 8
+  },
+  "cached_refresh_range": [
+    "2026-11-09T19:49:00.189515+00:00",
+    "2026-11-09T19:49:00.628977+00:00"
+  ],
+  "cached_status_counts": {
+    "BUFFERING_AWAITING_KICKOFF": 12,
+    "MATCH_DISCOVERED_NO_BUFFER": 1,
+    "NON_FOOTBALL_EXCLUDED": 10,
+    "NON_MATCH_EXCLUDED": 28,
+    "SCHEDULE_GAP": 8,
+    "UNKNOWN_EXCLUDED": 38
+  },
+  "cached_unknown_or_future_untracked_rows": 97,
+  "code_changes": 0,
+  "collector_or_worker_changes": 0,
+  "configured_roboticket_discovery_version": "roboticket-discovery-v8",
+  "database_writes": 0,
+  "future_coverage_view_read": {
+    "error_message": "permission denied for function normalize_ticketing_name_v1",
+    "http_status": 403,
+    "retry_performed": false
+  },
+  "league_fetch_clocks": [
+    "2026-11-09T18:10:00.091546+00:00"
+  ],
+  "league_future_metadata_rows": 18,
+  "league_scope_in_this_read": {
+    "after": "2026-11-09",
+    "through": "2026-12-07"
+  },
+  "live_adjustment": 0,
+  "model_fits": 0,
+  "motor_lublin_lech_dec5_pair_present": false,
+  "next_action": "Separately specified read-only direct-page parser improvement plus evidence acquisition; no admission from anchor label alone; retain league-pair/date disagreements and unknown timezones.",
+  "phase2_network_requests": {
+    "bounded_database_metadata_gets": 6,
+    "github_actions_gets": 1,
+    "history_gets": 0,
+    "snapshot_gets": 0,
+    "workflow_dispatches": 0
+  },
+  "production_change": false,
+  "registry_changes": 0,
+  "roboticket_kickoff_cases": [
+    {
+      "actual_source_html_retained_by_this_audit": false,
+      "candidate_last_seen_at": "2026-11-09T19:02:03.614+00:00",
+      "candidate_status": "discovered",
+      "classification_reason": "direct_page_match_identity",
+      "club_slug": "cracovia",
+      "direct_page_h1": "Cracovia - Jagiellonia Bia\u0142ystok 2026-11-21 14:45",
+      "direct_page_login_redirect": false,
+      "direct_page_status": 200,
+      "discovered_kickoff_at": null,
+      "eligible_for_automatic_promotion_from_this_audit": false,
+      "exact_name_pair_league_rows": [
+        {
+          "event_date": "2026-11-21",
+          "fetched_at": "2026-11-09T18:10:00.091546+00:00",
+          "source_event_id": "2490319"
+        }
+      ],
+      "external_event_id": "10797",
+      "h1_civil_date_text": "2026-11-21",
+      "h1_civil_time_text": "14:45",
+      "h1_timezone_explicit": false,
+      "last_raw_snapshot_at_in_cached_diagnostic": "2026-11-09T19:47:06.893+00:00",
+      "league_same_civil_date_exists": true,
+      "raw_snapshot_count_in_cached_diagnostic": 1340,
+      "source_html_sha256": null
+    },
+    {
+      "actual_source_html_retained_by_this_audit": false,
+      "candidate_last_seen_at": "2026-11-09T19:02:03.614+00:00",
+      "candidate_status": "discovered",
+      "classification_reason": "direct_page_match_identity",
+      "club_slug": "gkskatowice",
+      "direct_page_h1": "GKS Katowice - Lech Pozna\u0144 2026-11-22 14:45",
+      "direct_page_login_redirect": false,
+      "direct_page_status": 200,
+      "discovered_kickoff_at": null,
+      "eligible_for_automatic_promotion_from_this_audit": false,
+      "exact_name_pair_league_rows": [
+        {
+          "event_date": "2026-11-22",
+          "fetched_at": "2026-11-09T18:10:00.091546+00:00",
+          "source_event_id": "2490320"
+        }
+      ],
+      "external_event_id": "5771",
+      "h1_civil_date_text": "2026-11-22",
+      "h1_civil_time_text": "14:45",
+      "h1_timezone_explicit": false,
+      "last_raw_snapshot_at_in_cached_diagnostic": "2026-11-09T19:47:05.022+00:00",
+      "league_same_civil_date_exists": true,
+      "raw_snapshot_count_in_cached_diagnostic": 1275,
+      "source_html_sha256": null
+    },
+    {
+      "actual_source_html_retained_by_this_audit": false,
+      "candidate_last_seen_at": "2026-11-09T19:02:03.614+00:00",
+      "candidate_status": "discovered",
+      "classification_reason": "direct_page_match_identity",
+      "club_slug": "lech",
+      "direct_page_h1": "Lech Pozna\u0144 - Pogo\u0144 Szczecin 2026-11-29 14:45",
+      "direct_page_login_redirect": false,
+      "direct_page_status": 200,
+      "discovered_kickoff_at": null,
+      "eligible_for_automatic_promotion_from_this_audit": false,
+      "exact_name_pair_league_rows": [
+        {
+          "event_date": "2026-11-28",
+          "fetched_at": "2026-11-09T18:10:00.091546+00:00",
+          "source_event_id": "2490330"
+        }
+      ],
+      "external_event_id": "11258",
+      "h1_civil_date_text": "2026-11-29",
+      "h1_civil_time_text": "14:45",
+      "h1_timezone_explicit": false,
+      "last_raw_snapshot_at_in_cached_diagnostic": "2026-11-09T19:47:01.319+00:00",
+      "league_same_civil_date_exists": false,
+      "raw_snapshot_count_in_cached_diagnostic": 909,
+      "source_html_sha256": null
+    },
+    {
+      "actual_source_html_retained_by_this_audit": false,
+      "candidate_last_seen_at": "2026-11-09T19:02:03.614+00:00",
+      "candidate_status": "discovered",
+      "classification_reason": "direct_page_match_identity",
+      "club_slug": "rakow",
+      "direct_page_h1": "Rak\u00f3w Cz\u0119stochowa - Widzew \u0141\u00f3d\u017a niedziela, 2026-11-22 12:15",
+      "direct_page_login_redirect": false,
+      "direct_page_status": 200,
+      "discovered_kickoff_at": null,
+      "eligible_for_automatic_promotion_from_this_audit": false,
+      "exact_name_pair_league_rows": [
+        {
+          "event_date": "2026-11-22",
+          "fetched_at": "2026-11-09T18:10:00.091546+00:00",
+          "source_event_id": "2490321"
+        }
+      ],
+      "external_event_id": "6593",
+      "h1_civil_date_text": "2026-11-22",
+      "h1_civil_time_text": "12:15",
+      "h1_timezone_explicit": false,
+      "last_raw_snapshot_at_in_cached_diagnostic": "2026-11-06T21:47:04.09+00:00",
+      "league_same_civil_date_exists": true,
+      "raw_snapshot_count_in_cached_diagnostic": 643,
+      "source_html_sha256": null
+    },
+    {
+      "actual_source_html_retained_by_this_audit": false,
+      "candidate_last_seen_at": "2026-11-09T19:02:03.614+00:00",
+      "candidate_status": "discovered",
+      "classification_reason": "direct_page_match_identity",
+      "club_slug": "slaskwroclaw",
+      "direct_page_h1": "\u015al\u0105sk Wroc\u0142aw - GKS Katowice 2026-11-28 17:30",
+      "direct_page_login_redirect": false,
+      "direct_page_status": 200,
+      "discovered_kickoff_at": null,
+      "eligible_for_automatic_promotion_from_this_audit": false,
+      "exact_name_pair_league_rows": [
+        {
+          "event_date": "2026-11-28",
+          "fetched_at": "2026-11-09T18:10:00.091546+00:00",
+          "source_event_id": "2490325"
+        }
+      ],
+      "external_event_id": "8781",
+      "h1_civil_date_text": "2026-11-28",
+      "h1_civil_time_text": "17:30",
+      "h1_timezone_explicit": false,
+      "last_raw_snapshot_at_in_cached_diagnostic": "2026-11-09T19:47:03.815+00:00",
+      "league_same_civil_date_exists": true,
+      "raw_snapshot_count_in_cached_diagnostic": 65,
+      "source_html_sha256": null
+    },
+    {
+      "actual_source_html_retained_by_this_audit": false,
+      "candidate_last_seen_at": "2026-11-09T19:02:03.614+00:00",
+      "candidate_status": "discovered",
+      "classification_reason": "direct_page_match_identity",
+      "club_slug": "wislakrakow",
+      "direct_page_h1": "Wis\u0142a Krak\u00f3w - Motor Lublin 2026-11-28 20:15",
+      "direct_page_login_redirect": false,
+      "direct_page_status": 200,
+      "discovered_kickoff_at": null,
+      "eligible_for_automatic_promotion_from_this_audit": false,
+      "exact_name_pair_league_rows": [
+        {
+          "event_date": "2026-11-28",
+          "fetched_at": "2026-11-09T18:10:00.091546+00:00",
+          "source_event_id": "2490326"
+        }
+      ],
+      "external_event_id": "11916",
+      "h1_civil_date_text": "2026-11-28",
+      "h1_civil_time_text": "20:15",
+      "h1_timezone_explicit": false,
+      "last_raw_snapshot_at_in_cached_diagnostic": "2026-11-09T19:47:01.93+00:00",
+      "league_same_civil_date_exists": true,
+      "raw_snapshot_count_in_cached_diagnostic": 1022,
+      "source_html_sha256": null
+    }
+  ],
+  "source_receipts": {
+    "active-roboticket-clubs": {
+      "body_sha256": "35bbe32530f63a0b92d2c3db745e05b0ce5c09b53c5fbc6fd847154c33c29af7",
+      "bytes": 965,
+      "http_status": 200,
+      "retrieved_at": "2026-11-09T19:54:37.995715+00:00"
+    },
+    "active-stellis-clubs": {
+      "body_sha256": "97f77d2366c0d3eecd000e2a3191509b6b211c4c7b590468a4d92c9ac0e8a32a",
+      "bytes": 368,
+      "http_status": 200,
+      "retrieved_at": "2026-11-09T19:54:38.006650+00:00"
+    },
+    "future-league-coverage": {
+      "body_sha256": "3aa2b97ebdab0dfeaec9f34919ea14fb240646cc406dc0ad209662d46aaed759",
+      "bytes": 114,
+      "http_status": 403,
+      "retrieved_at": "2026-11-09T19:56:58.254612+00:00"
+    },
+    "future-league-source-metadata": {
+      "body_sha256": "c40be632ef12d4406d3c3ea7ecc5f7eebe871593e703570867a304ab04e291c8",
+      "bytes": 3678,
+      "http_status": 200,
+      "retrieved_at": "2026-11-09T19:58:02.118226+00:00"
+    },
+    "roboticket-six-kickoff-gates": {
+      "body_sha256": "12f6113a27fcd35f43f9075239055671c69a809c4649719ff942d7dfb80d3531",
+      "bytes": 5751,
+      "http_status": 200,
+      "retrieved_at": "2026-11-09T19:56:58.119559+00:00"
+    },
+    "sporting-context-actions": {
+      "body_sha256": "4628b56ff8a6dde008d82dd23355c188079d073b85d26a896ac59a1801143410",
+      "bytes": 59422,
+      "http_status": 200,
+      "retrieved_at": "2026-11-09T19:54:36.909376+00:00"
+    },
+    "untracked-ingestion-diagnostics": {
+      "body_sha256": "32aa08680d7607bfd673e6326aa15bb0d309707d581ac17ebe866d55c14acd9f",
+      "bytes": 58755,
+      "http_status": 200,
+      "retrieved_at": "2026-11-09T19:54:38.074628+00:00"
+    }
+  },
+  "sporting_context_recent_runs": [
+    {
+      "conclusion": "success",
+      "created_at": "2026-11-09T06:23:26Z",
+      "event": "schedule",
+      "head_sha": "bcec6b027e33a6ed6260d3ee469006c05f6f1010",
+      "id": 42572730127
+    },
+    {
+      "conclusion": "success",
+      "created_at": "2026-11-08T22:02:16Z",
+      "event": "schedule",
+      "head_sha": "bcec6b027e33a6ed6260d3ee469006c05f6f1010",
+      "id": 42528165820
+    },
+    {
+      "conclusion": "success",
+      "created_at": "2026-11-08T13:22:09Z",
+      "event": "schedule",
+      "head_sha": "bcec6b027e33a6ed6260d3ee469006c05f6f1010",
+      "id": 42484631460
+    },
+    {
+      "conclusion": "success",
+      "created_at": "2026-11-08T05:58:14Z",
+      "event": "schedule",
+      "head_sha": "bcec6b027e33a6ed6260d3ee469006c05f6f1010",
+      "id": 42452810231
+    },
+    {
+      "conclusion": "success",
+      "created_at": "2026-11-07T21:48:03Z",
+      "event": "schedule",
+      "head_sha": "bcec6b027e33a6ed6260d3ee469006c05f6f1010",
+      "id": 42417567039
+    }
+  ],
+  "sporting_context_workflow_is_fixture_discovery": false,
+  "supabase_cron_execution_records_read": false,
+  "verified_at": "2026-11-09T20:00:36.797702+00:00",
+  "version": "future-fixture-discovery-readonly-audit-v1"
+}

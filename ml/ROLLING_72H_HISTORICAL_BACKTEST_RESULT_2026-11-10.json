@@ -1,0 +1,2776 @@
+{
+  "active_v2_model_sha256_before_and_after": "b4707d3e2370dfe9dac2f96e147ce5db96fde3ff55eda3ed545368a1c8201ebe",
+  "active_v2_model_unchanged": true,
+  "actual_completed_at": "2026-11-10T10:41:48.322902+00:00",
+  "evaluation": {
+    "active_v2_artifact_used": false,
+    "attendance_mae_computed": false,
+    "coverage": {
+      "diagnostic_model_fits": 8,
+      "input_coordinates": 900,
+      "input_fixtures": 31,
+      "per_horizon": {
+        "24": {
+          "inputs": 300,
+          "matched": 261
+        },
+        "48": {
+          "inputs": 300,
+          "matched": 231
+        },
+        "72": {
+          "inputs": 300,
+          "matched": 206
+        }
+      },
+      "prediction_status_counts": {
+        "candidate": {
+          "READY": 289,
+          "UNAVAILABLE": 611
+        },
+        "drift": {
+          "READY": 546,
+          "UNAVAILABLE": 354
+        },
+        "persistence": {
+          "READY": 723,
+          "UNAVAILABLE": 177
+        },
+        "pickup": {
+          "READY": 241,
+          "UNAVAILABLE": 659
+        }
+      },
+      "truth_status_counts": {
+        "MATCHED": 698,
+        "STALE_TARGET_OBSERVATION": 25,
+        "TARGET_NOT_BEFORE_KICKOFF": 177
+      }
+    },
+    "evidence_kind": "retrospective_capture_clock_only_event_heldout",
+    "formal_review_eligible_new_fixtures": 0,
+    "historical_knowledge_unproven": true,
+    "historical_metadata_versions_proven": false,
+    "live_adjustment": 0,
+    "metrics": {
+      "+24h/candidate": {
+        "event_balanced_bias": -58.63350632258387,
+        "event_balanced_mae": 213.91048622209348,
+        "p90_pooled_absolute_error_nearest_rank": 411.2777863286128,
+        "scored_clubs": 14,
+        "scored_fixtures": 15,
+        "scored_points": 111,
+        "worst_absolute_error": 9450.0
+      },
+      "+24h/drift": {
+        "event_balanced_bias": 18.34119371384908,
+        "event_balanced_mae": 198.92817982788972,
+        "p90_pooled_absolute_error_nearest_rank": 611.8041368505424,
+        "scored_clubs": 14,
+        "scored_fixtures": 23,
+        "scored_points": 200,
+        "worst_absolute_error": 2193.004249754562
+      },
+      "+24h/persistence": {
+        "event_balanced_bias": 247.79541101787552,
+        "event_balanced_mae": 414.1441433200561,
+        "p90_pooled_absolute_error_nearest_rank": 792.0,
+        "scored_clubs": 14,
+        "scored_fixtures": 29,
+        "scored_points": 261,
+        "worst_absolute_error": 9450.0
+      },
+      "+24h/pickup": {
+        "event_balanced_bias": 50.63790504367427,
+        "event_balanced_mae": 215.5619681600451,
+        "p90_pooled_absolute_error_nearest_rank": 580.0,
+        "scored_clubs": 12,
+        "scored_fixtures": 13,
+        "scored_points": 93,
+        "worst_absolute_error": 966.0
+      },
+      "+48h/candidate": {
+        "event_balanced_bias": -11.368247958242364,
+        "event_balanced_mae": 347.350952458736,
+        "p90_pooled_absolute_error_nearest_rank": 824.7481858784558,
+        "scored_clubs": 14,
+        "scored_fixtures": 14,
+        "scored_points": 96,
+        "worst_absolute_error": 9221.0
+      },
+      "+48h/drift": {
+        "event_balanced_bias": -36.591734843978706,
+        "event_balanced_mae": 358.17761482648535,
+        "p90_pooled_absolute_error_nearest_rank": 1105.983109275593,
+        "scored_clubs": 14,
+        "scored_fixtures": 23,
+        "scored_points": 175,
+        "worst_absolute_error": 3310.961374115789
+      },
+      "+48h/persistence": {
+        "event_balanced_bias": 442.10629231020096,
+        "event_balanced_mae": 604.2161237068744,
+        "p90_pooled_absolute_error_nearest_rank": 1289.0,
+        "scored_clubs": 14,
+        "scored_fixtures": 26,
+        "scored_points": 231,
+        "worst_absolute_error": 9221.0
+      },
+      "+48h/pickup": {
+        "event_balanced_bias": 178.9843253968254,
+        "event_balanced_mae": 372.4498015873016,
+        "p90_pooled_absolute_error_nearest_rank": 1000.0,
+        "scored_clubs": 12,
+        "scored_fixtures": 12,
+        "scored_points": 80,
+        "worst_absolute_error": 1569.0
+      },
+      "+72h/candidate": {
+        "event_balanced_bias": 96.41460848317635,
+        "event_balanced_mae": 452.95666468554447,
+        "p90_pooled_absolute_error_nearest_rank": 1055.0191861789917,
+        "scored_clubs": 14,
+        "scored_fixtures": 14,
+        "scored_points": 82,
+        "worst_absolute_error": 8671.0
+      },
+      "+72h/drift": {
+        "event_balanced_bias": -59.69440978129558,
+        "event_balanced_mae": 527.1492511113012,
+        "p90_pooled_absolute_error_nearest_rank": 1338.8179928986206,
+        "scored_clubs": 14,
+        "scored_fixtures": 22,
+        "scored_points": 152,
+        "worst_absolute_error": 5236.942061173684
+      },
+      "+72h/persistence": {
+        "event_balanced_bias": 563.7851775735071,
+        "event_balanced_mae": 757.0518449005863,
+        "p90_pooled_absolute_error_nearest_rank": 1814.0,
+        "scored_clubs": 14,
+        "scored_fixtures": 23,
+        "scored_points": 206,
+        "worst_absolute_error": 8671.0
+      },
+      "+72h/pickup": {
+        "event_balanced_bias": 269.33560606060604,
+        "event_balanced_mae": 488.6171717171717,
+        "p90_pooled_absolute_error_nearest_rank": 1473.0,
+        "scored_clubs": 12,
+        "scored_fixtures": 12,
+        "scored_points": 68,
+        "worst_absolute_error": 2011.0
+      }
+    },
+    "paired_metrics": {
+      "+24h/candidate-vs-drift": {
+        "baseline": {
+          "event_balanced_bias": 34.01185417738171,
+          "event_balanced_mae": 178.62708637766258,
+          "p90_pooled_absolute_error_nearest_rank": 537.6471337306466,
+          "scored_clubs": 14,
+          "scored_fixtures": 15,
+          "scored_points": 95,
+          "worst_absolute_error": 1540.999601227064
+        },
+        "bootstrap_replicates": 10000,
+        "bootstrap_seed": 42,
+        "candidate": {
+          "event_balanced_bias": 2.164317642340658,
+          "event_balanced_mae": 125.69638178299948,
+          "p90_pooled_absolute_error_nearest_rank": 386.55403426085763,
+          "scored_clubs": 14,
+          "scored_fixtures": 15,
+          "scored_points": 95,
+          "worst_absolute_error": 1288.457014290188
+        },
+        "event_balanced_mae_difference_candidate_minus_baseline": -52.93070459466311,
+        "fixture_bootstrap_95_percentile_interval": [
+          -88.04574029944584,
+          -26.34152468623736
+        ],
+        "scope": "descriptive_exposed_retrospective_not_formal_review"
+      },
+      "+24h/candidate-vs-persistence": {
+        "baseline": {
+          "event_balanced_bias": 149.0312494912495,
+          "event_balanced_mae": 334.69718355718356,
+          "p90_pooled_absolute_error_nearest_rank": 748.0,
+          "scored_clubs": 14,
+          "scored_fixtures": 15,
+          "scored_points": 111,
+          "worst_absolute_error": 9450.0
+        },
+        "bootstrap_replicates": 10000,
+        "bootstrap_seed": 42,
+        "candidate": {
+          "event_balanced_bias": -58.63350632258387,
+          "event_balanced_mae": 213.91048622209348,
+          "p90_pooled_absolute_error_nearest_rank": 411.2777863286128,
+          "scored_clubs": 14,
+          "scored_fixtures": 15,
+          "scored_points": 111,
+          "worst_absolute_error": 9450.0
+        },
+        "event_balanced_mae_difference_candidate_minus_baseline": -120.78669733509007,
+        "fixture_bootstrap_95_percentile_interval": [
+          -193.90224205002912,
+          -52.79898942004392
+        ],
+        "scope": "descriptive_exposed_retrospective_not_formal_review"
+      },
+      "+24h/candidate-vs-pickup": {
+        "baseline": {
+          "event_balanced_bias": 50.63790504367427,
+          "event_balanced_mae": 215.5619681600451,
+          "p90_pooled_absolute_error_nearest_rank": 580.0,
+          "scored_clubs": 12,
+          "scored_fixtures": 13,
+          "scored_points": 93,
+          "worst_absolute_error": 966.0
+        },
+        "bootstrap_replicates": 10000,
+        "bootstrap_seed": 42,
+        "candidate": {
+          "event_balanced_bias": 8.43601117482427,
+          "event_balanced_mae": 153.0367472447728,
+          "p90_pooled_absolute_error_nearest_rank": 439.4934741051511,
+          "scored_clubs": 12,
+          "scored_fixtures": 13,
+          "scored_points": 93,
+          "worst_absolute_error": 1288.457014290188
+        },
+        "event_balanced_mae_difference_candidate_minus_baseline": -62.525220915272286,
+        "fixture_bootstrap_95_percentile_interval": [
+          -111.5771332186131,
+          -17.16898539193635
+        ],
+        "scope": "descriptive_exposed_retrospective_not_formal_review"
+      },
+      "+48h/candidate-vs-drift": {
+        "baseline": {
+          "event_balanced_bias": -36.14081357216777,
+          "event_balanced_mae": 333.25365767865725,
+          "p90_pooled_absolute_error_nearest_rank": 982.9851866860299,
+          "scored_clubs": 14,
+          "scored_fixtures": 14,
+          "scored_points": 80,
+          "worst_absolute_error": 2249.7608077141767
+        },
+        "bootstrap_replicates": 10000,
+        "bootstrap_seed": 42,
+        "candidate": {
+          "event_balanced_bias": 53.019297079830245,
+          "event_balanced_mae": 229.91018279265222,
+          "p90_pooled_absolute_error_nearest_rank": 818.7392437248163,
+          "scored_clubs": 14,
+          "scored_fixtures": 14,
+          "scored_points": 80,
+          "worst_absolute_error": 1061.2247198588425
+        },
+        "event_balanced_mae_difference_candidate_minus_baseline": -103.343474886005,
+        "fixture_bootstrap_95_percentile_interval": [
+          -208.2037996723876,
+          -25.255788460336998
+        ],
+        "scope": "descriptive_exposed_retrospective_not_formal_review"
+      },
+      "+48h/candidate-vs-persistence": {
+        "baseline": {
+          "event_balanced_bias": 335.4227040816327,
+          "event_balanced_mae": 551.0142006802721,
+          "p90_pooled_absolute_error_nearest_rank": 1392.0,
+          "scored_clubs": 14,
+          "scored_fixtures": 14,
+          "scored_points": 96,
+          "worst_absolute_error": 9221.0
+        },
+        "bootstrap_replicates": 10000,
+        "bootstrap_seed": 42,
+        "candidate": {
+          "event_balanced_bias": -11.368247958242364,
+          "event_balanced_mae": 347.350952458736,
+          "p90_pooled_absolute_error_nearest_rank": 824.7481858784558,
+          "scored_clubs": 14,
+          "scored_fixtures": 14,
+          "scored_points": 96,
+          "worst_absolute_error": 9221.0
+        },
+        "event_balanced_mae_difference_candidate_minus_baseline": -203.66324822153612,
+        "fixture_bootstrap_95_percentile_interval": [
+          -328.1340262610483,
+          -89.54576841176777
+        ],
+        "scope": "descriptive_exposed_retrospective_not_formal_review"
+      },
+      "+48h/candidate-vs-pickup": {
+        "baseline": {
+          "event_balanced_bias": 178.9843253968254,
+          "event_balanced_mae": 372.4498015873016,
+          "p90_pooled_absolute_error_nearest_rank": 1000.0,
+          "scored_clubs": 12,
+          "scored_fixtures": 12,
+          "scored_points": 80,
+          "worst_absolute_error": 1569.0
+        },
+        "bootstrap_replicates": 10000,
+        "bootstrap_seed": 42,
+        "candidate": {
+          "event_balanced_bias": 66.07535793421563,
+          "event_balanced_mae": 283.5356800856908,
+          "p90_pooled_absolute_error_nearest_rank": 824.7481858784558,
+          "scored_clubs": 12,
+          "scored_fixtures": 12,
+          "scored_points": 80,
+          "worst_absolute_error": 1063.2156162545607
+        },
+        "event_balanced_mae_difference_candidate_minus_baseline": -88.91412150161078,
+        "fixture_bootstrap_95_percentile_interval": [
+          -170.7078317644479,
+          -10.245143015908965
+        ],
+        "scope": "descriptive_exposed_retrospective_not_formal_review"
+      },
+      "+72h/candidate-vs-drift": {
+        "baseline": {
+          "event_balanced_bias": -98.01183617286111,
+          "event_balanced_mae": 503.06880458449274,
+          "p90_pooled_absolute_error_nearest_rank": 1358.9971483372278,
+          "scored_clubs": 14,
+          "scored_fixtures": 14,
+          "scored_points": 66,
+          "worst_absolute_error": 3247.6412115712656
+        },
+        "bootstrap_replicates": 10000,
+        "bootstrap_seed": 42,
+        "candidate": {
+          "event_balanced_bias": 170.55796709553738,
+          "event_balanced_mae": 321.68093771560495,
+          "p90_pooled_absolute_error_nearest_rank": 1055.0191861789917,
+          "scored_clubs": 14,
+          "scored_fixtures": 14,
+          "scored_points": 66,
+          "worst_absolute_error": 1705.3305975368748
+        },
+        "event_balanced_mae_difference_candidate_minus_baseline": -181.3878668688878,
+        "fixture_bootstrap_95_percentile_interval": [
+          -464.0945182366153,
+          10.652746998376937
+        ],
+        "scope": "descriptive_exposed_retrospective_not_formal_review"
+      },
+      "+72h/candidate-vs-persistence": {
+        "baseline": {
+          "event_balanced_bias": 545.8237012987013,
+          "event_balanced_mae": 780.1029839208411,
+          "p90_pooled_absolute_error_nearest_rank": 1959.0,
+          "scored_clubs": 14,
+          "scored_fixtures": 14,
+          "scored_points": 82,
+          "worst_absolute_error": 8671.0
+        },
+        "bootstrap_replicates": 10000,
+        "bootstrap_seed": 42,
+        "candidate": {
+          "event_balanced_bias": 96.41460848317635,
+          "event_balanced_mae": 452.95666468554447,
+          "p90_pooled_absolute_error_nearest_rank": 1055.0191861789917,
+          "scored_clubs": 14,
+          "scored_fixtures": 14,
+          "scored_points": 82,
+          "worst_absolute_error": 8671.0
+        },
+        "event_balanced_mae_difference_candidate_minus_baseline": -327.1463192352967,
+        "fixture_bootstrap_95_percentile_interval": [
+          -505.9917778897073,
+          -157.1697928816617
+        ],
+        "scope": "descriptive_exposed_retrospective_not_formal_review"
+      },
+      "+72h/candidate-vs-pickup": {
+        "baseline": {
+          "event_balanced_bias": 269.33560606060604,
+          "event_balanced_mae": 488.6171717171717,
+          "p90_pooled_absolute_error_nearest_rank": 1473.0,
+          "scored_clubs": 12,
+          "scored_fixtures": 12,
+          "scored_points": 68,
+          "worst_absolute_error": 2011.0
+        },
+        "bootstrap_replicates": 10000,
+        "bootstrap_seed": 42,
+        "candidate": {
+          "event_balanced_bias": 184.17882557328696,
+          "event_balanced_mae": 391.40937659249215,
+          "p90_pooled_absolute_error_nearest_rank": 1069.9239868531304,
+          "scored_clubs": 12,
+          "scored_fixtures": 12,
+          "scored_points": 68,
+          "worst_absolute_error": 1705.3305975368748
+        },
+        "event_balanced_mae_difference_candidate_minus_baseline": -97.20779512467959,
+        "fixture_bootstrap_95_percentile_interval": [
+          -184.92934732769885,
+          -12.12446295178438
+        ],
+        "scope": "descriptive_exposed_retrospective_not_formal_review"
+      }
+    },
+    "precommit_sha256": "4acdfd98b79b781b8704fcfa56097bc0bf0e114e81357085af5075514c1bfdb4",
+    "prediction_sealed_at": "2026-11-10T10:41:48.150304+00:00",
+    "production_change": false,
+    "result_sha256": "e53f5edee579784ae4894f1ff556f7ff8827e76835e3352e68647d9835086ca2",
+    "scored_at": "2026-11-10T10:41:48.313138+00:00",
+    "seal_sha256": "7104068f669f8eae8dc0e4769ae9dac1609cb1e9a82a463ef1db2f5d7d67d328",
+    "servable": false,
+    "strata": {
+      "+24h/candidate": {
+        "club_slug": {
+          "cracovia": {
+            "event_balanced_bias": 195.9913061920044,
+            "event_balanced_mae": 372.9195905981716,
+            "p90_pooled_absolute_error_nearest_rank": 740.5335050839458,
+            "scored_clubs": 1,
+            "scored_fixtures": 1,
+            "scored_points": 5,
+            "worst_absolute_error": 740.5335050839458
+          },
+          "gkskatowice": {
+            "event_balanced_bias": -84.30121459174177,
+            "event_balanced_mae": 102.27968635104537,
+            "p90_pooled_absolute_error_nearest_rank": 257.8146926544832,
+            "scored_clubs": 1,
+            "scored_fixtures": 1,
+            "scored_points": 6,
+            "worst_absolute_error": 257.8146926544832
+          },
+          "gornikzabrze": {
+            "event_balanced_bias": -13.575731872633893,
+            "event_balanced_mae": 134.59284619328136,
+            "p90_pooled_absolute_error_nearest_rank": 140.98820890773686,
+            "scored_clubs": 1,
+            "scored_fixtures": 1,
+            "scored_points": 13,
+            "worst_absolute_error": 594.8247057774765
+          },
+          "jagiellonia": {
+            "event_balanced_bias": 26.67871866469426,
+            "event_balanced_mae": 32.5380556426777,
+            "p90_pooled_absolute_error_nearest_rank": 60.64503579866732,
+            "scored_clubs": 1,
+            "scored_fixtures": 1,
+            "scored_points": 7,
+            "worst_absolute_error": 60.64503579866732
+          },
+          "lech": {
+            "event_balanced_bias": -14.587757072425084,
+            "event_balanced_mae": 199.86976307279681,
+            "p90_pooled_absolute_error_nearest_rank": 456.10569044334443,
+            "scored_clubs": 1,
+            "scored_fixtures": 1,
+            "scored_points": 13,
+            "worst_absolute_error": 1057.6923648446214
+          },
+          "legia": {
+            "event_balanced_bias": -48.186949901024896,
+            "event_balanced_mae": 48.186949901024896,
+            "p90_pooled_absolute_error_nearest_rank": 260.85762089407683,
+            "scored_clubs": 1,
+            "scored_fixtures": 1,
+            "scored_points": 7,
+            "worst_absolute_error": 260.85762089407683
+          },
+          "motorlublin": {
+            "event_balanced_bias": -1024.0972769119544,
+            "event_balanced_mae": 1183.5863756822082,
+            "p90_pooled_absolute_error_nearest_rank": 9450.0,
+            "scored_clubs": 1,
+            "scored_fixtures": 1,
+            "scored_points": 9,
+            "worst_absolute_error": 9450.0
+          },
+          "pogonszczecin": {
+            "event_balanced_bias": 25.79972044684511,
+            "event_balanced_mae": 455.2853918769078,
+            "p90_pooled_absolute_error_nearest_rank": 1288.457014290188,
+            "scored_clubs": 1,
+            "scored_fixtures": 1,
+            "scored_points": 6,
+            "worst_absolute_error": 1288.457014290188
+          },
+          "rakow": {
+            "event_balanced_bias": -74.75043414717913,
+            "event_balanced_mae": 76.16254867653971,
+            "p90_pooled_absolute_error_nearest_rank": 386.55403426085763,
+            "scored_clubs": 1,
+            "scored_fixtures": 1,
+            "scored_points": 8,
+            "worst_absolute_error": 386.55403426085763
+          },
+          "slaskwroclaw": {
+            "event_balanced_bias": 237.6823064617477,
+            "event_balanced_mae": 297.75858126284635,
+            "p90_pooled_absolute_error_nearest_rank": 513.5324695875443,
+            "scored_clubs": 1,
+            "scored_fixtures": 1,
+            "scored_points": 7,
+            "worst_absolute_error": 513.5324695875443
+          },
+          "widzewlodz": {
+            "event_balanced_bias": 34.92653680048086,
+            "event_balanced_mae": 35.593203467147525,
+            "p90_pooled_absolute_error_nearest_rank": 317.33883120432773,
+            "scored_clubs": 1,
+            "scored_fixtures": 1,
+            "scored_points": 9,
+            "worst_absolute_error": 317.33883120432773
+          },
+          "wisla_plock": {
+            "event_balanced_bias": -37.21506220138175,
+            "event_balanced_mae": 89.87305882175315,
+            "p90_pooled_absolute_error_nearest_rank": 315.9479797222284,
+            "scored_clubs": 1,
+            "scored_fixtures": 2,
+            "scored_points": 7,
+            "worst_absolute_error": 315.9479797222284
+          },
+          "wislakrakow": {
+            "event_balanced_bias": -10.333333333333334,
+            "event_balanced_mae": 10.333333333333334,
+            "p90_pooled_absolute_error_nearest_rank": 51.0,
+            "scored_clubs": 1,
+            "scored_fixtures": 1,
+            "scored_points": 6,
+            "worst_absolute_error": 51.0
+          },
+          "zaglebie_lubin": {
+            "event_balanced_bias": -56.31836117147435,
+            "event_balanced_mae": 79.80484962991517,
+            "p90_pooled_absolute_error_nearest_rank": 157.05484800651993,
+            "scored_clubs": 1,
+            "scored_fixtures": 1,
+            "scored_points": 8,
+            "worst_absolute_error": 157.05484800651993
+          }
+        },
+        "history_bin": {
+          "24_to72h": {
+            "event_balanced_bias": -36.54429564444148,
+            "event_balanced_mae": 71.60355222680154,
+            "p90_pooled_absolute_error_nearest_rank": 219.75833845646048,
+            "scored_clubs": 8,
+            "scored_fixtures": 8,
+            "scored_points": 16,
+            "worst_absolute_error": 349.47406912422593
+          },
+          "72hplus": {
+            "event_balanced_bias": 3.768034183090136,
+            "event_balanced_mae": 139.07370610781086,
+            "p90_pooled_absolute_error_nearest_rank": 439.4934741051511,
+            "scored_clubs": 14,
+            "scored_fixtures": 15,
+            "scored_points": 79,
+            "worst_absolute_error": 1288.457014290188
+          },
+          "first_point": {
+            "event_balanced_bias": -1174.901206046799,
+            "event_balanced_mae": 1345.3371402696725,
+            "p90_pooled_absolute_error_nearest_rank": 9450.0,
+            "scored_clubs": 8,
+            "scored_fixtures": 8,
+            "scored_points": 8,
+            "worst_absolute_error": 9450.0
+          },
+          "under24h": {
+            "event_balanced_bias": -18.205821934250796,
+            "event_balanced_mae": 203.33919820523724,
+            "p90_pooled_absolute_error_nearest_rank": 740.5335050839458,
+            "scored_clubs": 8,
+            "scored_fixtures": 8,
+            "scored_points": 8,
+            "worst_absolute_error": 740.5335050839458
+          }
+        },
+        "maturity_bin_days": {
+          "0": {
+            "event_balanced_bias": -70.16197319179405,
+            "event_balanced_mae": 225.05171203289123,
+            "p90_pooled_absolute_error_nearest_rank": 594.8247057774765,
+            "scored_clubs": 14,
+            "scored_fixtures": 15,
+            "scored_points": 29,
+            "worst_absolute_error": 1288.457014290188
+          },
+          "3": {
+            "event_balanced_bias": 67.79353334725965,
+            "event_balanced_mae": 139.16460482784757,
+            "p90_pooled_absolute_error_nearest_rank": 456.10569044334443,
+            "scored_clubs": 14,
+            "scored_fixtures": 14,
+            "scored_points": 55,
+            "worst_absolute_error": 740.5335050839458
+          },
+          "7": {
+            "event_balanced_bias": -375.72214757990906,
+            "event_balanced_mae": 406.07452010973634,
+            "p90_pooled_absolute_error_nearest_rank": 157.05484800651993,
+            "scored_clubs": 9,
+            "scored_fixtures": 9,
+            "scored_points": 27,
+            "worst_absolute_error": 9450.0
+          }
+        }
+      },
+      "+24h/drift": {
+        "club_slug": {
+          "cracovia": {
+            "event_balanced_bias": -106.98805909212408,
+            "event_balanced_mae": 114.78637561338218,
+            "p90_pooled_absolute_error_nearest_rank": 445.99155463779607,
+            "scored_clubs": 1,
+            "scored_fixtures": 2,
+            "scored_points": 8,
+            "worst_absolute_error": 445.99155463779607
+          },
+          "gkskatowice": {
+            "event_balanced_bias": -49.42631924669601,
+            "event_balanced_mae": 138.2145335020006,
+            "p90_pooled_absolute_error_nearest_rank": 267.2204465245872,
+            "scored_clubs": 1,
+            "scored_fixtures": 2,
+            "scored_points": 9,
+            "worst_absolute_error": 267.2204465245872
+          },
+          "gornikzabrze": {
+            "event_balanced_bias": 17.707757077971003,
+            "event_balanced_mae": 95.69743378329353,
+            "p90_pooled_absolute_error_nearest_rank": 611.8041368505424,
+            "scored_clubs": 1,
+            "scored_fixtures": 2,
+            "scored_points": 13,
+            "worst_absolute_error": 810.9005628988091
+          },
+          "jagiellonia": {
+            "event_balanced_bias": 4.453594980530864,
+            "event_balanced_mae": 14.158047103533615,
+            "p90_pooled_absolute_error_nearest_rank": 29.463720607057894,
+            "scored_clubs": 1,
+            "scored_fixtures": 1,
+            "scored_points": 9,
+            "worst_absolute_error": 29.463720607057894
+          },
+          "lech": {
+            "event_balanced_bias": 28.71310462069875,
+            "event_balanced_mae": 308.6711824550674,
+            "p90_pooled_absolute_error_nearest_rank": 813.136232460618,
+            "scored_clubs": 1,
+            "scored_fixtures": 5,
+            "scored_points": 81,
+            "worst_absolute_error": 2193.004249754562
+          },
+          "legia": {
+            "event_balanced_bias": 6.021624048178704,
+            "event_balanced_mae": 107.99872784249871,
+            "p90_pooled_absolute_error_nearest_rank": 264.09267576020164,
+            "scored_clubs": 1,
+            "scored_fixtures": 1,
+            "scored_points": 9,
+            "worst_absolute_error": 264.09267576020164
+          },
+          "motorlublin": {
+            "event_balanced_bias": 84.68687156358075,
+            "event_balanced_mae": 193.6440466430657,
+            "p90_pooled_absolute_error_nearest_rank": 350.00015624995467,
+            "scored_clubs": 1,
+            "scored_fixtures": 1,
+            "scored_points": 7,
+            "worst_absolute_error": 350.00015624995467
+          },
+          "pogonszczecin": {
+            "event_balanced_bias": 56.83330133664161,
+            "event_balanced_mae": 626.526004060124,
+            "p90_pooled_absolute_error_nearest_rank": 1540.999601227064,
+            "scored_clubs": 1,
+            "scored_fixtures": 1,
+            "scored_points": 13,
+            "worst_absolute_error": 1551.0005094421267
+          },
+          "rakow": {
+            "event_balanced_bias": 11.187598928193887,
+            "event_balanced_mae": 143.16390509050893,
+            "p90_pooled_absolute_error_nearest_rank": 405.9927688998017,
+            "scored_clubs": 1,
+            "scored_fixtures": 1,
+            "scored_points": 6,
+            "worst_absolute_error": 405.9927688998017
+          },
+          "slaskwroclaw": {
+            "event_balanced_bias": 55.00630667936922,
+            "event_balanced_mae": 319.9489770647593,
+            "p90_pooled_absolute_error_nearest_rank": 683.992593343015,
+            "scored_clubs": 1,
+            "scored_fixtures": 1,
+            "scored_points": 9,
+            "worst_absolute_error": 683.992593343015
+          },
+          "widzewlodz": {
+            "event_balanced_bias": 99.79640811414275,
+            "event_balanced_mae": 100.65355097128561,
+            "p90_pooled_absolute_error_nearest_rank": 701.5748567989992,
+            "scored_clubs": 1,
+            "scored_fixtures": 1,
+            "scored_points": 7,
+            "worst_absolute_error": 701.5748567989992
+          },
+          "wisla_plock": {
+            "event_balanced_bias": 62.7060405038104,
+            "event_balanced_mae": 77.7471850308043,
+            "p90_pooled_absolute_error_nearest_rank": 140.9373169499222,
+            "scored_clubs": 1,
+            "scored_fixtures": 2,
+            "scored_points": 11,
+            "worst_absolute_error": 294.00367315379026
+          },
+          "wislakrakow": {
+            "event_balanced_bias": -7.503434152507631,
+            "event_balanced_mae": 8.170098110848299,
+            "p90_pooled_absolute_error_nearest_rank": 44.02059679006779,
+            "scored_clubs": 1,
+            "scored_fixtures": 1,
+            "scored_points": 6,
+            "worst_absolute_error": 44.02059679006779
+          },
+          "zaglebie_lubin": {
+            "event_balanced_bias": 59.900411165491164,
+            "event_balanced_mae": 332.41890551027035,
+            "p90_pooled_absolute_error_nearest_rank": 1425.9976441285794,
+            "scored_clubs": 1,
+            "scored_fixtures": 2,
+            "scored_points": 12,
+            "worst_absolute_error": 1559.980687057894
+          }
+        },
+        "history_bin": {
+          "24_to72h": {
+            "event_balanced_bias": 28.908095297261195,
+            "event_balanced_mae": 131.20245110612825,
+            "p90_pooled_absolute_error_nearest_rank": 251.77300680328085,
+            "scored_clubs": 13,
+            "scored_fixtures": 22,
+            "scored_points": 44,
+            "worst_absolute_error": 1551.0005094421267
+          },
+          "72hplus": {
+            "event_balanced_bias": 24.58092890866012,
+            "event_balanced_mae": 227.57356072253836,
+            "p90_pooled_absolute_error_nearest_rank": 810.9005628988091,
+            "scored_clubs": 14,
+            "scored_fixtures": 22,
+            "scored_points": 156,
+            "worst_absolute_error": 2193.004249754562
+          }
+        },
+        "maturity_bin_days": {
+          "0": {
+            "event_balanced_bias": 60.66380173182941,
+            "event_balanced_mae": 492.6317409063916,
+            "p90_pooled_absolute_error_nearest_rank": 1516.1154977493761,
+            "scored_clubs": 14,
+            "scored_fixtures": 23,
+            "scored_points": 46,
+            "worst_absolute_error": 2193.004249754562
+          },
+          "15": {
+            "event_balanced_bias": -8.461791322500128,
+            "event_balanced_mae": 65.93093544712849,
+            "p90_pooled_absolute_error_nearest_rank": 166.23029318140834,
+            "scored_clubs": 1,
+            "scored_fixtures": 3,
+            "scored_points": 21,
+            "worst_absolute_error": 169.62828574566993
+          },
+          "3": {
+            "event_balanced_bias": 12.786980050495385,
+            "event_balanced_mae": 166.26051178373626,
+            "p90_pooled_absolute_error_nearest_rank": 445.99155463779607,
+            "scored_clubs": 14,
+            "scored_fixtures": 22,
+            "scored_points": 78,
+            "worst_absolute_error": 1559.980687057894
+          },
+          "7": {
+            "event_balanced_bias": 15.919634121323913,
+            "event_balanced_mae": 129.6414382681667,
+            "p90_pooled_absolute_error_nearest_rank": 307.93933096620685,
+            "scored_clubs": 9,
+            "scored_fixtures": 13,
+            "scored_points": 55,
+            "worst_absolute_error": 1551.0005094421267
+          }
+        }
+      },
+      "+24h/persistence": {
+        "club_slug": {
+          "cracovia": {
+            "event_balanced_bias": 548.0571428571428,
+            "event_balanced_mae": 548.1523809523809,
+            "p90_pooled_absolute_error_nearest_rank": 919.0,
+            "scored_clubs": 1,
+            "scored_fixtures": 3,
+            "scored_points": 13,
+            "worst_absolute_error": 1078.0
+          },
+          "gkskatowice": {
+            "event_balanced_bias": 167.43650793650795,
+            "event_balanced_mae": 181.32539682539684,
+            "p90_pooled_absolute_error_nearest_rank": 492.0,
+            "scored_clubs": 1,
+            "scored_fixtures": 3,
+            "scored_points": 15,
+            "worst_absolute_error": 518.0
+          },
+          "gornikzabrze": {
+            "event_balanced_bias": 42.44230769230769,
+            "event_balanced_mae": 88.0576923076923,
+            "p90_pooled_absolute_error_nearest_rank": 270.0,
+            "scored_clubs": 1,
+            "scored_fixtures": 2,
+            "scored_points": 17,
+            "worst_absolute_error": 593.0
+          },
+          "jagiellonia": {
+            "event_balanced_bias": -137.63636363636363,
+            "event_balanced_mae": 169.36363636363637,
+            "p90_pooled_absolute_error_nearest_rank": 74.0,
+            "scored_clubs": 1,
+            "scored_fixtures": 2,
+            "scored_points": 12,
+            "worst_absolute_error": 307.0
+          },
+          "lech": {
+            "event_balanced_bias": 478.60102495543674,
+            "event_balanced_mae": 574.9022515066632,
+            "p90_pooled_absolute_error_nearest_rank": 846.0,
+            "scored_clubs": 1,
+            "scored_fixtures": 6,
+            "scored_points": 97,
+            "worst_absolute_error": 1843.0
+          },
+          "legia": {
+            "event_balanced_bias": 18.68181818181818,
+            "event_balanced_mae": 41.31818181818181,
+            "p90_pooled_absolute_error_nearest_rank": 249.0,
+            "scored_clubs": 1,
+            "scored_fixtures": 2,
+            "scored_points": 12,
+            "worst_absolute_error": 273.0
+          },
+          "motorlublin": {
+            "event_balanced_bias": -618.2222222222222,
+            "event_balanced_mae": 1481.7777777777778,
+            "p90_pooled_absolute_error_nearest_rank": 9450.0,
+            "scored_clubs": 1,
+            "scored_fixtures": 1,
+            "scored_points": 9,
+            "worst_absolute_error": 9450.0
+          },
+          "pogonszczecin": {
+            "event_balanced_bias": 174.65,
+            "event_balanced_mae": 625.2166666666667,
+            "p90_pooled_absolute_error_nearest_rank": 850.0,
+            "scored_clubs": 1,
+            "scored_fixtures": 2,
+            "scored_points": 17,
+            "worst_absolute_error": 1663.0
+          },
+          "rakow": {
+            "event_balanced_bias": -57.125,
+            "event_balanced_mae": 72.875,
+            "p90_pooled_absolute_error_nearest_rank": 389.0,
+            "scored_clubs": 1,
+            "scored_fixtures": 1,
+            "scored_points": 8,
+            "worst_absolute_error": 389.0
+          },
+          "slaskwroclaw": {
+            "event_balanced_bias": 513.8181818181819,
+            "event_balanced_mae": 513.8181818181819,
+            "p90_pooled_absolute_error_nearest_rank": 935.0,
+            "scored_clubs": 1,
+            "scored_fixtures": 1,
+            "scored_points": 11,
+            "worst_absolute_error": 980.0
+          },
+          "widzewlodz": {
+            "event_balanced_bias": 38.77777777777778,
+            "event_balanced_mae": 39.44444444444444,
+            "p90_pooled_absolute_error_nearest_rank": 352.0,
+            "scored_clubs": 1,
+            "scored_fixtures": 1,
+            "scored_points": 9,
+            "worst_absolute_error": 352.0
+          },
+          "wisla_plock": {
+            "event_balanced_bias": 146.52777777777777,
+            "event_balanced_mae": 146.52777777777777,
+            "p90_pooled_absolute_error_nearest_rank": 231.0,
+            "scored_clubs": 1,
+            "scored_fixtures": 2,
+            "scored_points": 15,
+            "worst_absolute_error": 473.0
+          },
+          "wislakrakow": {
+            "event_balanced_bias": 1588.9,
+            "event_balanced_mae": 1598.7,
+            "p90_pooled_absolute_error_nearest_rank": 7788.0,
+            "scored_clubs": 1,
+            "scored_fixtures": 1,
+            "scored_points": 10,
+            "worst_absolute_error": 7892.0
+          },
+          "zaglebie_lubin": {
+            "event_balanced_bias": 106.25,
+            "event_balanced_mae": 262.375,
+            "p90_pooled_absolute_error_nearest_rank": 677.0,
+            "scored_clubs": 1,
+            "scored_fixtures": 2,
+            "scored_points": 16,
+            "worst_absolute_error": 1249.0
+          }
+        },
+        "history_bin": {
+          "24_to72h": {
+            "event_balanced_bias": 228.88636363636363,
+            "event_balanced_mae": 228.88636363636363,
+            "p90_pooled_absolute_error_nearest_rank": 502.0,
+            "scored_clubs": 13,
+            "scored_fixtures": 22,
+            "scored_points": 44,
+            "worst_absolute_error": 1663.0
+          },
+          "72hplus": {
+            "event_balanced_bias": 193.78570217661127,
+            "event_balanced_mae": 293.1976876658695,
+            "p90_pooled_absolute_error_nearest_rank": 776.0,
+            "scored_clubs": 14,
+            "scored_fixtures": 22,
+            "scored_points": 162,
+            "worst_absolute_error": 1843.0
+          },
+          "first_point": {
+            "event_balanced_bias": 213.06896551724137,
+            "event_balanced_mae": 941.2068965517242,
+            "p90_pooled_absolute_error_nearest_rank": 1731.0,
+            "scored_clubs": 14,
+            "scored_fixtures": 29,
+            "scored_points": 29,
+            "worst_absolute_error": 9450.0
+          },
+          "under24h": {
+            "event_balanced_bias": 537.6153846153846,
+            "event_balanced_mae": 540.8461538461538,
+            "p90_pooled_absolute_error_nearest_rank": 919.0,
+            "scored_clubs": 14,
+            "scored_fixtures": 26,
+            "scored_points": 26,
+            "worst_absolute_error": 7788.0
+          }
+        },
+        "maturity_bin_days": {
+          "0": {
+            "event_balanced_bias": 153.94827586206895,
+            "event_balanced_mae": 416.1551724137931,
+            "p90_pooled_absolute_error_nearest_rank": 971.0,
+            "scored_clubs": 14,
+            "scored_fixtures": 29,
+            "scored_points": 55,
+            "worst_absolute_error": 1843.0
+          },
+          "15": {
+            "event_balanced_bias": 300.6766666666666,
+            "event_balanced_mae": 300.6766666666666,
+            "p90_pooled_absolute_error_nearest_rank": 523.0,
+            "scored_clubs": 2,
+            "scored_fixtures": 5,
+            "scored_points": 31,
+            "worst_absolute_error": 1324.0
+          },
+          "3": {
+            "event_balanced_bias": 258.6630434782609,
+            "event_balanced_mae": 295.3804347826087,
+            "p90_pooled_absolute_error_nearest_rank": 819.0,
+            "scored_clubs": 14,
+            "scored_fixtures": 23,
+            "scored_points": 89,
+            "worst_absolute_error": 1249.0
+          },
+          "30": {
+            "event_balanced_bias": 1731.0,
+            "event_balanced_mae": 1731.0,
+            "p90_pooled_absolute_error_nearest_rank": 1731.0,
+            "scored_clubs": 1,
+            "scored_fixtures": 1,
+            "scored_points": 1,
+            "worst_absolute_error": 1731.0
+          },
+          "7": {
+            "event_balanced_bias": 212.25438596491227,
+            "event_balanced_mae": 552.4254385964913,
+            "p90_pooled_absolute_error_nearest_rank": 566.0,
+            "scored_clubs": 14,
+            "scored_fixtures": 19,
+            "scored_points": 85,
+            "worst_absolute_error": 9450.0
+          }
+        }
+      },
+      "+24h/pickup": {
+        "club_slug": {
+          "cracovia": {
+            "event_balanced_bias": 407.6,
+            "event_balanced_mae": 407.6,
+            "p90_pooled_absolute_error_nearest_rank": 715.0,
+            "scored_clubs": 1,
+            "scored_fixtures": 1,
+            "scored_points": 5,
+            "worst_absolute_error": 715.0
+          },
+          "gkskatowice": {
+            "event_balanced_bias": -73.5,
+            "event_balanced_mae": 74.83333333333333,
+            "p90_pooled_absolute_error_nearest_rank": 199.0,
+            "scored_clubs": 1,
+            "scored_fixtures": 1,
+            "scored_points": 6,
+            "worst_absolute_error": 199.0
+          },
+          "gornikzabrze": {
+            "event_balanced_bias": -73.38461538461539,
+            "event_balanced_mae": 110.46153846153847,
+            "p90_pooled_absolute_error_nearest_rank": 134.0,
+            "scored_clubs": 1,
+            "scored_fixtures": 1,
+            "scored_points": 13,
+            "worst_absolute_error": 615.0
+          },
+          "jagiellonia": {
+            "event_balanced_bias": -193.85714285714286,
+            "event_balanced_mae": 193.85714285714286,
+            "p90_pooled_absolute_error_nearest_rank": 248.0,
+            "scored_clubs": 1,
+            "scored_fixtures": 1,
+            "scored_points": 7,
+            "worst_absolute_error": 248.0
+          },
+          "lech": {
+            "event_balanced_bias": 341.0,
+            "event_balanced_mae": 437.0,
+            "p90_pooled_absolute_error_nearest_rank": 624.0,
+            "scored_clubs": 1,
+            "scored_fixtures": 1,
+            "scored_points": 13,
+            "worst_absolute_error": 762.0
+          },
+          "legia": {
+            "event_balanced_bias": -238.14285714285714,
+            "event_balanced_mae": 238.14285714285714,
+            "p90_pooled_absolute_error_nearest_rank": 449.0,
+            "scored_clubs": 1,
+            "scored_fixtures": 1,
+            "scored_points": 7,
+            "worst_absolute_error": 449.0
+          },
+          "pogonszczecin": {
+            "event_balanced_bias": 261.3333333333333,
+            "event_balanced_mae": 583.3333333333334,
+            "p90_pooled_absolute_error_nearest_rank": 966.0,
+            "scored_clubs": 1,
+            "scored_fixtures": 1,
+            "scored_points": 6,
+            "worst_absolute_error": 966.0
+          },
+          "rakow": {
+            "event_balanced_bias": -121.5,
+            "event_balanced_mae": 121.5,
+            "p90_pooled_absolute_error_nearest_rank": 491.0,
+            "scored_clubs": 1,
+            "scored_fixtures": 1,
+            "scored_points": 8,
+            "worst_absolute_error": 491.0
+          },
+          "slaskwroclaw": {
+            "event_balanced_bias": 378.2857142857143,
+            "event_balanced_mae": 390.2857142857143,
+            "p90_pooled_absolute_error_nearest_rank": 736.0,
+            "scored_clubs": 1,
+            "scored_fixtures": 1,
+            "scored_points": 7,
+            "worst_absolute_error": 736.0
+          },
+          "wisla_plock": {
+            "event_balanced_bias": 20.083333333333336,
+            "event_balanced_mae": 76.91666666666667,
+            "p90_pooled_absolute_error_nearest_rank": 399.0,
+            "scored_clubs": 1,
+            "scored_fixtures": 2,
+            "scored_points": 7,
+            "worst_absolute_error": 399.0
+          },
+          "wislakrakow": {
+            "event_balanced_bias": -10.333333333333334,
+            "event_balanced_mae": 10.333333333333334,
+            "p90_pooled_absolute_error_nearest_rank": 51.0,
+            "scored_clubs": 1,
+            "scored_fixtures": 1,
+            "scored_points": 6,
+            "worst_absolute_error": 51.0
+          },
+          "zaglebie_lubin": {
+            "event_balanced_bias": -59.375,
+            "event_balanced_mae": 81.125,
+            "p90_pooled_absolute_error_nearest_rank": 135.0,
+            "scored_clubs": 1,
+            "scored_fixtures": 1,
+            "scored_points": 8,
+            "worst_absolute_error": 135.0
+          }
+        },
+        "history_bin": {
+          "24_to72h": {
+            "event_balanced_bias": -2.5833333333333335,
+            "event_balanced_mae": 96.75,
+            "p90_pooled_absolute_error_nearest_rank": 185.0,
+            "scored_clubs": 6,
+            "scored_fixtures": 6,
+            "scored_points": 12,
+            "worst_absolute_error": 269.0
+          },
+          "72hplus": {
+            "event_balanced_bias": 48.507020757020754,
+            "event_balanced_mae": 212.60958485958488,
+            "p90_pooled_absolute_error_nearest_rank": 615.0,
+            "scored_clubs": 12,
+            "scored_fixtures": 13,
+            "scored_points": 69,
+            "worst_absolute_error": 966.0
+          },
+          "first_point": {
+            "event_balanced_bias": 26.333333333333332,
+            "event_balanced_mae": 196.66666666666666,
+            "p90_pooled_absolute_error_nearest_rank": 669.0,
+            "scored_clubs": 6,
+            "scored_fixtures": 6,
+            "scored_points": 6,
+            "worst_absolute_error": 669.0
+          },
+          "under24h": {
+            "event_balanced_bias": 34.166666666666664,
+            "event_balanced_mae": 204.16666666666666,
+            "p90_pooled_absolute_error_nearest_rank": 715.0,
+            "scored_clubs": 6,
+            "scored_fixtures": 6,
+            "scored_points": 6,
+            "worst_absolute_error": 715.0
+          }
+        },
+        "maturity_bin_days": {
+          "0": {
+            "event_balanced_bias": -20.346153846153847,
+            "event_balanced_mae": 255.80769230769232,
+            "p90_pooled_absolute_error_nearest_rank": 624.0,
+            "scored_clubs": 12,
+            "scored_fixtures": 13,
+            "scored_points": 25,
+            "worst_absolute_error": 966.0
+          },
+          "3": {
+            "event_balanced_bias": 92.79166666666667,
+            "event_balanced_mae": 234.875,
+            "p90_pooled_absolute_error_nearest_rank": 615.0,
+            "scored_clubs": 12,
+            "scored_fixtures": 12,
+            "scored_points": 47,
+            "worst_absolute_error": 762.0
+          },
+          "7": {
+            "event_balanced_bias": -41.826530612244895,
+            "event_balanced_mae": 156.39795918367346,
+            "p90_pooled_absolute_error_nearest_rank": 409.0,
+            "scored_clubs": 7,
+            "scored_fixtures": 7,
+            "scored_points": 21,
+            "worst_absolute_error": 439.0
+          }
+        }
+      },
+      "+48h/candidate": {
+        "club_slug": {
+          "cracovia": {
+            "event_balanced_bias": 465.92090993550096,
+            "event_balanced_mae": 561.8998222228336,
+            "p90_pooled_absolute_error_nearest_rank": 1063.2156162545607,
+            "scored_clubs": 1,
+            "scored_fixtures": 1,
+            "scored_points": 4,
+            "worst_absolute_error": 1063.2156162545607
+          },
+          "gkskatowice": {
+            "event_balanced_bias": -126.84435492094124,
+            "event_balanced_mae": 132.84771634140577,
+            "p90_pooled_absolute_error_nearest_rank": 395.5777318260323,
+            "scored_clubs": 1,
+            "scored_fixtures": 1,
+            "scored_points": 5,
+            "worst_absolute_error": 395.5777318260323
+          },
+          "gornikzabrze": {
+            "event_balanced_bias": -27.389166050156376,
+            "event_balanced_mae": 216.97508485675874,
+            "p90_pooled_absolute_error_nearest_rank": 379.54066491019034,
+            "scored_clubs": 1,
+            "scored_fixtures": 1,
+            "scored_points": 12,
+            "worst_absolute_error": 578.6881289569897
+          },
+          "jagiellonia": {
+            "event_balanced_bias": 54.350277686867905,
+            "event_balanced_mae": 61.17342249695568,
+            "p90_pooled_absolute_error_nearest_rank": 130.81268503948763,
+            "scored_clubs": 1,
+            "scored_fixtures": 1,
+            "scored_points": 6,
+            "worst_absolute_error": 130.81268503948763
+          },
+          "lech": {
+            "event_balanced_bias": 186.89163329444273,
+            "event_balanced_mae": 486.86590235057264,
+            "p90_pooled_absolute_error_nearest_rank": 996.5733354291233,
+            "scored_clubs": 1,
+            "scored_fixtures": 1,
+            "scored_points": 12,
+            "worst_absolute_error": 1061.2247198588425
+          },
+          "legia": {
+            "event_balanced_bias": -100.16549734727306,
+            "event_balanced_mae": 100.16549734727306,
+            "p90_pooled_absolute_error_nearest_rank": 261.6899716532565,
+            "scored_clubs": 1,
+            "scored_fixtures": 1,
+            "scored_points": 6,
+            "worst_absolute_error": 261.6899716532565
+          },
+          "motorlublin": {
+            "event_balanced_bias": -986.8981092466113,
+            "event_balanced_mae": 1425.3968307733835,
+            "p90_pooled_absolute_error_nearest_rank": 9221.0,
+            "scored_clubs": 1,
+            "scored_fixtures": 1,
+            "scored_points": 8,
+            "worst_absolute_error": 9221.0
+          },
+          "pogonszczecin": {
+            "event_balanced_bias": 50.79624401915282,
+            "event_balanced_mae": 782.3393155094698,
+            "p90_pooled_absolute_error_nearest_rank": 979.5728178007603,
+            "scored_clubs": 1,
+            "scored_fixtures": 1,
+            "scored_points": 5,
+            "worst_absolute_error": 979.5728178007603
+          },
+          "rakow": {
+            "event_balanced_bias": -137.99119047517252,
+            "event_balanced_mae": 138.6675425124671,
+            "p90_pooled_absolute_error_nearest_rank": 442.91922258853754,
+            "scored_clubs": 1,
+            "scored_fixtures": 1,
+            "scored_points": 7,
+            "worst_absolute_error": 442.91922258853754
+          },
+          "slaskwroclaw": {
+            "event_balanced_bias": 612.2232055712593,
+            "event_balanced_mae": 612.2232055712593,
+            "p90_pooled_absolute_error_nearest_rank": 864.5211570416395,
+            "scored_clubs": 1,
+            "scored_fixtures": 1,
+            "scored_points": 6,
+            "worst_absolute_error": 864.5211570416395
+          },
+          "widzewlodz": {
+            "event_balanced_bias": 34.8383426206307,
+            "event_balanced_mae": 35.0883426206307,
+            "p90_pooled_absolute_error_nearest_rank": 279.7067409650456,
+            "scored_clubs": 1,
+            "scored_fixtures": 1,
+            "scored_points": 8,
+            "worst_absolute_error": 279.7067409650456
+          },
+          "wisla_plock": {
+            "event_balanced_bias": -90.32291597620933,
+            "event_balanced_mae": 187.60253160825013,
+            "p90_pooled_absolute_error_nearest_rank": 292.0619223712474,
+            "scored_clubs": 1,
+            "scored_fixtures": 1,
+            "scored_points": 5,
+            "worst_absolute_error": 292.0619223712474
+          },
+          "wislakrakow": {
+            "event_balanced_bias": -12.4,
+            "event_balanced_mae": 12.4,
+            "p90_pooled_absolute_error_nearest_rank": 51.0,
+            "scored_clubs": 1,
+            "scored_fixtures": 1,
+            "scored_points": 5,
+            "worst_absolute_error": 51.0
+          },
+          "zaglebie_lubin": {
+            "event_balanced_bias": -82.16485052688371,
+            "event_balanced_mae": 109.268120211044,
+            "p90_pooled_absolute_error_nearest_rank": 242.37273683590547,
+            "scored_clubs": 1,
+            "scored_fixtures": 1,
+            "scored_points": 7,
+            "worst_absolute_error": 242.37273683590547
+          }
+        },
+        "history_bin": {
+          "24_to72h": {
+            "event_balanced_bias": -62.699985717302255,
+            "event_balanced_mae": 65.86562658116277,
+            "p90_pooled_absolute_error_nearest_rank": 188.30641268650288,
+            "scored_clubs": 8,
+            "scored_fixtures": 8,
+            "scored_points": 16,
+            "worst_absolute_error": 398.1115976852716
+          },
+          "72hplus": {
+            "event_balanced_bias": 87.86489109994974,
+            "event_balanced_mae": 273.2803476831044,
+            "p90_pooled_absolute_error_nearest_rank": 824.7481858784558,
+            "scored_clubs": 13,
+            "scored_fixtures": 13,
+            "scored_points": 64,
+            "worst_absolute_error": 1061.2247198588425
+          },
+          "first_point": {
+            "event_balanced_bias": -1134.005287505121,
+            "event_balanced_mae": 1382.9682115361754,
+            "p90_pooled_absolute_error_nearest_rank": 9221.0,
+            "scored_clubs": 8,
+            "scored_fixtures": 8,
+            "scored_points": 8,
+            "worst_absolute_error": 9221.0
+          },
+          "under24h": {
+            "event_balanced_bias": -16.286122076465595,
+            "event_balanced_mae": 282.09002614010575,
+            "p90_pooled_absolute_error_nearest_rank": 1063.2156162545607,
+            "scored_clubs": 8,
+            "scored_fixtures": 8,
+            "scored_points": 8,
+            "worst_absolute_error": 1063.2156162545607
+          }
+        },
+        "maturity_bin_days": {
+          "0": {
+            "event_balanced_bias": -63.62985247295281,
+            "event_balanced_mae": 367.78675630486356,
+            "p90_pooled_absolute_error_nearest_rank": 864.5211570416395,
+            "scored_clubs": 14,
+            "scored_fixtures": 14,
+            "scored_points": 14,
+            "worst_absolute_error": 1061.2247198588425
+          },
+          "3": {
+            "event_balanced_bias": 112.23897752932248,
+            "event_balanced_mae": 297.65305149788776,
+            "p90_pooled_absolute_error_nearest_rank": 824.7481858784558,
+            "scored_clubs": 14,
+            "scored_fixtures": 14,
+            "scored_points": 55,
+            "worst_absolute_error": 1063.2156162545607
+          },
+          "7": {
+            "event_balanced_bias": -296.7946806844873,
+            "event_balanced_mae": 482.87016658253134,
+            "p90_pooled_absolute_error_nearest_rank": 433.1018482954696,
+            "scored_clubs": 9,
+            "scored_fixtures": 9,
+            "scored_points": 27,
+            "worst_absolute_error": 9221.0
+          }
+        }
+      },
+      "+48h/drift": {
+        "club_slug": {
+          "cracovia": {
+            "event_balanced_bias": -376.6866520582596,
+            "event_balanced_mae": 379.6866520582596,
+            "p90_pooled_absolute_error_nearest_rank": 1105.983109275593,
+            "scored_clubs": 1,
+            "scored_fixtures": 2,
+            "scored_points": 6,
+            "worst_absolute_error": 1105.983109275593
+          },
+          "gkskatowice": {
+            "event_balanced_bias": -81.88224725449028,
+            "event_balanced_mae": 346.22780703470977,
+            "p90_pooled_absolute_error_nearest_rank": 607.0,
+            "scored_clubs": 1,
+            "scored_fixtures": 2,
+            "scored_points": 7,
+            "worst_absolute_error": 607.0
+          },
+          "gornikzabrze": {
+            "event_balanced_bias": -21.805857384506034,
+            "event_balanced_mae": 113.09403012961981,
+            "p90_pooled_absolute_error_nearest_rank": 399.0,
+            "scored_clubs": 1,
+            "scored_fixtures": 2,
+            "scored_points": 11,
+            "worst_absolute_error": 615.0
+          },
+          "jagiellonia": {
+            "event_balanced_bias": 18.770485714869636,
+            "event_balanced_mae": 33.60575090085649,
+            "p90_pooled_absolute_error_nearest_rank": 71.00011944414723,
+            "scored_clubs": 1,
+            "scored_fixtures": 1,
+            "scored_points": 8,
+            "worst_absolute_error": 71.00011944414723
+          },
+          "lech": {
+            "event_balanced_bias": -149.59960724048423,
+            "event_balanced_mae": 427.4260415297782,
+            "p90_pooled_absolute_error_nearest_rank": 1144.9988975825818,
+            "scored_clubs": 1,
+            "scored_fixtures": 5,
+            "scored_points": 73,
+            "worst_absolute_error": 2284.0084995091256
+          },
+          "legia": {
+            "event_balanced_bias": -56.5760728285596,
+            "event_balanced_mae": 122.87241070866042,
+            "p90_pooled_absolute_error_nearest_rank": 265.1853515204033,
+            "scored_clubs": 1,
+            "scored_fixtures": 1,
+            "scored_points": 8,
+            "worst_absolute_error": 265.1853515204033
+          },
+          "motorlublin": {
+            "event_balanced_bias": 144.26931489836974,
+            "event_balanced_mae": 321.29703192857704,
+            "p90_pooled_absolute_error_nearest_rank": 739.0022899878604,
+            "scored_clubs": 1,
+            "scored_fixtures": 1,
+            "scored_points": 6,
+            "worst_absolute_error": 739.0022899878604
+          },
+          "pogonszczecin": {
+            "event_balanced_bias": -77.27778064178727,
+            "event_balanced_mae": 1053.0409595363064,
+            "p90_pooled_absolute_error_nearest_rank": 2249.7608077141767,
+            "scored_clubs": 1,
+            "scored_fixtures": 1,
+            "scored_points": 12,
+            "worst_absolute_error": 2555.7174485478427
+          },
+          "rakow": {
+            "event_balanced_bias": 28.250157997860867,
+            "event_balanced_mae": 338.54384090114974,
+            "p90_pooled_absolute_error_nearest_rank": 819.9855377996034,
+            "scored_clubs": 1,
+            "scored_fixtures": 1,
+            "scored_points": 5,
+            "worst_absolute_error": 819.9855377996034
+          },
+          "slaskwroclaw": {
+            "event_balanced_bias": 132.88843139480764,
+            "event_balanced_mae": 603.0149658893326,
+            "p90_pooled_absolute_error_nearest_rank": 1030.0994216767886,
+            "scored_clubs": 1,
+            "scored_fixtures": 1,
+            "scored_points": 8,
+            "worst_absolute_error": 1030.0994216767886
+          },
+          "widzewlodz": {
+            "event_balanced_bias": 173.0249522663331,
+            "event_balanced_mae": 173.3582855996664,
+            "p90_pooled_absolute_error_nearest_rank": 1039.1497135979985,
+            "scored_clubs": 1,
+            "scored_fixtures": 1,
+            "scored_points": 6,
+            "worst_absolute_error": 1039.1497135979985
+          },
+          "wisla_plock": {
+            "event_balanced_bias": 109.80153070449705,
+            "event_balanced_mae": 124.73208326887547,
+            "p90_pooled_absolute_error_nearest_rank": 336.0015946215826,
+            "scored_clubs": 1,
+            "scored_fixtures": 2,
+            "scored_points": 9,
+            "worst_absolute_error": 336.0015946215826
+          },
+          "wislakrakow": {
+            "event_balanced_bias": -8.333336041659331,
+            "event_balanced_mae": 8.333336041659331,
+            "p90_pooled_absolute_error_nearest_rank": 41.00001624995599,
+            "scored_clubs": 1,
+            "scored_fixtures": 1,
+            "scored_points": 6,
+            "worst_absolute_error": 41.00001624995599
+          },
+          "zaglebie_lubin": {
+            "event_balanced_bias": 146.25921700809695,
+            "event_balanced_mae": 759.7036034355672,
+            "p90_pooled_absolute_error_nearest_rank": 1554.972640519509,
+            "scored_clubs": 1,
+            "scored_fixtures": 2,
+            "scored_points": 10,
+            "worst_absolute_error": 3310.961374115789
+          }
+        },
+        "history_bin": {
+          "24_to72h": {
+            "event_balanced_bias": 12.457290420495884,
+            "event_balanced_mae": 281.6936562363544,
+            "p90_pooled_absolute_error_nearest_rank": 566.8586459414528,
+            "scored_clubs": 14,
+            "scored_fixtures": 23,
+            "scored_points": 44,
+            "worst_absolute_error": 1722.0010188842543
+          },
+          "72hplus": {
+            "event_balanced_bias": -8.746495449618383,
+            "event_balanced_mae": 404.39213419637866,
+            "p90_pooled_absolute_error_nearest_rank": 1144.9988975825818,
+            "scored_clubs": 14,
+            "scored_fixtures": 21,
+            "scored_points": 131,
+            "worst_absolute_error": 3310.961374115789
+          }
+        },
+        "maturity_bin_days": {
+          "0": {
+            "event_balanced_bias": -219.8101238576076,
+            "event_balanced_mae": 629.6283003840241,
+            "p90_pooled_absolute_error_nearest_rank": 1312.8825477739606,
+            "scored_clubs": 14,
+            "scored_fixtures": 23,
+            "scored_points": 23,
+            "worst_absolute_error": 2284.0084995091256
+          },
+          "15": {
+            "event_balanced_bias": -5.767964417747194,
+            "event_balanced_mae": 134.00343232282566,
+            "p90_pooled_absolute_error_nearest_rank": 296.7911020967167,
+            "scored_clubs": 1,
+            "scored_fixtures": 3,
+            "scored_points": 19,
+            "worst_absolute_error": 344.2207527935807
+          },
+          "3": {
+            "event_balanced_bias": -80.64845242277542,
+            "event_balanced_mae": 426.85461660132586,
+            "p90_pooled_absolute_error_nearest_rank": 1291.9952882571588,
+            "scored_clubs": 14,
+            "scored_fixtures": 22,
+            "scored_points": 78,
+            "worst_absolute_error": 3310.961374115789
+          },
+          "7": {
+            "event_balanced_bias": 34.466835284037536,
+            "event_balanced_mae": 232.85984099991688,
+            "p90_pooled_absolute_error_nearest_rank": 650.1441742670722,
+            "scored_clubs": 10,
+            "scored_fixtures": 14,
+            "scored_points": 55,
+            "worst_absolute_error": 2555.7174485478427
+          }
+        }
+      },
+      "+48h/persistence": {
+        "club_slug": {
+          "cracovia": {
+            "event_balanced_bias": 504.9583333333333,
+            "event_balanced_mae": 505.125,
+            "p90_pooled_absolute_error_nearest_rank": 1334.0,
+            "scored_clubs": 1,
+            "scored_fixtures": 2,
+            "scored_points": 10,
+            "worst_absolute_error": 1392.0
+          },
+          "gkskatowice": {
+            "event_balanced_bias": 325.0888888888889,
+            "event_balanced_mae": 336.28888888888883,
+            "p90_pooled_absolute_error_nearest_rank": 788.0,
+            "scored_clubs": 1,
+            "scored_fixtures": 3,
+            "scored_points": 12,
+            "worst_absolute_error": 1010.0
+          },
+          "gornikzabrze": {
+            "event_balanced_bias": 77.75,
+            "event_balanced_mae": 157.0,
+            "p90_pooled_absolute_error_nearest_rank": 377.0,
+            "scored_clubs": 1,
+            "scored_fixtures": 2,
+            "scored_points": 15,
+            "worst_absolute_error": 574.0
+          },
+          "jagiellonia": {
+            "event_balanced_bias": 60.1,
+            "event_balanced_mae": 60.1,
+            "p90_pooled_absolute_error_nearest_rank": 119.0,
+            "scored_clubs": 1,
+            "scored_fixtures": 1,
+            "scored_points": 10,
+            "worst_absolute_error": 145.0
+          },
+          "lech": {
+            "event_balanced_bias": 981.3638407516117,
+            "event_balanced_mae": 1108.0842212483078,
+            "p90_pooled_absolute_error_nearest_rank": 1416.0,
+            "scored_clubs": 1,
+            "scored_fixtures": 6,
+            "scored_points": 90,
+            "worst_absolute_error": 2729.0
+          },
+          "legia": {
+            "event_balanced_bias": 34.7,
+            "event_balanced_mae": 134.3,
+            "p90_pooled_absolute_error_nearest_rank": 282.0,
+            "scored_clubs": 1,
+            "scored_fixtures": 1,
+            "scored_points": 10,
+            "worst_absolute_error": 283.0
+          },
+          "motorlublin": {
+            "event_balanced_bias": -332.5,
+            "event_balanced_mae": 1972.75,
+            "p90_pooled_absolute_error_nearest_rank": 9221.0,
+            "scored_clubs": 1,
+            "scored_fixtures": 1,
+            "scored_points": 8,
+            "worst_absolute_error": 9221.0
+          },
+          "pogonszczecin": {
+            "event_balanced_bias": 425.32142857142856,
+            "event_balanced_mae": 429.82142857142856,
+            "p90_pooled_absolute_error_nearest_rank": 1774.0,
+            "scored_clubs": 1,
+            "scored_fixtures": 2,
+            "scored_points": 15,
+            "worst_absolute_error": 1946.0
+          },
+          "rakow": {
+            "event_balanced_bias": -121.85714285714286,
+            "event_balanced_mae": 139.85714285714286,
+            "p90_pooled_absolute_error_nearest_rank": 438.0,
+            "scored_clubs": 1,
+            "scored_fixtures": 1,
+            "scored_points": 7,
+            "worst_absolute_error": 438.0
+          },
+          "slaskwroclaw": {
+            "event_balanced_bias": 981.0,
+            "event_balanced_mae": 981.0,
+            "p90_pooled_absolute_error_nearest_rank": 1518.0,
+            "scored_clubs": 1,
+            "scored_fixtures": 1,
+            "scored_points": 10,
+            "worst_absolute_error": 1616.0
+          },
+          "widzewlodz": {
+            "event_balanced_bias": 42.375,
+            "event_balanced_mae": 42.625,
+            "p90_pooled_absolute_error_nearest_rank": 340.0,
+            "scored_clubs": 1,
+            "scored_fixtures": 1,
+            "scored_points": 8,
+            "worst_absolute_error": 340.0
+          },
+          "wisla_plock": {
+            "event_balanced_bias": 279.25,
+            "event_balanced_mae": 279.25,
+            "p90_pooled_absolute_error_nearest_rank": 337.0,
+            "scored_clubs": 1,
+            "scored_fixtures": 2,
+            "scored_points": 13,
+            "worst_absolute_error": 652.0
+          },
+          "wislakrakow": {
+            "event_balanced_bias": 1023.2222222222222,
+            "event_balanced_mae": 1035.2222222222222,
+            "p90_pooled_absolute_error_nearest_rank": 8929.0,
+            "scored_clubs": 1,
+            "scored_fixtures": 1,
+            "scored_points": 9,
+            "worst_absolute_error": 8929.0
+          },
+          "zaglebie_lubin": {
+            "event_balanced_bias": 184.85714285714286,
+            "event_balanced_mae": 472.0,
+            "p90_pooled_absolute_error_nearest_rank": 1072.0,
+            "scored_clubs": 1,
+            "scored_fixtures": 2,
+            "scored_points": 14,
+            "worst_absolute_error": 1179.0
+          }
+        },
+        "history_bin": {
+          "24_to72h": {
+            "event_balanced_bias": 390.0869565217391,
+            "event_balanced_mae": 438.5217391304348,
+            "p90_pooled_absolute_error_nearest_rank": 1010.0,
+            "scored_clubs": 14,
+            "scored_fixtures": 23,
+            "scored_points": 44,
+            "worst_absolute_error": 1946.0
+          },
+          "72hplus": {
+            "event_balanced_bias": 377.0759157509157,
+            "event_balanced_mae": 514.3561878597593,
+            "p90_pooled_absolute_error_nearest_rank": 1378.0,
+            "scored_clubs": 14,
+            "scored_fixtures": 21,
+            "scored_points": 139,
+            "worst_absolute_error": 1791.0
+          },
+          "first_point": {
+            "event_balanced_bias": 488.15384615384613,
+            "event_balanced_mae": 1199.923076923077,
+            "p90_pooled_absolute_error_nearest_rank": 2729.0,
+            "scored_clubs": 14,
+            "scored_fixtures": 26,
+            "scored_points": 26,
+            "worst_absolute_error": 9221.0
+          },
+          "under24h": {
+            "event_balanced_bias": 408.40909090909093,
+            "event_balanced_mae": 411.6818181818182,
+            "p90_pooled_absolute_error_nearest_rank": 997.0,
+            "scored_clubs": 13,
+            "scored_fixtures": 22,
+            "scored_points": 22,
+            "worst_absolute_error": 1392.0
+          }
+        },
+        "maturity_bin_days": {
+          "0": {
+            "event_balanced_bias": 293.9230769230769,
+            "event_balanced_mae": 566.8461538461538,
+            "p90_pooled_absolute_error_nearest_rank": 1584.0,
+            "scored_clubs": 14,
+            "scored_fixtures": 26,
+            "scored_points": 26,
+            "worst_absolute_error": 2729.0
+          },
+          "15": {
+            "event_balanced_bias": 556.9114285714286,
+            "event_balanced_mae": 556.9114285714286,
+            "p90_pooled_absolute_error_nearest_rank": 997.0,
+            "scored_clubs": 2,
+            "scored_fixtures": 5,
+            "scored_points": 29,
+            "worst_absolute_error": 1758.0
+          },
+          "3": {
+            "event_balanced_bias": 414.3659420289855,
+            "event_balanced_mae": 548.8442028985507,
+            "p90_pooled_absolute_error_nearest_rank": 1392.0,
+            "scored_clubs": 14,
+            "scored_fixtures": 23,
+            "scored_points": 89,
+            "worst_absolute_error": 1791.0
+          },
+          "30": {
+            "event_balanced_bias": 2225.0,
+            "event_balanced_mae": 2225.0,
+            "p90_pooled_absolute_error_nearest_rank": 2225.0,
+            "scored_clubs": 1,
+            "scored_fixtures": 1,
+            "scored_points": 1,
+            "worst_absolute_error": 2225.0
+          },
+          "7": {
+            "event_balanced_bias": 328.3022556390977,
+            "event_balanced_mae": 655.4250626566417,
+            "p90_pooled_absolute_error_nearest_rank": 1141.0,
+            "scored_clubs": 14,
+            "scored_fixtures": 19,
+            "scored_points": 86,
+            "worst_absolute_error": 9221.0
+          }
+        }
+      },
+      "+48h/pickup": {
+        "club_slug": {
+          "cracovia": {
+            "event_balanced_bias": 793.25,
+            "event_balanced_mae": 793.25,
+            "p90_pooled_absolute_error_nearest_rank": 1135.0,
+            "scored_clubs": 1,
+            "scored_fixtures": 1,
+            "scored_points": 4,
+            "worst_absolute_error": 1135.0
+          },
+          "gkskatowice": {
+            "event_balanced_bias": 16.6,
+            "event_balanced_mae": 91.8,
+            "p90_pooled_absolute_error_nearest_rank": 131.0,
+            "scored_clubs": 1,
+            "scored_fixtures": 1,
+            "scored_points": 5,
+            "worst_absolute_error": 131.0
+          },
+          "gornikzabrze": {
+            "event_balanced_bias": -136.25,
+            "event_balanced_mae": 143.75,
+            "p90_pooled_absolute_error_nearest_rank": 399.0,
+            "scored_clubs": 1,
+            "scored_fixtures": 1,
+            "scored_points": 12,
+            "worst_absolute_error": 615.0
+          },
+          "jagiellonia": {
+            "event_balanced_bias": -287.3333333333333,
+            "event_balanced_mae": 320.0,
+            "p90_pooled_absolute_error_nearest_rank": 480.0,
+            "scored_clubs": 1,
+            "scored_fixtures": 1,
+            "scored_points": 6,
+            "worst_absolute_error": 480.0
+          },
+          "lech": {
+            "event_balanced_bias": 725.9166666666666,
+            "event_balanced_mae": 814.0833333333334,
+            "p90_pooled_absolute_error_nearest_rank": 1226.0,
+            "scored_clubs": 1,
+            "scored_fixtures": 1,
+            "scored_points": 12,
+            "worst_absolute_error": 1526.0
+          },
+          "legia": {
+            "event_balanced_bias": -257.5,
+            "event_balanced_mae": 257.5,
+            "p90_pooled_absolute_error_nearest_rank": 449.0,
+            "scored_clubs": 1,
+            "scored_fixtures": 1,
+            "scored_points": 6,
+            "worst_absolute_error": 449.0
+          },
+          "pogonszczecin": {
+            "event_balanced_bias": 495.6,
+            "event_balanced_mae": 690.8,
+            "p90_pooled_absolute_error_nearest_rank": 1005.0,
+            "scored_clubs": 1,
+            "scored_fixtures": 1,
+            "scored_points": 5,
+            "worst_absolute_error": 1005.0
+          },
+          "rakow": {
+            "event_balanced_bias": -176.14285714285714,
+            "event_balanced_mae": 177.0,
+            "p90_pooled_absolute_error_nearest_rank": 491.0,
+            "scored_clubs": 1,
+            "scored_fixtures": 1,
+            "scored_points": 7,
+            "worst_absolute_error": 491.0
+          },
+          "slaskwroclaw": {
+            "event_balanced_bias": 878.5,
+            "event_balanced_mae": 878.5,
+            "p90_pooled_absolute_error_nearest_rank": 1569.0,
+            "scored_clubs": 1,
+            "scored_fixtures": 1,
+            "scored_points": 6,
+            "worst_absolute_error": 1569.0
+          },
+          "wisla_plock": {
+            "event_balanced_bias": 134.0,
+            "event_balanced_mae": 157.6,
+            "p90_pooled_absolute_error_nearest_rank": 605.0,
+            "scored_clubs": 1,
+            "scored_fixtures": 1,
+            "scored_points": 5,
+            "worst_absolute_error": 605.0
+          },
+          "wislakrakow": {
+            "event_balanced_bias": -12.4,
+            "event_balanced_mae": 12.4,
+            "p90_pooled_absolute_error_nearest_rank": 51.0,
+            "scored_clubs": 1,
+            "scored_fixtures": 1,
+            "scored_points": 5,
+            "worst_absolute_error": 51.0
+          },
+          "zaglebie_lubin": {
+            "event_balanced_bias": -26.428571428571427,
+            "event_balanced_mae": 132.71428571428572,
+            "p90_pooled_absolute_error_nearest_rank": 239.0,
+            "scored_clubs": 1,
+            "scored_fixtures": 1,
+            "scored_points": 7,
+            "worst_absolute_error": 239.0
+          }
+        },
+        "history_bin": {
+          "24_to72h": {
+            "event_balanced_bias": 78.5,
+            "event_balanced_mae": 128.0,
+            "p90_pooled_absolute_error_nearest_rank": 475.0,
+            "scored_clubs": 6,
+            "scored_fixtures": 6,
+            "scored_points": 12,
+            "worst_absolute_error": 486.0
+          },
+          "72hplus": {
+            "event_balanced_bias": 151.47272727272727,
+            "event_balanced_mae": 391.8060606060606,
+            "p90_pooled_absolute_error_nearest_rank": 1005.0,
+            "scored_clubs": 11,
+            "scored_fixtures": 11,
+            "scored_points": 56,
+            "worst_absolute_error": 1569.0
+          },
+          "first_point": {
+            "event_balanced_bias": 100.5,
+            "event_balanced_mae": 287.8333333333333,
+            "p90_pooled_absolute_error_nearest_rank": 1077.0,
+            "scored_clubs": 6,
+            "scored_fixtures": 6,
+            "scored_points": 6,
+            "worst_absolute_error": 1077.0
+          },
+          "under24h": {
+            "event_balanced_bias": 113.66666666666667,
+            "event_balanced_mae": 289.3333333333333,
+            "p90_pooled_absolute_error_nearest_rank": 1135.0,
+            "scored_clubs": 6,
+            "scored_fixtures": 6,
+            "scored_points": 6,
+            "worst_absolute_error": 1135.0
+          }
+        },
+        "maturity_bin_days": {
+          "0": {
+            "event_balanced_bias": 145.33333333333334,
+            "event_balanced_mae": 346.1666666666667,
+            "p90_pooled_absolute_error_nearest_rank": 605.0,
+            "scored_clubs": 12,
+            "scored_fixtures": 12,
+            "scored_points": 12,
+            "worst_absolute_error": 1569.0
+          },
+          "3": {
+            "event_balanced_bias": 186.76388888888889,
+            "event_balanced_mae": 406.7638888888889,
+            "p90_pooled_absolute_error_nearest_rank": 1097.0,
+            "scored_clubs": 12,
+            "scored_fixtures": 12,
+            "scored_points": 47,
+            "worst_absolute_error": 1526.0
+          },
+          "7": {
+            "event_balanced_bias": 51.122448979591844,
+            "event_balanced_mae": 309.93877551020404,
+            "p90_pooled_absolute_error_nearest_rank": 783.0,
+            "scored_clubs": 7,
+            "scored_fixtures": 7,
+            "scored_points": 21,
+            "worst_absolute_error": 840.0
+          }
+        }
+      },
+      "+72h/candidate": {
+        "club_slug": {
+          "cracovia": {
+            "event_balanced_bias": 748.3399442415539,
+            "event_balanced_mae": 748.3399442415539,
+            "p90_pooled_absolute_error_nearest_rank": 1124.7731641945966,
+            "scored_clubs": 1,
+            "scored_fixtures": 1,
+            "scored_points": 3,
+            "worst_absolute_error": 1124.7731641945966
+          },
+          "gkskatowice": {
+            "event_balanced_bias": -205.10269854408642,
+            "event_balanced_mae": 205.10269854408642,
+            "p90_pooled_absolute_error_nearest_rank": 421.70354573522366,
+            "scored_clubs": 1,
+            "scored_fixtures": 1,
+            "scored_points": 4,
+            "worst_absolute_error": 421.70354573522366
+          },
+          "gornikzabrze": {
+            "event_balanced_bias": 29.192116655635356,
+            "event_balanced_mae": 256.1924735520604,
+            "p90_pooled_absolute_error_nearest_rank": 397.62896117183095,
+            "scored_clubs": 1,
+            "scored_fixtures": 1,
+            "scored_points": 11,
+            "worst_absolute_error": 493.07438751069486
+          },
+          "jagiellonia": {
+            "event_balanced_bias": 84.91978669766164,
+            "event_balanced_mae": 84.91978669766164,
+            "p90_pooled_absolute_error_nearest_rank": 146.18935742714132,
+            "scored_clubs": 1,
+            "scored_fixtures": 1,
+            "scored_points": 5,
+            "worst_absolute_error": 146.18935742714132
+          },
+          "lech": {
+            "event_balanced_bias": 611.4303001060795,
+            "event_balanced_mae": 746.1050041782648,
+            "p90_pooled_absolute_error_nearest_rank": 1432.6647167103356,
+            "scored_clubs": 1,
+            "scored_fixtures": 1,
+            "scored_points": 11,
+            "worst_absolute_error": 1484.6922895046855
+          },
+          "legia": {
+            "event_balanced_bias": -118.32884301475079,
+            "event_balanced_mae": 118.32884301475079,
+            "p90_pooled_absolute_error_nearest_rank": 261.16710859660463,
+            "scored_clubs": 1,
+            "scored_fixtures": 1,
+            "scored_points": 5,
+            "worst_absolute_error": 261.16710859660463
+          },
+          "motorlublin": {
+            "event_balanced_bias": -859.9128166864033,
+            "event_balanced_mae": 1644.0522150591448,
+            "p90_pooled_absolute_error_nearest_rank": 8671.0,
+            "scored_clubs": 1,
+            "scored_fixtures": 1,
+            "scored_points": 7,
+            "worst_absolute_error": 8671.0
+          },
+          "pogonszczecin": {
+            "event_balanced_bias": 440.1341089632751,
+            "event_balanced_mae": 851.7101221101445,
+            "p90_pooled_absolute_error_nearest_rank": 1420.8195903391043,
+            "scored_clubs": 1,
+            "scored_fixtures": 1,
+            "scored_points": 4,
+            "worst_absolute_error": 1420.8195903391043
+          },
+          "rakow": {
+            "event_balanced_bias": -227.1897589962713,
+            "event_balanced_mae": 227.1897589962713,
+            "p90_pooled_absolute_error_nearest_rank": 439.39426582706125,
+            "scored_clubs": 1,
+            "scored_fixtures": 1,
+            "scored_points": 6,
+            "worst_absolute_error": 439.39426582706125
+          },
+          "slaskwroclaw": {
+            "event_balanced_bias": 1045.654094620367,
+            "event_balanced_mae": 1045.654094620367,
+            "p90_pooled_absolute_error_nearest_rank": 1705.3305975368748,
+            "scored_clubs": 1,
+            "scored_fixtures": 1,
+            "scored_points": 5,
+            "worst_absolute_error": 1705.3305975368748
+          },
+          "widzewlodz": {
+            "event_balanced_bias": -0.42857142857142855,
+            "event_balanced_mae": 0.42857142857142855,
+            "p90_pooled_absolute_error_nearest_rank": 2.0,
+            "scored_clubs": 1,
+            "scored_fixtures": 1,
+            "scored_points": 7,
+            "worst_absolute_error": 2.0
+          },
+          "wisla_plock": {
+            "event_balanced_bias": -98.65762001130497,
+            "event_balanced_mae": 247.20841238644925,
+            "p90_pooled_absolute_error_nearest_rank": 348.136306501955,
+            "scored_clubs": 1,
+            "scored_fixtures": 1,
+            "scored_points": 4,
+            "worst_absolute_error": 348.136306501955
+          },
+          "wislakrakow": {
+            "event_balanced_bias": -14.5,
+            "event_balanced_mae": 14.5,
+            "p90_pooled_absolute_error_nearest_rank": 51.0,
+            "scored_clubs": 1,
+            "scored_fixtures": 1,
+            "scored_points": 4,
+            "worst_absolute_error": 51.0
+          },
+          "zaglebie_lubin": {
+            "event_balanced_bias": -85.74552383871537,
+            "event_balanced_mae": 151.66138076829543,
+            "p90_pooled_absolute_error_nearest_rank": 322.8151888958696,
+            "scored_clubs": 1,
+            "scored_fixtures": 1,
+            "scored_points": 6,
+            "worst_absolute_error": 322.8151888958696
+          }
+        },
+        "history_bin": {
+          "24_to72h": {
+            "event_balanced_bias": -32.07211078546968,
+            "event_balanced_mae": 102.50522702435595,
+            "p90_pooled_absolute_error_nearest_rank": 326.26420093795923,
+            "scored_clubs": 8,
+            "scored_fixtures": 8,
+            "scored_points": 15,
+            "worst_absolute_error": 439.39426582706125
+          },
+          "72hplus": {
+            "event_balanced_bias": 247.49589888098942,
+            "event_balanced_mae": 413.53878817942933,
+            "p90_pooled_absolute_error_nearest_rank": 1069.9239868531304,
+            "scored_clubs": 11,
+            "scored_fixtures": 11,
+            "scored_points": 51,
+            "worst_absolute_error": 1705.3305975368748
+          },
+          "first_point": {
+            "event_balanced_bias": -1070.2303062531519,
+            "event_balanced_mae": 1331.726155253688,
+            "p90_pooled_absolute_error_nearest_rank": 8671.0,
+            "scored_clubs": 8,
+            "scored_fixtures": 8,
+            "scored_points": 8,
+            "worst_absolute_error": 8671.0
+          },
+          "under24h": {
+            "event_balanced_bias": -17.737436573911395,
+            "event_balanced_mae": 305.3576598674323,
+            "p90_pooled_absolute_error_nearest_rank": 1124.7731641945966,
+            "scored_clubs": 8,
+            "scored_fixtures": 8,
+            "scored_points": 8,
+            "worst_absolute_error": 1124.7731641945966
+          }
+        },
+        "maturity_bin_days": {
+          "3": {
+            "event_balanced_bias": 195.556588145904,
+            "event_balanced_mae": 408.1770201855916,
+            "p90_pooled_absolute_error_nearest_rank": 1124.7731641945966,
+            "scored_clubs": 14,
+            "scored_fixtures": 14,
+            "scored_points": 55,
+            "worst_absolute_error": 1705.3305975368748
+          },
+          "7": {
+            "event_balanced_bias": -183.35485142140305,
+            "event_balanced_mae": 565.7406029881855,
+            "p90_pooled_absolute_error_nearest_rank": 880.1994376356779,
+            "scored_clubs": 9,
+            "scored_fixtures": 9,
+            "scored_points": 27,
+            "worst_absolute_error": 8671.0
+          }
+        }
+      },
+      "+72h/drift": {
+        "club_slug": {
+          "cracovia": {
+            "event_balanced_bias": -874.6539986233614,
+            "event_balanced_mae": 877.6539986233614,
+            "p90_pooled_absolute_error_nearest_rank": 1750.9746639133896,
+            "scored_clubs": 1,
+            "scored_fixtures": 2,
+            "scored_points": 4,
+            "worst_absolute_error": 1750.9746639133896
+          },
+          "gkskatowice": {
+            "event_balanced_bias": -30.25280599816446,
+            "event_balanced_mae": 452.77735545976896,
+            "p90_pooled_absolute_error_nearest_rank": 727.7520206435031,
+            "scored_clubs": 1,
+            "scored_fixtures": 2,
+            "scored_points": 5,
+            "worst_absolute_error": 727.7520206435031
+          },
+          "gornikzabrze": {
+            "event_balanced_bias": -81.00313538329382,
+            "event_balanced_mae": 249.7011563567677,
+            "p90_pooled_absolute_error_nearest_rank": 615.0,
+            "scored_clubs": 1,
+            "scored_fixtures": 1,
+            "scored_points": 9,
+            "worst_absolute_error": 615.0
+          },
+          "jagiellonia": {
+            "event_balanced_bias": 34.26495239389459,
+            "event_balanced_mae": 55.411158040069715,
+            "p90_pooled_absolute_error_nearest_rank": 118.00017916622085,
+            "scored_clubs": 1,
+            "scored_fixtures": 1,
+            "scored_points": 7,
+            "worst_absolute_error": 118.00017916622085
+          },
+          "lech": {
+            "event_balanced_bias": -102.56755588824012,
+            "event_balanced_mae": 518.0667440838783,
+            "p90_pooled_absolute_error_nearest_rank": 1273.4754484949663,
+            "scored_clubs": 1,
+            "scored_fixtures": 5,
+            "scored_points": 68,
+            "worst_absolute_error": 2124.6426145492787
+          },
+          "legia": {
+            "event_balanced_bias": -67.34469627753074,
+            "event_balanced_mae": 140.566989786275,
+            "p90_pooled_absolute_error_nearest_rank": 256.27802728060493,
+            "scored_clubs": 1,
+            "scored_fixtures": 1,
+            "scored_points": 7,
+            "worst_absolute_error": 256.27802728060493
+          },
+          "motorlublin": {
+            "event_balanced_bias": 349.20307230836136,
+            "event_balanced_mae": 552.2529629627343,
+            "p90_pooled_absolute_error_nearest_rank": 1063.0034349817915,
+            "scored_clubs": 1,
+            "scored_fixtures": 1,
+            "scored_points": 5,
+            "worst_absolute_error": 1063.0034349817915
+          },
+          "pogonszczecin": {
+            "event_balanced_bias": -65.51602089920264,
+            "event_balanced_mae": 1459.7704754333545,
+            "p90_pooled_absolute_error_nearest_rank": 3247.6412115712656,
+            "scored_clubs": 1,
+            "scored_fixtures": 1,
+            "scored_points": 11,
+            "worst_absolute_error": 3808.576172821764
+          },
+          "rakow": {
+            "event_balanced_bias": -247.15053042886217,
+            "event_balanced_mae": 292.1501250148044,
+            "p90_pooled_absolute_error_nearest_rank": 448.8145554264978,
+            "scored_clubs": 1,
+            "scored_fixtures": 1,
+            "scored_points": 4,
+            "worst_absolute_error": 448.8145554264978
+          },
+          "slaskwroclaw": {
+            "event_balanced_bias": 148.00172060321606,
+            "event_balanced_mae": 762.4948778040063,
+            "p90_pooled_absolute_error_nearest_rank": 1737.9414011919362,
+            "scored_clubs": 1,
+            "scored_fixtures": 1,
+            "scored_points": 7,
+            "worst_absolute_error": 1737.9414011919362
+          },
+          "widzewlodz": {
+            "event_balanced_bias": -0.6,
+            "event_balanced_mae": 0.6,
+            "p90_pooled_absolute_error_nearest_rank": 2.0,
+            "scored_clubs": 1,
+            "scored_fixtures": 1,
+            "scored_points": 5,
+            "worst_absolute_error": 2.0
+          },
+          "wisla_plock": {
+            "event_balanced_bias": 201.11258514788636,
+            "event_balanced_mae": 205.6875797637676,
+            "p90_pooled_absolute_error_nearest_rank": 385.41613900007997,
+            "scored_clubs": 1,
+            "scored_fixtures": 2,
+            "scored_points": 7,
+            "worst_absolute_error": 385.41613900007997
+          },
+          "wislakrakow": {
+            "event_balanced_bias": -54.12232812442035,
+            "event_balanced_mae": 54.12232812442035,
+            "p90_pooled_absolute_error_nearest_rank": 215.6116406221017,
+            "scored_clubs": 1,
+            "scored_fixtures": 1,
+            "scored_points": 5,
+            "worst_absolute_error": 215.6116406221017
+          },
+          "zaglebie_lubin": {
+            "event_balanced_bias": 295.70808450390723,
+            "event_balanced_mae": 1183.820931406503,
+            "p90_pooled_absolute_error_nearest_rank": 5236.942061173684,
+            "scored_clubs": 1,
+            "scored_fixtures": 2,
+            "scored_points": 8,
+            "worst_absolute_error": 5236.942061173684
+          }
+        },
+        "history_bin": {
+          "24_to72h": {
+            "event_balanced_bias": -64.92685751429404,
+            "event_balanced_mae": 452.3644942860263,
+            "p90_pooled_absolute_error_nearest_rank": 1100.9994944453806,
+            "scored_clubs": 13,
+            "scored_fixtures": 21,
+            "scored_points": 40,
+            "worst_absolute_error": 2063.001528326382
+          },
+          "72hplus": {
+            "event_balanced_bias": 62.49315065550608,
+            "event_balanced_mae": 550.9500091913181,
+            "p90_pooled_absolute_error_nearest_rank": 1338.8179928986206,
+            "scored_clubs": 14,
+            "scored_fixtures": 19,
+            "scored_points": 112,
+            "worst_absolute_error": 5236.942061173684
+          }
+        },
+        "maturity_bin_days": {
+          "15": {
+            "event_balanced_bias": -98.34424463713982,
+            "event_balanced_mae": 198.85288361259563,
+            "p90_pooled_absolute_error_nearest_rank": 411.3251132641999,
+            "scored_clubs": 1,
+            "scored_fixtures": 3,
+            "scored_points": 20,
+            "worst_absolute_error": 458.28153682719676
+          },
+          "3": {
+            "event_balanced_bias": -148.67803475579223,
+            "event_balanced_mae": 640.379603535805,
+            "p90_pooled_absolute_error_nearest_rank": 1750.9746639133896,
+            "scored_clubs": 14,
+            "scored_fixtures": 22,
+            "scored_points": 78,
+            "worst_absolute_error": 5236.942061173684
+          },
+          "7": {
+            "event_balanced_bias": 71.218875908555,
+            "event_balanced_mae": 346.3163362814508,
+            "p90_pooled_absolute_error_nearest_rank": 995.1179203381635,
+            "scored_clubs": 10,
+            "scored_fixtures": 14,
+            "scored_points": 54,
+            "worst_absolute_error": 3808.576172821764
+          }
+        }
+      },
+      "+72h/persistence": {
+        "club_slug": {
+          "cracovia": {
+            "event_balanced_bias": 715.5,
+            "event_balanced_mae": 715.5,
+            "p90_pooled_absolute_error_nearest_rank": 1651.0,
+            "scored_clubs": 1,
+            "scored_fixtures": 2,
+            "scored_points": 8,
+            "worst_absolute_error": 1651.0
+          },
+          "gkskatowice": {
+            "event_balanced_bias": 686.875,
+            "event_balanced_mae": 686.875,
+            "p90_pooled_absolute_error_nearest_rank": 1280.0,
+            "scored_clubs": 1,
+            "scored_fixtures": 2,
+            "scored_points": 9,
+            "worst_absolute_error": 1280.0
+          },
+          "gornikzabrze": {
+            "event_balanced_bias": 155.63636363636363,
+            "event_balanced_mae": 230.1818181818182,
+            "p90_pooled_absolute_error_nearest_rank": 467.0,
+            "scored_clubs": 1,
+            "scored_fixtures": 2,
+            "scored_points": 13,
+            "worst_absolute_error": 529.0
+          },
+          "jagiellonia": {
+            "event_balanced_bias": 83.33333333333333,
+            "event_balanced_mae": 83.33333333333333,
+            "p90_pooled_absolute_error_nearest_rank": 190.0,
+            "scored_clubs": 1,
+            "scored_fixtures": 1,
+            "scored_points": 9,
+            "worst_absolute_error": 190.0
+          },
+          "lech": {
+            "event_balanced_bias": 1007.6478696741855,
+            "event_balanced_mae": 1113.0436591478697,
+            "p90_pooled_absolute_error_nearest_rank": 1840.0,
+            "scored_clubs": 1,
+            "scored_fixtures": 5,
+            "scored_points": 84,
+            "worst_absolute_error": 2617.0
+          },
+          "legia": {
+            "event_balanced_bias": 42.22222222222222,
+            "event_balanced_mae": 152.88888888888889,
+            "p90_pooled_absolute_error_nearest_rank": 293.0,
+            "scored_clubs": 1,
+            "scored_fixtures": 1,
+            "scored_points": 9,
+            "worst_absolute_error": 293.0
+          },
+          "motorlublin": {
+            "event_balanced_bias": -67.57142857142857,
+            "event_balanced_mae": 2409.8571428571427,
+            "p90_pooled_absolute_error_nearest_rank": 8671.0,
+            "scored_clubs": 1,
+            "scored_fixtures": 1,
+            "scored_points": 7,
+            "worst_absolute_error": 8671.0
+          },
+          "pogonszczecin": {
+            "event_balanced_bias": 1418.7692307692307,
+            "event_balanced_mae": 1418.7692307692307,
+            "p90_pooled_absolute_error_nearest_rank": 2348.0,
+            "scored_clubs": 1,
+            "scored_fixtures": 1,
+            "scored_points": 13,
+            "worst_absolute_error": 2399.0
+          },
+          "rakow": {
+            "event_balanced_bias": -213.16666666666666,
+            "event_balanced_mae": 213.16666666666666,
+            "p90_pooled_absolute_error_nearest_rank": 431.0,
+            "scored_clubs": 1,
+            "scored_fixtures": 1,
+            "scored_points": 6,
+            "worst_absolute_error": 431.0
+          },
+          "slaskwroclaw": {
+            "event_balanced_bias": 1409.3333333333333,
+            "event_balanced_mae": 1409.3333333333333,
+            "p90_pooled_absolute_error_nearest_rank": 2213.0,
+            "scored_clubs": 1,
+            "scored_fixtures": 1,
+            "scored_points": 9,
+            "worst_absolute_error": 2213.0
+          },
+          "widzewlodz": {
+            "event_balanced_bias": -0.42857142857142855,
+            "event_balanced_mae": 0.42857142857142855,
+            "p90_pooled_absolute_error_nearest_rank": 2.0,
+            "scored_clubs": 1,
+            "scored_fixtures": 1,
+            "scored_points": 7,
+            "worst_absolute_error": 2.0
+          },
+          "wisla_plock": {
+            "event_balanced_bias": 420.625,
+            "event_balanced_mae": 420.625,
+            "p90_pooled_absolute_error_nearest_rank": 480.0,
+            "scored_clubs": 1,
+            "scored_fixtures": 2,
+            "scored_points": 11,
+            "worst_absolute_error": 810.0
+          },
+          "wislakrakow": {
+            "event_balanced_bias": 862.8888888888889,
+            "event_balanced_mae": 942.0,
+            "p90_pooled_absolute_error_nearest_rank": 7793.0,
+            "scored_clubs": 1,
+            "scored_fixtures": 1,
+            "scored_points": 9,
+            "worst_absolute_error": 7793.0
+          },
+          "zaglebie_lubin": {
+            "event_balanced_bias": 218.08333333333334,
+            "event_balanced_mae": 555.4166666666666,
+            "p90_pooled_absolute_error_nearest_rank": 828.0,
+            "scored_clubs": 1,
+            "scored_fixtures": 2,
+            "scored_points": 12,
+            "worst_absolute_error": 1490.0
+          }
+        },
+        "history_bin": {
+          "24_to72h": {
+            "event_balanced_bias": 595.9761904761905,
+            "event_balanced_mae": 693.8809523809524,
+            "p90_pooled_absolute_error_nearest_rank": 1280.0,
+            "scored_clubs": 13,
+            "scored_fixtures": 21,
+            "scored_points": 40,
+            "worst_absolute_error": 2399.0
+          },
+          "72hplus": {
+            "event_balanced_bias": 611.1310273790536,
+            "event_balanced_mae": 743.3188719905826,
+            "p90_pooled_absolute_error_nearest_rank": 1840.0,
+            "scored_clubs": 14,
+            "scored_fixtures": 19,
+            "scored_points": 121,
+            "worst_absolute_error": 2567.0
+          },
+          "first_point": {
+            "event_balanced_bias": 260.45454545454544,
+            "event_balanced_mae": 1051.1818181818182,
+            "p90_pooled_absolute_error_nearest_rank": 2047.0,
+            "scored_clubs": 13,
+            "scored_fixtures": 22,
+            "scored_points": 22,
+            "worst_absolute_error": 8671.0
+          },
+          "under24h": {
+            "event_balanced_bias": 968.9565217391304,
+            "event_balanced_mae": 971.4782608695652,
+            "p90_pooled_absolute_error_nearest_rank": 1651.0,
+            "scored_clubs": 14,
+            "scored_fixtures": 23,
+            "scored_points": 23,
+            "worst_absolute_error": 7793.0
+          }
+        },
+        "maturity_bin_days": {
+          "15": {
+            "event_balanced_bias": 971.1638095238095,
+            "event_balanced_mae": 971.1638095238095,
+            "p90_pooled_absolute_error_nearest_rank": 1384.0,
+            "scored_clubs": 2,
+            "scored_fixtures": 5,
+            "scored_points": 30,
+            "worst_absolute_error": 2047.0
+          },
+          "3": {
+            "event_balanced_bias": 581.5978260869565,
+            "event_balanced_mae": 756.1413043478261,
+            "p90_pooled_absolute_error_nearest_rank": 1959.0,
+            "scored_clubs": 14,
+            "scored_fixtures": 23,
+            "scored_points": 89,
+            "worst_absolute_error": 2567.0
+          },
+          "30": {
+            "event_balanced_bias": 2617.0,
+            "event_balanced_mae": 2617.0,
+            "p90_pooled_absolute_error_nearest_rank": 2617.0,
+            "scored_clubs": 1,
+            "scored_fixtures": 1,
+            "scored_points": 1,
+            "worst_absolute_error": 2617.0
+          },
+          "7": {
+            "event_balanced_bias": 513.947932330827,
+            "event_balanced_mae": 827.4988095238095,
+            "p90_pooled_absolute_error_nearest_rank": 1734.0,
+            "scored_clubs": 14,
+            "scored_fixtures": 19,
+            "scored_points": 86,
+            "worst_absolute_error": 8671.0
+          }
+        }
+      },
+      "+72h/pickup": {
+        "club_slug": {
+          "cracovia": {
+            "event_balanced_bias": 1034.0,
+            "event_balanced_mae": 1034.0,
+            "p90_pooled_absolute_error_nearest_rank": 1271.0,
+            "scored_clubs": 1,
+            "scored_fixtures": 1,
+            "scored_points": 3,
+            "worst_absolute_error": 1271.0
+          },
+          "gkskatowice": {
+            "event_balanced_bias": -11.25,
+            "event_balanced_mae": 141.75,
+            "p90_pooled_absolute_error_nearest_rank": 306.0,
+            "scored_clubs": 1,
+            "scored_fixtures": 1,
+            "scored_points": 4,
+            "worst_absolute_error": 306.0
+          },
+          "gornikzabrze": {
+            "event_balanced_bias": -174.72727272727272,
+            "event_balanced_mae": 174.72727272727272,
+            "p90_pooled_absolute_error_nearest_rank": 399.0,
+            "scored_clubs": 1,
+            "scored_fixtures": 1,
+            "scored_points": 11,
+            "worst_absolute_error": 615.0
+          },
+          "jagiellonia": {
+            "event_balanced_bias": -346.4,
+            "event_balanced_mae": 346.4,
+            "p90_pooled_absolute_error_nearest_rank": 491.0,
+            "scored_clubs": 1,
+            "scored_fixtures": 1,
+            "scored_points": 5,
+            "worst_absolute_error": 491.0
+          },
+          "lech": {
+            "event_balanced_bias": 1065.4545454545455,
+            "event_balanced_mae": 1076.5454545454545,
+            "p90_pooled_absolute_error_nearest_rank": 2003.0,
+            "scored_clubs": 1,
+            "scored_fixtures": 1,
+            "scored_points": 11,
+            "worst_absolute_error": 2011.0
+          },
+          "legia": {
+            "event_balanced_bias": -299.6,
+            "event_balanced_mae": 299.6,
+            "p90_pooled_absolute_error_nearest_rank": 449.0,
+            "scored_clubs": 1,
+            "scored_fixtures": 1,
+            "scored_points": 5,
+            "worst_absolute_error": 449.0
+          },
+          "pogonszczecin": {
+            "event_balanced_bias": 865.0,
+            "event_balanced_mae": 865.0,
+            "p90_pooled_absolute_error_nearest_rank": 1533.0,
+            "scored_clubs": 1,
+            "scored_fixtures": 1,
+            "scored_points": 4,
+            "worst_absolute_error": 1533.0
+          },
+          "rakow": {
+            "event_balanced_bias": -268.6666666666667,
+            "event_balanced_mae": 268.6666666666667,
+            "p90_pooled_absolute_error_nearest_rank": 491.0,
+            "scored_clubs": 1,
+            "scored_fixtures": 1,
+            "scored_points": 6,
+            "worst_absolute_error": 491.0
+          },
+          "slaskwroclaw": {
+            "event_balanced_bias": 1329.8,
+            "event_balanced_mae": 1329.8,
+            "p90_pooled_absolute_error_nearest_rank": 1554.0,
+            "scored_clubs": 1,
+            "scored_fixtures": 1,
+            "scored_points": 5,
+            "worst_absolute_error": 1554.0
+          },
+          "wisla_plock": {
+            "event_balanced_bias": 133.25,
+            "event_balanced_mae": 138.75,
+            "p90_pooled_absolute_error_nearest_rank": 430.0,
+            "scored_clubs": 1,
+            "scored_fixtures": 1,
+            "scored_points": 4,
+            "worst_absolute_error": 430.0
+          },
+          "wislakrakow": {
+            "event_balanced_bias": -14.5,
+            "event_balanced_mae": 14.5,
+            "p90_pooled_absolute_error_nearest_rank": 51.0,
+            "scored_clubs": 1,
+            "scored_fixtures": 1,
+            "scored_points": 4,
+            "worst_absolute_error": 51.0
+          },
+          "zaglebie_lubin": {
+            "event_balanced_bias": -80.33333333333333,
+            "event_balanced_mae": 173.66666666666666,
+            "p90_pooled_absolute_error_nearest_rank": 359.0,
+            "scored_clubs": 1,
+            "scored_fixtures": 1,
+            "scored_points": 6,
+            "worst_absolute_error": 359.0
+          }
+        },
+        "history_bin": {
+          "24_to72h": {
+            "event_balanced_bias": 68.0,
+            "event_balanced_mae": 251.5,
+            "p90_pooled_absolute_error_nearest_rank": 491.0,
+            "scored_clubs": 6,
+            "scored_fixtures": 6,
+            "scored_points": 11,
+            "worst_absolute_error": 626.0
+          },
+          "72hplus": {
+            "event_balanced_bias": 224.92510822510823,
+            "event_balanced_mae": 520.0304473304473,
+            "p90_pooled_absolute_error_nearest_rank": 1514.0,
+            "scored_clubs": 9,
+            "scored_fixtures": 9,
+            "scored_points": 45,
+            "worst_absolute_error": 2011.0
+          },
+          "first_point": {
+            "event_balanced_bias": 125.83333333333333,
+            "event_balanced_mae": 317.1666666666667,
+            "p90_pooled_absolute_error_nearest_rank": 1205.0,
+            "scored_clubs": 6,
+            "scored_fixtures": 6,
+            "scored_points": 6,
+            "worst_absolute_error": 1205.0
+          },
+          "under24h": {
+            "event_balanced_bias": 135.33333333333334,
+            "event_balanced_mae": 329.3333333333333,
+            "p90_pooled_absolute_error_nearest_rank": 1271.0,
+            "scored_clubs": 6,
+            "scored_fixtures": 6,
+            "scored_points": 6,
+            "worst_absolute_error": 1271.0
+          }
+        },
+        "maturity_bin_days": {
+          "3": {
+            "event_balanced_bias": 282.4791666666667,
+            "event_balanced_mae": 516.1875,
+            "p90_pooled_absolute_error_nearest_rank": 1514.0,
+            "scored_clubs": 12,
+            "scored_fixtures": 12,
+            "scored_points": 47,
+            "worst_absolute_error": 2011.0
+          },
+          "7": {
+            "event_balanced_bias": 69.21428571428572,
+            "event_balanced_mae": 417.84693877551024,
+            "p90_pooled_absolute_error_nearest_rank": 995.0,
+            "scored_clubs": 7,
+            "scored_fixtures": 7,
+            "scored_points": 21,
+            "worst_absolute_error": 1473.0
+          }
+        }
+      }
+    },
+    "synthetic_test": false,
+    "version": "rolling72-chronological-event-heldout-replay-v1"
+  },
+  "formal_fresh_review_closed": true,
+  "hosted_ci": {
+    "code_sha": "8a695f17c2c7a50bb07cd3ecd4dd2945ec767de0",
+    "conclusion": "success",
+    "pr_run": 42801246289,
+    "push_run": 42801235705
+  },
+  "live_adjustment": 0,
+  "local_recovery": {
+    "byte_reconstruction_verified": true,
+    "files": 18,
+    "remote_upload_performed": false,
+    "sha256": "5c2defeb5223b0ca176ad9911d59169ddc2e203693d525f12ad0f74d5ae55981"
+  },
+  "no_prospective_forecasts_backfilled": true,
+  "packet_manifest_sha256": "0320ec0425bdc231fe42b076b2a01b606312e3e6a992b46bf64f57b8d8bae900",
+  "production_change": false,
+  "published_code_commit": "8a695f17c2c7a50bb07cd3ecd4dd2945ec767de0",
+  "scores_sha256": "e53f5edee579784ae4894f1ff556f7ff8827e76835e3352e68647d9835086ca2",
+  "seal": {
+    "active_v2_artifact_used": false,
+    "code_sha256": {
+      "ml/demand_engine/rolling72_features_v1.py": "9baea3df0dbf09f8b144bb599b1aec1d587d6ecb351c6f3dd4ab32b6ff3a4ae3",
+      "ml/rolling72_historical_replay_packets_v1.py": "0078dae57d1a28a3343ca9b2a660112607afa3725e6293efe61d452489ad6319",
+      "ml/rolling72_historical_replay_v1.py": "f762dbfcc8058a94dadd6e3d52f8fe883516a4812acdcbf5a0d3ab0821ef67a9"
+    },
+    "coordinates": 900,
+    "diagnostic_model_fits": 8,
+    "folds_file_sha256": "1dc673f93fe3429807affbf588bf741190260a35b94c47c4c1026c60c89ef629",
+    "live_adjustment": 0,
+    "packet_manifest_sha256": "a9f5fc6d73fc81f216f7687ae1a9915c626189dd6c903a7b781c940bc87b1c25",
+    "precommit_sha256": "4acdfd98b79b781b8704fcfa56097bc0bf0e114e81357085af5075514c1bfdb4",
+    "prediction_file_sha256": "29dd17ac74ba42fd1a9d8ae537da63487e78d923c7d556fbfba810350574dab9",
+    "production_change": false,
+    "seal_sha256": "7104068f669f8eae8dc0e4769ae9dac1609cb1e9a82a463ef1db2f5d7d67d328",
+    "sealed_at": "2026-11-10T10:41:48.150304+00:00",
+    "servable": false,
+    "started_at": "2026-11-10T10:41:45.266655+00:00",
+    "support_sets": 12,
+    "synthetic_test": false,
+    "truth_vault_opened": false,
+    "version": "rolling72-chronological-event-heldout-replay-v1"
+  },
+  "source_protocol": "ml/artifacts/rolling72_historical_replay_v1/precommit.json"
+}

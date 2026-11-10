@@ -1,0 +1,483 @@
+{
+  "club_count": 16,
+  "event_count": 38,
+  "events_with_measurement_changes": 10,
+  "evidence_kind": "historical_diagnostic_not_prospective",
+  "exported_at": "2026-11-07T20:10:54.732360+00:00",
+  "first_observation_statistics": {
+    "earliest_tracking_days_before_kickoff": 56.4548240162037,
+    "events_first_seen_at_least_P30": 2,
+    "events_first_seen_at_least_P50": 1,
+    "events_with_pre_kickoff_observations": 38
+  },
+  "first_observation_target_support": {
+    "24": {
+      "clubs": 14,
+      "events": 26,
+      "hidden_prefix": 0,
+      "invalid_prefix": 0,
+      "issues": 38,
+      "matched": 26,
+      "mature": 36,
+      "past_kickoff": 2,
+      "pending": 0,
+      "source_changed_prefix": 0
+    },
+    "48": {
+      "clubs": 14,
+      "events": 23,
+      "hidden_prefix": 0,
+      "invalid_prefix": 0,
+      "issues": 38,
+      "matched": 23,
+      "mature": 33,
+      "past_kickoff": 5,
+      "pending": 0,
+      "source_changed_prefix": 0
+    },
+    "72": {
+      "clubs": 13,
+      "events": 19,
+      "hidden_prefix": 0,
+      "invalid_prefix": 0,
+      "issues": 38,
+      "matched": 19,
+      "mature": 30,
+      "past_kickoff": 8,
+      "pending": 0,
+      "source_changed_prefix": 0
+    }
+  },
+  "historical_ingestion_known_at_proven": false,
+  "invalid_rows": 0,
+  "limitations": [
+    "Captured time is not historical ingestion-known-at; these are capture-time label matches.",
+    "Current event kickoff metadata is not a historical revision ledger.",
+    "A stable provider/source key does not verify constant released pool or paid sales/attendance.",
+    "Unknown source flags remain unknown; sector_count is not a per-sector trajectory.",
+    "A same-key target does not prove unchanged pool/source during the unobserved intervening interval.",
+    "No sales-opening date is inferred from the first tracked observation.",
+    "Exposed historical matches are not untouched holdouts or future issued forecasts."
+  ],
+  "literal_zero_rows": 1014,
+  "live_adjustment": 0,
+  "maturity_horizon_matrix": {
+    "P0_to_P3/+24h": {
+      "clubs": 13,
+      "events": 24,
+      "hidden_prefix": 0,
+      "invalid_prefix": 0,
+      "issues": 1951,
+      "matched": 869,
+      "mature": 881,
+      "past_kickoff": 543,
+      "pending": 0,
+      "source_changed_prefix": 527
+    },
+    "P0_to_P3/+48h": {
+      "clubs": 13,
+      "events": 21,
+      "hidden_prefix": 0,
+      "invalid_prefix": 0,
+      "issues": 1951,
+      "matched": 384,
+      "mature": 391,
+      "past_kickoff": 1033,
+      "pending": 0,
+      "source_changed_prefix": 527
+    },
+    "P0_to_P3/+72h": {
+      "clubs": 0,
+      "events": 0,
+      "hidden_prefix": 0,
+      "invalid_prefix": 0,
+      "issues": 1951,
+      "matched": 0,
+      "mature": 0,
+      "past_kickoff": 1424,
+      "pending": 0,
+      "source_changed_prefix": 527
+    },
+    "P15_to_P30/+24h": {
+      "clubs": 3,
+      "events": 6,
+      "hidden_prefix": 0,
+      "invalid_prefix": 0,
+      "issues": 1081,
+      "matched": 776,
+      "mature": 814,
+      "past_kickoff": 0,
+      "pending": 0,
+      "source_changed_prefix": 267
+    },
+    "P15_to_P30/+48h": {
+      "clubs": 3,
+      "events": 6,
+      "hidden_prefix": 0,
+      "invalid_prefix": 0,
+      "issues": 1081,
+      "matched": 761,
+      "mature": 814,
+      "past_kickoff": 0,
+      "pending": 0,
+      "source_changed_prefix": 267
+    },
+    "P15_to_P30/+72h": {
+      "clubs": 3,
+      "events": 6,
+      "hidden_prefix": 0,
+      "invalid_prefix": 0,
+      "issues": 1081,
+      "matched": 726,
+      "mature": 793,
+      "past_kickoff": 0,
+      "pending": 21,
+      "source_changed_prefix": 267
+    },
+    "P30_to_P50/+24h": {
+      "clubs": 2,
+      "events": 2,
+      "hidden_prefix": 0,
+      "invalid_prefix": 0,
+      "issues": 415,
+      "matched": 390,
+      "mature": 390,
+      "past_kickoff": 0,
+      "pending": 25,
+      "source_changed_prefix": 0
+    },
+    "P30_to_P50/+48h": {
+      "clubs": 2,
+      "events": 2,
+      "hidden_prefix": 0,
+      "invalid_prefix": 0,
+      "issues": 415,
+      "matched": 366,
+      "mature": 366,
+      "past_kickoff": 0,
+      "pending": 49,
+      "source_changed_prefix": 0
+    },
+    "P30_to_P50/+72h": {
+      "clubs": 2,
+      "events": 2,
+      "hidden_prefix": 0,
+      "invalid_prefix": 0,
+      "issues": 415,
+      "matched": 342,
+      "mature": 342,
+      "past_kickoff": 0,
+      "pending": 73,
+      "source_changed_prefix": 0
+    },
+    "P3_to_P7/+24h": {
+      "clubs": 13,
+      "events": 18,
+      "hidden_prefix": 0,
+      "invalid_prefix": 0,
+      "issues": 2035,
+      "matched": 1364,
+      "mature": 1393,
+      "past_kickoff": 0,
+      "pending": 0,
+      "source_changed_prefix": 642
+    },
+    "P3_to_P7/+48h": {
+      "clubs": 13,
+      "events": 18,
+      "hidden_prefix": 0,
+      "invalid_prefix": 0,
+      "issues": 2035,
+      "matched": 1372,
+      "mature": 1393,
+      "past_kickoff": 0,
+      "pending": 0,
+      "source_changed_prefix": 642
+    },
+    "P3_to_P7/+72h": {
+      "clubs": 13,
+      "events": 18,
+      "hidden_prefix": 0,
+      "invalid_prefix": 0,
+      "issues": 2035,
+      "matched": 1368,
+      "mature": 1393,
+      "past_kickoff": 0,
+      "pending": 0,
+      "source_changed_prefix": 642
+    },
+    "P50plus/+24h": {
+      "clubs": 1,
+      "events": 1,
+      "hidden_prefix": 0,
+      "invalid_prefix": 0,
+      "issues": 156,
+      "matched": 156,
+      "mature": 156,
+      "past_kickoff": 0,
+      "pending": 0,
+      "source_changed_prefix": 0
+    },
+    "P50plus/+48h": {
+      "clubs": 1,
+      "events": 1,
+      "hidden_prefix": 0,
+      "invalid_prefix": 0,
+      "issues": 156,
+      "matched": 156,
+      "mature": 156,
+      "past_kickoff": 0,
+      "pending": 0,
+      "source_changed_prefix": 0
+    },
+    "P50plus/+72h": {
+      "clubs": 1,
+      "events": 1,
+      "hidden_prefix": 0,
+      "invalid_prefix": 0,
+      "issues": 156,
+      "matched": 156,
+      "mature": 156,
+      "past_kickoff": 0,
+      "pending": 0,
+      "source_changed_prefix": 0
+    },
+    "P7_to_P15/+24h": {
+      "clubs": 13,
+      "events": 18,
+      "hidden_prefix": 0,
+      "invalid_prefix": 0,
+      "issues": 2181,
+      "matched": 1465,
+      "mature": 1587,
+      "past_kickoff": 0,
+      "pending": 25,
+      "source_changed_prefix": 569
+    },
+    "P7_to_P15/+48h": {
+      "clubs": 13,
+      "events": 18,
+      "hidden_prefix": 0,
+      "invalid_prefix": 0,
+      "issues": 2181,
+      "matched": 1444,
+      "mature": 1563,
+      "past_kickoff": 0,
+      "pending": 49,
+      "source_changed_prefix": 569
+    },
+    "P7_to_P15/+72h": {
+      "clubs": 12,
+      "events": 17,
+      "hidden_prefix": 0,
+      "invalid_prefix": 0,
+      "issues": 2181,
+      "matched": 1412,
+      "mature": 1560,
+      "past_kickoff": 0,
+      "pending": 52,
+      "source_changed_prefix": 569
+    }
+  },
+  "maturity_intervals_days": {
+    "P0_to_P3": [
+      0,
+      3
+    ],
+    "P15_to_P30": [
+      15,
+      30
+    ],
+    "P30_to_P50": [
+      30,
+      50
+    ],
+    "P3_to_P7": [
+      3,
+      7
+    ],
+    "P50plus": [
+      50,
+      null
+    ],
+    "P7_to_P15": [
+      7,
+      15
+    ]
+  },
+  "per_horizon_support": {
+    "24": {
+      "clubs": 14,
+      "events": 26,
+      "matched": 5020
+    },
+    "48": {
+      "clubs": 14,
+      "events": 23,
+      "matched": 4483
+    },
+    "72": {
+      "clubs": 14,
+      "events": 20,
+      "matched": 4004
+    }
+  },
+  "prefix_age_horizon_matrix": {
+    "1_to_24h/+24h": {
+      "clubs": 14,
+      "events": 25,
+      "hidden_prefix": 0,
+      "invalid_prefix": 0,
+      "issues": 802,
+      "matched": 520,
+      "mature": 531,
+      "past_kickoff": 60,
+      "pending": 0,
+      "source_changed_prefix": 211
+    },
+    "1_to_24h/+48h": {
+      "clubs": 14,
+      "events": 23,
+      "hidden_prefix": 0,
+      "invalid_prefix": 0,
+      "issues": 802,
+      "matched": 439,
+      "mature": 467,
+      "past_kickoff": 124,
+      "pending": 0,
+      "source_changed_prefix": 211
+    },
+    "1_to_24h/+72h": {
+      "clubs": 14,
+      "events": 20,
+      "hidden_prefix": 0,
+      "invalid_prefix": 0,
+      "issues": 802,
+      "matched": 430,
+      "mature": 450,
+      "past_kickoff": 141,
+      "pending": 0,
+      "source_changed_prefix": 211
+    },
+    "24_to_72h/+24h": {
+      "clubs": 14,
+      "events": 23,
+      "hidden_prefix": 0,
+      "invalid_prefix": 0,
+      "issues": 1427,
+      "matched": 880,
+      "mature": 905,
+      "past_kickoff": 93,
+      "pending": 0,
+      "source_changed_prefix": 429
+    },
+    "24_to_72h/+48h": {
+      "clubs": 14,
+      "events": 20,
+      "hidden_prefix": 0,
+      "invalid_prefix": 0,
+      "issues": 1427,
+      "matched": 848,
+      "mature": 862,
+      "past_kickoff": 136,
+      "pending": 0,
+      "source_changed_prefix": 429
+    },
+    "24_to_72h/+72h": {
+      "clubs": 12,
+      "events": 18,
+      "hidden_prefix": 0,
+      "invalid_prefix": 0,
+      "issues": 1427,
+      "matched": 776,
+      "mature": 841,
+      "past_kickoff": 157,
+      "pending": 0,
+      "source_changed_prefix": 429
+    },
+    "72hplus/+24h": {
+      "clubs": 13,
+      "events": 19,
+      "hidden_prefix": 0,
+      "invalid_prefix": 0,
+      "issues": 5520,
+      "matched": 3572,
+      "mature": 3726,
+      "past_kickoff": 388,
+      "pending": 50,
+      "source_changed_prefix": 1356
+    },
+    "72hplus/+48h": {
+      "clubs": 13,
+      "events": 19,
+      "hidden_prefix": 0,
+      "invalid_prefix": 0,
+      "issues": 5520,
+      "matched": 3154,
+      "mature": 3301,
+      "past_kickoff": 765,
+      "pending": 98,
+      "source_changed_prefix": 1356
+    },
+    "72hplus/+72h": {
+      "clubs": 13,
+      "events": 19,
+      "hidden_prefix": 0,
+      "invalid_prefix": 0,
+      "issues": 5520,
+      "matched": 2762,
+      "mature": 2905,
+      "past_kickoff": 1113,
+      "pending": 146,
+      "source_changed_prefix": 1356
+    },
+    "first_or_under1h/+24h": {
+      "clubs": 14,
+      "events": 26,
+      "hidden_prefix": 0,
+      "invalid_prefix": 0,
+      "issues": 70,
+      "matched": 48,
+      "mature": 59,
+      "past_kickoff": 2,
+      "pending": 0,
+      "source_changed_prefix": 9
+    },
+    "first_or_under1h/+48h": {
+      "clubs": 14,
+      "events": 23,
+      "hidden_prefix": 0,
+      "invalid_prefix": 0,
+      "issues": 70,
+      "matched": 42,
+      "mature": 53,
+      "past_kickoff": 8,
+      "pending": 0,
+      "source_changed_prefix": 9
+    },
+    "first_or_under1h/+72h": {
+      "clubs": 13,
+      "events": 19,
+      "hidden_prefix": 0,
+      "invalid_prefix": 0,
+      "issues": 70,
+      "matched": 36,
+      "mature": 48,
+      "past_kickoff": 13,
+      "pending": 0,
+      "source_changed_prefix": 9
+    }
+  },
+  "production_change": false,
+  "raw_data_committed": false,
+  "retrieved_at": "2026-11-07T20:11:06.629479+00:00",
+  "rows_with_sector_payload_fields": 0,
+  "sales_open_timestamp_proven": false,
+  "sampling": "first genuine point plus latest genuine point per UTC hour",
+  "snapshot_rows": 29063,
+  "source_file_sha256": "3a5981ce558ce0b2b98b1a4082d61b169fb6b1674f68d94792dd153d97d839bd",
+  "source_manifest_sha256": "12ed9059da03106c9fc43dcf80c5861bcc2469f27cf5b4e1c0184bd15745b6ff",
+  "stable_released_pool_verified": false,
+  "target_max_staleness_hours": 6,
+  "version": "rolling72-cached-coverage-audit-v1"
+}

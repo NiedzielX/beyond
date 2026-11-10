@@ -1,0 +1,9 @@
+# Future fixture discovery diagnosis — November9
+
+Parent explicitly requested read-only source-pipeline follow-up after the complete three-future-fixture audit. Read implementation/workflows before executions. Wrote datedSDD before code/Actions audit. No frozen/code/model/worker/registry changes.
+
+Private evidence root `/workspace/ops-runtime/2026-11-09-future-fixture-discovery-audit/`: original mode600 metadata responses and actual receipts for activeRoboticket13/activeStellis5, cacheduntracked97, sixspecificRoboticketmetadata cases, deniedleaguecoverageview, directfutureleague18 and recentSportingContextActions5. SixboundedDBmetadataGETs/oneGHGET total; no snapshots/history/writes/dispatch. Counts and bytehashes verified from originals, no retries.
+
+Observedfreshdiscovery/buffering and current19:49UTCdashboardcache. Six actualdirectH1s contain fullfuturedate/time but discoveryv8extractKickoff onlychecksJS/JSONISOdatefields→NULLschedulepayload. Timestampfallbackalonewouldcontaminateaway_team withtimestamp/weekday becauseexistingcode splitsfullH1. Fivecaseleague datesagree, LechH1Nov29vsleagueNov28conflict retained. MotorDec5leaguepairabsent; Radomiakhiddenavailability separate. LastSportingContextActionssuccess06:23UTCisnotfixtureintakeproof. ConfiguredpgcronsnotclaimedexecutedfromSQLonly; freshDBtimestampsreportedwithlimits. View403privatehelperexecutepermission preserved, noauthretry/grantfix.
+
+ActualH1metadataresponseSHA12f6113a… at19:56:58UTC, notoriginalHTML; noHTMLSHAclaim. Public report/JSON `ml/FUTURE_FIXTURE_DISCOVERY_AUDIT_2026-11-09.*` preserve exactcases/codepaths and sourceacquisitionlimits. Specmovedimplemented becauseauditcomplete; parser/intakefixdeferred. Parentnowprioritisesnewlyrequestedhistoricalblind24/48/72backtest. No commit/publication bythisagent; parentowns canonicalupdates.

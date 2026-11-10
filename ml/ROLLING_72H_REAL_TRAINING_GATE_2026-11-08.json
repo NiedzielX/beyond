@@ -1,0 +1,111 @@
+{
+  "candidate": {
+    "gate": {
+      "common_club_count": 2,
+      "common_fixture_count": 2,
+      "partial_horizon_fixture_groups_excluded": [],
+      "per_horizon": {
+        "24": {
+          "clubs": 2,
+          "fixtures": 2,
+          "rows": 315
+        },
+        "48": {
+          "clubs": 2,
+          "fixtures": 2,
+          "rows": 166
+        },
+        "72": {
+          "clubs": 2,
+          "fixtures": 2,
+          "rows": 53
+        }
+      },
+      "reasons": [
+        "INSUFFICIENT_COMMON_ALL_HORIZONS_FIXTURES",
+        "INSUFFICIENT_FIXTURES_24H",
+        "INSUFFICIENT_CLUBS_24H",
+        "INSUFFICIENT_FIXTURES_48H",
+        "INSUFFICIENT_CLUBS_48H",
+        "INSUFFICIENT_FIXTURES_72H",
+        "INSUFFICIENT_CLUBS_72H"
+      ],
+      "status": "NO_FIT",
+      "supplied_row_count": 534,
+      "training_row_count": 534,
+      "validated_row_count": 534
+    },
+    "live_adjustment": 0,
+    "manifest": null,
+    "precommit_sha256": "9fc87bf69f796d644585ea0a5dc96800cb4322d42ad523cab2a75fb3ef5a7bc0",
+    "production_change": false,
+    "status": "NO_FIT",
+    "version": "rolling72-global-quantile-tree-v1"
+  },
+  "coverage": {
+    "common_all_horizon_fixture_groups": 2,
+    "coordinate_status_counts": {
+      "READY": 540,
+      "TARGET_NOT_BEFORE_KICKOFF": 726
+    },
+    "duplicate_receipt_files": 0,
+    "input_status_counts": {
+      "DUPLICATE_ALIAS_ISSUE_EXCLUDED": 0,
+      "ISSUE_NOT_BEFORE_KICKOFF": 6049,
+      "MEASUREMENT_CHANGED": 223,
+      "NO_KNOWN_OBSERVATIONS": 170,
+      "ONGOING_FIXTURE_EXCLUDED": 1075,
+      "READY": 422,
+      "STALE_INPUT": 231
+    },
+    "label_attempt_status_counts": {
+      "MATCHED": 534,
+      "STALE_TARGET_OBSERVATION": 635
+    },
+    "mature_missing_target_count": 6,
+    "maximum_days_to_kickoff": 4.109917034884259,
+    "minimum_labeled_prefix_span_hours": 121.50025583333333,
+    "minimum_prefix_span_hours": 0.0,
+    "one_observation_input_count": 24,
+    "one_observation_matched_row_count": 0,
+    "original_receipt_count": 215,
+    "pending_target_count": 0,
+    "per_horizon": {
+      "24": {
+        "club_count": 2,
+        "fixture_group_count": 2,
+        "row_count": 315
+      },
+      "48": {
+        "club_count": 2,
+        "fixture_group_count": 2,
+        "row_count": 166
+      },
+      "72": {
+        "club_count": 2,
+        "fixture_group_count": 2,
+        "row_count": 53
+      }
+    },
+    "receipts_after_cutoff_excluded": 0,
+    "rows_excluded_for_snapshot_revision": 0,
+    "snapshot_revision_conflict_groups": [],
+    "unmatched_target_status_counts": {
+      "STALE_TARGET_OBSERVATION": 6
+    }
+  },
+  "dataset_sha256": "2afb7a6c8fe5d0be4cae6da69291dead0a3ca169cc3c1fdaadb40ec7cb6692fe",
+  "fit_cutoff_at": "2026-11-08T14:28:33.607511+00:00",
+  "historical_archived_evidence_not_new_prospective": true,
+  "identity_registry_sha256": "1b622ee383dc99ce026ffedfa3796cd6c8629d032bb4343e8c2f4357a3a0feb4",
+  "live_adjustment": 0,
+  "pickup": {
+    "artifact_sha256": "48f4e57d5292d50461c9f2374383602a0ad365442e21998db01d190d3dfbd859",
+    "status": "NO_FIT_INSUFFICIENT_SUPPORT",
+    "supported_lookup_cells": 0
+  },
+  "precommit_sha256": "9fc87bf69f796d644585ea0a5dc96800cb4322d42ad523cab2a75fb3ef5a7bc0",
+  "production_change": false,
+  "real_model_fit_performed": false,
+  "version": "rolling72-real-receipt-gate-result-v1"
+}

@@ -1,0 +1,60 @@
+{
+  "browser_artifact": {
+    "bytes": 482208,
+    "downloaded_or_visually_inspected": false,
+    "id": 13705587557,
+    "name": "genuine-rolling72-browser-contract-42687307464"
+  },
+  "draft_pr": 10,
+  "head": "bd01c8b41a8110d74b05ac8ca425509f962effe3",
+  "hosted_ci": {
+    "browser_pr_job": 129397457128,
+    "browser_push_job": 129397414690,
+    "chromium_v1": "success",
+    "chromium_v2": "success",
+    "dashboard_run": 42687306964,
+    "production_build": "success",
+    "rolling72_pr_run": 42687307464,
+    "rolling72_push_run": 42687297466,
+    "typecheck": "success",
+    "v1_contracts": 21,
+    "v2_contracts": 23
+  },
+  "live_adjustment": 0,
+  "production_change": false,
+  "repository": "NiedzielX/BeyondTicketingPanel",
+  "scope": {
+    "exact_stored_values_and_future_points_tested": true,
+    "focus_api_not_keyboard_tab": true,
+    "maturity_warning_tested": true,
+    "mobile_no_horizontal_overflow_not_visual_readability_claim": true,
+    "model_accuracy_proven": false,
+    "normal_production_panel_deployed": false,
+    "old_v1_parser_chart_and_geometry_changed": false,
+    "production_model_promoted": false,
+    "unconfigured_no_requests_and_malformed_fail_closed_tested": true
+  },
+  "snapshot": {
+    "actual_issue_at": "2026-11-09T10:45:31.355823+00:00",
+    "bytes": 1597099,
+    "candidate_numeric_forecasts": 6,
+    "generated_at": "2026-11-09T19:46:21.870612+00:00",
+    "paired_persistence_numeric_forecasts": 6,
+    "scores": 0,
+    "sha256": "857235542d037c96c79b8681afeff9ba324ae967ac0a811e06ae9ccfbc246d3e",
+    "static_snapshot_not_continuous_feed": true,
+    "vintages": 2
+  },
+  "vercel_preview": {
+    "created_at": "2026-11-09T19:51:22Z",
+    "deployment_id": 7664437577,
+    "deployment_status_verified_via_github_api": true,
+    "direct_preview_http_verified": false,
+    "environment_url": "https://beyond-ticketing-panel-5ofvvtex1-n-b334.vercel.app",
+    "route": "/rolling72-ml-preview",
+    "sha": "bd01c8b41a8110d74b05ac8ca425509f962effe3",
+    "state": "success"
+  },
+  "verified_at": "2026-11-09T19:54:16.170976+00:00",
+  "version": "rolling72-ml-panel-preview-proof-v2"
+}

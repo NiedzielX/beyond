@@ -1,0 +1,74 @@
+{
+  "freeze_sha256": "5ba20bb6d7dc94078b07a16a7b7e9d747fffb54b0188b1b8dad8122055f449d5",
+  "hosted_actions_forecast_execution_proven": false,
+  "issued_at": "2026-11-08T20:22:16.293546+00:00",
+  "ledger": {
+    "issues": 2,
+    "live_adjustment": 0,
+    "matched_targets": 0,
+    "mature_unmatched_targets": 0,
+    "metrics": {},
+    "numeric_forecasts": 12,
+    "pending_targets": 6,
+    "prediction_status_rows": 18,
+    "production_change": false,
+    "review_eligible_new_fixtures": 0,
+    "scores": 0,
+    "version": "rolling72-baseline-shadow-ledger-v1"
+  },
+  "live_adjustment": 0,
+  "managed_sql_forecast_persistence_proven": false,
+  "preview_deployed": false,
+  "private_recovery": {
+    "bytes": 610886,
+    "independent_restore_verified": true,
+    "issues": 2,
+    "numeric_forecasts": 12,
+    "private": true,
+    "read_back_verified": true,
+    "scores": 0,
+    "sha256": "72edcd30cd8084ac6e031a2cc8aeeda0335a4d59804970253d1f81dc1794dda3"
+  },
+  "private_storage_recovery_write": true,
+  "production_change": false,
+  "published_source_commit": "3b40ce03c2edf7a64a40bd624c9f4170f61b289f",
+  "real_backend_parser_geometry": {
+    "geometry": [
+      {
+        "anchor_at": "2026-11-08T20:05:03.975000+00:00",
+        "future_points": 3,
+        "issued_at": "2026-11-08T20:22:16.293546+00:00",
+        "prefix_points": 2249,
+        "ticket_event_id": 24
+      },
+      {
+        "anchor_at": "2026-11-08T20:13:03.299000+00:00",
+        "future_points": 3,
+        "issued_at": "2026-11-08T20:22:16.293546+00:00",
+        "prefix_points": 1878,
+        "ticket_event_id": 10500
+      }
+    ],
+    "version": "rolling72-shadow-feed-v1",
+    "vintages": 2
+  },
+  "real_model_fit_performed": false,
+  "sql_production_write": false,
+  "targets": [
+    {
+      "horizon_hours": 24,
+      "target_at": "2026-11-09T20:22:16.293546+00:00"
+    },
+    {
+      "horizon_hours": 48,
+      "target_at": "2026-11-10T20:22:16.293546+00:00"
+    },
+    {
+      "horizon_hours": 72,
+      "target_at": "2026-11-11T20:22:16.293546+00:00"
+    }
+  ],
+  "verified_at": "2026-11-09T10:13:33.706471+00:00",
+  "version": "rolling72-first-real-shadow-proof-v1",
+  "written_at": "2026-11-08T20:22:16.711237+00:00"
+}

@@ -1,0 +1,327 @@
+{
+  "direct_publisher_access": "blocked by HTTP403 proxy, including escalated network attempt",
+  "full_paper_copies_committed": false,
+  "replicated_published_results": false,
+  "review_date": "2026-11-08",
+  "scope": "source access receipts; reading scope and claim limits are in the review document",
+  "source_receipts": [
+    {
+      "access": "author_source_read",
+      "blob_sha": "f0c3d775c3445afb287cf3fc4bd9c500beaadfd4",
+      "bytes": 95,
+      "name": "adaptive_readme",
+      "path": "README.md",
+      "repo": "isgibbs/AdaptiveConformal",
+      "retrieved_at": "2026-11-08T13:06:17.197633+00:00",
+      "sha256": "2f26db4b38756ab3a0a0f4590ad356f5c3934171fa02bf0ed77f3960410a7bc1",
+      "url": "https://github.com/isgibbs/AdaptiveConformal/blob/main/README.md"
+    },
+    {
+      "access": "stored_copy_of_original_paper",
+      "blob_sha": "6ba4b6af391a6490b78e1602b5977ddae7ff5758",
+      "bytes": 3851292,
+      "path": "paper/Customized Regression Model for Airbnb Dynamic Pricing.pdf",
+      "repo": "changyaochen/Columbia_IERO_E4601",
+      "retrieved_at": "2026-11-08T13:12:10.184014+00:00",
+      "sha256": "229fbf571fcc199075821ce10723e223f7834d58f4421d855eeb0a32467f5eba",
+      "url": "https://github.com/changyaochen/Columbia_IERO_E4601/blob/master/paper/Customized%20Regression%20Model%20for%20Airbnb%20Dynamic%20Pricing.pdf"
+    },
+    {
+      "blob_sha": "d0c976c35fd8aa84ab4b8b9e8d0b39085ecafda8",
+      "bytes": 87295,
+      "path": "All/2020/202002380",
+      "repo": "fongisthe1/DataSciProject",
+      "retrieved_at": "2026-11-08T13:11:23.496934+00:00",
+      "sha256": "2f143a8b79d5f80cd4a36e746936d8f90a41eeca6c26ac094a60c545f995990f",
+      "url": "https://github.com/fongisthe1/DataSciProject/blob/main/All/2020/202002380"
+    },
+    {
+      "blob_sha": "dc95cace6af034fb1df1ff3bce265c59d862013b",
+      "bytes": 68634,
+      "path": "All/2022/202202064",
+      "repo": "fongisthe1/DataSciProject",
+      "retrieved_at": "2026-11-08T13:11:23.759598+00:00",
+      "sha256": "ffe40b7fd5a22b7a09e684255765e652e4251d840e81d5dc5be74f1da24d2b9a",
+      "url": "https://github.com/fongisthe1/DataSciProject/blob/main/All/2022/202202064"
+    },
+    {
+      "blob_sha": "7b7a3d9951f8a1aacacb3664534f36ea39ac0c9e",
+      "bytes": 307974,
+      "path": "All/2022/202203281",
+      "repo": "fongisthe1/DataSciProject",
+      "retrieved_at": "2026-11-08T13:11:24.013822+00:00",
+      "sha256": "10d7e2da65402331595aa911179772c584c28bc85a7ce115106349a937ffad90",
+      "url": "https://github.com/fongisthe1/DataSciProject/blob/main/All/2022/202203281"
+    },
+    {
+      "blob_sha": "b77137dad5c0aa076fc2fd10c332eff08f93303f",
+      "bytes": 304593,
+      "path": "All/2023/202302872",
+      "repo": "fongisthe1/DataSciProject",
+      "retrieved_at": "2026-11-08T13:11:23.990042+00:00",
+      "sha256": "d7cbfe28ed3840a9c930c29a9a85b1eeeb10912046ba2047b611ea2630aefcde",
+      "url": "https://github.com/fongisthe1/DataSciProject/blob/main/All/2023/202302872"
+    },
+    {
+      "blob_sha": "9bc4035e592ea1bba7ed13a76215488b579c26a7",
+      "bytes": 21778,
+      "path": "/repos/py-why/EconML/contents/doc/spec/estimation/forest.rst",
+      "sha256": "c3a8c234b9a33d74077e7492115e794f1e2a41280dfe4a4993c5d3369a36b0a8",
+      "url": "https://github.com/py-why/EconML/blob/main/doc/spec/estimation/forest.rst"
+    },
+    {
+      "access": "author_source_read",
+      "blob_sha": "1ec146a2e037a7725f53ae6bdfba22970804efb2",
+      "bytes": 11168,
+      "name": "chronos_readme",
+      "path": "README.md",
+      "repo": "amazon-science/chronos-forecasting",
+      "retrieved_at": "2026-11-08T13:06:17.185230+00:00",
+      "sha256": "7f9e55723daadb20f79f3d76d23370888301d917f075e9eafa3e780c78f9ff35",
+      "url": "https://github.com/amazon-science/chronos-forecasting/blob/main/README.md"
+    },
+    {
+      "access": "author_source_read",
+      "blob_sha": "34ecd17cf95d30d9564ba83f4b93f91ec71cb05d",
+      "bytes": 7522,
+      "name": "conformal_readme",
+      "path": "README.md",
+      "repo": "aangelopoulos/conformal-prediction",
+      "retrieved_at": "2026-11-08T13:06:16.906778+00:00",
+      "sha256": "bebf9402e4f2703976a919463d5b208c1990a0bb1a42585ed3ad15f84c2bab49",
+      "url": "https://github.com/aangelopoulos/conformal-prediction/blob/main/README.md"
+    },
+    {
+      "access": "author_source_read",
+      "blob_sha": "e41484776dea484ad39daa774e5788d43635286f",
+      "bytes": 5479,
+      "name": "cqr_readme",
+      "path": "README.md",
+      "repo": "yromano/cqr",
+      "retrieved_at": "2026-11-08T13:06:17.120418+00:00",
+      "sha256": "b6a483bce177a96597f96b090b5837707b9f5b2efe06dfd79c370f07cada0bd7",
+      "url": "https://github.com/yromano/cqr/blob/master/README.md"
+    },
+    {
+      "blob_sha": "74a19221327a5d5f3e20d796eab2dff30a9395e1",
+      "bytes": 40543,
+      "path": "/repos/py-why/EconML/contents/doc/spec/estimation/dml.rst",
+      "sha256": "48fe9e8a9dd8644e53d9d7f987604bf3340c075dffb2be80b313c2000f4876eb",
+      "url": "https://github.com/py-why/EconML/blob/main/doc/spec/estimation/dml.rst"
+    },
+    {
+      "access": "stored_copy_of_original_paper",
+      "blob_sha": "73876fd7d434ac5f387274806ea4c4003c8c12c5",
+      "bytes": 1364429,
+      "path": "paper/dynamic pricing and learning.pdf",
+      "repo": "changyaochen/Columbia_IERO_E4601",
+      "retrieved_at": "2026-11-08T13:12:09.606957+00:00",
+      "sha256": "1fb4ab9164a3ed366d8cac2453dc12984bb74ea0f0627e77de620331925d76da",
+      "url": "https://github.com/changyaochen/Columbia_IERO_E4601/blob/master/paper/dynamic%20pricing%20and%20learning.pdf"
+    },
+    {
+      "access": "author_source_read",
+      "blob_sha": "609e03804b59599a603b0c78af0a783350df7172",
+      "bytes": 42812,
+      "name": "econml_readme",
+      "path": "README.md",
+      "repo": "py-why/EconML",
+      "retrieved_at": "2026-11-08T13:06:17.314926+00:00",
+      "sha256": "bb565d2ae4a7cc11ec67b3b8d884efb5314ddb82888738640dfa0b350a266b16",
+      "url": "https://github.com/py-why/EconML/blob/main/README.md"
+    },
+    {
+      "access": "author_source_read",
+      "blob_sha": "b8d078777d2ee82d28b0022f48ba8cc14641a4c9",
+      "bytes": 9955,
+      "name": "enbpi_readme",
+      "path": "README.md",
+      "repo": "hamrel-cxu/EnbPI",
+      "retrieved_at": "2026-11-08T13:06:17.270086+00:00",
+      "sha256": "8feb3f1f291b707dc1704954f03405bdf80990a0221f548155d39d6bfccaee55",
+      "url": "https://github.com/hamrel-cxu/EnbPI/blob/main/README.md"
+    },
+    {
+      "access": "author_source_read",
+      "blob_sha": "c912a5d2fd1850b9ed1d99db76942029c6c71d4e",
+      "bytes": 7237,
+      "name": "fpp_5-10-tscv",
+      "path": "5-10-tscv.Rmd",
+      "repo": "robjhyndman/fpp3_slides",
+      "retrieved_at": "2026-11-08T13:06:16.500484+00:00",
+      "sha256": "d44e65bd03606197db7ae644d49a9d6d335fbc0efe8745ee077ccdef0f556464",
+      "url": "https://github.com/robjhyndman/fpp3_slides/blob/main/5-10-tscv.Rmd"
+    },
+    {
+      "access": "author_source_read",
+      "blob_sha": "9176e4242920f08913d3d3085256fbed62991abd",
+      "bytes": 5040,
+      "name": "fpp_5-2-benchmarks",
+      "path": "5-2-benchmarks.Rmd",
+      "repo": "robjhyndman/fpp3_slides",
+      "retrieved_at": "2026-11-08T13:06:16.495595+00:00",
+      "sha256": "74056ff95d5e366ddb053d8bf8d3ca73d83f2a1c17fb5b15bf74ec9a8c969d1c",
+      "url": "https://github.com/robjhyndman/fpp3_slides/blob/main/5-2-benchmarks.Rmd"
+    },
+    {
+      "access": "author_source_read",
+      "blob_sha": "dec795603217e415c452eafb86f3c0ca5feaba9a",
+      "bytes": 4788,
+      "name": "fpp_5-8-evaluating_point",
+      "path": "5-8-evaluating_point.Rmd",
+      "repo": "robjhyndman/fpp3_slides",
+      "retrieved_at": "2026-11-08T13:06:16.491434+00:00",
+      "sha256": "8b84356f8c90d1557451ac12e19bcd3c18d6b43a6ba363c03e5e0144ebbb4dc5",
+      "url": "https://github.com/robjhyndman/fpp3_slides/blob/main/5-8-evaluating_point.Rmd"
+    },
+    {
+      "access": "author_source_read",
+      "blob_sha": "639ce6974eaae2b3339aaf01324d8973fc2fc5ab",
+      "bytes": 5608,
+      "name": "fpp_5-9-eval-distributions",
+      "path": "5-9-eval-distributions.Rmd",
+      "repo": "robjhyndman/fpp3_slides",
+      "retrieved_at": "2026-11-08T13:06:16.509623+00:00",
+      "sha256": "d5a236abdd5e8390a408cfe3156c3f0e50d46a4cfdd5c5e9f7d45ebd10c54c78",
+      "url": "https://github.com/robjhyndman/fpp3_slides/blob/main/5-9-eval-distributions.Rmd"
+    },
+    {
+      "access": "author_source_read",
+      "blob_sha": "4393ec1b3a5d548b9f67207dc5ec06293efaadca",
+      "bytes": 2240,
+      "name": "fpp_7-6-forecasting-regression",
+      "path": "7-6-forecasting-regression.Rmd",
+      "repo": "robjhyndman/fpp3_slides",
+      "retrieved_at": "2026-11-08T13:06:16.517545+00:00",
+      "sha256": "a89aada00f0b73bd3ca4f956083ec9da8084f6efe6e66e4e047d3c91784f0ce2",
+      "url": "https://github.com/robjhyndman/fpp3_slides/blob/main/7-6-forecasting-regression.Rmd"
+    },
+    {
+      "access": "author_source_read",
+      "blob_sha": "24e35dc21c3dc2bbc5aa1cfbc17c622adde4ec5b",
+      "bytes": 1613,
+      "name": "fpp_7-8-causation",
+      "path": "7-8-causation.Rmd",
+      "repo": "robjhyndman/fpp3_slides",
+      "retrieved_at": "2026-11-08T13:06:16.858260+00:00",
+      "sha256": "b40fffd6623d1791c14629d9825e146911a8425dee4457687c973bf69c563e99",
+      "url": "https://github.com/robjhyndman/fpp3_slides/blob/main/7-8-causation.Rmd"
+    },
+    {
+      "access": "author_source_read",
+      "blob_sha": "3b5d0fce5319b333d66a4f020c4f74ed26873653",
+      "bytes": 5739,
+      "name": "fpp_8-2-trend",
+      "path": "8-2-trend.Rmd",
+      "repo": "robjhyndman/fpp3_slides",
+      "retrieved_at": "2026-11-08T13:06:16.719510+00:00",
+      "sha256": "3a01069f76e8350b78cd40eee9618ac4317f39316ee462d67813d881dd4ca91e",
+      "url": "https://github.com/robjhyndman/fpp3_slides/blob/main/8-2-trend.Rmd"
+    },
+    {
+      "blob_sha": "539d88e8b0ddae5eb4fbeee8a2479b3da36c3b52",
+      "bytes": 38676,
+      "path": "/repos/fongisthe1/DataSciProject/contents/All/2020/202001937",
+      "sha256": "95b1ef445ea8b7b182ee9d094b447188b7468122377e1e3c0372b28ebe8c54ef",
+      "url": "https://github.com/fongisthe1/DataSciProject/blob/main/All/2020/202001937"
+    },
+    {
+      "blob_sha": "1cb06d55fc239843aa30841b59f5c55162e60606",
+      "bytes": 61167,
+      "path": "All/2023/202301815",
+      "repo": "fongisthe1/DataSciProject",
+      "retrieved_at": "2026-11-08T13:09:43.542529+00:00",
+      "sha256": "0b366ed53a9b460f79746cdf2e76066fbc2f95505a9617559f93094ceae98e3b",
+      "url": "https://github.com/fongisthe1/DataSciProject/blob/main/All/2023/202301815"
+    },
+    {
+      "blob_sha": "51c39431045250c3fdc22a456bc7b4077d919770",
+      "bytes": 1243166,
+      "path": "M5-Competitors-Guide.pdf",
+      "repo": "Mcompetitions/M5-methods",
+      "retrieved_at": "2026-11-08T13:09:44.146422+00:00",
+      "sha256": "f2650a2dbfb14d2c7d4482bda66c129ce5eec9341a76b76a833219559bf17109",
+      "url": "https://github.com/Mcompetitions/M5-methods/blob/master/M5-Competitors-Guide.pdf"
+    },
+    {
+      "access": "author_source_read",
+      "blob_sha": "20b0aa99cab2f1407299d088ae81b3ba592f5d3a",
+      "bytes": 1887,
+      "name": "m5_readme",
+      "path": "README.md",
+      "repo": "Mcompetitions/M5-methods",
+      "retrieved_at": "2026-11-08T13:06:16.829909+00:00",
+      "sha256": "a554e04f9a7596404ccffc739680726bb8cdc753069cfd6d1335a0b0980933e1",
+      "url": "https://github.com/Mcompetitions/M5-methods/blob/master/README.md"
+    },
+    {
+      "blob_sha": "23a3d1e75da9481f1e85e618183369bb4e4e0ed6",
+      "bytes": 653,
+      "path": "README.md",
+      "repo": "Franky03/Predictive-Prescriptions",
+      "retrieved_at": "2026-11-08T13:09:43.469866+00:00",
+      "sha256": "656e9c0df00e1c88f1d66cb78f16f29eb9187a51ad6ba27e90df1fa013f3b2cf",
+      "url": "https://github.com/Franky03/Predictive-Prescriptions/blob/master/README.md"
+    },
+    {
+      "blob_sha": "0fcd821c3ad78fd383928769e0388b041a2f7198",
+      "bytes": 14364,
+      "path": "README.md",
+      "repo": "DallasBuyer/awesome-dynamic-pricing",
+      "retrieved_at": "2026-11-08T13:09:43.474127+00:00",
+      "sha256": "b6c3df5a548ab7aa8acb9384f64e01c4e3ba5c739afe3cf310adee2f5be9a1e5",
+      "url": "https://github.com/DallasBuyer/awesome-dynamic-pricing/blob/main/README.md"
+    },
+    {
+      "blob_sha": "dd516c5f71d2fb4383d3db98b2bd6f67e8d65a34",
+      "bytes": 70121,
+      "path": "4 - Booking limits_post.pdf",
+      "repo": "changyaochen/Columbia_IERO_E4601",
+      "retrieved_at": "2026-11-08T13:11:23.461128+00:00",
+      "sha256": "10b61df852bdeaae1055ee5746ba7f34ac1a4b4f67d94ce0d84bba8f4dce0ea9",
+      "url": "https://github.com/changyaochen/Columbia_IERO_E4601/blob/master/4%20-%20Booking%20limits_post.pdf"
+    },
+    {
+      "blob_sha": "8f80d731030d22234a8419953692aaf39f3548e7",
+      "bytes": 3649,
+      "path": "README.md",
+      "repo": "changyaochen/Columbia_IERO_E4601",
+      "retrieved_at": "2026-11-08T13:11:23.313292+00:00",
+      "sha256": "ea7b388451bb59989dc1ef16a0060dde2e8d2d1c1ddea26a032a005576d0638b",
+      "url": "https://github.com/changyaochen/Columbia_IERO_E4601/blob/master/README.md"
+    },
+    {
+      "blob_sha": "06eae576bf31a3f9ab4da238d32ce3af5ac284ca",
+      "bytes": 112498,
+      "path": "2 - Population-level demand models_post.pdf",
+      "repo": "changyaochen/Columbia_IERO_E4601",
+      "retrieved_at": "2026-11-08T13:11:23.523006+00:00",
+      "sha256": "5413744f3e185b251143a55e009ad32ebe750d65ac9537dce3c3d581bccd5c89",
+      "url": "https://github.com/changyaochen/Columbia_IERO_E4601/blob/master/2%20-%20Population-level%20demand%20models_post.pdf"
+    },
+    {
+      "blob_sha": "90dea816b3ea6a1aa98eab68a0da897ef4897661",
+      "bytes": 136078,
+      "html_url": "https://github.com/scikit-learn/scikit-learn/blob/main/doc/modules/model_evaluation.rst",
+      "path": "/repos/scikit-learn/scikit-learn/contents/doc/modules/model_evaluation.rst",
+      "repo": [
+        "scikit-learn",
+        "scikit-learn"
+      ],
+      "retrieved_at": "2026-11-08T13:08:02.977760+00:00",
+      "sha256": "4301ba7093c185cf58df5bdd21f7e138f70cdf27590dafcce5e73708cddaced1"
+    },
+    {
+      "access": "author_source_read",
+      "blob_sha": "ddd623928320c12451a834e83f9d0fbe05749964",
+      "bytes": 3613,
+      "name": "trees_readme",
+      "path": "README.md",
+      "repo": "LeoGrin/tabular-benchmark",
+      "retrieved_at": "2026-11-08T13:06:16.892409+00:00",
+      "sha256": "ce0f256bb342d531f425e9315c4059d801bb108ab3d2fa27f540384ee78cf98b",
+      "url": "https://github.com/LeoGrin/tabular-benchmark/blob/main/README.md"
+    }
+  ],
+  "version": "rolling72-literature-access-v1"
+}

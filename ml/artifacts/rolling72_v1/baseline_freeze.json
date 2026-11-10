@@ -1,0 +1,16 @@
+{
+  "code_sha256": {
+    "ml/demand_engine/rolling72_benchmarks_v1.py": "42e513b392f1f8e66503a4731bb603becd53518808d4aa3f7f81464e66be3601",
+    "ml/demand_engine/rolling72_features_v1.py": "9baea3df0dbf09f8b144bb599b1aec1d587d6ecb351c6f3dd4ab32b6ff3a4ae3",
+    "ml/demand_engine/rolling72_labels_v1.py": "2d9d8cbe18e2ea9b579723d40477a65c63a3baec303a79c908241c35c73bfb66",
+    "ml/rolling72_receipt_store_v1.py": "e75ab9f7066daa339a4b447841eb2333124998ca61b378ce29813a3458d2c858",
+    "ml/rolling72_shadow_ledger_v1.py": "a879af29ba6e04051f37ecdc347bb4776a124fc71b9eae4f275793606c233411"
+  },
+  "freeze_sha256": "5ba20bb6d7dc94078b07a16a7b7e9d747fffb54b0188b1b8dad8122055f449d5",
+  "frozen_at": "2026-11-08T20:14:48.991777+00:00",
+  "live_adjustment": 0,
+  "model_fit_performed": false,
+  "precommit_sha256": "9fc87bf69f796d644585ea0a5dc96800cb4322d42ad523cab2a75fb3ef5a7bc0",
+  "production_change": false,
+  "version": "rolling72-baseline-shadow-ledger-v1"
+}

@@ -1,0 +1,144 @@
+{
+  "candidate": {
+    "estimator": "sklearn.ensemble.HistGradientBoostingRegressor",
+    "id": "rolling72-global-quantile-tree-v1",
+    "parameters": {
+      "categorical_features": null,
+      "early_stopping": false,
+      "l2_regularization": 1.0,
+      "learning_rate": 0.05,
+      "loss": "quantile",
+      "max_bins": 64,
+      "max_depth": 3,
+      "max_iter": 100,
+      "max_leaf_nodes": 7,
+      "min_samples_leaf": 20,
+      "quantile": 0.5,
+      "random_state": 42
+    },
+    "preprocessing": "fixed ordered12numeric features; null->NaN; no fitted imputation or scaling",
+    "selection": "one fit only if gates pass; no search or historical winner selection",
+    "sklearn_version": "1.8.0",
+    "target": "matched_available_total-last_real_available_total"
+  },
+  "created_at": "2026-11-08T14:28:33.607511+00:00",
+  "drift": {
+    "anchor": "latest genuine row at/before latest_capture-24h, within6h before boundary",
+    "existing_frozen_drift_ledger_modified": false,
+    "fallback": "UNAVAILABLE, never silently persistence",
+    "formula": "max(0,last+slope_24h*(horizon_hours+latest_staleness_hours))",
+    "id": "rolling72-observed-24h-drift-v1",
+    "min_hourly_points": 4,
+    "min_hourly_prefix_span_hours": 24,
+    "sampling": "latest genuine capture/id in each UTC hour"
+  },
+  "evaluation": {
+    "bootstrap": {
+      "confidence": 0.95,
+      "replicates": 10000,
+      "seed": 42,
+      "unit": "fixture"
+    },
+    "existing_export_fixtures": "operational prospective targets allowed; old exposed fixtures excluded from new-independent review cohort",
+    "mae": "mean_events(mean_issued_scored_points(abs(error))) per horizon",
+    "paired": "same issue,target,source,label; report drift-only shared coverage separately",
+    "review_min_clubs": 8,
+    "review_min_new_fixtures": 30,
+    "warning": {
+      "actual": "matched_available-last_available<=-250",
+      "causal_or_paid_sales_claim": false,
+      "id": "public-inventory-drop-250-v1",
+      "metrics": [
+        "precision",
+        "recall",
+        "false_alarms",
+        "actual_lead_hours"
+      ],
+      "predicted": "predicted_available-last_available<=-250"
+    }
+  },
+  "features": [
+    "last_available_total",
+    "observed_delta_since_first",
+    "prefix_span_hours",
+    "latest_staleness_hours",
+    "hours_to_kickoff",
+    "horizon_hours",
+    "delta_6h",
+    "slope_6h",
+    "delta_24h",
+    "slope_24h",
+    "delta_72h",
+    "slope_72h"
+  ],
+  "fit_cutoff_at": "2026-11-08T14:28:33.607511+00:00",
+  "horizons_hours": [
+    24,
+    48,
+    72
+  ],
+  "live_adjustment": 0,
+  "matching": {
+    "max_target_staleness_hours": 6,
+    "report_actual_elapsed": true,
+    "score_finalisation": "first accepted immutable label plus original source receipt; later reads never revise accepted score",
+    "target": "issue+horizon strictly before kickoff; actual capture after issue"
+  },
+  "output": {
+    "capacity_upper_cap": null,
+    "forced_monotonicity": false,
+    "intervals": false,
+    "nonnegative_projection": "max(0,last+predicted_delta)",
+    "scenario_stability": "UNKNOWN unless factual intervention evidence"
+  },
+  "persistence": {
+    "formula": "last_real_available_total",
+    "id": "rolling72-persistence-v1"
+  },
+  "pickup": {
+    "current_fixture_excluded": true,
+    "id": "rolling72-conditional-pickup-v1",
+    "maturity_bins_days": [
+      0,
+      3,
+      7,
+      15,
+      30,
+      50
+    ],
+    "median": "smallest observed delta with cumulative weight>=0.5 total, no interpolation",
+    "min_clubs": 3,
+    "min_fixtures": 5,
+    "routing": [
+      "same_source_family+horizon+maturity_cell",
+      "same_source_family+horizon pooled over maturity",
+      "UNAVAILABLE"
+    ],
+    "weights": "1/N_rows_event_in_selected_cell"
+  },
+  "precommit_sha256": "9fc87bf69f796d644585ea0a5dc96800cb4322d42ad523cab2a75fb3ef5a7bc0",
+  "primary_horizon_hours": 72,
+  "production_change": false,
+  "source_families": [
+    "roboticket/roboticket",
+    "stellis/stellis_visible_available"
+  ],
+  "target": "public-displayed-available-total-v1",
+  "training": {
+    "completed_only": true,
+    "current_inference_fixture_in_fit": false,
+    "evidence": "original-receipt-known-bounds-only",
+    "grouping": "union same ticket_event_id and same provider+source_domain+club_slug+external_event_id using real archived registry; unknown identities remain excluded from independent support",
+    "late_label_rule": "first original receipt at/after nominal target that supplies a matching known label, and receipt<=fit_cutoff",
+    "min_clubs_per_horizon": 3,
+    "min_common_all_horizons_fixtures": 5,
+    "min_independent_fixtures_per_horizon": 5,
+    "min_total_labeled_rows": 60,
+    "ongoing_fixtures_in_fit": false,
+    "origins": "all actual manifest-verified receipt retrievals; one input per fixture and receipt",
+    "random_row_split": false,
+    "sample_weight": "N_rows/(N_common_events*3*N_rows_event_horizon)",
+    "snapshot_revision_conflict": "fail-closed"
+  },
+  "version": "rolling72-benchmarks-and-quantile-tree-precommit-v1"
+}
