@@ -2730,7 +2730,19 @@
     "version": "rolling72-chronological-event-heldout-replay-v1"
   },
   "formal_fresh_review_closed": true,
+  "hosted_ci": {
+    "code_sha": "8a695f17c2c7a50bb07cd3ecd4dd2945ec767de0",
+    "conclusion": "success",
+    "pr_run": 42801246289,
+    "push_run": 42801235705
+  },
   "live_adjustment": 0,
+  "local_recovery": {
+    "byte_reconstruction_verified": true,
+    "files": 18,
+    "remote_upload_performed": false,
+    "sha256": "5c2defeb5223b0ca176ad9911d59169ddc2e203693d525f12ad0f74d5ae55981"
+  },
   "no_prospective_forecasts_backfilled": true,
   "packet_manifest_sha256": "0320ec0425bdc231fe42b076b2a01b606312e3e6a992b46bf64f57b8d8bae900",
   "production_change": false,
