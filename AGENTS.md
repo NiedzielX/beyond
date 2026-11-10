@@ -217,3 +217,7 @@ If the candidate is materially changed after outcomes are seen, create a new pre
 - keep `live_adjustment = 0`.
 
 The old ChatGPT Beyond readiness automations remain disabled. Do not enable them implicitly.
+
+## Agent resource budget
+
+User preference confirmed November10: use at most one parallel sub-agent, default model `gpt-6-luna` with a narrow self-contained task and no full-history fork. The parent owns integration, publication and final validation. Do not launch heavier agents or increase parallelism unless the user changes this preference. Read the current canonical sections in order and the exact relevant precommit; avoid copying unrelated historical logs into sub-agent context.

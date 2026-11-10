@@ -168,6 +168,9 @@ jobs:
       - name: Verify separately precommitted offline v2 contracts with synthetic fits only
         run: python -m unittest ml.test_rolling72_offline_dataset_v2 ml.test_rolling72_offline_challenger_v2 ml.test_rolling72_paired_shadow_v2 ml.test_rolling72_backup_v2 ml.test_rolling72_cycle_v2 ml.test_rolling72_worker_v2 ml.test_rolling72_feed_v2 -v
 
+      - name: Verify chronological historical replay isolation with synthetic data only
+        run: python -m unittest ml.test_rolling72_historical_replay_packets_v1 ml.test_rolling72_historical_replay_v1 -v
+
       - name: Verify daily inventory path CLI and local ledger lifecycle
         run: python -m unittest ml.test_run_daily_inventory_path_v1 ml.test_run_daily_inventory_path_cycle_v1 -v
 

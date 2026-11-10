@@ -25,3 +25,7 @@ Persistent user goal: the lowest honest prospective MAE, still aiming for approx
 Whole-sales-lifecycle rule: after sales open, the first genuine observation (even one point) starts rolling+24/+48/+72h forecasts. Re-issue throughout the observed sales period, e.g.P-50→P-49/P-48/P-47 andP-15→P-14/P-13/P-12. Do not turn these horizons into a final72h activation window or invent the missed beginning of sales. Preserve existing frozen eligibility contracts; the first-observation route belongs to a new version.
 
 Read `ml/ROLLING_72H_LITERATURE_REVIEW_2026-11-08.md` before rolling72implementation. Preserve its source-access limits and distinguish MAE forecasting, sector-specific early warnings and causal price/ad revenue effects. The review changed no frozen model/gate and confirms no guaranteed1200result.
+
+## Agent resource budget
+
+User preference confirmed November10: use at most one parallel sub-agent, default model `gpt-6-luna` with a narrow self-contained task and no full-history fork. The parent owns integration, publication and final validation. Do not launch heavier agents or increase parallelism unless the user changes this preference. Read the current canonical sections in order and the exact relevant precommit; avoid copying unrelated historical logs into sub-agent context.

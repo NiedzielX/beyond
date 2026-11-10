@@ -1,0 +1,242 @@
+{
+  "live_adjustment": 0,
+  "old_forecasts_unchanged": true,
+  "production_change": false,
+  "same_models_code_deadlines": true,
+  "v1": {
+    "cycle_count": 1,
+    "error_count": 0,
+    "last_cycle": {
+      "checked_at": "2026-11-10T10:34:56.067546+00:00",
+      "due": {
+        "capture_event_ids": [],
+        "due": false,
+        "mature_unmatched_targets": [],
+        "next_due_at": "2026-11-10T20:32:16.293546+00:00"
+      },
+      "live_adjustment": 0,
+      "network_reads": 0,
+      "production_change": false,
+      "status": "NOT_DUE",
+      "until": "2026-11-12T10:18:45.051057+00:00",
+      "version": "rolling72-bounded-cycle-v1"
+    },
+    "ledger": {
+      "issues": 6,
+      "live_adjustment": 0,
+      "matched_targets": 4,
+      "mature_unmatched_targets": 0,
+      "metrics": {
+        "+24h/drift": {
+          "event_balanced_bias": 5.501677811382251,
+          "event_balanced_mae": 5.501677811382251,
+          "p90_absolute_error_pooled_points_nearest_rank": 10.003355622764502,
+          "scored_fixtures": 2,
+          "scored_points": 2,
+          "worst_absolute_error": 10.003355622764502
+        },
+        "+24h/persistence": {
+          "event_balanced_bias": 9.0,
+          "event_balanced_mae": 9.0,
+          "p90_absolute_error_pooled_points_nearest_rank": 16.0,
+          "scored_fixtures": 2,
+          "scored_points": 4,
+          "worst_absolute_error": 16.0
+        }
+      },
+      "numeric_forecasts": 30,
+      "pending_targets": 14,
+      "prediction_status_rows": 54,
+      "production_change": false,
+      "review_eligible_new_fixtures": 0,
+      "scores": 6,
+      "version": "rolling72-baseline-shadow-ledger-v1"
+    },
+    "pid": 2228,
+    "resumed_at": "2026-11-10T10:34:55.782250+00:00",
+    "status": "RUNNING",
+    "until": "2026-11-12T10:18:45.051057+00:00"
+  },
+  "v2": {
+    "cycle_count": 1,
+    "error_count": 0,
+    "last_cycle": {
+      "checked_at": "2026-11-10T10:34:56.077183+00:00",
+      "due": {
+        "capture_event_ids": [],
+        "due": false,
+        "mature_unmatched_targets": [],
+        "next_due_at": "2026-11-10T10:55:31.355823+00:00"
+      },
+      "live_adjustment": 0,
+      "network_reads": 0,
+      "production_change": false,
+      "status": "NOT_DUE",
+      "until": "2026-11-12T12:00:00+00:00",
+      "version": "rolling72-bounded-cycle-v2"
+    },
+    "ledger": {
+      "cohort": "exposed_or_unverified_fixture_not_new_review",
+      "formal_review_gate": "CLOSED",
+      "issues": 2,
+      "live_adjustment": 0,
+      "matched_targets": 0,
+      "mature_unmatched_targets": 0,
+      "measurement": "public-displayed-available-total-v1",
+      "metrics": {},
+      "numeric_forecasts": 12,
+      "paired_metrics": {
+        "+24h/candidate-vs-drift": {
+          "baseline": {
+            "event_balanced_bias": null,
+            "event_balanced_mae": null,
+            "scored_fixtures": 0,
+            "scored_points": 0
+          },
+          "candidate": {
+            "event_balanced_bias": null,
+            "event_balanced_mae": null,
+            "scored_fixtures": 0,
+            "scored_points": 0
+          },
+          "event_balanced_mae_difference_candidate_minus_baseline": null
+        },
+        "+24h/candidate-vs-persistence": {
+          "baseline": {
+            "event_balanced_bias": null,
+            "event_balanced_mae": null,
+            "scored_fixtures": 0,
+            "scored_points": 0
+          },
+          "candidate": {
+            "event_balanced_bias": null,
+            "event_balanced_mae": null,
+            "scored_fixtures": 0,
+            "scored_points": 0
+          },
+          "event_balanced_mae_difference_candidate_minus_baseline": null
+        },
+        "+24h/candidate-vs-pickup": {
+          "baseline": {
+            "event_balanced_bias": null,
+            "event_balanced_mae": null,
+            "scored_fixtures": 0,
+            "scored_points": 0
+          },
+          "candidate": {
+            "event_balanced_bias": null,
+            "event_balanced_mae": null,
+            "scored_fixtures": 0,
+            "scored_points": 0
+          },
+          "event_balanced_mae_difference_candidate_minus_baseline": null
+        },
+        "+48h/candidate-vs-drift": {
+          "baseline": {
+            "event_balanced_bias": null,
+            "event_balanced_mae": null,
+            "scored_fixtures": 0,
+            "scored_points": 0
+          },
+          "candidate": {
+            "event_balanced_bias": null,
+            "event_balanced_mae": null,
+            "scored_fixtures": 0,
+            "scored_points": 0
+          },
+          "event_balanced_mae_difference_candidate_minus_baseline": null
+        },
+        "+48h/candidate-vs-persistence": {
+          "baseline": {
+            "event_balanced_bias": null,
+            "event_balanced_mae": null,
+            "scored_fixtures": 0,
+            "scored_points": 0
+          },
+          "candidate": {
+            "event_balanced_bias": null,
+            "event_balanced_mae": null,
+            "scored_fixtures": 0,
+            "scored_points": 0
+          },
+          "event_balanced_mae_difference_candidate_minus_baseline": null
+        },
+        "+48h/candidate-vs-pickup": {
+          "baseline": {
+            "event_balanced_bias": null,
+            "event_balanced_mae": null,
+            "scored_fixtures": 0,
+            "scored_points": 0
+          },
+          "candidate": {
+            "event_balanced_bias": null,
+            "event_balanced_mae": null,
+            "scored_fixtures": 0,
+            "scored_points": 0
+          },
+          "event_balanced_mae_difference_candidate_minus_baseline": null
+        },
+        "+72h/candidate-vs-drift": {
+          "baseline": {
+            "event_balanced_bias": null,
+            "event_balanced_mae": null,
+            "scored_fixtures": 0,
+            "scored_points": 0
+          },
+          "candidate": {
+            "event_balanced_bias": null,
+            "event_balanced_mae": null,
+            "scored_fixtures": 0,
+            "scored_points": 0
+          },
+          "event_balanced_mae_difference_candidate_minus_baseline": null
+        },
+        "+72h/candidate-vs-persistence": {
+          "baseline": {
+            "event_balanced_bias": null,
+            "event_balanced_mae": null,
+            "scored_fixtures": 0,
+            "scored_points": 0
+          },
+          "candidate": {
+            "event_balanced_bias": null,
+            "event_balanced_mae": null,
+            "scored_fixtures": 0,
+            "scored_points": 0
+          },
+          "event_balanced_mae_difference_candidate_minus_baseline": null
+        },
+        "+72h/candidate-vs-pickup": {
+          "baseline": {
+            "event_balanced_bias": null,
+            "event_balanced_mae": null,
+            "scored_fixtures": 0,
+            "scored_points": 0
+          },
+          "candidate": {
+            "event_balanced_bias": null,
+            "event_balanced_mae": null,
+            "scored_fixtures": 0,
+            "scored_points": 0
+          },
+          "event_balanced_mae_difference_candidate_minus_baseline": null
+        }
+      },
+      "pending_targets": 6,
+      "prediction_status_rows": 24,
+      "production_change": false,
+      "required_new_clubs": 8,
+      "required_new_fixtures": 30,
+      "review_eligible_new_fixtures": 0,
+      "scores": 0,
+      "synthetic_test": false,
+      "version": "rolling72-paired-prospective-shadow-v2"
+    },
+    "pid": 2229,
+    "resumed_at": "2026-11-10T10:34:55.782250+00:00",
+    "status": "RUNNING",
+    "until": "2026-11-12T12:00:00+00:00"
+  },
+  "verified_at": "2026-11-10T10:35:39.846746+00:00",
+  "version": "rolling72-cloud-resume-proof-2026-11-10"
+}
