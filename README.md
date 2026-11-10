@@ -37,6 +37,8 @@ Production remains:
 
 ## Daily-path MVP and cloud validation
 
+[Historical blind24/48/72h result](ml/ROLLING_72H_HISTORICAL_BACKTEST_RESULT_2026-11-10.md): modelMAE213.91/347.35/452.96 versus pairedpersistence334.70/551.01/780.10 on15/14/14fixtures. Outcomes were withheld until predictions were sealed. Availability errors, retrospective capture-clock evidence, not attendance/liveaccuracy or promotion. [Cloudcollectors recovered](ml/ROLLING_72H_CLOUD_RESUME_PROOF_2026-11-10.json) with the same frozenweights/deadlines.
+
 **Actual ML preview:** [open the separate dated Vercel preview](https://beyond-ticketing-panel-5ofvvtex1-n-b334.vercel.app/rolling72-ml-preview), [typecheck/build/Chromium/deployment proof](ml/ROLLING_72H_ML_PANEL_PROOF_2026-11-09.json). Six genuine learned24/48/72h forecasts, paired benchmarks and original observations; static research snapshot, no demonstrated accuracy gain. [Live fixture coverage audit](ml/FUTURE_FIXTURE_COVERAGE_AUDIT_2026-11-09.md) shows only3futurefixtures/3clubs; discovery/admission is the next data bottleneck.
 
 **Actual paired ML shadow, November9:** [six new learned forecasts plus six paired persistence forecasts](ml/ROLLING_72H_FIRST_PAIRED_SHADOW_RESULT_2026-11-09.md) were issued at11:45Warsaw, privately backed up and restored. The bounded cloud worker runs untilNovember12 13:00Warsaw. First new-model24h outcome/scoring isNovember10 11:45/11:55Warsaw; MAE is pending. Separate v2panel feed/preview follows without altering frozen forecasts.

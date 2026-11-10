@@ -55,3 +55,5 @@ This index is durable memory, not a substitute for the authoritative execution p
 - [One fit and mechanism evidence](lessons/2026-11-09-one-fit-and-mechanism-evidence.md): one canonical real output directory, actual history sensitivity versus future MAE, unobserved latency, and explicit typecheck/browser versus deployment proof.
 
 - [Source catalogue and independent support](lessons/2026-11-09-source-catalogue-and-independent-support.md): three future fixtures cannot supply30independent review events; collector freshness differs from admission, and source URL roles require explicit provenance.
+
+- [Historical replay with withheld outcomes](lessons/2026-11-10-historical-replay-withheld-outcomes.md): capture-clock diagnostics without falsePITclaims, poisoning bothfuturelabel routes, fullcoverage/exactpairedmacro, and chat-accessfailure versus detachedcollector evidence.

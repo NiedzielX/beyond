@@ -11,3 +11,6 @@ Resourcepreferencepersisted inAGENTS/CLAUDE: maxoneLunaagent,narrowcontext,paren
 
 
 FreshLunaagentcompleted4enginecontracts; parentaddedactualexcludedfuturetraining-labelpoisoning, pairedfixturemacrovsrowweighting, seal-tamper-beforetruthchecks. Combined22syntheticchecksPASS; no frozenengine/model/workerchange. Sourcepublishwillprecede actualpacketprepare and8historicaldiagnosticfits. Exactactive-v2artifactisnotusedorrefitted; testoutcomesloadedonlyaftersigned-by-checksumlocalpredictionseal.
+
+
+Published8a695f17 beforeactualpacketprepare/fit. Actualpredictionbatch10:41:45–48UTC,8fits/12supportsets,900coordinatessealedSHA7104068f…beforeseparatescoretruthread. Exactexpectedcandidate289ready/434nofit/177postkickoff,25staletargetsretained. PrimarypairedMAE213.91/347.35/452.96 versusP0334.70/551.01/780.10;15/14/14independentfixtures/111/96/82points. NOTattendance/livePITproof. Activev2bytesunchanged b4707d3e…. PublicJSON/MDrecordfullcomparisons/bootstrap/worsterrorsandcoverage. No retune,promotionorbackfill.
