@@ -19,6 +19,12 @@ Production remains OFF unless separately reviewed:
 
 ---
 
+## Latest product instruction
+
+The user requires the daily future inventory/demand path as an immediate MVP deliverable using public data. Read `ml/DAILY_INVENTORY_PATH_IMPLEMENTATION_V1.md` and its deployment/precommit references before touching that new lane. This product work runs alongside the attendance error-driven programme below. Its inventory-path errors are distinct from attendance MAE and the existing 550-seat gate.
+
+---
+
 ## Read in this order
 
 ### 1. `ml/MAE_RESEARCH_ROADMAP_V6.md`

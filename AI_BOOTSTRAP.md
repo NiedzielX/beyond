@@ -1,6 +1,6 @@
 # Beyond — AI Bootstrap / Read This First
 
-Last updated: **2026-10-29**
+Last updated: **2026-10-30**
 
 Status: **CANONICAL AI ENTRYPOINT**
 
@@ -8,19 +8,26 @@ Status: **CANONICAL AI ENTRYPOINT**
 
 Read in this order:
 
-1. `ml/EXECUTION_PLAN_CURRENT.md`;
-2. `ml/NEXT_SESSION_HANDOFF.md`;
-3. `ml/MAE_RESEARCH_ROADMAP_V5.md`;
-4. `ml/TRAJECTORY_FROZEN_ENCODER_PROSPECTIVE_SHADOW_V1.md`;
-5. `ml/TRAJECTORY_FROZEN_ENCODER_ATTENDANCE_HEAD_V1.md`;
-6. `ml/TRAJECTORY_SELF_SUPERVISED_PRETRAIN_V1.md`;
-7. `ml/results/trajectory_self_supervised_24h_delta_v1_result.json`;
-8. `ml/PROGRESS_TRACKING.md`;
-9. `ml/MODEL_ACCURACY_DEVELOPMENT_INSTRUCTIONS_V3.md`.
+1. `ml/MAE_RESEARCH_ROADMAP_V6.md` — primary MAE strategy;
+2. `ml/EXECUTION_PLAN_CURRENT.md` — current experiments, frozen lanes, cutoffs and constraints;
+3. `ml/PROGRESS_TRACKING.md` — completed/rejected evidence and what not to repeat;
+4. `ml/TRAJECTORY_FORECASTING_PLAN_V1.md` — trajectory design, with historical experiment status resolved by the execution plan/tracker;
+5. `ml/NEXT_SESSION_HANDOFF.md` — current operational state only, not MAE strategy;
+6. only then inspect code, workflows, SQL, GitHub Actions and live DB.
 
 Query live machine state before acting on scheduled prospective windows. Read the exact precommit before touching a frozen experiment.
 
-Roadmap v5 is canonical.
+Roadmap v6 is canonical.
+
+The operational RPC is the first live-state read after these documents, not a replacement for reading the strategy. For a specific experiment, read its exact precommit before changing or executing it.
+
+## Interpretation: frozen lanes and parallel R&D
+
+"No new model search justified" means no retuning a frozen model on the same exposed evidence. It does not mean stop R&D until prospective outcomes arrive. Protect the existing lanes while running new, separately versioned/precommitted experiments with genuinely new information or a distinct justified mechanism and valid held-out evaluation.
+
+`baseline -> new information -> simple challenger -> event-grouped/PIT-safe MAE -> freeze -> prospective shadow -> genuine outcomes`
+
+Previously exposed outer events never become untouched validation merely because the candidate receives a new version name. Existing frozen artifacts, parameters, missed windows and production boundaries stay unchanged.
 
 ---
 
@@ -139,7 +146,7 @@ Workflow:
 
 Schedule:
 
-`20 * * * *`
+`20,50 * * * *`
 
 The full shadow workflow was verified end-to-end on 2026-10-29 after persisting the frozen head artifact.
 

@@ -1,8 +1,8 @@
 # Beyond Ticketing — MAE Research Roadmap v5
 
-Last updated: **2026-10-28**
+Last updated: **2026-10-30**
 
-Status: **CANONICAL MAE RESEARCH STRATEGY**
+Status: **HISTORICAL STRATEGY — SUPERSEDED BY MAE_RESEARCH_ROADMAP_V6.md**
 
 Supersedes the strategic direction in `ml/MAE_RESEARCH_ROADMAP_V4.md`.
 
@@ -13,6 +13,14 @@ Operational source of truth remains:
 Detailed trajectory design:
 
 `ml/TRAJECTORY_FORECASTING_PLAN_V1.md`
+
+Literature-informed MVP delivery supplement, added 2026-11-03:
+
+[`AI_LITERATURE_REVIEW_AND_MVP_PLAN_2026-11-03.md`](AI_LITERATURE_REVIEW_AND_MVP_PLAN_2026-11-03.md). It records source-access limitations, a short MVP delivery sequence, the sales/attendance target boundary and a proposed objective-alignment audit. It does not supersede this strategy, precommit a new model or change frozen lanes. Its engineering estimate is not a deadline for prospective MAE proof.
+
+MVP scope clarified by the user on 2026-11-03: partner transaction/refund/season-ticket and verified block/release records will not be available. Build MVP and continue R&D using currently available public sources and genuine future observations/outcomes; partner access is not a prerequisite. Keep attendance forecasts and inventory proxies distinct from confirmed paid sales.
+
+Product clarification, 2026-11-03: the immediate MVP must learn from the full genuinely observed prefix and predict the remaining daily path, updating that path after each new day. Daily revisions of a terminal-attendance scalar alone are insufficient. See [`DAILY_DEMAND_PATH_MVP_CONTRACT_V1.md`](DAILY_DEMAND_PATH_MVP_CONTRACT_V1.md) for the audited implementation gap and required issue-time/target-day contract. This new path lane has separate observable-target metrics; existing attendance experiments and business thresholds stay frozen. The objective-alignment audit is secondary to delivering this daily-path capability.
 
 ---
 
@@ -33,6 +41,12 @@ This means that readiness, snapshot counts, training rows, prediction counts and
 Production remains unchanged unless a separate reviewed promotion decision is made:
 
 `live_adjustment = 0`
+
+Agent interpretation: read this strategy first, then the execution plan, progress tracking, trajectory plan and operational handoff, before inspecting implementation or live state. "No new model search justified" means no retuning a frozen model on the same exposed evidence, not a stop on new separately versioned/precommitted R&D.
+
+Canonical research loop:
+
+`baseline -> new information -> simple challenger -> event-grouped/PIT-safe MAE -> freeze -> prospective shadow -> genuine outcomes`
 
 ---
 
@@ -388,7 +402,7 @@ Only then evaluate combinations with odds/context as separately versioned challe
 
 # 15. Business minimum meaningful Delta MAE
 
-The numerical threshold remains unresolved and must be derived independently of model results.
+The original 2026-10-28 roadmap left this threshold unresolved. On 2026-10-30 the independent v1 precommit was frozen in `ml/BUSINESS_MEANINGFUL_FORECAST_GAIN_V1.md`: at least 550 seats of prospective event-balanced MAE improvement, with its risk guards and evidence-maturity rules. Use that contract and the current execution plan; do not lower the threshold after outcomes. This update records an existing precommit and changes no numerical assumption.
 
 Do not call a tiny improvement robust merely because `Delta MAE < 0`.
 
@@ -401,7 +415,7 @@ Business work should connect forecast error reductions to decisions such as:
 - marketing/ticketing intervention timing;
 - other capacity/operations decisions.
 
-Until this threshold is agreed, positive small-N experiments remain research evidence rather than production-grade proof.
+Positive small-N experiments remain research evidence rather than production-grade proof. Reaching the business threshold does not automatically activate production, and the current frozen candidate's review gate does not block separately versioned R&D.
 
 ---
 
@@ -467,9 +481,9 @@ Prospective evidence wins. Keep the research result documented, but do not promo
 
 ---
 
-# 18. Long-term product direction
+# 18. Daily-path MVP product direction
 
-Beyond should eventually present not just one final number, but an evolving forecast story:
+The user clarified on 2026-11-03 that the evolving daily forecast story is an immediate MVP requirement, not only a long-term endpoint presentation:
 
 `observed trajectory -> today/as-of -> predicted remaining trajectory -> final P10/P50/P90`
 
