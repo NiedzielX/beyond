@@ -1,0 +1,108 @@
+name: Club Calibration Shrinkage v1
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - "ml/club_calibration_shrinkage_v1.py"
+      - "ml/test_club_calibration_shrinkage_v1.py"
+      - "ml/demand_engine/structural_prior_runtime.py"
+      - "ml/features/structural_prior_feature_store_v1.py"
+      - "ml/artifacts/structural_prior_runtime_v1/historical_runtime_v1.csv.gz"
+      - ".github/workflows/club-calibration-shrinkage-v1.yml"
+  push:
+    branches:
+      - main
+    paths:
+      - "ml/club_calibration_shrinkage_v1.py"
+      - "ml/test_club_calibration_shrinkage_v1.py"
+      - ".github/workflows/club-calibration-shrinkage-v1.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  diagnostic:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install pinned research runtime
+        run: |
+          python -m pip install --upgrade pip
+          pip install numpy==2.3.5 pandas==2.2.3 scikit-learn==1.8.0 joblib==1.5.3
+
+      - name: Compile and unit checks
+        run: |
+          python -m py_compile ml/club_calibration_shrinkage_v1.py
+          python -m py_compile ml/test_club_calibration_shrinkage_v1.py
+          python -m ml.test_club_calibration_shrinkage_v1
+
+      - name: Verify canonical history hash
+        run: |
+          echo "3c6b35142c6bd20a484f2aa758cd41284fd6f4c6db1353b138f81cf321161569  ml/artifacts/structural_prior_runtime_v1/historical_runtime_v1.csv.gz" | sha256sum -c -
+
+      - name: Run strict nested-forward club calibration diagnostic
+        run: |
+          mkdir -p /tmp/club-calibration-v1
+          python -m ml.club_calibration_shrinkage_v1 \
+            --history ml/artifacts/structural_prior_runtime_v1/historical_runtime_v1.csv.gz \
+            --output-json /tmp/club-calibration-v1/result.json \
+            --output-predictions-csv /tmp/club-calibration-v1/predictions.csv
+
+      - name: Evidence integrity gate
+        run: |
+          jq -e '
+            .version == "club-calibration-shrinkage-v1"
+            and .status == "COMPLETED_HISTORICAL_NESTED_FORWARD_RESEARCH"
+            and .evidence_class == "historical_nested_forward_fold"
+            and .history_sha256 == "3c6b35142c6bd20a484f2aa758cd41284fd6f4c6db1353b138f81cf321161569"
+            and .match_count == 1530
+            and .feature_row_count == 7650
+            and (.horizons | length) == 5
+            and .production_change == false
+            and .promotion_allowed == false
+          ' /tmp/club-calibration-v1/result.json >/dev/null
+
+      - name: Verify strict temporal calibration ordering
+        run: |
+          jq -e '[.horizons[].folds[] | (.calibration_end < .test_start)] | all' \
+            /tmp/club-calibration-v1/result.json >/dev/null
+
+      - name: Show compact scorecard
+        run: |
+          jq '{
+            decision,
+            advanced_horizons,
+            horizons: [.horizons[] | {
+              horizon,
+              incumbent_mean_fold_mae,
+              research_lead_candidate_id,
+              decision,
+              lead_uncertainty,
+              candidates: [.candidates[] | {
+                candidate_id,
+                mean_fold_mae,
+                mae_delta_vs_incumbent,
+                fold_wins_vs_incumbent,
+                club_improvement_rate,
+                worst_fold_degradation,
+                selector_eligible
+              }]
+            }]
+          }' /tmp/club-calibration-v1/result.json
+
+      - name: Upload research evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: club-calibration-shrinkage-v1-${{ github.run_id }}
+          path: |
+            /tmp/club-calibration-v1/result.json
+            /tmp/club-calibration-v1/predictions.csv
+          if-no-files-found: error
+          retention-days: 90
