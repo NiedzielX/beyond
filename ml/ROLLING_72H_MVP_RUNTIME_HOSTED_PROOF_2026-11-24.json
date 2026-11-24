@@ -14,5 +14,17 @@
       "command_md5": "20efa3dc857d5b828a47c8ea9bba0831"
     }
   ],
-  "cron_review_sha256": "e6d1e7df351f26485256e1aa61c8527fa4f166c512dc8061c75ee4207619a9ea"
+  "cron_review_sha256": "e6d1e7df351f26485256e1aa61c8527fa4f166c512dc8061c75ee4207619a9ea",
+  "release_head": "1aef261cb5839dd4437f06a6725bcad463b88c1e",
+  "pull_request": "https://github.com/NiedzielX/beyond/pull/229",
+  "source_activation_at": "2026-11-23T17:21:25.059854Z",
+  "source_manifest_sha256": "10d6c91af793348993a5c90212b6a340646b42518b6d75ac6b1be3b3864e406d",
+  "admission": {
+    "known_at": "2026-11-24T14:53:30.470686Z",
+    "receipt_id": 6,
+    "ticket_event_id": 27049,
+    "external_event_id": "5520",
+    "backfilled_snapshots": 0,
+    "legacy_buffer_rows_excluded": 1113
+  }
 }
