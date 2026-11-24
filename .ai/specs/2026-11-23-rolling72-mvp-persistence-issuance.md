@@ -1,10 +1,10 @@
 # Rolling72 P0-4c — first-point persistence issuance and due scoring
 
-Date: 2026-11-23  
-Status: READY FOR IMPLEMENTATION — root-reviewed clock/denominator/label contract; no code or activation  
-Owner: SQL implementation and isolated PostgreSQL 16 tests assigned after P0-4b closes  
-Parent: [MAE and investor MVP development](2026-11-22-rolling72-mae-and-investor-mvp-development.md), P0-4  
-Source contract: [P0-4b runtime source lane](2026-11-23-rolling72-mvp-runtime-source-lane.md)  
+Date: 2026-11-23
+Status: LOCAL IMPLEMENTATION AND INDEPENDENT REVIEW PASS — hosted activation pending
+Owner: SQL implementation and isolated PostgreSQL 16 tests assigned after P0-4b closes
+Parent: [MAE and investor MVP development](2026-11-22-rolling72-mae-and-investor-mvp-development.md), P0-4
+Source contract: [P0-4b runtime source lane](2026-11-23-rolling72-mvp-runtime-source-lane.md)
 Canonical strategy: [MAE Research Roadmap v6](../../ml/MAE_RESEARCH_ROADMAP_V6.md); operational state: [current execution plan](../../ml/EXECUTION_PLAN_CURRENT.md)
 
 ## Purpose and precommit provenance
