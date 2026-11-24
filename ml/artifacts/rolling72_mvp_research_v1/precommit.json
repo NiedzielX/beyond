@@ -1,0 +1,10 @@
+{
+  "frozen_at": "2026-11-23T17:20:31.623030+00:00",
+  "manifest_sha256": "10d6c91af793348993a5c90212b6a340646b42518b6d75ac6b1be3b3864e406d",
+  "sql_sha256": "911dc9a55159b8ec2e3acaf0bc41fb7d5380f860e6aec44bdc637ae1042a7270",
+  "tested_code_head": "385248925927db8dcb70f127b14293f96a04819f",
+  "ci_run": 45224037575,
+  "fixture_registration_authorized": "jagiellonia/5520 only in this rollout; additional registrations require their own verified admission",
+  "activation_performed": false,
+  "private_source_unit": "public availability proxy; not sales or attendance"
+}

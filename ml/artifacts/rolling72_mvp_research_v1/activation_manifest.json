@@ -1,0 +1,1 @@
+{"issue_until":"2026-12-01T00:00:00Z","lane_id":"rolling72-mvp-research-v1","max_batch":25,"max_fixtures":100,"max_source_age_seconds":3600,"scoring_until":"2026-12-04T06:00:00Z","source_family":"roboticket/roboticket","sql_sha256":"911dc9a55159b8ec2e3acaf0bc41fb7d5380f860e6aec44bdc637ae1042a7270","unit":"available_total_seats","version":"rolling72-mvp-research-v1"}

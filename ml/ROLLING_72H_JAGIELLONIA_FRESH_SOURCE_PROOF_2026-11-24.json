@@ -1,0 +1,177 @@
+{
+  "version": "rolling72-jagiellonia-fresh-source-proof-v1",
+  "as_of_query_started_at": "2026-11-24T15:11:41.913600Z",
+  "as_of_query_completed_at": "2026-11-24T15:11:41.949760Z",
+  "scope": "read-only first-collection, immutable source seal, and prospective PERS issue proof for Jagiellonia 5520; no manual collector/source-capture/issue/scoring call or backfill by this query",
+  "fixture": {
+    "club_slug": "jagiellonia",
+    "external_event_id": "5520",
+    "ticket_event_id": 27049,
+    "admission_receipt_id": 6,
+    "lane_id": "rolling72-mvp-research-v1",
+    "kickoff_at": "2026-11-29T19:15:00Z",
+    "admission_known_at": "2026-11-24T14:53:30.470686Z",
+    "registered_at": "2026-11-24T14:53:37.861914Z"
+  },
+  "first_observation": {
+    "public_collection_status": "PROVEN",
+    "snapshot": {
+      "snapshot_id": 48698,
+      "ticket_event_id": 27049,
+      "external_event_id": 5520,
+      "captured_at": "2026-11-24T15:05:04.618Z",
+      "sector_count": 47,
+      "available_total": 6707,
+      "sector_inventory_rows": 47
+    },
+    "source_seal": {
+      "seal_id": 1,
+      "attempt_id": 4,
+      "snapshot_id": 48698,
+      "phase": "ISSUE_WINDOW",
+      "read_completed_at": "2026-11-24T15:09:00.321795Z",
+      "known_at": "2026-11-24T15:09:00.332706Z",
+      "captured_at": "2026-11-24T15:05:04.618Z",
+      "available_total": 6707,
+      "sector_count": 47,
+      "prior_status": "NO_PRIOR",
+      "transition_status": "NO_PRIOR",
+      "gap_count": 0
+    },
+    "source_attempts_before_first_seal": {
+      "count": 3,
+      "status_counts": {
+        "MISSING_SOURCE": 3
+      },
+      "first_known_at": "2026-11-24T14:54:00.350177Z",
+      "latest_known_at": "2026-11-24T15:04:00.383727Z"
+    },
+    "source_seal_count": 1,
+    "source_candidate_count": 3,
+    "source_candidates": [
+      {
+        "candidate_id": 1,
+        "horizon_hours": 24,
+        "status": "SOURCE_ELIGIBLE",
+        "observation_known_at": "2026-11-24T15:09:00.332706Z",
+        "provisional_target_at": "2026-11-25T15:09:00.332706Z"
+      },
+      {
+        "candidate_id": 2,
+        "horizon_hours": 48,
+        "status": "SOURCE_ELIGIBLE",
+        "observation_known_at": "2026-11-24T15:09:00.332706Z",
+        "provisional_target_at": "2026-11-26T15:09:00.332706Z"
+      },
+      {
+        "candidate_id": 3,
+        "horizon_hours": 72,
+        "status": "SOURCE_ELIGIBLE",
+        "observation_known_at": "2026-11-24T15:09:00.332706Z",
+        "provisional_target_at": "2026-11-27T15:09:00.332706Z"
+      }
+    ],
+    "forecast_status": "PERS_ISSUED",
+    "score_or_label_count": 0,
+    "historical_backfill": false
+  },
+  "capture_cron_43": {
+    "job_name": "rolling72_mvp_research_v1_capture",
+    "active": true,
+    "schedule": "4-59/5 * * * *",
+    "latest_run_id": 74915,
+    "latest_run_status": "succeeded",
+    "latest_run_started_at": "2026-11-24T15:09:00.041328Z",
+    "latest_run_completed_at": "2026-11-24T15:09:00.377864Z",
+    "return_message": "DO",
+    "fixture_source_seal_created": true,
+    "note": "The latest run preceded the first public snapshot captured at 15:05:04.618Z."
+  },
+  "collector_cron_2": {
+    "job_name": "roboticket_additional_15m",
+    "active": true,
+    "schedule": "5,20,35,50 * * * *",
+    "latest_run_id": 74907,
+    "latest_run_status": "succeeded",
+    "latest_run_started_at": "2026-11-24T15:05:00.539980Z",
+    "latest_run_completed_at": "2026-11-24T15:05:00.623285Z",
+    "return_message": "1 row",
+    "post_registration_run_observed": true,
+    "next_scheduled_minute_utc": "2026-11-24T15:20:00Z"
+  },
+  "bounded_diagnostics": {
+    "provider_roboticket_ticket_event_count": 40,
+    "target_kickoff_rank_in_provider_roboticket_events": 39,
+    "active_future_jagiellonia_latest_snapshot_captured_at": "2026-11-24T15:05:12.812Z",
+    "active_future_jagiellonia_snapshot_rows_count": null,
+    "snapshot_identifier_check": "queried public.snapshots for ticket_event_id=27049 OR external event_id=5520",
+    "active_future_jagiellonia_future_event_count": 2
+  },
+  "interpretation": "The first public snapshot48698 was captured15:05:04.618Z. It predates PERS activation15:05:13.023044Z, so it is included only because the first immutable source seal became known later at15:09:00.332706Z, after activation and under the forward-only known_at rule. Three SOURCE_ELIGIBLE 24/48/72h candidates were persisted; PERS issued three numeric persistence baselines of6707 at15:10:00.174414Z with issue bundle1. Targets are future and pre-kickoff. Zero outcome labels exist; this proves source and forecast issuance only, not forecast accuracy.",
+  "persistence_lane": {
+    "lane_id": "rolling72-mvp-persistence-v1",
+    "method": "PERS",
+    "activated_at": "2026-11-24T15:05:13.023044Z",
+    "source_seal_known_at": "2026-11-24T15:09:00.332706Z",
+    "first_seal_after_activation": true
+  },
+  "persistence_issue": {
+    "run_id": "291ee562-79c0-4f25-88a8-3e6849e0a5c1",
+    "run_status": "COMPLETED",
+    "started_at": "2026-11-24T15:10:00.114529Z",
+    "completed_at": "2026-11-24T15:10:00.213155Z",
+    "processed_source_seals": 1,
+    "issue_bundle_id": 1,
+    "issue_bundle_issued_at": "2026-11-24T15:10:00.174414Z",
+    "source_known_at": "2026-11-24T15:09:00.332706Z",
+    "source_captured_at": "2026-11-24T15:05:04.618Z",
+    "source_read_completed_at": "2026-11-24T15:09:00.321795Z",
+    "source_age_seconds": 295.556414,
+    "origin_available_total": 6707,
+    "scope_status": "NO_PRIOR",
+    "predictions": [
+      {
+        "prediction_id": 1,
+        "candidate_id": 1,
+        "horizon_hours": 24,
+        "status": "ISSUED",
+        "prediction": 6707,
+        "target_at": "2026-11-25T15:10:00.174414Z"
+      },
+      {
+        "prediction_id": 2,
+        "candidate_id": 2,
+        "horizon_hours": 48,
+        "status": "ISSUED",
+        "prediction": 6707,
+        "target_at": "2026-11-26T15:10:00.174414Z"
+      },
+      {
+        "prediction_id": 3,
+        "candidate_id": 3,
+        "horizon_hours": 72,
+        "status": "ISSUED",
+        "prediction": 6707,
+        "target_at": "2026-11-27T15:10:00.174414Z"
+      }
+    ],
+    "prediction_null_count": 0,
+    "issue_attempt_status_counts": {
+      "ISSUED": 3
+    },
+    "label_count": 0,
+    "scoring_run_claim": null,
+    "bundle_read_completed_at": "2026-11-24T15:10:00.174320Z",
+    "calculation_completed_at": "2026-11-24T15:10:00.174400Z"
+  },
+  "persistence_cron_44": {
+    "job_name": "rolling72_mvp_persistence_v1_tick",
+    "active": true,
+    "schedule": "0-59/5 * * * *",
+    "latest_run_id": 74917,
+    "latest_run_status": "succeeded",
+    "latest_run_started_at": "2026-11-24T15:10:00.099813Z",
+    "latest_run_completed_at": "2026-11-24T15:10:00.227320Z",
+    "return_message": "DO"
+  }
+}
