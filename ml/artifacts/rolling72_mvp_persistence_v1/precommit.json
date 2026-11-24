@@ -1,0 +1,10 @@
+{
+  "frozen_at": "2026-11-24T15:04:54.308635+00:00",
+  "manifest_sha256": "22290ba42d6f93d63c694c93ed77401e12c943040a0ee298739d9fbef26391ad",
+  "sql_sha256": "0a1d94cdaaeca29c349e5ee49e76e9c82d2a019a688a677e960590963e8518a5",
+  "test_sha256": "bb510fa01e11ac4b95f975bc4fecb500ca3ab6a5b2a33b1be02e0e00788db7c5",
+  "method": "PERS",
+  "local_tests": 10,
+  "independent_review": "PASS",
+  "activation_performed": false
+}

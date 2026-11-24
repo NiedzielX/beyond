@@ -1,0 +1,53 @@
+{
+  "checked_at": "2026-11-24T15:12:19.454Z",
+  "samples": [
+    {
+      "at": "2026-11-24T15:01:54.591Z",
+      "elapsed_ms": 4211,
+      "status": 200,
+      "latest_bundle_id": 334,
+      "latest_receipt_id": 2649
+    },
+    {
+      "at": "2026-11-24T15:01:56.169Z",
+      "elapsed_ms": 5789,
+      "status": 200,
+      "latest_bundle_id": 334,
+      "latest_receipt_id": 2649
+    },
+    {
+      "at": "2026-11-24T15:01:57.766Z",
+      "elapsed_ms": 7386,
+      "status": 200,
+      "latest_bundle_id": 334,
+      "latest_receipt_id": 2649
+    },
+    {
+      "at": "2026-11-24T15:01:59.262Z",
+      "elapsed_ms": 8882,
+      "status": 200,
+      "latest_bundle_id": 334,
+      "latest_receipt_id": 2649
+    },
+    {
+      "at": "2026-11-24T15:06:54.311Z",
+      "elapsed_ms": 303932,
+      "status": 200,
+      "latest_bundle_id": 334,
+      "latest_receipt_id": 2651
+    },
+    {
+      "at": "2026-11-24T15:11:54.680Z",
+      "elapsed_ms": 604300,
+      "status": 200,
+      "latest_bundle_id": 336,
+      "latest_receipt_id": 2651
+    }
+  ],
+  "page_errors": [],
+  "automatic_poll_observed": true,
+  "new_issue_observed": true,
+  "manual_refresh": false,
+  "clock_replacement": false,
+  "model_accuracy_proven": false
+}

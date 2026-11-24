@@ -6,7 +6,12 @@ admissions and imports no historical candidate-buffer observations.
 
 ## Current release status
 
-**Implementation and independent review passed. Not yet deployed or activated.**
+**Deployed and activated on 24 November at 15:05:13 UTC.**
+
+Ten PostgreSQL16 contracts passed locally and in CI; independent review passed.
+Installed RPC bodies match the tested copies; private-table RLS and service-only
+RPC access were checked on the hosted database. The first scheduled Jagiellonia issue was verified at15:10UTC: three numeric
+forecasts from its first source seal. Genuine scores remain future.
 Passing a subset of issuance tests is insufficient to release the scorer.
 The full isolated suite must cover real issue clocks, committed reads, label
 selection/refusal, first accepted label immutability and event-balanced errors.

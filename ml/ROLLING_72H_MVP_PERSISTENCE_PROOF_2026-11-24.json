@@ -1,0 +1,147 @@
+{
+  "schema_version": "rolling72-mvp-persistence-hosted-proof-v1",
+  "checked_at": "2026-11-24 15:06:22.667524+00",
+  "protected_function_count": 47,
+  "protected_functions_unchanged": true,
+  "installed_functions_match_tested_local": true,
+  "new_function_count": 7,
+  "new_functions": [
+    {
+      "config": [
+        "search_path=\"\"",
+        "TimeZone=UTC"
+      ],
+      "body_md5": "d39af8a2208f96dd87d0162ae72b5fd0",
+      "signature": "activate_rolling72_mvp_persistence_v1(text,text)",
+      "security_definer": true
+    },
+    {
+      "config": [
+        "search_path=\"\"",
+        "TimeZone=UTC"
+      ],
+      "body_md5": "0868be12fb7b2b2e5e7c28260020f763",
+      "signature": "get_rolling72_mvp_persistence_v1_status()",
+      "security_definer": true
+    },
+    {
+      "config": [
+        "search_path=\"\"",
+        "TimeZone=UTC"
+      ],
+      "body_md5": "00dabfd08c406ed74d8f7caf5e5b380b",
+      "signature": "issue_rolling72_mvp_persistence_v1(integer)",
+      "security_definer": true
+    },
+    {
+      "config": [
+        "search_path=\"\""
+      ],
+      "body_md5": "7290d848fe048e981bce0b37bcf116bb",
+      "signature": "private.rolling72_mvp_persistence_v1_committed(xid,pg_snapshot)",
+      "security_definer": false
+    },
+    {
+      "config": [
+        "search_path=\"\""
+      ],
+      "body_md5": "bb3288eb4395d6544fc6c06fd3e3eca7",
+      "signature": "private.rolling72_mvp_persistence_v1_hash(jsonb)",
+      "security_definer": false
+    },
+    {
+      "config": [
+        "search_path=\"\""
+      ],
+      "body_md5": "d306904f46bcaf9d92cf3c9dd0c2b61f",
+      "signature": "private.rolling72_mvp_persistence_v1_immutable()",
+      "security_definer": false
+    },
+    {
+      "config": [
+        "search_path=\"\"",
+        "TimeZone=UTC"
+      ],
+      "body_md5": "df1a099c31528a978c54de295e5734aa",
+      "signature": "score_rolling72_mvp_persistence_v1(integer)",
+      "security_definer": true
+    }
+  ],
+  "sql_sha256": "0a1d94cdaaeca29c349e5ee49e76e9c82d2a019a688a677e960590963e8518a5",
+  "test_sha256": "bb510fa01e11ac4b95f975bc4fecb500ca3ab6a5b2a33b1be02e0e00788db7c5",
+  "local_tests_passed": 10,
+  "release_tests_seconds": 2.48,
+  "independent_review": "PASS",
+  "pull_request": "https://github.com/NiedzielX/beyond/pull/230",
+  "head": "296bd7456d99ce6733e1e6405b5c67bed7f7b9dd",
+  "ci_run": 45421353629,
+  "ci_conclusion": "success",
+  "activated_at": "2026-11-24T15:05:13.023044Z",
+  "manifest_sha256": "22290ba42d6f93d63c694c93ed77401e12c943040a0ee298739d9fbef26391ad",
+  "scheduler": {
+    "checked_at": "2026-11-24 15:08:10.419063+00",
+    "old_jobs_unchanged": true,
+    "old_jobs_checked": 37,
+    "new_jobs": [
+      {
+        "jobid": 44,
+        "active": true,
+        "database": "postgres",
+        "schedule": "0-59/5 * * * *",
+        "username": "postgres",
+        "command_md5": "f634ed479208b8364f54fe97e5a1b88e"
+      }
+    ],
+    "job_id": 44,
+    "schedule": "0-59/5 * * * *",
+    "review": "PASS",
+    "sql_sha256": "bef16807256781548d2bfb79e3586f197905ccc660414c475371b1b3fccac12d",
+    "guard_tests": "PASS",
+    "guard_seconds": 0.059
+  },
+  "runtime_issuance": {
+    "checked_at": "2026-11-24 15:12:26.031724+00",
+    "source_seal_id": 1,
+    "snapshot_id": 48698,
+    "captured_at": "2026-11-24 15:05:04.618+00",
+    "source_known_at": "2026-11-24 15:09:00.332706+00",
+    "available_total": 6707,
+    "bundle_id": 1,
+    "issued_at": "2026-11-24 15:10:00.174414+00",
+    "read_completed_at": "2026-11-24 15:10:00.17432+00",
+    "calculation_completed_at": "2026-11-24 15:10:00.1744+00",
+    "predictions": [
+      {
+        "status": "ISSUED",
+        "target_at": "2026-11-25T15:10:00.174414+00:00",
+        "prediction": 6707,
+        "horizon_hours": 24,
+        "prediction_id": 1
+      },
+      {
+        "status": "ISSUED",
+        "target_at": "2026-11-26T15:10:00.174414+00:00",
+        "prediction": 6707,
+        "horizon_hours": 48,
+        "prediction_id": 2
+      },
+      {
+        "status": "ISSUED",
+        "target_at": "2026-11-27T15:10:00.174414+00:00",
+        "prediction": 6707,
+        "horizon_hours": 72,
+        "prediction_id": 3
+      }
+    ],
+    "label_count": 0
+  },
+  "scores": 0,
+  "lower_mae_proven": false,
+  "attendance_proven": false,
+  "production_live_adjustment": 0,
+  "hosted_acl": {
+    "checked_at": "2026-11-24 15:09:16.521925+00",
+    "private_table_rls_and_no_direct_reads": true,
+    "rpc_service_only": true
+  }
+}
