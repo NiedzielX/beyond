@@ -1,0 +1,31 @@
+{
+  "checked_at": "2026-11-24T15:00:20.575Z",
+  "actual_route": true,
+  "actual_node_relay": true,
+  "actual_hosted_edge": true,
+  "ready": true,
+  "model_accuracy_proven": false,
+  "responses": [
+    {
+      "status": 200,
+      "at": "2026-11-24T15:00:15.162Z"
+    },
+    {
+      "status": 200,
+      "at": "2026-11-24T15:00:16.934Z"
+    },
+    {
+      "status": 200,
+      "at": "2026-11-24T15:00:18.638Z"
+    },
+    {
+      "status": 200,
+      "at": "2026-11-24T15:00:20.243Z"
+    }
+  ],
+  "page_errors": [],
+  "stored_credentials": false,
+  "local_proxy_configuration": "NODE_USE_ENV_PROXY=1",
+  "deployed_vercel_browser_verified": false,
+  "automatic_new_issue_verified": false
+}
