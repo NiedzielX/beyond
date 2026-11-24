@@ -1,0 +1,18 @@
+{
+  "checked_at": "2026-11-24 14:50:19.828414+00",
+  "old_jobs_unchanged": true,
+  "old_function_bodies_unchanged": true,
+  "old_jobs": 36,
+  "old_functions": 38,
+  "new_jobs": [
+    {
+      "jobid": 43,
+      "active": true,
+      "database": "postgres",
+      "schedule": "4-59/5 * * * *",
+      "username": "postgres",
+      "command_md5": "20efa3dc857d5b828a47c8ea9bba0831"
+    }
+  ],
+  "cron_review_sha256": "e6d1e7df351f26485256e1aa61c8527fa4f166c512dc8061c75ee4207619a9ea"
+}
