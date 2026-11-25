@@ -1,0 +1,234 @@
+{
+  "schema_version": "rolling72-pers-protected-pilot-proof-v1",
+  "backend_pr": "https://github.com/NiedzielX/beyond/pull/231",
+  "backend_head": "c52db8abd833f951458092daf6ce57c827aec482",
+  "backend_ci": {
+    "id": 45603944012,
+    "conclusion": "success"
+  },
+  "panel_pr": "https://github.com/NiedzielX/BeyondTicketingPanel/pull/10",
+  "panel_head": "89e15c62c813467583c811c81a3d74ddf3db9f34",
+  "panel_ci": [
+    45603837674,
+    45603838021
+  ],
+  "tests": {
+    "pg_clock_regressions": 12,
+    "pg_feed": 8,
+    "pg_capability": 5,
+    "edge": 14,
+    "client_relay": 20,
+    "typescript": "PASS"
+  },
+  "edge_deployment": {
+    "name": "rolling72_pilot_feed_v2",
+    "version": 1,
+    "status": "ACTIVE",
+    "verify_jwt": false,
+    "owns_authentication": true,
+    "ezbr_sha256": "40b740077ef1777eb1015d8e97b09b1c17b90c1b7bdb9c780565595b8e60d926"
+  },
+  "clock_patch": {
+    "base_sql_sha256": "0a1d94cdaaeca29c349e5ee49e76e9c82d2a019a688a677e960590963e8518a5",
+    "patch_sha256": "53d4391f4486fd9f9c897a9db3d2da15bfc371ba0b4645ffb05f392d1d1e9d41",
+    "installed_body_sha256": "f7bc89911b5eddd3d44dd023c3e9af940ddb5ff9a6dcb65db673689fadad4874",
+    "strict_constraint_preserved": true,
+    "synthetic_clock_adjustment": false
+  },
+  "actual_edge": {
+    "checked_at": "2026-11-25T11:14:57.799Z",
+    "actual_hosted_edge": true,
+    "status": 200,
+    "elapsed_ms": 2872,
+    "parsed_by_real_client": true,
+    "fixture_id": 27049,
+    "lane": "rolling72-mvp-persistence-v1",
+    "issues_in_page": 2,
+    "latest_bundle_id": 81,
+    "horizons": [
+      24,
+      48,
+      72
+    ],
+    "methods": [
+      "persistence"
+    ],
+    "scorecards": [
+      {
+        "horizon": 24,
+        "labels": 0,
+        "mae": null
+      },
+      {
+        "horizon": 48,
+        "labels": 0,
+        "mae": null
+      },
+      {
+        "horizon": 72,
+        "labels": 0,
+        "mae": null
+      }
+    ],
+    "cache_control": "no-store"
+  },
+  "actual_browser": {
+    "checked_at": "2026-11-25T11:31:47.214Z",
+    "actual_browser": true,
+    "actual_node_relay": true,
+    "actual_hosted_edge": true,
+    "actual_sql": true,
+    "e5_ready": true,
+    "pers_ready": true,
+    "fixture_id": 27049,
+    "loaded_vintages": 82,
+    "oldest_bundle_id": 1,
+    "oldest_prefix_receipts": "1",
+    "oldest_persistence_value": 6707,
+    "stored_credentials": false,
+    "page_errors": [],
+    "samples": [
+      {
+        "at": "2026-11-25T11:31:38.917Z",
+        "status": 200,
+        "fixture_id": 24377,
+        "lane": "rolling72-common-flow-e5-v1",
+        "max_bundle_id": 495
+      },
+      {
+        "at": "2026-11-25T11:31:40.439Z",
+        "status": 200,
+        "fixture_id": 24377,
+        "lane": "rolling72-common-flow-e5-v1",
+        "max_bundle_id": 93
+      },
+      {
+        "at": "2026-11-25T11:31:41.990Z",
+        "status": 200,
+        "fixture_id": 24377,
+        "lane": "rolling72-common-flow-e5-v1",
+        "max_bundle_id": 495
+      },
+      {
+        "at": "2026-11-25T11:31:43.693Z",
+        "status": 200,
+        "fixture_id": 24377,
+        "lane": "rolling72-common-flow-e5-v1",
+        "max_bundle_id": 495
+      },
+      {
+        "at": "2026-11-25T11:31:45.418Z",
+        "status": 200,
+        "fixture_id": 24377,
+        "lane": "rolling72-common-flow-e5-v1",
+        "max_bundle_id": 495
+      },
+      {
+        "at": "2026-11-25T11:31:46.902Z",
+        "status": 200,
+        "fixture_id": 27049,
+        "lane": "rolling72-mvp-persistence-v1",
+        "max_bundle_id": 82
+      }
+    ],
+    "model_accuracy_proven": false
+  },
+  "automatic_poll": {
+    "checked_at": "2026-11-25T11:27:59.694Z",
+    "automatic_poll_observed": true,
+    "new_issue_observed": true,
+    "selected_vintage_preserved": true,
+    "old_prefix_preserved": true,
+    "manual_refresh": false,
+    "clock_replacement": false,
+    "page_errors": [],
+    "samples": [
+      {
+        "at": "2026-11-25T11:17:31.815Z",
+        "status": 200,
+        "fixture_id": 24377,
+        "lane": "rolling72-common-flow-e5-v1",
+        "max_bundle_id": 493
+      },
+      {
+        "at": "2026-11-25T11:17:33.124Z",
+        "status": 200,
+        "fixture_id": 24377,
+        "lane": "rolling72-common-flow-e5-v1",
+        "max_bundle_id": 91
+      },
+      {
+        "at": "2026-11-25T11:17:34.920Z",
+        "status": 200,
+        "fixture_id": 24377,
+        "lane": "rolling72-common-flow-e5-v1",
+        "max_bundle_id": 493
+      },
+      {
+        "at": "2026-11-25T11:17:36.542Z",
+        "status": 200,
+        "fixture_id": 24377,
+        "lane": "rolling72-common-flow-e5-v1",
+        "max_bundle_id": 493
+      },
+      {
+        "at": "2026-11-25T11:17:38.038Z",
+        "status": 200,
+        "fixture_id": 24377,
+        "lane": "rolling72-common-flow-e5-v1",
+        "max_bundle_id": 493
+      },
+      {
+        "at": "2026-11-25T11:17:39.481Z",
+        "status": 200,
+        "fixture_id": 27049,
+        "lane": "rolling72-mvp-persistence-v1",
+        "max_bundle_id": 81
+      },
+      {
+        "at": "2026-11-25T11:22:40.643Z",
+        "status": 200,
+        "fixture_id": 27049,
+        "lane": "rolling72-mvp-persistence-v1",
+        "max_bundle_id": 81
+      },
+      {
+        "at": "2026-11-25T11:27:39.721Z",
+        "status": 200,
+        "fixture_id": 27049,
+        "lane": "rolling72-mvp-persistence-v1",
+        "max_bundle_id": 82
+      }
+    ]
+  },
+  "gateway_checks": {
+    "checked_at": "2026-11-25T11:32:16.739Z",
+    "actual_gateway_tests": [
+      {
+        "name": "unauthorized",
+        "status": 401,
+        "valid_scope": null
+      },
+      {
+        "name": "cross_pair",
+        "status": 403,
+        "valid_scope": null
+      },
+      {
+        "name": "old_b",
+        "status": 200,
+        "valid_scope": "rolling72-forward-baselines-b-v1"
+      }
+    ]
+  },
+  "hosted_service_only_checks": {
+    "checked_at": "2026-11-25T11:33:05.223633Z",
+    "anon_execute": false,
+    "authenticated_execute": false,
+    "service_role_execute": true
+  },
+  "public_vercel_page_verified": false,
+  "forecast_accuracy_proven": false,
+  "attendance_accuracy_proven": false,
+  "live_adjustment": 0
+}
