@@ -1,0 +1,99 @@
++{
+  "checked_at": "2026-11-25 11:18:28.842152+00",
+  "functions": [
+    {
+      "acl": "{postgres=X/postgres,service_role=X/postgres}",
+      "owner": "postgres",
+      "settings": [
+        "search_path=public"
+      ],
+      "signature": "get_dashboard_ml_readiness_safe_v1()",
+      "security_definer": true,
+      "definition_sha256": "67621d22f95ca9a96a7fb0987106a3d04ce7b585762d1d8dea26fce6907281c9"
+    },
+    {
+      "acl": "{postgres=X/postgres,service_role=X/postgres}",
+      "owner": "postgres",
+      "settings": [
+        "search_path=public"
+      ],
+      "signature": "get_dashboard_research_readiness_v2()",
+      "security_definer": true,
+      "definition_sha256": "7fcca873be5de28983e8bdc1147dee94373b81a153c03d6ba3fdc3b3699ef7b8"
+    },
+    {
+      "acl": "{postgres=X/postgres,service_role=X/postgres}",
+      "owner": "postgres",
+      "settings": [
+        "search_path=public"
+      ],
+      "signature": "get_live_signal_study_readiness_v1()",
+      "security_definer": false,
+      "definition_sha256": "eedf3f369a64430404551852c4d6c50732ec5e53c787c0d779bda3f5bf34132a"
+    },
+    {
+      "acl": "{postgres=X/postgres,service_role=X/postgres}",
+      "owner": "postgres",
+      "settings": [
+        "search_path=\"\""
+      ],
+      "signature": "private.dashboard_multiclub_feature_keys_v1()",
+      "security_definer": true,
+      "definition_sha256": "ca51d9cea93490235b5738bbca8977c6c5c9c3dec27984411193674650ff65d9"
+    }
+  ],
+  "recent_cache_runs": [
+    {
+      "status": "succeeded",
+      "end_time": "2026-11-25T11:14:40.429917+00:00",
+      "start_time": "2026-11-25T11:14:00.089801+00:00",
+      "elapsed_seconds": 40.340116
+    },
+    {
+      "status": "failed",
+      "end_time": "2026-11-25T10:16:00.221435+00:00",
+      "start_time": "2026-11-25T10:14:00.04607+00:00",
+      "elapsed_seconds": 120.175365
+    }
+  ],
+  "jobs": [
+    {
+      "jobid": 24,
+      "active": true,
+      "schedule": "14 * * * *",
+      "command_md5": "b194e13169b0150dc0fd8b98358f30e7"
+    },
+    {
+      "jobid": 26,
+      "active": true,
+      "schedule": "29 * * * *",
+      "command_md5": "1181afe1fd11cddfd4a8acbc63d07716"
+    },
+    {
+      "jobid": 27,
+      "active": true,
+      "schedule": "44 * * * *",
+      "command_md5": "0ab42c35f3b5f6f9114567cd47a57db2"
+    },
+    {
+      "jobid": 43,
+      "active": true,
+      "schedule": "4-59/5 * * * *",
+      "command_md5": "20efa3dc857d5b828a47c8ea9bba0831"
+    },
+    {
+      "jobid": 44,
+      "active": true,
+      "schedule": "0-59/5 * * * *",
+      "command_md5": "f634ed479208b8364f54fe97e5a1b88e"
+    }
+  ],
+  "core_sql_sha256": "bffa6049ef10f6fbbc2709e8968398e7848a26e953f0f1deb593c9ea231c69b3",
+  "guarded_apply_sha256": "ff7df4cb39173bc714275e652ddd852afd77ac57813b9a295b87e6cc56fd86be",
+  "guarded_rollback_sha256": "6776331f1f85f699457f74bf7dd4aae61438978081608326086240783b21c908",
+  "local_parity_test": "PASS",
+  "independent_review": "PASS",
+  "physical_disk_io_budget_measured": false,
+  "paid_change": false,
+  "model_changes": false
+}
