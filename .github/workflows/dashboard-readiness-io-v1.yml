@@ -1,0 +1,41 @@
+name: Dashboard readiness query parity
+on:
+  push:
+    paths:
+      - 'supabase/ops/dashboard_research_readiness_io_v1*.sql'
+      - 'tests/postgres/test_dashboard_research_readiness_io_v1.py'
+      - '.github/workflows/dashboard-readiness-io-v1.yml'
+  pull_request:
+    paths:
+      - 'supabase/ops/dashboard_research_readiness_io_v1*.sql'
+      - 'tests/postgres/test_dashboard_research_readiness_io_v1.py'
+      - '.github/workflows/dashboard-readiness-io-v1.yml'
+permissions:
+  contents: read
+jobs:
+  postgres16:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: dashboard_research_readiness_io_v1_test
+          POSTGRES_PASSWORD: readiness-disposable-ci
+        ports:
+          - 55440:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d dashboard_research_readiness_io_v1_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install 'psycopg[binary]==3.3.9'
+      - name: Compare original and key-only aggregation, selection and privileges
+        env:
+          DASHBOARD_READINESS_IO_V1_TEST_DSN: postgresql://postgres:readiness-disposable-ci@127.0.0.1:55440/dashboard_research_readiness_io_v1_test
+        run: python -m unittest discover -s tests/postgres -p 'test_dashboard_research_readiness_io_v1.py' -v
