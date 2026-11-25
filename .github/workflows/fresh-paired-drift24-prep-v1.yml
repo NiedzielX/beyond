@@ -1,0 +1,37 @@
+name: Fresh paired drift24 offline contract
+on:
+  push:
+    paths:
+      - 'ml/rolling72_fresh_paired_drift24_v1.py'
+      - 'ml/test_rolling72_fresh_paired_drift24_v1.py'
+      - 'supabase/sql/rolling72_forward_baselines_b_v1.sql'
+      - 'supabase/sql/rolling72_lad_shadow_v5.sql'
+      - '.github/workflows/fresh-paired-drift24-prep-v1.yml'
+  pull_request:
+    paths:
+      - 'ml/rolling72_fresh_paired_drift24_v1.py'
+      - 'ml/test_rolling72_fresh_paired_drift24_v1.py'
+      - 'supabase/sql/rolling72_forward_baselines_b_v1.sql'
+      - 'supabase/sql/rolling72_lad_shadow_v5.sql'
+      - '.github/workflows/fresh-paired-drift24-prep-v1.yml'
+permissions:
+  contents: read
+jobs:
+  synthetic-contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Verify pinned reference bytes
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import hashlib
+          from ml.rolling72_fresh_paired_drift24_v1 import REFERENCE_HASHES
+          for name, expected in REFERENCE_HASHES.items():
+              assert hashlib.sha256(Path(name).read_bytes()).hexdigest() == expected, name
+          PY
+      - name: Verify pure preparation, clocks, scope and paired errors
+        run: python -m ml.test_rolling72_fresh_paired_drift24_v1
