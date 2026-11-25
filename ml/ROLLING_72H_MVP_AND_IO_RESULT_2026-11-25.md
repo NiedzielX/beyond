@@ -37,7 +37,7 @@ Weryfikacja wydania:12testów zegara/PERS,8feedu,5uprawnień,14Edge,
 20klienta/relay,TypeScript i testy przeglądarkowe PASS. CI API45603944012,
 panel45603837674/45603838021 oraz cache45604786016:SUCCESS na publikowanych
 commitach. Dowody: [pilot](ROLLING_72H_PERS_PROTECTED_PILOT_PROOF_2026-11-25.json),
-[cache](DASHBOARD_READINESS_IO_PROOF_2026-11-25.json).
+[cache](https://github.com/NiedzielX/beyond/blob/30c9f622e6282dc399c3bccad2834ee6fc636310/ml/DASHBOARD_READINESS_IO_PROOF_2026-11-25.json).
 
 ## MAE według horyzontu
 
@@ -56,3 +56,6 @@ PERS–drift24,13testów syntetycznych i przypięte referencje. Rozdziela oblicz
 wartości od późniejszego wiązania czasu wydania, kontroluje pełne identyfikatory
 sektorów/price-area oraz odmawia mieszania horyzontów. To kontrakt offline;
 nowy runtime, wspólne etykiety i aktywacja pozostają kolejnym etapem.
+
+Kod przygotowania porównania: [PR233](https://github.com/NiedzielX/beyond/pull/233).
+Odczyt metryk: [snapshot JSON](ROLLING_72H_E5_SNAPSHOT_2026-11-25.json).

@@ -1,0 +1,38 @@
++{
+  "cohort": "rolling72-common-flow-e5-v1",
+  "target": "public_available_total",
+  "aggregation": "mean_within_event_then_equal_event_weight",
+  "frozen_models_unchanged": true,
+  "results": [
+    {
+      "checked_at": "2026-11-25 11:09:38.103584+00",
+      "horizon_hours": 24,
+      "fixtures": 2,
+      "labels": "305",
+      "persistence_mae": 199.962955796354,
+      "drift6_mae": 151.944599987955,
+      "drift24_mae": 104.332065269397,
+      "common_flow6_mae": 223.491488006305
+    },
+    {
+      "checked_at": "2026-11-25 11:09:38.10361+00",
+      "horizon_hours": 48,
+      "fixtures": 2,
+      "labels": "127",
+      "persistence_mae": 375.91654265873,
+      "drift6_mae": 269.137439571174,
+      "drift24_mae": 262.558475420088,
+      "common_flow6_mae": 341.139334950717
+    },
+    {
+      "checked_at": "2026-11-25 11:09:38.103616+00",
+      "horizon_hours": 72,
+      "fixtures": 0,
+      "labels": "0",
+      "persistence_mae": null,
+      "drift6_mae": null,
+      "drift24_mae": null,
+      "common_flow6_mae": null
+    }
+  ]
+}
