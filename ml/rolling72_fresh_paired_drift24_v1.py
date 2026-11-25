@@ -20,7 +20,7 @@ MAX_SOURCE_AGE_HOURS = 1.0
 MAX_ISSUE_LATENCY_SECONDS = 90.0
 REFERENCE_HASHES = {
     "supabase/sql/rolling72_forward_baselines_b_v1.sql": "c9621bb692ca7de38037a204a9ca204ed3be370657b9ab89dc3aa438575effb4",
-    "supabase/sql/rolling72_lad_shadow_v5.sql": "c2a3071d7109b74040228fb6b4ee77a6524afccc7174550acb7fa362e9e7afd2",
+    "supabase/sql/rolling72_lad_shadow_v5.sql": "c2a3071d7109b74040228fb6b4ee77a6524afccc7174550acb7fa362e9f7afd2",
 }
 BREAK_STATUSES = {"MISSING_SOURCE", "SKIPPED_STALE", "INVALID_SOURCE", "INTERNAL_ERROR"}
 
