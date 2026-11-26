@@ -1,0 +1,99 @@
+{
+  "scope": "hosted scheduled comparator",
+  "activation": {
+    "lane_id": "rolling72-mvp-paired-drift24-v1",
+    "activated": true,
+    "idempotent": false,
+    "issue_until": "2026-12-01T00:00:00+00:00",
+    "activated_at": "2026-11-26T10:50:31.851441+00:00",
+    "scoring_until": "2026-12-04T06:00:00+00:00",
+    "schema_version": "rolling72-mvp-paired-drift24-v1",
+    "source_lane_id": "rolling72-mvp-research-v1",
+    "source_sql_sha256": "911dc9a55159b8ec2e3acaf0bc41fb7d5380f860e6aec44bdc637ae1042a7270",
+    "source_manifest_sha256": "10d6c91af793348993a5c90212b6a340646b42518b6d75ac6b1be3b3864e406d"
+  },
+  "job": 45,
+  "first_issue": {
+    "checked_at": "2026-11-26 10:56:16.100818+00",
+    "ticks": [
+      {
+        "result": "DO",
+        "status": "succeeded",
+        "end_time": "2026-11-26T10:56:05.900855+00:00",
+        "start_time": "2026-11-26T10:56:00.031236+00:00"
+      },
+      {
+        "result": "DO",
+        "status": "succeeded",
+        "end_time": "2026-11-26T10:51:01.16272+00:00",
+        "start_time": "2026-11-26T10:51:00.779867+00:00"
+      }
+    ],
+    "bundles": [
+      {
+        "id": 1,
+        "ref": "2026-11-26T10:56:03.520239+00:00",
+        "calc": "2026-11-26T10:56:03.914028+00:00",
+        "rows": [
+          [
+            24,
+            "DRIFT24",
+            6510,
+            "2026-11-27T10:56:03.914044+00:00",
+            "FALLBACK_PERS"
+          ],
+          [
+            24,
+            "PERS",
+            6510,
+            "2026-11-27T10:56:03.914044+00:00",
+            "READY"
+          ],
+          [
+            48,
+            "DRIFT24",
+            6510,
+            "2026-11-28T10:56:03.914044+00:00",
+            "FALLBACK_PERS"
+          ],
+          [
+            48,
+            "PERS",
+            6510,
+            "2026-11-28T10:56:03.914044+00:00",
+            "READY"
+          ],
+          [
+            72,
+            "DRIFT24",
+            6510,
+            "2026-11-29T10:56:03.914044+00:00",
+            "FALLBACK_PERS"
+          ],
+          [
+            72,
+            "PERS",
+            6510,
+            "2026-11-29T10:56:03.914044+00:00",
+            "READY"
+          ]
+        ],
+        "seal": 176,
+        "event": 27049,
+        "known": "2026-11-26T10:54:00.439101+00:00",
+        "anchor": 80,
+        "issued": "2026-11-26T10:56:03.914044+00:00",
+        "status": "FALLBACK_PERS",
+        "captured": "2026-11-26T10:50:18.07+00:00"
+      }
+    ],
+    "labels": 0
+  },
+  "fallback": {
+    "id": 1,
+    "fallback_reason": "SCOPE_MISMATCH",
+    "origin_sector_count": 44,
+    "anchor_sector_count": 46,
+    "same_endpoint_membership": false
+  }
+}

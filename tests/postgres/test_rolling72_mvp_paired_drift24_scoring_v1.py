@@ -185,6 +185,12 @@ class PairedDrift24Scoring(Fixtures.Rolling72MvpPairedDrift24V1):
         self.assertEqual(card['accepted_common_labels'],3); self.assertEqual(card['matured_eligible_targets'],3)
         self.assertEqual(card['scoring_coverage'],1)
         self.assertIsNone(status['scorecards'][1]['scoring_coverage'])
+        report = ROOT/'supabase/ops/rolling72_mvp_paired_drift24_v1_support_report.sql'
+        rows = self.db.execute(report.read_text()).fetchall()
+        self.assertEqual([row[1] for row in rows], [24,48,72])
+        self.assertEqual(rows[0][-1]['SAME_SCOPE']['pers_mae'],55)
+        self.assertEqual(rows[0][-1]['SAME_SCOPE']['fixtures'],2)
+        self.assertIsNone(rows[1][-2])  # No matured target, so coverage is unknown.
         export=self.db.execute((ROOT/'supabase/ops/rolling72_mvp_paired_drift24_v1_scorecard_export.sql').read_text()).fetchone()[0]
         self.assertEqual(export['accepted_shared_labels'],3); self.assertEqual(len(export['rows']),3)
         self.assertEqual(set(export['rows'][0]),{'bundle_id','ticket_event_id','club_id','horizon_hours','actual','pers_prediction','drift24_prediction'})
@@ -205,6 +211,10 @@ class PairedDrift24Scoring(Fixtures.Rolling72MvpPairedDrift24V1):
         self.assertEqual(card['accepted_common_labels'],1)
         self.assertEqual(card['changed_scope_labels'],1)
         self.assertEqual(card['stable_scope_sensitivity']['labels'],0)
+        report = ROOT/'supabase/ops/rolling72_mvp_paired_drift24_v1_support_report.sql'
+        slices = self.db.execute(report.read_text()).fetchone()[-1]
+        self.assertEqual(slices['CHANGED_SCOPE']['labels'],1)
+        self.assertNotIn('SAME_SCOPE',slices)
 
     def test_real_capture_issue_with_past_anchor_keeps_future_targets_unscored(self):
         admission=self._admit_fixture(kickoff_in_days=20)

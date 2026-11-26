@@ -1,0 +1,53 @@
+{
+  "scope": "live read-only paired diagnostic",
+  "rows": [
+    {
+      "read_at": "2026-11-26 11:00:13.231457+00",
+      "horizon_hours": 24,
+      "numeric_pairs": 1,
+      "drift_ready": 0,
+      "fallback": 1,
+      "fallback_share": "1.00000000000000000000",
+      "scope_mismatch": 1,
+      "source_break": 0,
+      "no_24h_anchor": 0,
+      "outside_kickoff": 0,
+      "mature_pairs": 0,
+      "shared_labels": 0,
+      "scoring_coverage": null,
+      "target_scope_scores": null
+    },
+    {
+      "read_at": "2026-11-26 11:00:13.231457+00",
+      "horizon_hours": 48,
+      "numeric_pairs": 1,
+      "drift_ready": 0,
+      "fallback": 1,
+      "fallback_share": "1.00000000000000000000",
+      "scope_mismatch": 1,
+      "source_break": 0,
+      "no_24h_anchor": 0,
+      "outside_kickoff": 0,
+      "mature_pairs": 0,
+      "shared_labels": 0,
+      "scoring_coverage": null,
+      "target_scope_scores": null
+    },
+    {
+      "read_at": "2026-11-26 11:00:13.231457+00",
+      "horizon_hours": 72,
+      "numeric_pairs": 1,
+      "drift_ready": 0,
+      "fallback": 1,
+      "fallback_share": "1.00000000000000000000",
+      "scope_mismatch": 1,
+      "source_break": 0,
+      "no_24h_anchor": 0,
+      "outside_kickoff": 0,
+      "mature_pairs": 0,
+      "shared_labels": 0,
+      "scoring_coverage": null,
+      "target_scope_scores": null
+    }
+  ]
+}
