@@ -1,0 +1,11 @@
+{
+  "observed_at": "2026-11-26T11:05:11.108Z",
+  "event_id": 10896,
+  "availability": 6846,
+  "sectors": 25,
+  "price_area_rows": 25,
+  "payload_hashes_normalized_json": [
+    "b7916530cd02e92144648c2435c9336e1532a2ad413a688a75e0ffe1c996ad92",
+    "845abfc03701a58bdb59c96ecea87a515fbfc30ada99f8128f92cff1e71185ac"
+  ]
+}

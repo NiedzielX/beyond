@@ -54,3 +54,10 @@ Warszawy. Dłuższy pilotaż wymaga oddzielnego planu okna.
 
 [Kontrakt agregatów klubowych i rejestru decyzji](ROLLING_72H_CLUB_PILOT_DATA_V1.md)
 jest gotowy do uzgodnienia ze źródłem danych klubu.
+
+Późniejszy odczyt strony biletu powiązał ofertę Roboticket 10896 z Cracovia–Widzew
+Łódź, 5 grudnia 2026 o 14:45. Nagłówek strony odpowiada komunikatowi klubu.
+Zapisaliśmy SHA-256 odpowiedzi strony biletu
+`18259a174b608b32ad270e90169b4418bee4c99fd3e29e53b052ce755c0d2a55`.
+Odczyt puli i dopuszczenie kolejnego meczu nadal czekają na weryfikację.
+[Roboticket](https://bilety.cracovia.pl/Stadium/Index?eventId=10896)
