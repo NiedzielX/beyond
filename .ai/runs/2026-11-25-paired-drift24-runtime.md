@@ -59,3 +59,30 @@ its three-test scaffold is preserved. SQL author now owns only that primary
 suite and adds bounded issuer regressions. Root owns separate scoring tests,
 release integration and publication. Hosted access remains blocked; no new
 lane deployment, activation, cron or prospective predictions are claimed.
+
+## 26 November continuation
+
+Draft PR [234](https://github.com/NiedzielX/beyond/pull/234) publishes the
+comparison. Two lower-cost agents audited the release hashes and extended the
+issuer suite with anchor ties, intervening sector identity changes and
+independent kickoff eligibility. The release copy passed 17 PostgreSQL 16
+tests and 10 scorecard tests. First CI used recursive discovery and imported
+the unrelated demand-engine package without its NumPy dependency. The workflow
+now invokes only the intended scorecard module.
+
+At 11:40 Warsaw, E5 had 490/300/127 shared labels on two matches at +24/+48/+72
+hours. Equal-event availability MAE PERS versus drift24 was
+219.08/91.37, 409.03/213.48 and 547.21/377.23 respectively. These two matches
+are distinct from the fresh comparison. Jagiellonia PERS had 78 accepted +24
+labels with MAE 128.35. No +48/+72 labels had matured on that lane.
+
+Supabase migration installed the reviewed SQL. Hosted catalog confirmed seven
+private tables with RLS and four service-only RPCs. Automatic approval rejected
+the separate irreversible activation of the frozen manifest
+6f8ee5d4e0ac0a3892f8b5525ee10a0c7b02559c04c705147a47677e4260bf0d because
+development authorization did not cover this persistent side effect.
+At 11:42 Warsaw an independent hosted read confirmed zero config rows,
+zero paired bundles and zero comparator jobs. The proposed cron uses the
+matched source deadlines. Activation and scheduling require explicit user
+authorization and a still-open issue window. A successful scheduled cycle
+with a genuinely new source seal will prove runtime operation.

@@ -13,9 +13,11 @@ import json
 import os
 from pathlib import Path
 import unittest
+import uuid
 from urllib.parse import urlparse
 
 import psycopg
+from psycopg.types.json import Jsonb
 
 ROOT = Path(__file__).resolve().parents[2]
 SQL = ROOT / "supabase/sql/rolling72_mvp_paired_drift24_v1.sql"
@@ -147,8 +149,8 @@ class Rolling72MvpPairedDrift24V1(SourceFixture):
         finally:
             self.db.execute("reset role")
 
-    def _source_origin(self, *, available=0, kickoff_in_days=25):
-        admission = self._admit_fixture(kickoff_in_days=kickoff_in_days)
+    def _source_origin(self, *, available=0, kickoff_in_days=25, admission=None):
+        admission = admission or self._admit_fixture(kickoff_in_days=kickoff_in_days)
         self._register(admission)
         snapshot = self._insert_bundle(admission, available=available)
         capture = self._capture()
@@ -158,6 +160,54 @@ class Rolling72MvpPairedDrift24V1(SourceFixture):
         """, (snapshot,)).fetchone()
         self.assertIsNotNone(seal, f"source fixture failed to produce a committed seal: {capture!r}")
         return admission, seal
+
+    def _past_source(self, admission, *, captured, value, sectors=None):
+        """Create a fully bound synthetic seal at a chosen historical capture time."""
+        snapshot = self._insert_bundle(admission, available=value, captured_at=captured, sectors=sectors)
+        payload = self.db.execute("""
+          select jsonb_build_object('lane_id','rolling72-mvp-research-v1',
+            'source_family','roboticket/roboticket','unit','available_total_seats',
+            'admission',to_jsonb(a),'binding',r.binding,'snapshot',to_jsonb(s),
+            'sector_price_area_rows',(select jsonb_agg(to_jsonb(x) order by x.sector_source_id,x.price_area_id,x.id)
+                from public.sector_price_area_observations_v1 x where x.snapshot_id=s.id),
+            'sector_inventory_rows',(select jsonb_agg(to_jsonb(x) order by x.sector,x.available,x.id)
+                from public.sector_inventory x where x.snapshot_id=s.id))
+          from private.rolling72_mvp_research_v1_registry r
+          join private.roboticket_admission_receipts_v2 a on a.id=r.admission_receipt_id
+          join public.snapshots s on s.ticket_event_id=r.ticket_event_id
+          where s.id=%s and r.ticket_event_id=%s
+        """, (snapshot, admission['ticket_event_id'])).fetchone()[0]
+        known = captured + timedelta(seconds=1)
+        run = uuid.uuid4()
+        self.db.execute("insert into private.rolling72_mvp_research_v1_runs values(%s,%s,%s,'COMPLETED',1,1)",
+                        (run, known, known))
+        attempt = self.db.execute("select nextval(pg_get_serial_sequence('private.rolling72_mvp_research_v1_attempts','id'))").fetchone()[0]
+        digest, header = self.db.execute(
+            "select private.rolling72_mvp_research_v1_hash(%s),private.rolling72_mvp_research_v1_hash(%s)",
+            (Jsonb(payload), Jsonb(payload['snapshot']))).fetchone()
+        binding = self.db.execute("""select jsonb_build_object('attempt_id',%s,'run_id',%s,
+          'lane_id','rolling72-mvp-research-v1','ticket_event_id',%s,'snapshot_id',%s,
+          'source_content_sha256',%s::text,'read_started_at',%s,'read_completed_at',%s,
+          'known_at',%s,'status','READY','reason',null)""",
+          (attempt, run, admission['ticket_event_id'], snapshot, digest,
+           captured-timedelta(seconds=1), captured, known)).fetchone()[0]
+        binding_hash = self.db.execute(
+            "select private.rolling72_mvp_research_v1_hash(%s)", (Jsonb(binding),)).fetchone()[0]
+        self.db.execute("""insert into private.rolling72_mvp_research_v1_attempts
+          (id,run_id,ticket_event_id,snapshot_id,read_started_at,read_completed_at,known_at,captured_at,status,
+           reason,source_content_sha256,snapshot_sha256,attempt_binding_sha256,raw_source,binding_payload)
+          overriding system value values(%s,%s,%s,%s,%s,%s,%s,%s,'READY',null,%s,%s,%s,%s,%s)""",
+          (attempt, run, admission['ticket_event_id'], snapshot, captured-timedelta(seconds=1),
+           captured, known, captured, digest, header, binding_hash, Jsonb(payload), Jsonb(binding)))
+        seal = self.db.execute("""insert into private.rolling72_mvp_research_v1_seals
+          (ticket_event_id,snapshot_id,attempt_id,captured_at,read_started_at,read_completed_at,known_at,
+           available_total,sector_count,source_content_sha256,snapshot_sha256,source_payload,phase,
+           prior_seal_id,prior_status,transition_status,gap_count,transition)
+          values(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,'ISSUE_WINDOW',null,'NO_PRIOR','NO_PRIOR',0,'{}')
+          returning id""",
+          (admission['ticket_event_id'], snapshot, attempt, captured, captured-timedelta(seconds=1),
+           captured, known, value, payload['snapshot']['sector_count'], digest, header, Jsonb(payload))).fetchone()[0]
+        return seal
 
     def _issue(self, *, limit=25):
         return self._rpc("issue_rolling72_mvp_paired_drift24_v1", limit)
@@ -245,6 +295,55 @@ class Rolling72MvpPairedDrift24V1(SourceFixture):
             self.assertIsNone(row["pers_event_balanced_mae"])
             self.assertIsNone(row["drift24_event_balanced_mae"])
             self.assertIsNone(row["delta_mae"])
+
+    def test_anchor_tie_uses_largest_seal_id(self):
+        admission, origin = self._source_origin(available=100)
+        anchor_time = origin[2] - timedelta(hours=26)
+        self._past_source(admission, captured=anchor_time, value=60)
+        later_anchor = self._past_source(admission, captured=anchor_time, value=80)
+        result = self._issue()
+        self.assertEqual(result["processed_bundles"], 1, result)
+        row = self.db.execute("""
+          select anchor_seal_id,anchor_available_total,drift_status,fallback_reason
+          from private.rolling72_mvp_paired_drift24_v1_issue_bundles where seal_id=%s
+        """, (origin[0],)).fetchone()
+        self.assertEqual(row, (later_anchor, 80, "READY", None))
+
+    def test_same_count_intermediate_scope_change_breaks_drift_segment(self):
+        admission, origin = self._source_origin(available=100)
+        anchor_time = origin[2] - timedelta(hours=26)
+        self._past_source(admission, captured=anchor_time, value=60)
+        self._past_source(admission, captured=origin[2] - timedelta(hours=6), value=75,
+                          sectors=[(51002, "South", 75)])
+        result = self._issue()
+        self.assertEqual(result["processed_bundles"], 1, result)
+        row = self.db.execute("""
+          select drift_status,fallback_reason,anchor_sector_count,origin_sector_count
+          from private.rolling72_mvp_paired_drift24_v1_issue_bundles where seal_id=%s
+        """, (origin[0],)).fetchone()
+        self.assertEqual(row, ("FALLBACK_PERS", "SCOPE_MISMATCH", 1, 1))
+
+    def test_each_event_uses_its_own_kickoff_for_horizon_status(self):
+        near_admission, near_origin = self._source_origin(available=20, kickoff_in_days=2)
+        far_admission, far_origin = self._source_origin(available=30, kickoff_in_days=5)
+        result = self._issue()
+        self.assertEqual(result["processed_bundles"], 2, result)
+        rows = self.db.execute("""
+          select p.ticket_event_id,p.horizon_hours,p.status,p.kickoff_at,b.kickoff_at
+          from private.rolling72_mvp_paired_drift24_v1_predictions p
+          join private.rolling72_mvp_paired_drift24_v1_issue_bundles b on b.id=p.bundle_id
+          where b.seal_id in(%s,%s) and p.method='PERS'
+          order by p.ticket_event_id,p.horizon_hours
+        """, (near_origin[0], far_origin[0])).fetchall()
+        self.assertEqual(len(rows), 6)
+        by_event = {}
+        for event_id, horizon, status, row_kickoff, bundle_kickoff in rows:
+            self.assertEqual(row_kickoff, bundle_kickoff)
+            by_event.setdefault(event_id, []).append((horizon, status))
+        self.assertEqual(by_event[near_admission['ticket_event_id']],
+                         [(24, "READY"), (48, "OUTSIDE_KICKOFF"), (72, "OUTSIDE_KICKOFF")])
+        self.assertEqual(by_event[far_admission['ticket_event_id']],
+                         [(24, "READY"), (48, "READY"), (72, "READY")])
 
 
 # Import only fixture methods. Prevent unittest from discovering the inherited
