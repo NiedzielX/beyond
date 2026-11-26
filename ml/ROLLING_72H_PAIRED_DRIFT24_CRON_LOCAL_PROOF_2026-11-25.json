@@ -1,0 +1,29 @@
+{
+  "checks": {
+    "existing_named_job_mismatch_fails_closed": {
+      "message": "MVP_PAIRED_DRIFT24_CRON_EXISTING_JOB_MISMATCH",
+      "sqlstate": "P0001"
+    },
+    "install_created_exactly_one_new_job": true,
+    "missing_config_unscheduled_only_own_job": true,
+    "normal_tick_called_issue25_and_score100": true,
+    "same_manifest_install_idempotent_job_id_and_command": true,
+    "sentinel_other_job_identical_before_after": true,
+    "source_pers_and_frozen_job_mutation": false,
+    "wrong_manifest_fails_closed": {
+      "message": "MVP_PAIRED_DRIFT24_CRON_MANIFEST_MISMATCH",
+      "sqlstate": "P0001"
+    }
+  },
+  "database": "rolling72_mvp_paired_cron_stub_test",
+  "database_was_new": true,
+  "limitations": {
+    "expiry_unschedule_branch_exercised": false,
+    "reason": "The embedded scoring deadline is 2026-12-04, after the actual DB clock; no clock manipulation or private deadline rewrite was used."
+  },
+  "private_test_copy_sha256": "3485601d22dcc446d231e676ddd02c4f4f71e6d947f536e471ac2a10a94df685",
+  "schema_version": "rolling72-paired-cron-stub-smoke-v1",
+  "scope": "Synthetic cron schema/functions and issue/score stubs in a newly created local database; no hosted calls/writes.",
+  "synthetic_manifest_sha256": "da3b2e2fbbf5b284c1cc0012b2c43bbd763621e72beb9a232c0cb46297dba3ab",
+  "template_sha256": "7614aec1f3256a8fa163bf05b030332cb7a406c29beafb824a66f3754254e4df"
+}

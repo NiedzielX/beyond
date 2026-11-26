@@ -1,0 +1,31 @@
+{
+  "target": "public_available_total",
+  "aggregation": "equal-event MAE",
+  "cohort": "E5",
+  "rows": [
+    {
+      "checked_at": "2026-11-26 10:40:19.038234+00",
+      "horizon_hours": 24,
+      "labels": "490",
+      "fixtures": 2,
+      "pers": 219.082766893243,
+      "drift": 91.3710240209841
+    },
+    {
+      "checked_at": "2026-11-26 10:40:19.038263+00",
+      "horizon_hours": 48,
+      "labels": "300",
+      "fixtures": 2,
+      "pers": 409.025667807458,
+      "drift": 213.48097745822
+    },
+    {
+      "checked_at": "2026-11-26 10:40:19.038268+00",
+      "horizon_hours": 72,
+      "labels": "127",
+      "fixtures": 2,
+      "pers": 547.20597718254,
+      "drift": 377.2281962039
+    }
+  ]
+}

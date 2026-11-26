@@ -1,0 +1,40 @@
+{
+  "schema_version": "beyond.e5.score-snapshot.v1",
+  "read_at": "2026-11-25 11:48:09.28256+00",
+  "target": "public_available_total",
+  "aggregation": "mean(per-event mean absolute error), separately per horizon",
+  "cohort": "existing frozen/exposed E5; excluded from fresh paired evaluation",
+  "attendance_or_sales_claim": false,
+  "rows": [
+    {
+      "checked_at": "2026-11-25 11:48:09.28256+00",
+      "horizon_hours": 24,
+      "fixtures": 2,
+      "labels": "309",
+      "persistence_mae": 200.77832006703,
+      "drift6_mae": 155.306012760867,
+      "drift24_mae": 104.70579378088,
+      "common_flow6_mae": 228.145307450257
+    },
+    {
+      "checked_at": "2026-11-25 11:48:09.282586+00",
+      "horizon_hours": 48,
+      "fixtures": 2,
+      "labels": "127",
+      "persistence_mae": 375.91654265873,
+      "drift6_mae": 269.137439571174,
+      "drift24_mae": 262.558475420088,
+      "common_flow6_mae": 341.139334950717
+    },
+    {
+      "checked_at": "2026-11-25 11:48:09.282592+00",
+      "horizon_hours": 72,
+      "fixtures": 0,
+      "labels": "0",
+      "persistence_mae": null,
+      "drift6_mae": null,
+      "drift24_mae": null,
+      "common_flow6_mae": null
+    }
+  ]
+}
