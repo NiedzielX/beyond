@@ -1,0 +1,53 @@
+{
+  "schema_version": "rolling72-paired-drift24-source-support-v1",
+  "recorded_at_utc": "2026-11-25T11:55:14Z",
+  "fixture_id": 27049,
+  "lane_id": "rolling72-mvp-research-v1",
+  "live_query": {
+    "attempted": true,
+    "executed": false,
+    "scope": "single bounded read-only aggregate of source seals, linked pairs, source attempts, and latest runs for existing source/PERS/cache jobs",
+    "failure": "Automatic approval review could not initialize: internal Habitat thread-store HTTP 500. Tool stated the action was not executed.",
+    "retry_or_alternate_path_used": false
+  },
+  "live_database_aggregates": {
+    "db_clock_utc": null,
+    "seal_count": null,
+    "first_capture_at": null,
+    "first_known_at": null,
+    "last_capture_at": null,
+    "last_known_at": null,
+    "distinct_snapshot_count": null,
+    "linked_pair_count": null,
+    "complete_pair_count": null,
+    "gap_pair_count": null,
+    "sum_gap_count": null,
+    "membership_change_pair_count": null,
+    "distinct_total_delta_count": null,
+    "total_delta_min": null,
+    "total_delta_max": null,
+    "total_delta_mean": null,
+    "24_to_30_hour_complete_anchor_pair_count": null,
+    "attempts_by_status": null,
+    "current_source_and_pers_job_health": null,
+    "current_cache24_latest_runtime_seconds": null
+  },
+  "parent_provided_operational_observation": {
+    "database_clock_utc_approx": "2026-11-25T11:50Z",
+    "first_source_capture_utc_approx": "2026-11-24T15:05Z",
+    "observed_history_age_hours_approx": 20.75,
+    "earliest_24_hour_age_boundary_utc_approx": "2026-11-25T15:05Z",
+    "qualification": "Not independently queried; an eligible anchor additionally requires a complete compatible pair and no intervening source break."
+  },
+  "last_known_cache24_observation": {
+    "runtime_seconds": 40.340116,
+    "observed_at_utc": "2026-11-25T11:14Z",
+    "previous_runtime_seconds": 120,
+    "previous_status": "statement timeout",
+    "job_definitions_changed": false,
+    "qualification": "Historical run record only; not current job health."
+  },
+  "activation_status": "NOT_ACTIVE",
+  "paired_forecasts_or_scores_written": false,
+  "attendance_accuracy_claim": false
+}
