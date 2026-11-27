@@ -1,0 +1,83 @@
+{
+  "scope": "six newest anchored SCOPE_MISMATCH bundles at read time, one fixture; inventory only",
+  "rows": [
+    {
+      "read_at": "2026-11-27 11:59:44.407154+00",
+      "bundle": 101,
+      "event": 27049,
+      "seals": 98,
+      "continuity": "MEASURED",
+      "pair_count": 44,
+      "noncontinuous_pair_keys": 1,
+      "origin_total": 6361,
+      "continuous_origin_available": 6361,
+      "stable_change": -138,
+      "other_change": -4
+    },
+    {
+      "read_at": "2026-11-27 11:59:44.407154+00",
+      "bundle": 100,
+      "event": 27049,
+      "seals": 97,
+      "continuity": "MEASURED",
+      "pair_count": 44,
+      "noncontinuous_pair_keys": 1,
+      "origin_total": 6365,
+      "continuous_origin_available": 6365,
+      "stable_change": -134,
+      "other_change": -4
+    },
+    {
+      "read_at": "2026-11-27 11:59:44.407154+00",
+      "bundle": 99,
+      "event": 27049,
+      "seals": 98,
+      "continuity": "MEASURED",
+      "pair_count": 44,
+      "noncontinuous_pair_keys": 1,
+      "origin_total": 6367,
+      "continuous_origin_available": 6367,
+      "stable_change": -138,
+      "other_change": -4
+    },
+    {
+      "read_at": "2026-11-27 11:59:44.407154+00",
+      "bundle": 98,
+      "event": 27049,
+      "seals": 98,
+      "continuity": "MEASURED",
+      "pair_count": 44,
+      "noncontinuous_pair_keys": 1,
+      "origin_total": 6368,
+      "continuous_origin_available": 6368,
+      "stable_change": -138,
+      "other_change": -4
+    },
+    {
+      "read_at": "2026-11-27 11:59:44.407154+00",
+      "bundle": 97,
+      "event": 27049,
+      "seals": 98,
+      "continuity": "MEASURED",
+      "pair_count": 44,
+      "noncontinuous_pair_keys": 1,
+      "origin_total": 6372,
+      "continuous_origin_available": 6372,
+      "stable_change": -133,
+      "other_change": -4
+    },
+    {
+      "read_at": "2026-11-27 11:59:44.407154+00",
+      "bundle": 96,
+      "event": 27049,
+      "seals": 97,
+      "continuity": "MEASURED",
+      "pair_count": 44,
+      "noncontinuous_pair_keys": 1,
+      "origin_total": 6376,
+      "continuous_origin_available": 6376,
+      "stable_change": -129,
+      "other_change": -4
+    }
+  ]
+}
