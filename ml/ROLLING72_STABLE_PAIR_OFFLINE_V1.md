@@ -35,6 +35,14 @@ anchor ID. Review adverse source attempts over the entire interval
 even if parent evaluation stopped at its first scope change. Retain
 the parent clock, kickoff eligibility, label selection and score units.
 
+The bounded read-only continuity screen in
+`supabase/ops/rolling72_stable_pair_continuity_diagnostic_v1.sql` checks
+that each seal links to the immediately preceding seal visible at issue.
+On 27 November, the latest six overlapping windows from a single
+historical fixture had 98 seals and 44 continuous pairs each, covering
+100% of each origin's visible inventory. This measures support on one
+fixture. It counts neither independent matches nor candidate scores.
+
 Check coverage across multiple verified matches before selecting this
 candidate for deployment. Freeze the complete policy and admission
 window before seeing candidate outcomes. Compare it with PERS and

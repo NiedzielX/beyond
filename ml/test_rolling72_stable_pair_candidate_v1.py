@@ -138,6 +138,24 @@ class StablePairCandidateTests(unittest.TestCase):
         out = run(rows=(a, m, o))
         self.assertEqual(out["support_status"], "GAPPED_INTERVAL")
 
+    def test_endpoints_and_an_interior_observation_are_required(self):
+        a, m, o = interval()
+        self.assertEqual(run(rows=(a, o))["support_status"], "NO_INTERIOR_SEAL")
+        self.assertEqual(run(rows=(m, o))["support_status"], "MISSING_ENDPOINT")
+        stale_origin = {**o, "source_content_sha256": "a" * 64}
+        out = prepare_stable_pair_candidate(
+            stale_origin, [a, m, o], anchor_seal_id=a["seal_id"],
+            parent_fallback_reason="SCOPE_MISMATCH", projection_reference_at=REF,
+        )
+        self.assertEqual(out["support_status"], "ORIGIN_ENDPOINT_MISMATCH")
+        after_origin = seal(4, 104, -0.01, o["sector_price_area_rows"], prior=o["seal_id"])
+        self.assertEqual(run(rows=(a, m, o, after_origin))["support_status"], "INVALID_INTERVAL_ORDER")
+
+    def test_observation_known_exactly_at_projection_is_visible(self):
+        a, m, o = interval()
+        o["known_at"] = REF
+        self.assertEqual(run(rows=(a, m, o))["support_status"], "SUPPORTED")
+
     def test_late_known_seal_and_invalid_or_mismatched_seals_fail_closed(self):
         a, m, o = interval(extra_origin=15)
         m["known_at"] = REF + timedelta(seconds=1)
@@ -203,6 +221,18 @@ class StablePairCandidateTests(unittest.TestCase):
             parent_fallback_reason="SCOPE_MISMATCH", projection_reference_at=REF,
         )
         self.assertEqual(out["support_status"], "OVER_130_SEALS")
+
+    def test_exactly_130_continuous_seals_are_accepted(self):
+        rows = [
+            seal(index, 100 + index, 24.5 * (MAX_INTERVAL_SEALS - index) / (MAX_INTERVAL_SEALS - 1),
+                 [pair(i, 1, 20) for i in range(1, 4)], prior=index - 1)
+            for index in range(1, MAX_INTERVAL_SEALS + 1)
+        ]
+        out = prepare_stable_pair_candidate(
+            rows[-1], iter(rows), anchor_seal_id=rows[0]["seal_id"],
+            parent_fallback_reason="SCOPE_MISMATCH", projection_reference_at=REF,
+        )
+        self.assertEqual(out["support_status"], "SUPPORTED")
 
     def test_zero_origin_and_true_zero_are_preserved(self):
         zero_rows = [pair(i, 1, 0) for i in range(1, 4)]
