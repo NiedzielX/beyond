@@ -43,3 +43,10 @@ cron outcome, the new insert statement's temp counters, and the old
 statement's call delta. The read-only smoke is not a cron-cycle result
 and supplies no physical Disk IO percentage.
 [Machine proof](../../ml/TICKETING_SCORER_IO_DEPLOYMENT_PROOF_2026-11-27.json).
+
+The natural 13:04 Warsaw production cycle succeeded in 0.592 s. The
+tracked pg_stat_statements entry advanced by one call and zero temporary
+blocks read or written. All three Rolling72 jobs were active and their
+most recent runs succeeded. This is one scheduled cycle; host I/O budget
+consumption remains unmeasured.
+[Scheduled proof](../../ml/TICKETING_SCORER_IO_FIRST_SCHEDULED_PROOF_2026-11-27.json).
