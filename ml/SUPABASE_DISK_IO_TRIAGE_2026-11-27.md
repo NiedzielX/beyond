@@ -1,0 +1,30 @@
+# Supabase disk I/O triage — 2026-11-27
+
+Project: `adchzwqboeekhokapxqi`
+Scope: bounded read-only database checks and comparison with the Nov 25 readiness proof. No resets, DDL, EXPLAIN ANALYZE, upgrades, or configuration changes.
+
+## Assessment
+
+The supplied Disk IO alert is credible, but these database-side checks do not establish current disk-budget depletion. Supabase's documented source of truth is **Observability → Overview → Database → Disk IO Balance**, or custom-report charts **Disk IO % Consumed** and **Disk IO % Remaining**. Those hosted metrics were not available to this SQL-only check. Thus current percent consumed, remaining burst budget, and physical IOPS/throughput are unverified.
+
+There is evidence of substantial cumulative temporary I/O, an identifiable temp-heavy scorer query class, and intermittent 120-second cron failures. A short database-statistics window showed a recent temporary-file burst, then the top statement counters remained flat in a later 72-second window after the scorer completed. This points to episodic workload pressure rather than continuous counter growth in the sampled minutes. It does not prove host-level budget exhaustion. The Supabase disk budget chart is still required to establish whether those workload bursts depleted the instance's daily burst balance.
+
+## Evidence
+
+- Prior [readiness proof](https://github.com/NiedzielX/beyond/blob/30c9f622e6282dc399c3bccad2834ee6fc636310/ml/DASHBOARD_READINESS_IO_PROOF_2026-11-25.json) recorded one `refresh_dashboard_safe_caches_v1` failure after ~120.18s and a later success after ~40.34s. It explicitly marked physical disk I/O budget as unmeasured.
+- Read-only `cron.job_run_details` aggregate for cache jobs 24, 26, and 27 over the 24h window ending at query time:
+  - Job 24: 23 successes (mean 45.66s, max 86.99s) and one failure at 2026-11-26 13:14 UTC (120.36s).
+  - Job 26: 24 successes, mean 48.63s, max 53.87s.
+  - Job 27: 24 successes, mean 31.80s, max 55.83s.
+  Recent job 24/26/27 observations on Nov 27 were successful. Failures are intermittent rather than every-run in this sample.
+- PostgreSQL 17.11 `pg_stat_database` snapshot at 2026-11-27 11:34:45.726 UTC; server start 2026-10-07 08:05:24 UTC; stats reset 2026-10-02 17:54:14 UTC: 6,947,956 shared block reads, 54,579,266,606 hits, 852,379 temp files, 4,236,609,862,279 temp bytes (~3.86 TiB), 0 reported block read/write milliseconds, and 0 deadlocks. These are cumulative since reset, not a current rate. Zero timings likely mean I/O timing collection is disabled and should not be read as no wait.
+- Second `pg_stat_database` snapshot at 11:36:09.196 UTC (83.47s later): shared block reads +9,952 (~77.8 MiB of 8KiB blocks), hits +7,402,161, temp files +63, temp bytes +397,145,439 (~379 MiB), no reported block timing/deadlocks. This is fresh activity inside the window, likely overlapping the 11:34 scorer run; these counters measure Postgres buffer/temp activity rather than physical device traffic.
+- `pg_stat_statements` is available. Its highest shared-read query ID had 2,510,509 shared blocks read, 752,967,891 hits, 136,347,376 temp blocks read, and 83,176,510 temp blocks written (~1.04 TiB read / 634 GiB written at 8 KiB/block). Other top IDs also had very high temp blocks. SQL text was deliberately not retrieved; query IDs alone do not attribute work to a named function. These totals span the same multi-week stats window, not the last hour.
+- Redacted `CASE` classification over statement text (only label, query ID, calls, and temp counters returned) classifies query ID `-5074432377195881207` as `ticketing-challenger`; IDs `-6026549540932890429` and `48228521655882561` classify as `sector-decision-cache` and `price-area-cache`. No statement text was projected or recorded. The ticketing class has 4,216 cumulative calls and 147,560,013 temp blocks read / 148,070,711 written (~1.10 TiB each at 8 KiB/block), over the full statistics window.
+- The ticketing scorer cron (job 17) succeeded at 11:34 UTC in 74.14s. Other recent completions took 66–98s, with intermittent ~121–122s failures. A timed `pg_stat_statements` comparison from 11:37:00.584 to 11:38:12.957 UTC (72.37s) showed no counter changes for the four leading query IDs. An earlier untimed comparison showed one additional execution of ticketing query ID `-5074432377195881207`, adding 61,669 temp blocks read and 61,886 written (~481 / 484 MiB), likely corresponding to the 11:34 scorer run. The exact boundaries of that earlier comparison were not timestamped, so treat the job correlation as likely rather than proven.
+- The prior local disk I/O remediation analysis of 23 November identifies `refresh_dashboard_safe_caches_v1` as a high cumulative temp-I/O candidate and notes its full cache rebuild path. That is a prioritization hypothesis, not live-plan proof; preserve source/evidence-producing schedules while investigating.
+- Official [High Disk I/O guide](https://supabase.com/docs/guides/troubleshooting/exhaust-disk-io) explains burst budget exhaustion/throttling, points to the dashboard metrics above, and lists high memory/swap, low cache hit, slow queries, and popularity as possible causes. PostgreSQL counters are not the Supabase physical disk budget meter.
+
+## Next action
+
+Read the Supabase Dashboard Disk IO Balance and Disk IO % Consumed/Remaining series for the alert window and current day, then correlate the series with scorer/cache cron windows. The two timed database snapshots are complete: cumulative database counters advanced during 11:34:45–11:36:09 UTC, while the leading statement counters were flat during 11:37:00–11:38:12 UTC after the scorer completed. If the dashboard shows budget depletion aligned with scorer runs, investigate the ticketing scorer's temp spill plan/workload on a safe replica or representative local data before proposing a reversible, narrow mitigation. Preserve its prospective evidence schedule unless its owner accepts a specific evidence gap. Do not infer that a restart replenishes the daily budget or recommend a paid compute/disk change from cumulative SQL totals alone.
