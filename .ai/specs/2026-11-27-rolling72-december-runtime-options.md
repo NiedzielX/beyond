@@ -38,3 +38,12 @@ receipt, captures a zero-inventory observation and issues both methods
 at all three horizons. The old registry and predictions stay empty and
 old function definitions remain unchanged. The test is synthetic. Hosted
 DDL, reviewed launch schedules, admission and live issuance remain pending.
+
+With explicit manifest deadlines, `--with-schedules` renders two isolated
+jobs at minutes 08/23/38/53 (source) and 11/26/41/56 (pair). This sits
+after the Roboticket collector at 05/20/35/50 and allows a separate source
+commit before the paired job. Some unrelated five-minute jobs share clock
+minutes, so measure contention rather than claiming exclusive slots.
+The local pg_cron substitute verifies exact manifest binding, rejection of a
+different cap/hash, two installs remaining idempotent, and unchanged old jobs.
+The test executes each new command once; it is not a natural hosted cron proof.

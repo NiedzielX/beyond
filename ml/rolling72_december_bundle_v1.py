@@ -41,6 +41,18 @@ MANIFEST_TEMPLATES = {
     "source": ("rolling72_mvp_research_v1", "10d6c91af793348993a5c90212b6a340646b42518b6d75ac6b1be3b3864e406d"),
     "paired": ("rolling72_mvp_paired_drift24_v1", "6f8ee5d4e0ac0a3892f8b5525ee10a0c7b02559c04c705147a47677e4260bf0d"),
 }
+CRON_TEMPLATES = {
+    "source": (
+        "rolling72_mvp_research_v1_capture_cron.sql",
+        "e6d1e7df351f26485256e1aa61c8527fa4f166c512dc8061c75ee4207619a9ea",
+        "4-59/5 * * * *", "8,23,38,53 * * * *",
+    ),
+    "paired": (
+        "rolling72_mvp_paired_drift24_v1_cron.sql",
+        "4c0939740f5acf42a94aad967a3ab8b930c20e99e197017773ff9e222360ebf8",
+        "1-59/5 * * * *", "11,26,41,56 * * * *",
+    ),
+}
 
 
 def generate_sql(root: Path) -> dict[str, str]:
@@ -102,12 +114,39 @@ def generate_manifests(
     return result
 
 
+def generate_cron(
+    root: Path, *, issue_until: str, scoring_until: str, max_fixtures: int,
+) -> dict[str, str]:
+    """Render reviewed-manifest schedule candidates without scheduling them."""
+    manifests = generate_manifests(root, issue_until=issue_until,
+                                   scoring_until=scoring_until, max_fixtures=max_fixtures)
+    replacements = SOURCE_RENAMES | PAIR_RENAMES | {
+        "2026-12-01 00:00:00+00": issue_until.replace("T", " ")[:-1] + "+00",
+        "2026-12-04 06:00:00+00": scoring_until.replace("T", " ")[:-1] + "+00",
+        **{digest: hashlib.sha256(manifests[name]).hexdigest()
+           for name, (_, digest) in MANIFEST_TEMPLATES.items()},
+    }
+    scripts = {}
+    for name, (filename, expected_hash, old_schedule, new_schedule) in CRON_TEMPLATES.items():
+        raw = (root / "supabase/ops" / filename).read_bytes()
+        if hashlib.sha256(raw).hexdigest() != expected_hash:
+            raise ValueError(f"pinned {name} cron changed")
+        sql = raw.decode("utf-8")
+        for old, new in (replacements | {old_schedule: new_schedule}).items():
+            sql = sql.replace(old, new)
+        if old_schedule in sql or any(old in sql for old in SOURCE_RENAMES | PAIR_RENAMES):
+            raise ValueError(f"{name} cron retains an old job reference")
+        scripts[name] = sql
+    return scripts
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("output", type=Path, help="a new directory for generated SQL")
     parser.add_argument("--issue-until")
     parser.add_argument("--scoring-until")
     parser.add_argument("--max-fixtures", type=int)
+    parser.add_argument("--with-schedules", action="store_true")
     args = parser.parse_args()
     root = Path(__file__).resolve().parents[1]
     rendered = generate_sql(root)
@@ -120,6 +159,12 @@ def main() -> None:
             root, issue_until=args.issue_until, scoring_until=args.scoring_until,
             max_fixtures=args.max_fixtures,
         )
+    schedules = {}
+    if args.with_schedules:
+        if not manifests:
+            parser.error("schedules require both deadlines and max_fixtures")
+        schedules = generate_cron(root, issue_until=args.issue_until,
+                                  scoring_until=args.scoring_until, max_fixtures=args.max_fixtures)
     args.output.mkdir(mode=0o700, exist_ok=False)
     hashes = {}
     for name, sql in rendered.items():
@@ -129,6 +174,10 @@ def main() -> None:
     for name, raw in manifests.items():
         (args.output / f"{name}_manifest.json").write_bytes(raw)
         hashes[f"{name}_manifest"] = hashlib.sha256(raw).hexdigest()
+    for name, sql in schedules.items():
+        raw = sql.encode("utf-8")
+        (args.output / f"{name}_cron.sql").write_bytes(raw)
+        hashes[f"{name}_cron"] = hashlib.sha256(raw).hexdigest()
     print(json.dumps(hashes, sort_keys=True))
 
 

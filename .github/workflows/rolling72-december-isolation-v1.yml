@@ -6,6 +6,7 @@ on:
       - 'tests/postgres/test_rolling72_december_isolation_v1.py'
       - 'supabase/sql/rolling72_mvp_research_v1.sql'
       - 'supabase/sql/rolling72_mvp_paired_drift24_v1.sql'
+      - 'supabase/ops/rolling72_mvp_*_cron.sql'
       - 'supabase/sql/roboticket_forward_only_admission_v2.sql'
       - 'ml/artifacts/rolling72_mvp_*/activation_manifest.json'
       - '.github/workflows/rolling72-december-isolation-v1.yml'
