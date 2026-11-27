@@ -27,3 +27,19 @@ apply concatenates guard then core SQL in one transaction. Rollback checks
 the optimized function body before restoring the exact pre-change scorer
 body and dropping only the private helper. Job 17 needs a natural
 scheduled cycle after apply and a fresh temporary-block delta for proof.
+
+The three parity/rollback tests passed on PG16 from the release copy,
+and GitHub Actions 45994019147 passed for commit 517f74c. The guarded
+migration succeeded before 12:54 Warsaw. Catalog readback matched the
+new body, retained job 17's exact command and schedule, and found all
+three Rolling72 jobs active. The helper ran under service_role against
+the four pending keys in 0.314 seconds (two selector rows, zero numeric).
+Anonymous and authenticated roles cannot execute it.
+
+The last pre-change natural cycle at 12:49 Warsaw took 89.012 s and
+wrote 61,888 temporary blocks (~483.5 MiB) for the monitored statement.
+The first post-change natural cycle is due at 13:04 Warsaw. Compare its
+cron outcome, the new insert statement's temp counters, and the old
+statement's call delta. The read-only smoke is not a cron-cycle result
+and supplies no physical Disk IO percentage.
+[Machine proof](../../ml/TICKETING_SCORER_IO_DEPLOYMENT_PROOF_2026-11-27.json).
