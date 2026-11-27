@@ -1,0 +1,42 @@
+{
+  "source": "production pg_cron and pg_stat_statements; natural cycles",
+  "baseline_read_at": "2026-11-27 11:54:55.813793+00",
+  "baseline_job": {
+    "jobid": 17,
+    "status": "succeeded",
+    "seconds": 89.012253,
+    "end_time": "2026-11-27T11:50:29.113933+00:00",
+    "start_time": "2026-11-27T11:49:00.10168+00:00"
+  },
+  "first_post_deploy_checked_at": "2026-11-27 12:04:20.004881+00",
+  "first_post_deploy_job": {
+    "status": "succeeded",
+    "seconds": 0.592292,
+    "end_time": "2026-11-27T12:04:00.968353+00:00",
+    "start_time": "2026-11-27T12:04:00.376061+00:00"
+  },
+  "same_monitored_statement": {
+    "queryid": "-5074432377195881207",
+    "added_calls": 1,
+    "added_temp_blocks_read": 0,
+    "added_temp_blocks_written": 0
+  },
+  "rolling_jobs": [
+    {
+      "jobid": 43,
+      "active": true,
+      "status": "succeeded"
+    },
+    {
+      "jobid": 44,
+      "active": true,
+      "status": "succeeded"
+    },
+    {
+      "jobid": 45,
+      "active": true,
+      "status": "succeeded"
+    }
+  ],
+  "physical_disk_io_budget_measured": false
+}

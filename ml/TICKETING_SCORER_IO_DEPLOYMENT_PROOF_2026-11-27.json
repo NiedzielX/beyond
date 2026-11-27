@@ -1,0 +1,35 @@
+{
+  "source": "Supabase",
+  "ci_run": 45994019147,
+  "commit": "517f74cfb0d42cad4f25a83f830743de40e94c8d",
+  "migration": "ticketing_challenger_scorer_io_v1",
+  "baseline_job_17": {
+    "status": "succeeded",
+    "start_time": "2026-11-27 11:49:00.10168+00",
+    "seconds": "89.012253",
+    "temp_blocks_cumulative": 148132599,
+    "delta_temp_blocks_written": 61888,
+    "postgres_block_bytes": 8192
+  },
+  "deployment_catalog": {
+    "checked_at": "2026-11-27 11:53:42.443761+00",
+    "scorer_body_md5": "b1a5b2220afa01b3292087f8bd66965f",
+    "service_helper": true,
+    "anon_helper": false,
+    "auth_helper": false,
+    "job": {
+      "active": true,
+      "schedule": "4,19,34,49 * * * *",
+      "command_md5": "4925e82911782fe4d3ab0d627e4400fd"
+    },
+    "rolling_active_jobs": 3
+  },
+  "service_role_read_probe": {
+    "started_at": "2026-11-27 11:53:49.897501+00",
+    "finished_at": "2026-11-27 11:53:50.211197+00",
+    "feature_rows": 2,
+    "numeric_feature_rows": 0
+  },
+  "scheduled_post_deploy_cycle_verified": false,
+  "physical_disk_io_budget_measured": false
+}
