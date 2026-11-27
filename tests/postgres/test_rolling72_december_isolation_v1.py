@@ -26,6 +26,7 @@ PAIR_PREFIX = "rolling72_december_pair_v1"
 OLD_SOURCE_SQL = ROOT / "supabase/sql/rolling72_mvp_research_v1.sql"
 OLD_PAIR_SQL = ROOT / "supabase/sql/rolling72_mvp_paired_drift24_v1.sql"
 SOURCE_FIXTURES = ROOT / "tests/postgres/test_rolling72_mvp_research_v1.py"
+COVERAGE_SQL = ROOT / "supabase/ops/rolling72_december_fixture_coverage_v1.sql"
 B_SQL_SHA256 = "c9621bb692ca7de38037a204a9ca204ed3be370657b9ab89dc3aa438575effb4"
 LAD_V5_SQL_SHA256 = "c2a3071d7109b74040228fb6b4ee77a6524afccc7174550acb7fa362e9f7afd2"
 
@@ -289,6 +290,17 @@ class Rolling72DecemberIsolationV1(unittest.TestCase):
         fixtures.helper.db = self.db
         receipt = fixtures._admit_fixture()
         fixtures._rpc("register_rolling72_december_source_v1", [receipt["admission_id"]])
+
+        def fixture_coverage():
+            cursor = self.db.execute(COVERAGE_SQL.read_text(encoding="utf-8"))
+            names = [column.name for column in cursor.description]
+            return [dict(zip(names, values)) for values in cursor.fetchall()]
+
+        before_capture = fixture_coverage()
+        self.assertEqual([r["horizon_hours"] for r in before_capture], [24, 48, 72])
+        self.assertTrue(all(r["source_eligible"] == r["numeric_pairs"] == r["shared_labels"] == 0
+                            and r["pers_mae"] is None for r in before_capture))
+
         fixtures._insert_bundle(receipt, available=0)
         fixtures._rpc("capture_rolling72_december_source_v1", 25)
         fixtures._rpc("issue_rolling72_december_pair_v1", 25)
@@ -297,6 +309,12 @@ class Rolling72DecemberIsolationV1(unittest.TestCase):
           from private.rolling72_december_pair_v1_predictions
           group by horizon_hours order by horizon_hours
         """).fetchall(), [(24,2,0,0),(48,2,0,0),(72,2,0,0)])
+        after_issue = fixture_coverage()
+        self.assertEqual([r["horizon_hours"] for r in after_issue], [24, 48, 72])
+        self.assertTrue(all(r["source_eligible"] == r["numeric_pairs"] == r["future_targets"]
+                            == r["fallback_no_anchor"] == 1 for r in after_issue))
+        self.assertTrue(all(r["due_without_label"] == r["shared_labels"] == r["drift_ready"] == 0
+                            and r["drift24_mae"] is None for r in after_issue))
         self.assertEqual(self.db.execute("select count(*) from private.rolling72_mvp_research_v1_registry").fetchone()[0],0)
         self.assertEqual(self.db.execute("select count(*) from private.rolling72_mvp_paired_drift24_v1_predictions").fetchone()[0],0)
 

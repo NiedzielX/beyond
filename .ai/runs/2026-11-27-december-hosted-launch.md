@@ -76,6 +76,11 @@ The first target timestamps fall on 28, 29 and 30 November at 17:12
 Warsaw. Labels recorded at first readback: zero. Any MAE must wait for
 valid target observations. The targets measure visible inventory.
 
+The [fixture coverage query](../../supabase/ops/rolling72_december_fixture_coverage_v1.sql)
+returns three rows per registered fixture, including horizons without
+issues or labels. It reports numeric pairs, target maturity and each
+DRIFT24 fallback reason. Use it as a read-only operational check.
+
 ## Upcoming intake opportunities
 
 The [official Ekstraklasa schedule](https://ekstraklasa.org/aktualnosci/terminarz-18-kolejki-oraz-terminy-meczow-zaleglych/)
