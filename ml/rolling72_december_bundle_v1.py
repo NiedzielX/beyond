@@ -50,7 +50,7 @@ CRON_TEMPLATES = {
     "paired": (
         "rolling72_mvp_paired_drift24_v1_cron.sql",
         "4c0939740f5acf42a94aad967a3ab8b930c20e99e197017773ff9e222360ebf8",
-        "1-59/5 * * * *", "11,26,41,56 * * * *",
+        "1-59/5 * * * *", "12,27,42,57 * * * *",
     ),
 }
 
@@ -140,6 +140,21 @@ def generate_cron(
     return scripts
 
 
+def render_launch(manifests: dict[str, bytes], schedules: dict[str, str]) -> str:
+    """Activate source, activate comparator, then install both jobs atomically."""
+    statements = ["begin;", "set local lock_timeout = '3s';"]
+    for name, rpc in (
+        ("source", "activate_rolling72_december_source_v1"),
+        ("paired", "activate_rolling72_december_pair_v1"),
+    ):
+        raw = manifests[name]
+        literal = raw.decode("utf-8").replace("'", "''")
+        digest = hashlib.sha256(raw).hexdigest()
+        statements.append(f"select public.{rpc}('{literal}', '{digest}');")
+    statements.extend((schedules["source"], schedules["paired"], "commit;"))
+    return "\n".join(statements) + "\n"
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("output", type=Path, help="a new directory for generated SQL")
@@ -178,6 +193,10 @@ def main() -> None:
         raw = sql.encode("utf-8")
         (args.output / f"{name}_cron.sql").write_bytes(raw)
         hashes[f"{name}_cron"] = hashlib.sha256(raw).hexdigest()
+    if schedules:
+        launch = render_launch(manifests, schedules).encode("utf-8")
+        (args.output / "launch.sql").write_bytes(launch)
+        hashes["launch"] = hashlib.sha256(launch).hexdigest()
     print(json.dumps(hashes, sort_keys=True))
 
 

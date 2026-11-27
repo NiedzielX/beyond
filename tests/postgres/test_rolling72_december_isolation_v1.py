@@ -16,7 +16,7 @@ from urllib.parse import urlparse
 
 import psycopg
 
-from ml.rolling72_december_bundle_v1 import generate_cron, generate_manifests, generate_sql
+from ml.rolling72_december_bundle_v1 import generate_cron, generate_manifests, generate_sql, render_launch
 
 ROOT = Path(__file__).resolve().parents[2]
 SOURCE_LANE = "rolling72-december-source-v1"
@@ -197,11 +197,42 @@ class Rolling72DecemberIsolationV1(unittest.TestCase):
         issue_new, score_new = _future_deadlines(self.db, 10)
         manifests = generate_manifests(ROOT, issue_until=issue_new, scoring_until=score_new,
                                        max_fixtures=100)
-        source_values = json.loads(manifests["source"])
-        source_result, source_manifest_hash = _activate(
-            self.db, "activate_rolling72_december_source_v1", source_values
-        )
-        self.assertTrue(source_result["activated"])
+        # Exercise actual job scripts with a minimal local pg_cron substitute.
+        self.db.execute("""
+          create schema cron;
+          create table cron.job (
+             jobid bigint generated always as identity,
+             jobname text primary key, schedule text not null, command text not null,
+             active boolean not null default true, database text not null default current_database(),
+             username text not null default current_user);
+          create function cron.schedule(text,text,text) returns bigint language sql as $$
+             insert into cron.job(jobname,schedule,command) values($1,$2,$3) returning jobid
+          $$;
+          create function cron.unschedule(text) returns boolean language sql as $$
+             with gone as (delete from cron.job where jobname=$1 returning jobid)
+             select exists(select 1 from gone)
+          $$;
+          select cron.schedule('rolling72_mvp_research_v1_capture','4-59/5 * * * *','select 1');
+        """)
+        schedules = generate_cron(ROOT, issue_until=issue_new, scoring_until=score_new,
+                                  max_fixtures=100)
+        # A last-step installer failure rolls back both immutable activations and the first job.
+        failing_launch = render_launch(manifests, {
+            **schedules, "paired": "do $$ begin raise exception 'TEST_INSTALL_FAILURE'; end $$;",
+        })
+        with self.assertRaisesRegex(psycopg.errors.RaiseException, "TEST_INSTALL_FAILURE"):
+            self.db.execute(failing_launch)
+        self.db.execute("rollback")
+        for prefix in (SOURCE_PREFIX, PAIR_PREFIX):
+            self.assertEqual(self.db.execute(
+                f"select count(*) from private.{prefix}_lane"
+            ).fetchone()[0], 0)
+        self.assertEqual(self.db.execute("select count(*) from cron.job").fetchone()[0], 1)
+
+        launch = render_launch(manifests, schedules)
+        for _ in range(2):
+            self.db.execute(launch)
+        source_manifest_hash = hashlib.sha256(manifests["source"]).hexdigest()
         source_row = self.db.execute(f"""
           select manifest_sha256,sql_sha256,max_fixtures,issue_until,scoring_until
           from private.{SOURCE_PREFIX}_lane where lane_id=%s
@@ -209,8 +240,7 @@ class Rolling72DecemberIsolationV1(unittest.TestCase):
         self.assertEqual(source_row[0], source_manifest_hash)
         pair_values = json.loads(manifests["paired"])
         self.assertEqual(pair_values["source_manifest_sha256"], source_manifest_hash)
-        pair_result, _ = _activate(self.db, "activate_rolling72_december_pair_v1", pair_values)
-        self.assertTrue(pair_result["activated"])
+
 
         for lane_row in (source_row, self.db.execute(f"""
           select manifest_sha256,sql_sha256,max_fixtures,issue_until,scoring_until
@@ -270,34 +300,14 @@ class Rolling72DecemberIsolationV1(unittest.TestCase):
         self.assertEqual(self.db.execute("select count(*) from private.rolling72_mvp_research_v1_registry").fetchone()[0],0)
         self.assertEqual(self.db.execute("select count(*) from private.rolling72_mvp_paired_drift24_v1_predictions").fetchone()[0],0)
 
-        # Exercise actual job scripts with a minimal local pg_cron substitute.
-        self.db.execute("""
-          create schema cron;
-          create table cron.job (
-             jobid bigint generated always as identity,
-             jobname text primary key, schedule text not null, command text not null,
-             active boolean not null default true, database text not null default current_database(),
-             username text not null default current_user);
-          create function cron.schedule(text,text,text) returns bigint language sql as $$
-             insert into cron.job(jobname,schedule,command) values($1,$2,$3) returning jobid
-          $$;
-          create function cron.unschedule(text) returns boolean language sql as $$
-             with gone as (delete from cron.job where jobname=$1 returning jobid)
-             select exists(select 1 from gone)
-          $$;
-          select cron.schedule('rolling72_mvp_research_v1_capture','4-59/5 * * * *','select 1');
-        """)
-        schedules = generate_cron(ROOT, issue_until=issue_new, scoring_until=score_new,
-                                  max_fixtures=100)
-        for _ in range(2):
-            for script in schedules.values():
-                self.db.execute(script)
         jobs = self.db.execute("select jobname,schedule,command from cron.job order by jobid").fetchall()
         self.assertEqual([(job, schedule) for job, schedule, _ in jobs], [
             ('rolling72_mvp_research_v1_capture','4-59/5 * * * *'),
             ('rolling72_december_source_v1_capture','8,23,38,53 * * * *'),
-            ('rolling72_december_pair_v1_tick','11,26,41,56 * * * *'),
+            ('rolling72_december_pair_v1_tick','12,27,42,57 * * * *'),
         ])
+        pair_minutes = {int(minute) for minute in jobs[2][1].split()[0].split(",")}
+        self.assertTrue(pair_minutes.isdisjoint(range(1, 60, 5)))
         for _, _, command in jobs[1:]:
             self.db.execute(command)
         wrong = generate_cron(ROOT, issue_until=issue_new, scoring_until=score_new,
