@@ -1,0 +1,22 @@
+name: Rolling72 stable-pair offline
+on:
+  pull_request:
+    paths:
+      - 'ml/*rolling72_stable_pair_*v1.py'
+      - '.github/workflows/rolling72-stable-pair-offline-v1.yml'
+permissions:
+  contents: read
+jobs:
+  offline:
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: >-
+          python -m unittest
+          ml.test_rolling72_stable_pair_candidate_v1
+          ml.test_rolling72_stable_pair_verified_adapter_v1
+          ml.test_rolling72_stable_pair_policy_v1 -v
