@@ -4,6 +4,7 @@ on:
     paths:
       - 'ml/*rolling72_damped_trend_v1.py'
       - 'ml/*rolling72_damped_triplet_v1.py'
+      - 'ml/*rolling72_stable_pair_paired_evaluation_v1.py'
       - 'ml/rolling72_fresh_paired_drift24_v1.py'
       - 'ml/*rolling72_club_pilot_validate_v1.py'
       - '.github/workflows/rolling72-next-cohort-prep-v1.yml'
@@ -17,4 +18,9 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - run: python -m unittest ml.test_rolling72_damped_trend_v1 ml.test_rolling72_damped_triplet_v1 ml.test_rolling72_club_pilot_validate_v1 -v
+      - run: >-
+          python -m unittest
+          ml.test_rolling72_damped_trend_v1
+          ml.test_rolling72_damped_triplet_v1
+          ml.test_rolling72_club_pilot_validate_v1
+          ml.test_rolling72_stable_pair_paired_evaluation_v1 -v
