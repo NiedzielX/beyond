@@ -30,7 +30,7 @@ Each event also needs an event record with `club_id`, `event_id`, `kickoff_at`, 
 
 - `ticket_sales`: `gross_sold_delta` and `net_sold_delta`, in tickets, by sale bucket. Net sales are gross sales less ticket cancellations/refunds recorded in the same accounting convention. Also provide `gross_sold_cumulative` and `net_sold_cumulative` snapshots where the source supports them. Do not infer a zero from a missing bucket.
 - `refunds`: `refund_delta` in tickets by refund-processing bucket. Refunds are separate from sales so timing and reconciliation remain visible; do not subtract them twice from a source-provided net measure.
-- `inventory_pool`: `available_pool_snapshot` in tickets and signed `pool_delta` in tickets, separately by source-defined pool/sector code. Provide a stable `pool_id` when available. A pool opening or closure is an inventory change, not a sale. `available_pool_snapshot` is not attendance or unsold demand.
+- `inventory_pool`: `available_pool_snapshot` in tickets and signed `pool_delta` in tickets, separately by source-defined pool/sector code. Provide a stable `pool_id`, using an explicit event-wide code when appropriate. A pool opening or closure is an inventory change, not a sale. `available_pool_snapshot` is not attendance or unsold demand.
 - `season_membership`: `member_entitlement_snapshot` in tickets (entitlements eligible for the event) and `member_reservation_delta` in tickets when reservations are separately tracked. Do not treat entitlements as attendance.
 - `entry_scans`: `scan_accepted_delta`, `scan_rejected_delta`, and `scan_reversed_delta` in scans by scan bucket. Aggregate by event only; exclude person, seat, ticket, device, and gate identifiers. Scans are an attendance signal, not the final attendance label.
 - Final attendance target: a separate event-level `final_attendance` value in people, with `known_at`, `revision`, source and reconciliation status. It must be the club's declared authoritative post-event count, with a documented rule for staff, guests, and re-entry. Do not derive it by summing accepted scans unless the club explicitly certifies that method as its authoritative count.
@@ -56,3 +56,15 @@ Accept an event feed for shadow evaluation only when all conditions hold:
 For every displayed alert, persist an immutable record with `alert_id`, `club_id`, `event_id`, `issued_at`, `data_as_of_at`, `horizon_hours` (24/48/72), forecast target and interval, baseline, alert reason code, freshness age, and model/feed version. Record `lead_time_hours = kickoff_at - issued_at` and whether the alert was available at least 48 hours before kickoff; report its distribution, not only its average.
 
 Append a decision record linked to `alert_id`: `decision_at`, `decision_status` (`accepted`, `rejected`, `deferred`, `no_action`, `unknown`), controlled action category (`pricing`, `promotion`, `advertising`, `pool/sector`, `other`, `none`), and optional aggregate rationale code. No personal or free-text rationale. Record subsequent decision revisions as new records. Pilot reporting must include alert count, freshness, lead-time distribution, decision status/action counts, and outcome coverage. These logs describe operational response; they do not establish that an action caused a sales or attendance change. Test intervention effectiveness separately with a preplanned control design.
+
+## Local verification before connecting a feed
+
+Run `python -m ml.rolling72_club_pilot_validate_v1 path/to/aggregates.jsonl`
+from the repository root. Supply UTF-8 JSONL, one metric record per line.
+The command reports row count and error codes without printing field values.
+Observed bucket data must be known at or after bucket close. Inventory rows
+require a stable opaque pool code such as `all` for an event-wide pool.
+Use the separate reconciliation record for final attendance. This command
+checks the five operational metric families and rejects attendance records.
+Validation checks structure and clocks. Source identity, ledger reconciliation
+and authorization require evidence from the club.
