@@ -12,6 +12,8 @@ job 46 at 22:23, and December paired job 47 at 22:27. All checked job
 definitions remained active. A single controlled dispatch of the
 existing collector command was rejected before enqueue with SQLSTATE
 `25006`. Supabase Edge logs showed no later Roboticket invocation.
+Supabase Postgres logs counted 55,740 errors with SQLSTATE `25006`
+between 22:37 Warsaw on 27 November and 14:21 on 28 November.
 
 ## Pilot impact
 
